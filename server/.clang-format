@@ -1,0 +1,33 @@
+---
+BasedOnStyle: LLVM
+IndentWidth: 4
+Standard: c++17
+
+ColumnLimit: 100
+BinPackParameters: false
+AccessModifierOffset: -4
+NamespaceIndentation: All
+FixNamespaceComments: false
+AllowAllArgumentsOnNextLine : false
+AllowShortFunctionsOnASingleLine : None
+Cpp11BracedListStyle: false
+MaxEmptyLinesToKeep: 2
+IncludeBlocks: Regroup
+
+IncludeCategories:
+  - Regex:           '^"(gtest\/).*'
+    Priority:        0
+    SortPriority:    0
+  - Regex:           '^"loguru.h"'
+    Priority:        2
+    SortPriority:    2
+  - Regex:           '<(nlohmann|clang|llvm|grpcpp|protobuf|klee|run_klee|tsl|parallel_hashmap)/*'
+    Priority:        3
+    SortPriority:    3
+  - Regex:           '<.*>'
+    Priority:        4
+    SortPriority:    4
+  - Regex:           '.*'
+    Priority:        1
+    SortPriority:    1
+...

@@ -1,0 +1,36 @@
+{
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 6,
+        "sourceType": "module",
+        "project": "./tsconfig.json"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "extends": [
+        "eslint:recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "rules": {
+        "@typescript-eslint/class-name-casing": "warn",
+        "@typescript-eslint/semi": "warn",
+        "@typescript-eslint/no-floating-promises": ["warn", { "ignoreVoid": true, "ignoreIIFE": false }],
+        "curly": "warn",
+        "eqeqeq": "warn",
+        "no-throw-literal": "warn",
+        "semi": "off",
+        "@typescript-eslint/no-inferrable-types" : "off",
+        "prefer-const": "warn",
+        "@typescript-eslint/no-use-before-define" : "off",
+        "@typescript-eslint/no-explicit-any" : "off",
+        "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "no-empty-function": ["error", { "allow": ["constructors"] }],
+        "@typescript-eslint/no-unused-vars": ["warn", {"varsIgnorePattern": "[iI]gnored", "argsIgnorePattern": "^_"}],
+        "@typescript-eslint/explicit-function-return-type" : "error",
+        "no-empty": ["error", { "allowEmptyCatch": true }]
+    }
+}

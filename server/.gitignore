@@ -1,0 +1,13 @@
+doc/
+
+/build
+**/CMakeCache.txt
+**/CMakeFiles/
+**/Makefile
+**/cmake_install.cmake
+**/compile_commands.json
+**/build_clang
+**/build_gcc
+**/*_klee.c
+**/*_klee.c.bc
+tests/suites/*/tests/

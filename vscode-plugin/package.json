@@ -1,0 +1,572 @@
+{
+	"name": "unittestbot",
+	"displayName": "UnitTestBot for C/C++",
+	"publisher": "Huawei",
+	"repository": "https://rnd-gitlab-msc.huawei.com/unittestbot/UnitTestBot",
+	"description": "Provides instruments for auto generating regression tests in C/C++ projects.",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.50.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onCommand:unittestbot.runTests",
+		"onCommand:unittestbot.generateProjectTests",
+		"onLanguage:c",
+		"onLanguage:cpp",
+		"onLanguage:json",
+		"onStartupFinished"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"viewsWelcome": [
+			{
+				"view": "UTBotTargets",
+				"contents": "No targets can be found in current workspace.\n[Learn more about UTBot C/C++](https://confluence-msc.rnd.huawei.com/display/SAT/UnitTestBot+CPP+Manual)."
+			},
+			{
+				"view": "UTBotFolders",
+				"contents": "No folders can be found in current workspace.\n[Learn more about UTBot C/C++](http://utbot.inhuawei.com/docs/cpp)."
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "utbot-explorer",
+					"title": "UTBot Explorer",
+					"icon": "icons/tools-dark.svg"
+				}
+			]
+		},
+		"views": {
+			"utbot-explorer": [
+				{
+					"id": "UTBotTargets",
+					"name": "UTBot Targets",
+					"icon": "icons/utbot.svg",
+					"contextualTitle": "UTBot Explorer"
+				},
+				{
+					"id": "UTBotFolders",
+					"name": "UTBot Folders",
+					"icon": "icons/utbot.svg",
+					"contextualTitle": "UTBot Explorer"
+				}
+			]
+		},
+		"languages": [
+			{
+				"id": "Log",
+				"aliases": [
+					"log"
+				],
+				"extensions": [
+					".log"
+				],
+				"configuration": "./log.configuration.json",
+				"mimetypes": [
+					"log",
+					"text/log",
+					"text/x-log",
+					"text/x-code-output",
+					"x-code-output"
+				]
+			}
+		],
+		"grammars": [
+			{
+				"language": "Log",
+				"scopeName": "code.log",
+				"path": "./syntaxes/log.tmLanguage"
+			}
+		],
+		"commands": [
+			{
+				"command": "unittestbot.utbottargets.refreshEntry",
+				"title": "%unittestbot.utbottargets.refreshEntry.title%",
+				"icon": {
+					"light": "icons/refresh-light.svg",
+					"dark": "icons/refresh-dark.svg"
+				}
+			},
+			{
+				"command": "unittestbot.utbotfolders.refreshEntry",
+				"title": "%unittestbot.utbotfolders.refreshEntry.title%",
+				"icon": {
+					"light": "icons/refresh-light.svg",
+					"dark": "icons/refresh-dark.svg"
+				}
+			},
+			{
+				"command": "unittestbot.wizard.init",
+				"title": "%unittestbot.wizard.init.title%"
+			},
+			{
+				"command": "unittestbot.utbotfolders.useFolderEntry",
+				"title": "%unittestbot.utbotfolders.useFolderEntry.title%"
+			},
+			{
+				"command": "unittestbot.utbottargets.useTargetEntry",
+				"title": "%unittestbot.utbottargets.useTargetEntry.title%"
+			},
+			{
+				"command": "unittestbot.utbottargets.useTargetEntryPath",
+				"title": "Test command"
+			},
+			{
+				"command": "unittestbot.utbotfolders.stopUseFolderEntry",
+				"title": "%unittestbot.utbotfolders.stopUseFolderEntry.title%"
+			},
+			{
+				"command": "unittestbot.selectLoggingLevel",
+				"title": "%unittestbot.selectLoggingLevel.title%"
+			},
+			{
+				"command": "unittestbot.updateVerboseTestFlag",
+				"title": "%unittestbot.updateVerboseTestFlag.title%"
+			},
+			{
+				"command": "unittestbot.configureProject",
+				"title": "%unittestbot.configureProject.title%"
+			},
+			{
+				"command": "unittestbot.generateIsolatedFileTests",
+				"title": "%unittestbot.generateIsolatedFileTests.title%"
+			},
+			{
+				"command": "unittestbot.generateProjectTests",
+				"title": "%unittestbot.generateProjectTests.title%"
+			},
+			{
+				"command": "unittestbot.generateFolderTests",
+				"title": "%unittestbot.generateFolderTests.title%"
+			},
+			{
+				"command": "unittestbot.generateFileTests",
+				"title": "%unittestbot.generateFileTests.title%"
+			},
+			{
+				"command": "unittestbot.generateFunctionTests",
+				"title": "%unittestbot.generateFunctionTests.title%"
+			},
+			{
+				"command": "unittestbot.generateClassTests",
+				"title": "%unittestbot.generateClassTests.title%"
+			},
+			{
+				"command": "unittestbot.generateProjectLineTests",
+				"title": "%unittestbot.generateProjectLineTests.title%"
+			},
+			{
+				"command": "unittestbot.generateAssertionFailTests",
+				"title": "%unittestbot.generateAssertionFailTests.title%"
+			},
+			{
+				"command": "unittestbot.generatePredicateTests",
+				"title": "%unittestbot.generatePredicateTests.title%"
+			},
+			{
+				"command": "unittestbot.runTestsAndShowCoverage",
+				"title": "%unittestbot.runTestsAndShowCoverage.title%"
+			},
+			{
+				"command": "unittestbot.hideCoverage",
+				"title": "%unittestbot.hideCoverage.title%"
+			},
+			{
+				"command": "unittestbot.generateStubsForProject",
+				"title": "%unittestbot.generateStubsForProject.title%"
+			},
+			{
+				"command": "unittestbot.printModulesContent",
+				"title": "%unittestbot.printModulesContent.title%"
+			},
+			{
+				"command": "unittestbot.showAllCommands",
+				"title": "%unittestbot.showAllCommands.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generateFileTests",
+				"title": "%unittestbot.menucommand.generateFileTests.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generateFunctionTests",
+				"title": "%unittestbot.menucommand.generateFunctionTests.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generateClassTests",
+				"title": "%unittestbot.menucommand.generateClassTests.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generateProjectLineTests",
+				"title": "%unittestbot.menucommand.generateProjectLineTests.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generateAssertionFailTests",
+				"title": "%unittestbot.menucommand.generateAssertionFailTests.title%"
+			},
+			{
+				"command": "unittestbot.menucommand.generatePredicateTests",
+				"title": "%unittestbot.menucommand.generatePredicateTests.title%"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "unittestbot.generateProjectTests",
+				"key": "ctrl+alt+t",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true"
+			},
+			{
+				"command": "unittestbot.generateFolderTests",
+				"key": "ctrl+d",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true"
+			},
+			{
+				"command": "unittestbot.generateFileTests",
+				"key": "ctrl+t",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.generateProjectLineTests",
+				"key": "ctrl+alt+l",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.generatePredicateTests",
+				"key": "ctrl+alt+p",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.generateAssertionFailTests",
+				"key": "ctrl+alt+f",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.generateFunctionTests",
+				"key": "ctrl+alt+m",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.generateClassTests",
+				"key": "ctrl+alt+q",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.runTestsAndShowCoverage",
+				"key": "ctrl+alt+r",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true"
+			},
+			{
+				"command": "unittestbot.hideCoverage",
+				"key": "ctrl+alt+h",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true"
+			},
+			{
+				"command": "unittestbot.menucommand.generateFileTests",
+				"key": "ctrl+t",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.menucommand.generateProjectLineTests",
+				"key": "ctrl+alt+l",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.menucommand.generatePredicateTests",
+				"key": "ctrl+alt+p",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.menucommand.generateAssertionFailTests",
+				"key": "ctrl+alt+f",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.menucommand.generateFunctionTests",
+				"key": "ctrl+alt+m",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.menucommand.generateClassTests",
+				"key": "ctrl+alt+q",
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == cpp)"
+			},
+			{
+				"command": "unittestbot.innercommand.openBuildDirectoryConfig",
+				"when": "false"
+			}
+		],
+		"submenus": [
+			{
+				"id": "unittestbot.utbot.editor.generate",
+				"label": "UTBot: Generate Tests..."
+			}
+		],
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "unittestbot.printModulesContent",
+					"when": "config.unittestbot.advanced.enableDeveloperMode == true"
+				},
+				{
+					"command": "unittestbot.utbottargets.useTargetEntry",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.utbottargets.useTargetEntryPath",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.utbotfolders.useFolderEntry",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.utbotfolders.stopUseFolderEntry",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.selectLoggingLevel",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generateFileTests",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generateFunctionTests",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generateClassTests",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generateProjectLineTests",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generateAssertionFailTests",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.menucommand.generatePredicateTests",
+					"when": "false"
+				}
+			],
+			"view/title": [
+				{
+					"command": "unittestbot.utbottargets.refreshEntry",
+					"when": "view == UTBotTargets",
+					"group": "navigation"
+				},
+				{
+					"command": "unittestbot.utbotfolders.refreshEntry",
+					"when": "view == UTBotFolders",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "unittestbot.utbottargets.useTargetEntry",
+					"when": "view == UTBotTargets && viewItem == utbottarget_unused"
+				},
+				{
+					"command": "unittestbot.utbottargets.useTargetEntryPath",
+					"when": "false"
+				},
+				{
+					"command": "unittestbot.utbotfolders.stopUseFolderEntry",
+					"when": "view == UTBotFolders && viewItem == utbotfolder_used"
+				},
+				{
+					"command": "unittestbot.utbotfolders.useFolderEntry",
+					"when": "view == UTBotFolders && viewItem == utbotfolder_unused"
+				}
+			],
+			"unittestbot.utbot.editor.generate": [
+				{
+					"command": "unittestbot.menucommand.generateFileTests",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@1"
+				},
+				{
+					"command": "unittestbot.menucommand.generateClassTests",
+					"when": "editorLangId == cpp",
+					"group": "UTBot@2"
+				},
+				{
+					"command": "unittestbot.menucommand.generateFunctionTests",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@3"
+				},
+				{
+					"command": "unittestbot.menucommand.generateProjectLineTests",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@4"
+				},
+				{
+					"command": "unittestbot.menucommand.generateAssertionFailTests",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@5"
+				},
+				{
+					"command": "unittestbot.menucommand.generatePredicateTests",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@6"
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "unittestbot.generateFileTests",
+					"when": "resourceLangId == c || resourceLangId == cpp",
+					"group": "UTBot@1"
+				},
+				{
+					"command": "unittestbot.generateFolderTests",
+					"group": "UTBot@2"
+				},
+				{
+					"command": "unittestbot.generateProjectTests",
+					"group": "UTBot@3"
+				},
+				{
+					"command": "unittestbot.showAllCommands",
+					"group": "UTBotMeta@1"
+				}
+			],
+			"editor/context": [
+				{
+					"submenu": "unittestbot.utbot.editor.generate",
+					"when": "editorLangId == c || editorLangId == cpp",
+					"group": "UTBot@1"
+				},
+				{
+					"command": "unittestbot.showAllCommands",
+					"group": "UTBot@2"
+				}
+			]
+		},
+		"configuration": {
+			"title": "UnitTestBot",
+			"properties": {
+				"unittestbot.deployment.utbotHost": {
+					"type": "string",
+					"default": "127.0.0.1",
+					"markdownDescription": "%unittestbot.deployment.utbotHost.description%"
+				},
+				"unittestbot.deployment.utbotPort": {
+					"type": "number",
+					"default": 2121,
+					"markdownDescription": "%unittestbot.deployment.utbotPort.description%"
+				},
+				"unittestbot.deployment.remotePath": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%unittestbot.deployment.remotePath.description%"
+				},
+				"unittestbot.paths.buildDirectory": {
+					"type": "string",
+					"default": "build",
+					"markdownDescription": "%unittestbot.paths.buildDirectory.description%"
+				},
+				"unittestbot.paths.cmakeOptions": {
+					"type": "string",
+					"default": "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_EXPORT_LINK_COMMANDS=ON",
+					"markdownDescription": "%unittestbot.paths.cmakeOptions.description%"
+				},
+				"unittestbot.paths.testsDirectory": {
+					"type": "string",
+					"default": "tests",
+					"markdownDescription": "%unittestbot.paths.testsDirectory.description%"
+				},
+				"unittestbot.paths.sourceDirectories": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%unittestbot.paths.sourceDirectories.description%"
+				},
+				"unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard.description%"
+				},
+				"unittestbot.testsGeneration.generateForStaticFunctions": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "%unittestbot.testsGeneration.generateForStaticFunctions.description%"
+				},
+				"unittestbot.visual.showTestResults": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "%unittestbot.visual.showTestResults.description%"
+				},
+				"unittestbot.stubs.useStubs": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "%unittestbot.stubs.useStubs.description%"
+				},
+				"unittestbot.advanced.enableDeveloperMode": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%unittestbot.advanced.enableDeveloperMode.description%"
+				},
+				"unittestbot.advanced.timeoutPerFunction": {
+					"type": "number",
+					"default": 30,
+					"maximum": 1000000000,
+					"minimum": 0,
+					"markdownDescription": "%unittestbot.advanced.timeoutPerFunction.description%"
+				},
+				"unittestbot.advanced.timeoutPerTest": {
+					"type": "number",
+					"default": 0,
+					"maximum": 1000000000,
+					"minimum": 0,
+					"markdownDescription": "%unittestbot.advanced.timeoutPerTest.description%"
+				},
+				"unittestbot.advanced.useDeterministicSearcher": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%unittestbot.advanced.useDeterministicSearcher.description%"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"lint": "eslint src --ext .ts",
+		"compile": "npm run lint && tsc -p ./",
+		"watch": "npm run lint && tsc -watch -p ./",
+		"pretest": "npm run compile && npm run lint",
+		"test": "node ./out/test/runTest.js",
+		"download_vscode": "node download_vscode.js"
+	},
+	"devDependencies": {
+		"@mapbox/node-pre-gyp": "1.0.5",
+		"@types/glob": "7.1.1",
+		"@types/mocha": "8.2.0",
+		"@typescript-eslint/eslint-plugin": "2.34.0",
+		"@typescript-eslint/parser": "2.34.0",
+		"eslint": "6.8.0",
+		"glob": "7.1.6",
+		"mocha": "8.2.0",
+		"vscode-test": "1.5.2"
+	},
+	"dependencies": {
+		"@types/google-protobuf": "3.7.2",
+		"@types/node": "15.6.0",
+		"@types/randomstring": "1.1.5",
+		"@types/vscode": "1.50.0",
+		"emittery": "0.8.1",
+		"filepath": "1.1.0",
+		"google-protobuf": "3.12.4",
+		"grpc": "npm:@grpc/grpc-js@1.1.3",
+		"grpc-tools": "1.9.0",
+		"grpc_tools_node_protoc_ts": "4.1.5",
+		"log4js": "6.3.0",
+		"randomstring": "1.1.5",
+		"source-map-support": "0.5.19",
+		"typescript": "3.8.3"
+	}
+}
