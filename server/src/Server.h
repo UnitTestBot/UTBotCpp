@@ -206,6 +206,7 @@ public:
         std::map <string, TimeUtils::systemClockTimePoint> linkedWithClient;
         std::map <string, std::atomic_bool> openedChannel;
         std::map <string, std::atomic_bool> openedGTestChannel;
+        std::map <string, std::atomic_bool> holdLockFlag;
         concurrent_set<string> clients;
 
         template <class Key, class Value>
@@ -221,12 +222,13 @@ public:
 
         static Status failedToLoadCDbStatus(const CompilationDatabaseException &e);
 
-        static Status provideLoggingCallbacks(const std::string &callbackPrefix,
+        Status provideLoggingCallbacks(const std::string &callbackPrefix,
                                        ServerWriter<LogEntry> *writer,
                                        const std::string &logLevel,
                                        loguru::log_handler_t handler,
                                        std::map<string, std::atomic_bool> &channelStorage,
                                        bool openFiles);
+
     protected:
         bool testMode = false;
     };
@@ -240,6 +242,9 @@ private:
     const static uint16_t DEFAULT_PORT = 2121;
 
     const static unordered_map<string, loguru::NamedVerbosity> verbosity;
+
+    const static string logPrefix;
+    const static string gtestLogPrefix;
 
     std::unique_ptr<grpc::Server> gRPCServer;
 
