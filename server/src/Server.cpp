@@ -38,6 +38,9 @@
 
 using TypeUtils::isSameType;
 
+const string Server::logPrefix = "logTo";
+const string Server::gtestLogPrefix = "gtestLogTo";
+
 void Server::run(uint16_t customPort) {
     LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_NUMBER;
     LOG_S(INFO) << "Log path: " << Paths::logPath;
@@ -359,22 +362,28 @@ Status Server::TestsGenServiceImpl::provideLoggingCallbacks(
         }
         fs::path allLogPath = logFilePath / "everything.log";
         fs::path latestLogPath = logFilePath / "latest_readable.log";
-        bool addedCallback =
-            loguru::add_callback((callbackPrefix + client).c_str(), handler, &data,
-                                 loguru::get_verbosity_from_name(logLevel.c_str()));
+        auto callbackName = callbackPrefix + client;
+        loguru::add_callback(callbackName.c_str(), handler, &data,
+                             loguru::get_verbosity_from_name(logLevel.c_str()));
         if (openFiles) {
             loguru::add_file(allLogPath.c_str(), client.c_str(), loguru::Append,
                              loguru::Verbosity_MAX);
             loguru::add_file(latestLogPath.c_str(), client.c_str(), loguru::Truncate,
                              loguru::Verbosity_INFO);
         }
-        channelStorage[client] = true;
-        while (channelStorage[client].exchange(true, std::memory_order_acquire)) {
+        holdLockFlag[callbackName] = true;
+        /*
+         * We use spinlocks here, because ServerWriter<LogEntry> *writer
+         * is invalidated when Status::OK is sent, and therefore we can
+         * not send logs to clients when they issue requests to UTBot. Possible
+         * ways of redesigning logging system and removing the spinlock are:
+         * 1. Using gRPC async API
+         * 2. Issuing a request from UTBot to a specific client on every log entry.
+         */
+        while (holdLockFlag[callbackName].exchange(true, std::memory_order_acquire)) {
             std::this_thread::yield();
         }
-        if (addedCallback) {
-            loguru::remove_callback((callbackPrefix + client).c_str());
-        }
+        loguru::remove_callback(callbackName.c_str());
         if (openFiles) {
             loguru::remove_callback(allLogPath.c_str());
             loguru::remove_callback(latestLogPath.c_str());
@@ -388,7 +397,7 @@ Status Server::TestsGenServiceImpl::OpenLogChannel(ServerContext *context,
                                                    const LogChannelRequest *request,
                                                    ServerWriter<LogEntry> *writer) {
     ServerUtils::setThreadOptions(context, testMode);
-    return provideLoggingCallbacks("logTo", writer, request->loglevel(), logToClient, openedChannel,
+    return provideLoggingCallbacks(logPrefix, writer, request->loglevel(), logToClient, openedChannel,
                                    true);
 }
 
@@ -396,8 +405,8 @@ Status Server::TestsGenServiceImpl::CloseLogChannel(ServerContext *context,
                                                     const DummyRequest *request,
                                                     DummyResponse *response) {
     ServerUtils::setThreadOptions(context, testMode);
-    const string &client = RequestEnvironment::getClientId();
-    openedChannel[client].store(false, std::memory_order_release);
+    const string callbackName = logPrefix + RequestEnvironment::getClientId();
+    holdLockFlag[callbackName].store(false, std::memory_order_release);
     return Status::OK;
 }
 
@@ -405,7 +414,7 @@ Status Server::TestsGenServiceImpl::OpenGTestChannel(ServerContext *context,
                                                      const LogChannelRequest *request,
                                                      ServerWriter<LogEntry> *writer) {
     ServerUtils::setThreadOptions(context, testMode);
-    return provideLoggingCallbacks("gtestLogTo", writer, request->loglevel(), gtestLog,
+    return provideLoggingCallbacks(gtestLogPrefix, writer, request->loglevel(), gtestLog,
                                    openedGTestChannel, false);
 }
 
@@ -413,8 +422,8 @@ Status Server::TestsGenServiceImpl::CloseGTestChannel(ServerContext *context,
                                                       const DummyRequest *request,
                                                       DummyResponse *response) {
     ServerUtils::setThreadOptions(context, testMode);
-    const string &client = RequestEnvironment::getClientId();
-    openedGTestChannel[client].store(false, std::memory_order_release);
+    const string callbackName = gtestLogPrefix + RequestEnvironment::getClientId();
+    holdLockFlag[callbackName].store(false, std::memory_order_release);
     return Status::OK;
 }
 
