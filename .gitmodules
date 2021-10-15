@@ -1,0 +1,18 @@
+[submodule "klee"]
+	path = klee
+	url = https://github.com/UnitTestBot/klee.git
+[submodule "Bear"]
+	path = Bear
+	url = https://github.com/UnitTestBot/Bear.git
+[submodule "loguru"]
+	path = loguru
+	url = https://github.com/emilk/loguru.git
+[submodule "json"]
+	path = json
+	url = https://github.com/astoeckel/json.git
+[submodule "ordered-map"]
+	path = ordered-map
+	url = https://github.com/Tessil/ordered-map
+[submodule "parallel-hashmap"]
+	path = parallel-hashmap
+	url = https://github.com/greg7mdp/parallel-hashmap
