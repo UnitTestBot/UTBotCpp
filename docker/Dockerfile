@@ -1,0 +1,163 @@
+#
+# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
+#
+
+# This is a base dockerfile for UTBot. It's image can be used as a development environment and as a first step in building UTBot, it's release build and integration tests.
+# This dockerfile installs grpc, cmake, llvm, uclibc, z3. Also it installs such packages as ssh, git, openssh-server, nodejs, python and others.
+# You need to build this dockerfile inside UnitTestBot/UTBotCpp/docker directory.
+
+ARG OPERATING_SYSTEM_TAG
+FROM ubuntu:$OPERATING_SYSTEM_TAG as base_env
+LABEL maintainer="Huawei UTBot cloud team"
+SHELL ["/bin/bash", "--login", "-c"]
+
+ENV CC=gcc
+ENV UTBOT_ALL=/utbot_distr
+ENV WORKSPACE=/github/workspace/
+
+USER root
+
+# Handle sudo annoying bug https://bugzilla.redhat.com/show_bug.cgi?id=1773148
+RUN echo "Set disable_coredump false" >> /etc/sudo.conf
+
+WORKDIR docker
+
+# Install required system packages
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install sudo file python3-dateutil wget fakeroot libssl-dev build-essential software-properties-common
+RUN echo "check_certificate = off" > /etc/wgetrc
+
+# We use C++ 17 for UnitTestBot, it is available in gcc-9; default gcc for ubuntu:18.04 is gcc-7
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt remove --purge -y gcc g++
+RUN apt update && apt install -y --no-install-recommends gcc-9 g++-9
+RUN ln -s /usr/bin/gcov-9 /usr/bin/gcov
+RUN ln -s /usr/bin/gcc-9 /usr/bin/gcc
+RUN ln -s /usr/bin/g++-9 /usr/bin/g++
+
+#install git
+RUN apt -y install git && apt -y install libcurl4-openssl-dev
+
+RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
+
+# Install latest CMake
+ENV UTBOT_INSTALL_DIR=$UTBOT_ALL/install
+ENV UTBOT_CMAKE_BINARY=$UTBOT_INSTALL_DIR/bin/cmake
+RUN wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz -O /tmp/cmake_src.tar.gz
+RUN tar xfz /tmp/cmake_src.tar.gz -C $UTBOT_ALL
+RUN cd $UTBOT_ALL/cmake-3.17.2/ && ./bootstrap --prefix=$UTBOT_INSTALL_DIR --parallel=`nproc` && make -j`nproc` && make install && cd $UTBOT_ALL && rm -rf $UTBOT_ALL/cmake-3.17.2
+
+# Install GRPC
+FROM base_env
+RUN git clone -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
+RUN cd $UTBOT_ALL/grpc && git submodule update --init
+
+# Install llvm
+RUN mkdir $UTBOT_ALL/llvm_gold_plugin
+COPY building_dependencies/llvm_gold_plugin/plugin-api.h $UTBOT_ALL/llvm_gold_plugin
+
+RUN apt install -y --no-install-recommends ninja-build python3-setuptools
+RUN git clone -b llvmorg-10.0.0 --depth=1 https://github.com/llvm/llvm-project.git $UTBOT_ALL/llvm
+WORKDIR $UTBOT_ALL/llvm
+RUN mkdir build && cd build  \
+  && $UTBOT_CMAKE_BINARY -DCMAKE_BUILD_TYPE="Release" \
+  -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR \
+  -DLLVM_INCLUDE_TESTS=OFF  \
+  -DLLVM_BINUTILS_INCDIR=$UTBOT_ALL/llvm_gold_plugin \
+  -DLLVM_ENABLE_RTTI=ON \
+  -DLLVM_ENABLE_EH=ON \
+  -DLLVM_TARGETS_TO_BUILD="host" \
+  -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libc;libclc;libcxx;libcxxabi;lld;lldb;clang-tools-extra" -G "Ninja" ../llvm \
+  && $UTBOT_CMAKE_BINARY --build . --target install \
+  && cd $UTBOT_ALL \
+  && rm -rf $UTBOT_ALL/llvm
+
+RUN rm -rf $UTBOT_ALL/llvm_gold_plugin
+
+# Create user
+RUN useradd -m utbot && \
+    echo utbot:utbot | chpasswd && \
+    cp /etc/sudoers /etc/sudoers.bak && \
+    echo 'utbot  ALL=(root) NOPASSWD: ALL' >> /etc/sudoers
+
+USER utbot
+WORKDIR /home/utbot
+
+# Get gtest
+USER root
+RUN git clone -b release-1.10.0 https://github.com/google/googletest.git $UTBOT_ALL/googletest-src
+RUN cd $UTBOT_ALL/googletest-src && mkdir build && cd build && \
+    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
+    $UTBOT_CMAKE_BINARY --build . --target install && \
+    cd $UTBOT_ALL && \
+    rm -rf $UTBOT_ALL/googletest-src
+USER utbot
+
+# Install KLEE dependencies
+RUN sudo -E apt install -y --no-install-recommends curl libcap-dev libncurses5-dev unzip libtcmalloc-minimal4 libgoogle-perftools-dev libsqlite3-dev doxygen python3-pip
+ENV CURL_CA_BUNDLE=""
+RUN sudo -E pip3 install tabulate==0.8.7 \
+                         typing==3.7.4.3
+
+# Install z3
+USER root
+RUN git clone -b z3-4.8.7 --depth=1 https://github.com/Z3Prover/z3.git $UTBOT_ALL/z3-src
+RUN cd $UTBOT_ALL/z3-src && mkdir build && cd build && \
+    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
+    $UTBOT_CMAKE_BINARY --build . --target install && \
+    cd $UTBOT_ALL && \
+    rm -rf $UTBOT_ALL/z3-src
+USER utbot
+
+# Add ssh authorization key
+RUN mkdir -p /home/utbot/.ssh/
+RUN echo "StrictHostKeyChecking no" >> /home/utbot/.ssh/config
+
+USER root
+ARG OPERATING_SYSTEM_TAG
+RUN if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]] ; then apt update && apt install -y --no-install-recommends nodejs-dev node-gyp libssl1.0-dev ; fi
+RUN apt update && apt install -y --no-install-recommends nodejs npm openssh-server net-tools gdb vim-nox rsync
+RUN pip3 install git+https://chromium.googlesource.com/external/gyp
+
+# Update node and npm since defaults on ubuntu:18.04 have reached end of life
+RUN npm config set strict-ssl false
+RUN npm cache clean -f
+RUN sudo -E npm install -g n
+RUN echo insecure > ~/.curlrc
+RUN sudo -E n stable
+RUN sudo -E apt remove -y --purge nodejs npm
+
+# Install cmake which can generate link_commands.json. Installing cmake the second time in order to build base image faster since this cmake may be changed frequently.
+RUN git clone -b utbot-0.1.2b --depth=1 https://github.com/Software-Analysis-Team/CMake.git $UTBOT_ALL/cmake
+RUN cd $UTBOT_ALL/cmake && $UTBOT_CMAKE_BINARY  -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR . && \
+    make -j`nproc` && make install && cd $UTBOT_ALL && rm -rf $UTBOT_ALL/cmake
+
+## Setup ssh
+RUN mkdir -p /var/run/sshd
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
+
+ # Append installation paths
+RUN mkdir $UTBOT_ALL/klee && chown utbot: $UTBOT_ALL/klee/
+RUN mkdir $UTBOT_ALL/server-install && chown utbot: $UTBOT_ALL/server-install/
+
+#Installing patched version of lit to handle Klee unit-test execution properly
+USER root
+COPY building_dependencies/patches/lit.py /usr/local/bin/lit
+RUN chmod +x /usr/local/bin/lit
+
+RUN sudo rm /usr/bin/python
+RUN sudo ln -s /usr/bin/python3 /usr/bin/python
+
+# Download CLI11 and Rang libs for nice CLI
+RUN wget https://github.com/CLIUtils/CLI11/releases/download/v1.9.1/CLI11.hpp -P $UTBOT_ALL/cli
+RUN wget https://github.com/agauniyal/rang/releases/download/v3.1.0/rang.hpp -P $UTBOT_ALL/cli
+
+#Applying environment variables to all users
+COPY building_dependencies/runtime_env.sh /home/utbot/.bashrc
+COPY building_dependencies/runtime_env.sh /root/.bashrc
+
+RUN chsh -s /bin/bash utbot
+EXPOSE 2020
+CMD ["/usr/sbin/sshd", "-D", "-p 2020"]
