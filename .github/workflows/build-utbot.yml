@@ -1,0 +1,51 @@
+name: Build UTBot and run unit tests
+on:
+  push:
+  pull_request:
+    branches: main
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    container:
+      # It is impossible to parametrize image via workflow environment,
+      # so its name is hard-coded.
+      # https://github.com/actions/runner/issues/480
+      image: ghcr.io/unittestbot/utbotcpp/base_env:github-ci
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: build UTBot
+        run: |
+          сd server
+          bash -e -o pipefail build.sh
+        shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: UTBot unit tests binary
+          path: build/UTBot_UnitTests
+  test:
+    needs: build
+    runs-on: ubuntu-18.04
+    container:
+      image: ghcr.io/unittestbot/utbotcpp/base_env:github-ci
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: UTBot unit tests binary
+          path: build/UTBot_UnitTests
+      - name: run UTBot unit tests
+        run: |
+          cd build
+          chmod +x UTBot_UnitTests
+          ./UTBot_UnitTests info --log logs
+        shell: bash
+      - uses: actions/upload-artifact@v2
+        with:
+          name: UTBot unit tests logs
+          path: logs

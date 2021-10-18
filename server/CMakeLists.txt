@@ -34,8 +34,8 @@ endif()
 include_directories(${GRPC_PATH}/include)
 
 find_package(Threads REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 
 add_definitions(-DLOGURU_WITH_STREAMS=1)
 SET(GCC_COVERAGE_LINK_FLAGS "-lpthread -ldl")
