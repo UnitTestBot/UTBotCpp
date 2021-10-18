@@ -30,9 +30,9 @@ RUN echo "check_certificate = off" > /etc/wgetrc
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt remove --purge -y gcc g++
 RUN apt update && apt install -y --no-install-recommends gcc-9 g++-9
-RUN ln -s /usr/bin/gcov-9 /usr/bin/gcov
-RUN ln -s /usr/bin/gcc-9 /usr/bin/gcc
-RUN ln -s /usr/bin/g++-9 /usr/bin/g++
+RUN update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-9
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9
+RUN update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9
 
 #install git
 RUN apt -y install git && apt -y install libcurl4-openssl-dev
@@ -45,11 +45,6 @@ ENV UTBOT_CMAKE_BINARY=$UTBOT_INSTALL_DIR/bin/cmake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.17.2/cmake-3.17.2.tar.gz -O /tmp/cmake_src.tar.gz
 RUN tar xfz /tmp/cmake_src.tar.gz -C $UTBOT_ALL
 RUN cd $UTBOT_ALL/cmake-3.17.2/ && ./bootstrap --prefix=$UTBOT_INSTALL_DIR --parallel=`nproc` && make -j`nproc` && make install && cd $UTBOT_ALL && rm -rf $UTBOT_ALL/cmake-3.17.2
-
-# Install GRPC
-FROM base_env
-RUN git clone -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
-RUN cd $UTBOT_ALL/grpc && git submodule update --init
 
 # Install llvm
 RUN mkdir $UTBOT_ALL/llvm_gold_plugin
@@ -72,6 +67,12 @@ RUN mkdir build && cd build  \
   && rm -rf $UTBOT_ALL/llvm
 
 RUN rm -rf $UTBOT_ALL/llvm_gold_plugin
+
+# Install GRPC
+FROM base_env
+RUN apt -y install autoconf
+RUN git clone -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
+RUN cd $UTBOT_ALL/grpc && git submodule update --init && make -j`nproc` && make install
 
 # Create user
 RUN useradd -m utbot && \
