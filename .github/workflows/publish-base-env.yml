@@ -1,10 +1,15 @@
-name: Publish UTBot environment image
-on: [push]
+name: Publish UTBot base environment image
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'UTBot base_env tag'
+        required: true
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: base_env
-  TAG: latest
+  TAG: ${{ github.event.inputs.tag }}
 
 jobs:
   build-docker:
