@@ -70,9 +70,9 @@ RUN rm -rf $UTBOT_ALL/llvm_gold_plugin
 
 # Install GRPC
 FROM base_env
-RUN apt -y install autoconf
+RUN apt -y install autoconf libtool
 RUN git clone -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
-RUN cd $UTBOT_ALL/grpc && git submodule update --init && make -j`nproc` && make install
+RUN cd $UTBOT_ALL/grpc && git submodule update --init && make install
 
 # Create user
 RUN useradd -m utbot && \
