@@ -10,7 +10,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: base_env
-  TAG: 18-10-2021
+  TAG: 19-10-2021
 
 jobs:
   build-docker:
@@ -52,7 +52,7 @@ jobs:
           context: docker
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          file: docker/Dockerfile
+          file: docker/Dockerfile_base
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=local,src=/tmp/.buildx-cache
