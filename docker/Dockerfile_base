@@ -72,7 +72,15 @@ RUN rm -rf $UTBOT_ALL/llvm_gold_plugin
 FROM base_env
 RUN apt -y install autoconf libtool
 RUN git clone -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
-RUN cd $UTBOT_ALL/grpc && git submodule update --init && make install
+RUN cd $UTBOT_ALL/grpc && git submodule update --init
+RUN cd $UTBOT_ALL/grpc \
+  && mkdir -p cmake/build \
+  && cd cmake/build \
+  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
+  && make -j`nproc` \
+  && make install \
+  && cd $UTBOT_ALL \
+  && rm -rf $UTBOT_ALL/grpc
 
 # Create user
 RUN useradd -m utbot && \
