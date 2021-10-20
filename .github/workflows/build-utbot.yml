@@ -1,8 +1,8 @@
 name: Build UTBot and run unit tests
-#on:
-#  push:
-#  pull_request:
-#    branches: main
+
+on:
+  pull_request:
+    branches: main
 
 jobs:
   build:
@@ -11,17 +11,22 @@ jobs:
       # It is impossible to parametrize image via workflow environment,
       # so its name is hard-coded.
       # https://github.com/actions/runner/issues/480
-      image: ghcr.io/unittestbot/utbotcpp/base_env:github-ci
+      image: ghcr.io/unittestbot/utbotcpp/base_env:20-10-2021
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: build UTBot
         run: |
-          cd server
-          chmod +x build.sh
-          bash -e -o pipefail build.sh
+          source docker/building_dependencies/runtime_env.sh
+          chmod +x server/build.sh klee/build.sh
+          cd klee && ./build.sh
+          cd ..
+          cd server && ./build.sh
         shell: bash
       - uses: actions/upload-artifact@v2
         with:
@@ -31,7 +36,7 @@ jobs:
     needs: build
     runs-on: ubuntu-18.04
     container:
-      image: ghcr.io/unittestbot/utbotcpp/base_env:github-ci
+      image: ghcr.io/unittestbot/utbotcpp/base_env:20-10-2021
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
