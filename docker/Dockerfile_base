@@ -35,7 +35,12 @@ RUN ln -s /usr/bin/gcc-9 /usr/bin/gcc
 RUN ln -s /usr/bin/g++-9 /usr/bin/g++
 
 #install git
-RUN apt -y install git && apt -y install libcurl4-openssl-dev
+RUN apt install -y software-properties-common
+RUN apt update
+RUN add-apt-repository -y ppa:git-core/ppa
+RUN apt update
+RUN apt install -y git
+RUN apt -y install libcurl4-openssl-dev
 
 RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
 
