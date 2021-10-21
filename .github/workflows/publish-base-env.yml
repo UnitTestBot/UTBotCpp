@@ -1,11 +1,7 @@
 name: Publish UTBot base environment image
 on:
-  push:
-#  workflow_dispatch:
-#    inputs:
-#      tag:
-#        description: 'UTBot base_env tag'
-#        required: true
+#  push:
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -45,6 +41,8 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: ${{env.REGISTRY}}/${{github.repository}}/${{env.IMAGE_NAME}}
+          tags: |
+            type=raw,value={{date 'YYYYMMDD'}}
 
       - name: Build and push image
         uses: docker/build-push-action@v2
