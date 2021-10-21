@@ -98,12 +98,11 @@ WORKDIR /home/utbot
 
 # Get gtest
 USER root
-RUN git clone -b release-1.10.0 https://github.com/google/googletest.git $UTBOT_ALL/googletest-src
-RUN cd $UTBOT_ALL/googletest-src && mkdir build && cd build && \
+RUN git clone -b release-1.10.0 https://github.com/google/googletest.git $UTBOT_ALL/gtest
+RUN cd $UTBOT_ALL/gtest && mkdir build && cd build && \
     $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
     $UTBOT_CMAKE_BINARY --build . --target install && \
-    cd $UTBOT_ALL && \
-    rm -rf $UTBOT_ALL/googletest-src
+    cd $UTBOT_ALL
 USER utbot
 
 # Install KLEE dependencies
