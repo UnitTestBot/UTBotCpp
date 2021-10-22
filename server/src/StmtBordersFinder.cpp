@@ -10,7 +10,7 @@
 #include "utils/CollectionUtils.h"
 #include "utils/CompilationUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 using namespace clang;
 using namespace llvm;

@@ -8,7 +8,7 @@
 #include "clang-utils/ClangUtils.h"
 #include "exceptions/NoTestGeneratedException.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 static void updateIfNotCompleteType(types::TypeSupport &typeSupport,
                                     bool condition,

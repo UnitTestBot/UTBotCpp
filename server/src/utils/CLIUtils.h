@@ -8,7 +8,7 @@
 #include "Server.h"
 #include "utils/path/FileSystemPath.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <llvm/Support/Signals.h>
 

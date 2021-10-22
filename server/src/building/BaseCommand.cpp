@@ -12,7 +12,7 @@
 #include "utils/CollectionUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <algorithm>
 #include "utils/path/FileSystemPath.h"

@@ -42,14 +42,18 @@ SET(GCC_COVERAGE_LINK_FLAGS "-lpthread -ldl")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 
 get_filename_component(UTBOT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
+
 set(LOGGER_DIR "${UTBOT_DIR}/loguru")
-add_library(loguru ${LOGGER_DIR}/loguru.cpp)
-include_directories(${LOGGER_DIR})
+set(LOGGER_AUX_DIR "${PROJECT_SOURCE_DIR}/logger-aux")
+add_library(loguru ${LOGGER_DIR}/loguru.cpp ${LOGGER_AUX_DIR}/loguru_debug.cpp)
+target_include_directories(loguru PUBLIC ${LOGGER_DIR})
+include_directories(${LOGGER_AUX_DIR})
 
 set(JSON_PATH "${UTBOT_DIR}/json")
 include_directories(${JSON_PATH}/src)
 
 set(TSL_PATH "${UTBOT_DIR}/ordered-map")
+message("tsl include from here: ${TSL_PATH}/include")
 include_directories(${TSL_PATH}/include)
 
 set(PARALLEL_HASHMAP_PATH "${UTBOT_DIR}/parallel-hashmap")

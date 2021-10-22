@@ -5,7 +5,7 @@
 #include "Server.h"
 #include "utils/CLIUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <cstdlib>
 

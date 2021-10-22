@@ -8,7 +8,7 @@
 #include "clang-utils/ClangUtils.h"
 #include "clang-utils/Matchers.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <utility>
 

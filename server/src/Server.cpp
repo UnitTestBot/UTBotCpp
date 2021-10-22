@@ -320,7 +320,10 @@ void Server::logToClient(void *channel, const loguru::Message &message) {
     if (data == nullptr) {
         throw BaseException("Couldn't handle logging to client, data is null");
     }
-    if (std::string(message.thread_name) == data->client &&
+    vector <char> thread_name(data->client.size());
+    loguru::get_thread_name(thread_name.data(), sizeof(data->client.size()), false);
+
+    if (std::string(thread_name.begin(), thread_name.end()) == data->client &&
         std::string(message.filename) != std::string(GTestLogger::fileName())) {
         LogEntry logEntry;
         std::string extractedMessage = extractMessage(message);
@@ -335,7 +338,10 @@ void Server::gtestLog(void *channel, const loguru::Message &message) {
     if (data == nullptr) {
         throw BaseException("Can't interpret gtest log channel");
     }
-    if (std::string(message.thread_name) == data->client &&
+    vector <char> thread_name(data->client.size());
+    loguru::get_thread_name(thread_name.data(), sizeof(data->client.size()), false);
+
+    if (std::string(thread_name.begin(), thread_name.end()) == data->client &&
         std::string(message.filename) == std::string(GTestLogger::fileName())) {
         LogEntry logEntry;
         logEntry.set_message(message.message);
@@ -366,9 +372,9 @@ Status Server::TestsGenServiceImpl::provideLoggingCallbacks(
         loguru::add_callback(callbackName.c_str(), handler, &data,
                              loguru::get_verbosity_from_name(logLevel.c_str()));
         if (openFiles) {
-            loguru::add_file(allLogPath.c_str(), client.c_str(), loguru::Append,
+            loguru::add_file(allLogPath.c_str(), loguru::Append,
                              loguru::Verbosity_MAX);
-            loguru::add_file(latestLogPath.c_str(), client.c_str(), loguru::Truncate,
+            loguru::add_file(latestLogPath.c_str(), loguru::Truncate,
                              loguru::Verbosity_INFO);
         }
         holdLockFlag[callbackName] = true;

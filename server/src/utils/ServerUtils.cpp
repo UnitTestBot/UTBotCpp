@@ -10,7 +10,7 @@
 #include "ThreadSafeContainers.h"
 #include "exceptions/CancellationException.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 namespace ServerUtils {
     using json = nlohmann::json;

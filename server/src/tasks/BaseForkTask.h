@@ -6,7 +6,7 @@
 #define UNITTESTBOT_BASEFORKTASK_H
 #include "utils/LogUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 #include <protobuf/testgen.grpc.pb.h>
 #include <run_klee/run_klee.h>
 

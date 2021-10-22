@@ -8,7 +8,7 @@
 #include "Paths.h"
 #include "commands/Commands.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 
 using namespace GenerationUtils;
@@ -253,7 +253,7 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
 loguru::NamedVerbosity CLIUtils::getVerbosityLevelFromName(const char *name) {
     if (strcmp(name, "debug") == 0) {
-        return loguru::Verbosity_DEBUG;
+        return loguru::Verbosity_1;
     } else if (strcmp(name, "info") == 0) {
         return loguru::Verbosity_INFO;
     } else if (strcmp(name, "trace") == 0 || strcmp(name, "max") == 0) {

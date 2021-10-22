@@ -8,7 +8,7 @@
 #include "Paths.h"
 #include "TimeExecStatistics.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <run_klee/run_klee.h>
 

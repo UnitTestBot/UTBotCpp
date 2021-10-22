@@ -6,7 +6,7 @@
 
 #include "utils/FileSystemUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 
 TestsWriter::TestsWriter(grpc::ServerWriter<testsgen::TestsResponse> *writer): ServerWriter(writer) {}
