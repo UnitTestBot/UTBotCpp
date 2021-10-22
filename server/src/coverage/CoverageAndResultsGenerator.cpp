@@ -8,7 +8,7 @@
 #include "exceptions/CoverageGenerationException.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 using grpc::Status;
 using grpc::StatusCode;

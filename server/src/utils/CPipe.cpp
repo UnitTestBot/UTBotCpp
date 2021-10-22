@@ -6,7 +6,7 @@
 
 #include "LogUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <stdexcept>
 #include <unistd.h>

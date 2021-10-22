@@ -15,7 +15,7 @@
 #include "visitors/KleeAssumeParamVisitor.h"
 #include "visitors/KleeAssumeReturnValueVisitor.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <unordered_set>
 

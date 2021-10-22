@@ -5,7 +5,7 @@
 #include "TestUtils.h"
 #include "utils/CLIUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <llvm/Support/Signals.h>
 

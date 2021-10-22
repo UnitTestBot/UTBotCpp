@@ -8,7 +8,7 @@
 #include "clang-utils/Matchers.h"
 #include "utils/CollectionUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include "utils/path/FileSystemPath.h"
 

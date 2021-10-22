@@ -11,7 +11,7 @@
 #include "exceptions/UnImplementedException.h"
 #include "utils/PrinterUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 /*
  * class Type
  */

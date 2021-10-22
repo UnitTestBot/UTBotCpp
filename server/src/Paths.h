@@ -5,7 +5,7 @@
 #ifndef UNITTESTBOT_PATHS_H
 #define UNITTESTBOT_PATHS_H
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include "Language.h"
 #include "ProjectContext.h"

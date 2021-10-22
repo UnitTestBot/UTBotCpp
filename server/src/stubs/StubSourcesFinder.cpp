@@ -4,7 +4,7 @@
 
 #include "StubSourcesFinder.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 StubSourcesFinder::StubSourcesFinder(std::shared_ptr<BuildDatabase> buildDatabase)
     : buildDatabase(std::move(buildDatabase)) {

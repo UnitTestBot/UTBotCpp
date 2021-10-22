@@ -12,7 +12,7 @@
 #include "stubs/Stubs.h"
 #include "types/Types.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <cstdio>
 #include "utils/path/FileSystemPath.h"

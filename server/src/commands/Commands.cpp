@@ -67,7 +67,7 @@ unsigned int Commands::ServerCommandOptions::getThreadsPerUser() {
 
 const std::map<std::string, loguru::NamedVerbosity> Commands::ServerCommandOptions::verbosityMap = {
     { "trace", loguru::NamedVerbosity::Verbosity_MAX },
-    { "debug", loguru::NamedVerbosity::Verbosity_DEBUG },
+    { "debug", loguru::NamedVerbosity::Verbosity_1 },
     { "info", loguru::NamedVerbosity::Verbosity_INFO },
     { "warning", loguru::NamedVerbosity::Verbosity_WARNING },
     { "error", loguru::NamedVerbosity::Verbosity_ERROR }

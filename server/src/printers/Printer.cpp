@@ -10,7 +10,7 @@
 #include "utils/Copyright.h"
 #include "visitors/VerboseParameterVisitor.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 namespace printer {
     using StringUtils::stringFormat;

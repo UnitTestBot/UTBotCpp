@@ -13,7 +13,7 @@
 #include "environment/EnvironmentPaths.h"
 #include "exceptions/ExecutionProcessException.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 #include <thread>
 

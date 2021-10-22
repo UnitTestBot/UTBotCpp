@@ -5,7 +5,7 @@
 #include "CLIStubsWriter.h"
 
 #include <utils/FileSystemUtils.h>
-#include "loguru.hpp"
+#include "loguru.h"
 
 void CLIStubsWriter::writeResponse(const vector<Stubs> &synchronizedStubs,
                                    const fs::path &testDirPath) {

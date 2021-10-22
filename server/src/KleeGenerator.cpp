@@ -16,7 +16,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/SanitizerUtils.h"
 
-#include "loguru.hpp"
+#include "loguru.h"
 
 using namespace tests;
 
