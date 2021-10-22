@@ -9,7 +9,7 @@
 #include "Server.h"
 #include "StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <cstring>
 #include <thread>

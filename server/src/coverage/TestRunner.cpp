@@ -10,7 +10,7 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 using grpc::ServerWriter;
 using grpc::Status;

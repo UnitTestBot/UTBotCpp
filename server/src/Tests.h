@@ -13,7 +13,7 @@
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 

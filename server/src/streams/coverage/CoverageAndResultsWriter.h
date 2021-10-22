@@ -10,7 +10,7 @@
 #include "exceptions/ExecutionProcessException.h"
 
 #include <grpcpp/grpcpp.h>
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <protobuf/testgen.grpc.pb.h>
 
 

@@ -4,7 +4,7 @@
 
 #include "ServerStubsWriter.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 void ServerStubsWriter::writeResponse(const vector<Stubs> &synchronizedStubs,
                                       const fs::path &testDirPath) {

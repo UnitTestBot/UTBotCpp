@@ -13,7 +13,7 @@
 #include "types/Types.h"
 #include "utils/PrinterUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <cstdio>
 #include "utils/path/FileSystemPath.h"

@@ -6,7 +6,7 @@
 
 #include "utils/KleeUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <llvm/BinaryFormat/Magic.h>
 #include <llvm/IR/DebugInfoMetadata.h>

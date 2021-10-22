@@ -4,7 +4,7 @@
 
 #include "GTestLogger.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 void GTestLogger::log(std::string_view message) {
     LOG_S(INFO) << message;

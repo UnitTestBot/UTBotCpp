@@ -7,7 +7,7 @@
 
 #include "types/TypesResolver.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 

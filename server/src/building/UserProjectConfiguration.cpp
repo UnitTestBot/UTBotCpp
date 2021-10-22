@@ -14,7 +14,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 Status UserProjectConfiguration::CheckProjectConfiguration(const fs::path &buildDirPath,
                                                            ProjectConfigWriter const &writer) {

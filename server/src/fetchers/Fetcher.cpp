@@ -14,7 +14,7 @@
 #include "TypeDeclsMatchCallback.h"
 #include "clang-utils/SourceToHeaderMatchCallback.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include "utils/path/FileSystemPath.h"
 #include <memory>

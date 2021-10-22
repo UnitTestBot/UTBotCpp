@@ -13,7 +13,7 @@
 #include "utils/JsonUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <functional>
 #include <queue>

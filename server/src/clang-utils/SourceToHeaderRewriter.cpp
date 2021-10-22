@@ -10,7 +10,7 @@
 #include "utils/Copyright.h"
 #include "utils/LogUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <utility>
 

@@ -7,7 +7,7 @@
 #include "utils/CollectionUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <utility>
 

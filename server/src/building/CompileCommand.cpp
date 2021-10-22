@@ -9,7 +9,7 @@
 #include "printers/CCJsonPrinter.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <algorithm>
 #include <iterator>

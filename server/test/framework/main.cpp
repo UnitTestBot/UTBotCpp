@@ -5,7 +5,7 @@
 #include "TestUtils.h"
 #include "utils/CLIUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <llvm/Support/Signals.h>
 
@@ -23,9 +23,8 @@ int main(int argc, char **argv) {
     fs::path logFilePath = Paths::getBaseLogDir();
     fs::path allLogPath = logFilePath / "everything.log";
     fs::path latestLogPath = logFilePath / "latest_readable.log";
-    loguru::add_file(allLogPath.c_str(), nullptr, loguru::Append, loguru::Verbosity_MAX);
-    loguru::add_file(latestLogPath.c_str(), nullptr, loguru::Truncate, loguru::Verbosity_INFO);
-
+    loguru::add_file(allLogPath.c_str(), loguru::Append, loguru::Verbosity_MAX);
+    loguru::add_file(latestLogPath.c_str(), loguru::Truncate, loguru::Verbosity_INFO);
     auto clang = CompilationUtils::CompilerName::CLANG;
     auto gcc = CompilationUtils::CompilerName::GCC;
     auto cmake = testUtils::BuildCommandsTool::CMAKE_BUILD_COMMANDS_TOOL;

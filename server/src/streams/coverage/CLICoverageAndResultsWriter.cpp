@@ -5,7 +5,7 @@
 
 #include "CLICoverageAndResultsWriter.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <fstream>
 #include <utils/FileSystemUtils.h>
