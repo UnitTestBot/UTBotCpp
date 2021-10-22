@@ -10,7 +10,7 @@
 #include "environment/EnvironmentPaths.h"
 #include "exceptions/UnImplementedException.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 using namespace CompilationUtils;
 

@@ -8,7 +8,7 @@
 #include "Paths.h"
 #include "commands/Commands.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 
 using namespace GenerationUtils;

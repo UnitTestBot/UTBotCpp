@@ -7,7 +7,7 @@
 
 #include "../WriterUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 ServerCoverageAndResultsWriter::ServerCoverageAndResultsWriter(
     grpc::ServerWriter<testsgen::CoverageAndResultsResponse> *writer)

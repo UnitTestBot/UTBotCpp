@@ -10,7 +10,7 @@
 #include "building/LinkCommand.h"
 #include "utils/CollectionUtils.h"
 
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 #include <tsl/ordered_set.h>
 
 #include "utils/path/FileSystemPath.h"

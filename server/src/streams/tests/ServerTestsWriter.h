@@ -9,7 +9,7 @@
 #include "TestsWriter.h"
 #include "streams/IStreamWriter.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <utils/FileSystemUtils.h>
 

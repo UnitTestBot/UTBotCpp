@@ -9,7 +9,7 @@
 #include "Tests.h"
 #include "utils/CollectionUtils.h"
 #include "TimeExecStatistics.h"
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <clang/Tooling/Tooling.h>
 

@@ -6,7 +6,7 @@
 
 #include "Tests.h"
 #include "Paths.h"
-#include "loguru.h"
+#include "loguru.hpp"
 
 namespace PrinterUtils {
     const std::string fromBytes = "template<typename T, size_t N>\n"

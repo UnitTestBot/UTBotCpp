@@ -8,7 +8,7 @@
 #include "stubs/StubGen.h"
 #include "utils/FileSystemUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 StubsWriter::StubsWriter(grpc::ServerWriter<testsgen::StubsResponse> *writer) : ServerWriter(writer) {
 }

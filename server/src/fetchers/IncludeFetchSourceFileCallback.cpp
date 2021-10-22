@@ -8,7 +8,7 @@
 #include "utils/ExecUtils.h"
 #include "utils/LogUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <clang/Frontend/CompilerInstance.h>
 

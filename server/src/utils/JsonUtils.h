@@ -5,7 +5,7 @@
 #ifndef CORE_JSONUTIL_H
 #define CORE_JSONUTIL_H
 
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 
 #include "utils/path/FileSystemPath.h"
 

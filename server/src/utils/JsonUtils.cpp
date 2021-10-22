@@ -6,7 +6,7 @@
 
 #include "utils/FileSystemUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include "utils/path/FileSystemPath.h"
 #include <fstream>

@@ -13,7 +13,7 @@
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <unistd.h>
 #include <utility>

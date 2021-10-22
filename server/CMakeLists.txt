@@ -47,7 +47,7 @@ add_library(loguru ${LOGGER_DIR}/loguru.cpp)
 include_directories(${LOGGER_DIR})
 
 set(JSON_PATH "${UTBOT_DIR}/json")
-include_directories(${JSON_PATH}/include)
+include_directories(${JSON_PATH}/src)
 
 set(TSL_PATH "${UTBOT_DIR}/ordered-map")
 include_directories(${TSL_PATH}/include)

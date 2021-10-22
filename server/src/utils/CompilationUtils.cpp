@@ -10,7 +10,7 @@
 #include "exceptions/CompilationDatabaseException.h"
 #include "environment/EnvironmentPaths.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <fstream>
 

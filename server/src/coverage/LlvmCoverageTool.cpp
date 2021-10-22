@@ -16,7 +16,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include "utils/path/FileSystemPath.h"
 

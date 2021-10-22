@@ -6,7 +6,7 @@
 #define UNITTESTBOT_COPMILATIONUTILS_H
 
 #include <clang/Tooling/CompilationDatabase.h>
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 
 #include "utils/path/FileSystemPath.h"
 #include <memory>

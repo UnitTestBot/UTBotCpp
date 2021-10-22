@@ -7,7 +7,7 @@
 
 #include "Paths.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <protobuf/testgen.grpc.pb.h>
 

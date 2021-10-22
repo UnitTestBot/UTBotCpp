@@ -4,7 +4,7 @@
 
 #include "CLITestsWriter.h"
 
-#include "loguru.h"
+#include "loguru.hpp"
 
 #include <utils/FileSystemUtils.h>
 

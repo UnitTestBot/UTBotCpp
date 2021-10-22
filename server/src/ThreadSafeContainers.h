@@ -8,7 +8,7 @@
 #include "Paths.h"
 #include "utils/JsonUtils.h"
 
-#include <nlohmann/json.hpp>
+#include "json.hpp"
 
 #include "utils/path/FileSystemPath.h"
 #include <fstream>
