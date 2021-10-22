@@ -41,17 +41,18 @@ add_definitions(-DLOGURU_WITH_STREAMS=1)
 SET(GCC_COVERAGE_LINK_FLAGS "-lpthread -ldl")
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
 
-set(LOGGER_DIR "${PROJECT_SOURCE_DIR}/loguru")
+get_filename_component(UTBOT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
+set(LOGGER_DIR "${UTBOT_DIR}/loguru")
 add_library(loguru ${LOGGER_DIR}/loguru.cpp)
 include_directories(${LOGGER_DIR})
 
-set(JSON_PATH "${PROJECT_SOURCE_DIR}/json")
+set(JSON_PATH "${UTBOT_DIR}/json")
 include_directories(${JSON_PATH}/include)
 
-set(TSL_PATH "${PROJECT_SOURCE_DIR}/ordered-map")
+set(TSL_PATH "${UTBOT_DIR}/ordered-map")
 include_directories(${TSL_PATH}/include)
 
-set(PARALLEL_HASHMAP_PATH "${PROJECT_SOURCE_DIR}/parallel-hashmap")
+set(PARALLEL_HASHMAP_PATH "${UTBOT_DIR}/parallel-hashmap")
 include_directories(${PARALLEL_HASHMAP_PATH})
 
 set(KLEE_PATH $ENV{UTBOT_ALL}/klee/)
