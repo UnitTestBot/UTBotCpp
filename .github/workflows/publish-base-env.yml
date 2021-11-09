@@ -1,6 +1,5 @@
 name: Publish UTBot base environment image
 on:
-#  push:
   workflow_dispatch:
 
 env:

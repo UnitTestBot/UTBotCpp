@@ -148,7 +148,7 @@ add_executable(
         UTBot_UnitTests
         ${ALL_TESTS}
 )
-target_include_directories(UTBot_UnitTests PUBLIC src src/include)
+target_include_directories(UTBot_UnitTests PUBLIC src src/include $ENV{UTBOT_ALL}/gtest/googletest)
 target_link_libraries(
         UTBot_UnitTests
         PUBLIC

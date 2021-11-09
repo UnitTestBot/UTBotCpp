@@ -160,6 +160,9 @@ namespace printer {
         fs::path gtestMainObjectFile = gtestBuildDir / "gtest_main.cc.o";
 
         auto gtestCompilationArguments = defaultCompileCommand;
+        gtestCompilationArguments.addFlagsToBegin(
+                {stringFormat("-I%s", Paths::getGtestLibPath() / "googletest/include"),
+                 stringFormat("-I%s", Paths::getGtestLibPath() / "googletest")});
         gtestCompilationArguments.setSourcePath(gtestMainSourceFile);
         gtestCompilationArguments.setOutput(gtestMainObjectFile);
         declareTarget(gtestMainObjectFile, { gtestMainSourceFile },
@@ -241,6 +244,7 @@ namespace printer {
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
         testCompilationCommand.filterCFlags();
         testCompilationCommand.removeIncludeFlags();
+        testCompilationCommand.addFlagToBegin(stringFormat("-I%s", Paths::getGtestLibPath() / "googletest/include"));
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
 

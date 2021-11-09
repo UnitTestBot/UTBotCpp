@@ -33,38 +33,17 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: build UTBot
+      - name: build UTBot and run unit tests
         run: |
           source docker/building_dependencies/runtime_env.sh
-          chmod +x server/build.sh klee/build.sh
-          cd klee && ./build.sh
-          cd ..
-          cd server && ./build.sh
-        shell: bash
-      - uses: actions/upload-artifact@v2
-        with:
-          name: UTBot unit tests binary
-          path: build/UTBot_UnitTests
-  test:
-    needs: build
-    runs-on: ubuntu-18.04
-    container:
-      image: ghcr.io/unittestbot/utbotcpp/base_env:20-10-2021
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: UTBot unit tests binary
-          path: build/UTBot_UnitTests
-      - name: run UTBot unit tests
-        run: |
-          cd build
+          chmod +x build.sh
+          ./build.sh
+          cd server/build
           chmod +x UTBot_UnitTests
-          ./UTBot_UnitTests info --log logs
+          ./UTBot_UnitTests info --log `pwd`
         shell: bash
       - uses: actions/upload-artifact@v2
+        if: failure()
         with:
           name: UTBot unit tests logs
-          path: logs
+          path: server/build/logs
