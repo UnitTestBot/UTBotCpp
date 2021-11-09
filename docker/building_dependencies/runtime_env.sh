@@ -8,7 +8,7 @@
 export UTBOT_ALL=/utbot_distr
 export UTBOT_INSTALL_DIR=$UTBOT_ALL/install
 export UTBOT_CMAKE_BINARY=$UTBOT_INSTALL_DIR/bin/cmake
-export C_INCLUDE_PATH=$UTBOT_INSTALL_DIR/lib/clang/10.0.0/include/
+export C_INCLUDE_PATH=$UTBOT_INSTALL_DIR/lib/clang/10.0.0/include/:$UTBOT_ALL/gtest/googletest/include
 export LLVM_INCLUDE_DIRS=$UTBOT_ALL/llvm/llvm
 export CMAKE_CXX_STANDARD=17
 export CMAKE_CXX_STANDARD_REQUIRED=ON
