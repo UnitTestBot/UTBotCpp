@@ -3,6 +3,7 @@
  */
 
 #include "TimeUtils.h"
+#include "StringUtils.h"
 
 #include <algorithm>
 
@@ -15,7 +16,8 @@ namespace TimeUtils {
         std::ostringstream ss;
         ss << std::put_time(gmtime(&time_t), "%FT%T");
         ss << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-        return ss.str();
+        std::string str = ss.str();
+        return StringUtils::replaceAll(str, ':', '-');
     }
 
     systemClockTimePoint now() {
