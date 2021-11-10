@@ -99,6 +99,26 @@ namespace {
             }
         }
 
+        struct FileGenResult {
+            FileTestGen testGen;
+            Status status;
+
+            FileGenResult() = delete;
+
+            FileGenResult(FileTestGen ttestGen, Status status) : testGen(std::move(ttestGen)),
+                                                                status(std::move(status)) {}
+        };
+
+        FileGenResult performFeatureFileTestsRequest(const fs::path &filename) {
+            auto projectRequest =
+                    createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+            auto request = GrpcUtils::createFileRequest(std::move(projectRequest), filename);
+            auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+            testGen.setTargetForSource(filename);
+            Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            return FileGenResult(testGen, status);
+        }
+
         void checkAssertionFailures_C(BaseTestGen &testGen) {
             testUtils::checkTestCasePredicates(
                 testGen.tests.at(assertion_failures_c).methods.begin().value().testCases,
@@ -113,6 +133,8 @@ namespace {
         }
 
         void checkBasicFunctions_C(BaseTestGen &testGen) {
+            EXPECT_EQ(printer::TestsPrinter::needsMathHeader(testGen.tests.at(basic_functions_c)),
+              false);
             for (const auto &[methodName, methodDescription] :
                  testGen.tests.at(basic_functions_c).methods) {
                 if (methodName == "max_") {
@@ -467,6 +489,9 @@ namespace {
             }
         }
         void checkFloatingPointPlain_C(BaseTestGen &testGen) {
+            EXPECT_EQ(
+            printer::TestsPrinter::needsMathHeader(testGen.tests.at(floating_point_plain_c)),
+            true);
             for (const auto &[methodName, methodDescription] :
                  testGen.tests.at(floating_point_plain_c).methods) {
                 if (methodName == "plain_isnan") {
@@ -478,14 +503,6 @@ namespace {
                     EXPECT_GE(completeness.size(), 2);
                 }
             }
-        }
-
-        void checkMathInclude(BaseTestGen &testGen) {
-            EXPECT_EQ(
-                printer::TestsPrinter::needsMathHeader(testGen.tests.at(floating_point_plain_c)),
-                true);
-            EXPECT_EQ(printer::TestsPrinter::needsMathHeader(testGen.tests.at(basic_functions_c)),
-                      false);
         }
 
         void checkLinkage(BaseTestGen &testGen) {
@@ -535,7 +552,7 @@ namespace {
 
         void checkKeywords(BaseTestGen &testGen) {
             auto const &methods = testGen.tests.at(keywords_c).methods;
-            testUtils::checkMinNumberOfTests(testGen.tests, 14);
+            testUtils::checkMinNumberOfTests(testGen.tests, 13);
             for (const auto &[_, md] : methods) {
                 if (md.name == "get_size_of_data") {
                     checkTestCasePredicates(md.testCases,
@@ -737,6 +754,110 @@ namespace {
         }
     }
 
+    TEST_F(Server_Test, Assertions_Failures) {
+        auto [testGen, status] = performFeatureFileTestsRequest(assertion_failures_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkAssertionFailures_C(testGen);
+    }
+
+    TEST_F(Server_Test, Dependent_Functions) {
+        auto [testGen, status] = performFeatureFileTestsRequest(dependent_functions_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkDependentFunctions_C(testGen);
+    }
+
+    TEST_F(Server_Test, Simple_Structs) {
+        auto [testGen, status] = performFeatureFileTestsRequest(simple_structs_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkSimpleStructs_C(testGen);
+    }
+
+    TEST_F(Server_Test, Simple_Unions) {
+        auto [testGen, status] = performFeatureFileTestsRequest(simple_unions_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkSimpleUnions_C(testGen);
+    }
+
+    TEST_F(Server_Test, Pointer_Parameters) {
+        auto [testGen, status] = performFeatureFileTestsRequest(pointer_parameters_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkPointerParameters_C(testGen);
+    }
+
+    TEST_F(Server_Test, Types) {
+        auto [testGen, status] = performFeatureFileTestsRequest(types_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkTypes_C(testGen);
+    }
+
+    TEST_F(Server_Test, Pointer_Return) {
+        auto [testGen, status] = performFeatureFileTestsRequest(pointer_return_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkPointerReturn_C(testGen);
+    }
+
+    TEST_F(Server_Test, Floating_Point) {
+        auto [testGen, status] = performFeatureFileTestsRequest(floating_point_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkFloatingPoint_C(testGen);
+    }
+
+    TEST_F(Server_Test, Floating_Point_plain) {
+        auto [testGen, status] = performFeatureFileTestsRequest(floating_point_plain_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkFloatingPointPlain_C(testGen);
+    }
+
+    TEST_F(Server_Test, Linkage) {
+        auto [testGen, status] = performFeatureFileTestsRequest(linkage_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkLinkage(testGen);
+    }
+
+    TEST_F(Server_Test, Globals) {
+        auto [testGen, status] = performFeatureFileTestsRequest(globals_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkGlobals(testGen);
+    }
+
+    TEST_F(Server_Test, Keywords) {
+        auto [testGen, status] = performFeatureFileTestsRequest(keywords_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkKeywords(testGen);
+    }
+
+
+    TEST_F(Server_Test, Alignment) {
+        auto [testGen, status] = performFeatureFileTestsRequest(alignment_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkAlignment(testGen);
+    }
 
     class Parameterized_Server_Test : public Server_Test,
                                       public testing::WithParamInterface<std::tuple<CompilerName>> {
@@ -781,6 +902,9 @@ namespace {
     }
 
     TEST_P(Parameterized_Server_Test, Project_Test) {
+        std::string suite = "small-project";
+        setSuite(suite);
+        srcPaths = {suitePath, suitePath / "lib", suitePath / "src"};
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
@@ -791,22 +915,11 @@ namespace {
         auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
         EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
 
-        checkAssertionFailures_C(testGen);
-        checkBasicFunctions_C(testGen);
-        checkDependentFunctions_C(testGen);
-        checkInnerBasicFunctions_C(testGen);
-        checkSimpleStructs_C(testGen);
-        checkSimpleUnions_C(testGen);
-        checkPointerParameters_C(testGen);
-        checkTypes_C(testGen);
-        checkPointerReturn_C(testGen);
-        checkFloatingPoint_C(testGen);
-        checkFloatingPointPlain_C(testGen);
-        checkMathInclude(testGen);
-        checkLinkage(testGen);
-        checkGlobals(testGen);
-        checkKeywords(testGen);
-        checkAlignment(testGen);
+        for (const auto &test : testGen.tests) {
+            for (const auto &[methodName, methodDescription] : test.second.methods) {
+                 testUtils::checkMinNumberOfTests(methodDescription.testCases, 2);
+            }
+        }
     }
 
     TEST_P(Parameterized_Server_Test, File_Test) {

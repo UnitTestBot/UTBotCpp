@@ -68,6 +68,11 @@ int main(int argc, char **argv) {
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("targets"), clang);
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("object-file"), clang, testUtils::MAKE_BUILD_COMMANDS_TOOL);
+
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("small-project"), gcc);
+
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("small-project"), clang);
+
     } catch (std::runtime_error const &e) {
         return 1;
     }

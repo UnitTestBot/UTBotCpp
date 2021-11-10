@@ -63,7 +63,7 @@ namespace testUtils {
                                                          const std::vector<fs::path> &srcPaths,
                                                          bool useStubs = false,
                                                          bool verbose = true,
-                                                         int kleeTimeout = 30);
+                                                         int kleeTimeout = 60);
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -79,7 +79,7 @@ namespace testUtils {
                                                    const fs::path &filePath,
                                                    int line,
                                                    bool verbose = true,
-                                                   int kleeTimeout = 30);
+                                                   int kleeTimeout = 60);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
