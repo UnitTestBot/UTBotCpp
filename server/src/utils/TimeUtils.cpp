@@ -17,7 +17,8 @@ namespace TimeUtils {
         ss << std::put_time(gmtime(&time_t), "%FT%T");
         ss << std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
         std::string str = ss.str();
-        return StringUtils::replaceAll(str, ':', '-');
+        StringUtils::replaceAll(str, ':', '-');
+        return str;
     }
 
     systemClockTimePoint now() {
