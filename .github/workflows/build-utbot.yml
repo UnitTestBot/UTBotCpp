@@ -1,7 +1,6 @@
 name: Build UTBot and run unit tests
 
 on:
-  push:
   pull_request:
     branches: [main]
 
