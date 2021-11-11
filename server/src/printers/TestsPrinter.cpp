@@ -372,11 +372,10 @@ void TestsPrinter::changeableParamsAsserts(const Tests::MethodDescription &metho
     auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
     auto usage = types::PointerUsage::PARAMETER;
     size_t param_i = 0;
-    for (const auto& i : methodDescription.params) {
-        if (i.isChangeable()) {
-            auto const &param = i;
+    for (const auto& param : methodDescription.params) {
+        if (param.isChangeable()) {
             auto const &value = testCase.paramPostValues[param_i];
-            string expectedName = "expected_" + param.name;
+            string expectedName = PrinterUtils::getExpectedVarName(param.name);
             const types::Type expectedType = param.type.arrayCloneMultiDim(usage);
             parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
             assertsVisitor.visit(param, param.name);
@@ -393,7 +392,7 @@ void TestsPrinter::globalParamsAsserts(const Tests::MethodDescription &methodDes
     for (size_t i = 0; i < methodDescription.globalParams.size(); i++) {
         auto const &param = methodDescription.globalParams[i];
         auto const &value = testCase.globalPostValues[i];
-        string expectedName = "expected_" + param.name;
+        string expectedName = PrinterUtils::getExpectedVarName(param.name);
         auto expectedType = typesHandler->getReturnTypeToCheck(param.type);
         Tests::MethodParam expectedParam{expectedType, expectedName, param.alignment};
         parameterVisitor.visit(expectedParam.type, expectedParam.name, value.view.get(), std::nullopt);

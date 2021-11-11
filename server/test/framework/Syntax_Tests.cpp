@@ -48,6 +48,7 @@ namespace {
         fs::path tree_c = getTestFilePath("tree.c");
         fs::path different_parameters_cpp = getTestFilePath("different_parameters.cpp");
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
+        fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
 
         void SetUp() override {
             clearEnv();
@@ -1807,7 +1808,7 @@ namespace {
     TEST_F(Syntax_Test, AnonymousUnionField) {
         auto [testGen, status] = createTestForFunction(types_3_c, 52);
 
-        ASSERT_TRUE(status.error_code() == grpc::FAILED_PRECONDITION) << status.error_message();
+        ASSERT_TRUE(status.ok()) << status.error_message();
     }
 
     TEST_F(Syntax_Test, AnonymousStructField) {
@@ -2095,4 +2096,106 @@ namespace {
                       }),
               "change_class_by_ref_2_cpp");
   }
+
+    TEST_F(Syntax_Test, Inner_unnamed_union_return) {
+        auto[testGen, status] = createTestForFunction(inner_unnamed_c, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
+                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                    std::stringstream ss;
+                    EXPECT_EQ(testCase.paramValues.front().view->getEntryValue().size(), 3);
+                    ss << "from_bytes<StructWithUnnamedUnion>({"
+                       << int(testCase.paramValues.front().view->getEntryValue()[1])
+                       << ", 0, 0, 0, "
+                       << int(testCase.paramValues.front().view->getEntryValue()[1])
+                       << ", 0, 0, 0})";
+                    return testCase.returnValueView->getEntryValue() == ss.str();
+                }}));
+    }
+
+    TEST_F(Syntax_Test, Inner_unnamed_union_parameter) {
+        auto[testGen, status] = createTestForFunction(inner_unnamed_c, 15);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
+                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                    return "from_bytes<StructWithUnnamedUnion>({0, 0, 0, 0, 0, 0, 0, 0})" ==
+                           testCase.paramValues.front().view->getEntryValue() &&
+                           "from_bytes<StructWithUnnamedUnion>({42, 0, 0, 0, 42, 0, 0, 0})" ==
+                           testCase.returnValueView->getEntryValue();
+                }, [](const tests::Tests::MethodTestCase &testCase) {
+                    return "from_bytes<StructWithUnnamedUnion>({0, 0, 0, 0, 0, 0, 0, 0})" !=
+                           testCase.paramValues.front().view->getEntryValue() &&
+                           "from_bytes<StructWithUnnamedUnion>({24, 0, 0, 0, 24, 0, 0, 0})" ==
+                           testCase.returnValueView->getEntryValue();
+
+                }}));
+    }
+
+    TEST_F(Syntax_Test, Inner_unnamed_struct_return) {
+        auto[testGen, status] = createTestForFunction(inner_unnamed_c, 27);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
+                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                    std::stringstream ss;
+                    EXPECT_EQ(testCase.paramValues.front().view->getEntryValue().size(), 3);
+                    ss << "from_bytes<UnionWithUnnamedStruct>({"
+                       << int(testCase.paramValues.front().view->getEntryValue()[1])
+                       << ", 0, 0, 0, "
+                       << int(testCase.paramValues.front().view->getEntryValue()[1])
+                       << ", 0, 0, 0})";
+                    return testCase.returnValueView->getEntryValue() == ss.str();
+                }}));
+    }
+
+
+    TEST_F(Syntax_Test, Inner_unnamed_struct_parameter) {
+        auto[testGen, status] = createTestForFunction(inner_unnamed_c, 33);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
+                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                    return "from_bytes<UnionWithUnnamedStruct>({0, 0, 0, 0, 0, 0, 0, 0})" ==
+                           testCase.paramValues.front().view->getEntryValue() &&
+                           "from_bytes<UnionWithUnnamedStruct>({42, 0, 0, 0, 42, 0, 0, 0})" ==
+                           testCase.returnValueView->getEntryValue();
+                }, [](const tests::Tests::MethodTestCase &testCase) {
+                    return "from_bytes<UnionWithUnnamedStruct>({0, 0, 0, 0, 0, 0, 0, 0})" !=
+                           testCase.paramValues.front().view->getEntryValue() &&
+                           "from_bytes<UnionWithUnnamedStruct>({24, 0, 0, 0, 24, 0, 0, 0})" ==
+                           testCase.returnValueView->getEntryValue();
+
+                }}));
+    }
+
+    TEST_F(Syntax_Test, Typedef_to_pointer_array) {
+        auto[testGen, status] = createTestForFunction(pointer_parameters_c, 43);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 2);
+
+        checkTestCasePredicates(
+                testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
+                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                    return "{{0}, {0}}" == testCase.paramValues.front().view->getEntryValue() &&
+                           "42" == testCase.returnValueView->getEntryValue();
+                }, [](const tests::Tests::MethodTestCase &testCase) {
+                    return "{{0}, {0}}" != testCase.paramValues.front().view->getEntryValue() &&
+                           "24" == testCase.returnValueView->getEntryValue();
+                }
+                                          }));
+    }
 }
+
+

@@ -365,7 +365,14 @@ shared_ptr<StructValueView> KTestObjectParser::structView(const vector<char> &by
                 throw NoSuchTypeException(message);
         }
     }
-    return std::make_shared<StructValueView>(subViews);
+
+    std::optional<std::string> entryValue;
+    if(curStruct.hasUnnamedFields) {
+        auto bytesType = types::Type::createSimpleTypeFromName("utbot_byte");
+        const shared_ptr<AbstractValueView> rawDataView = arrayView(byteArray, bytesType, curStruct.size, offset, usage);
+        entryValue = PrinterUtils::convertBytesToUnion(curStruct.name, rawDataView->getEntryValue());
+    }
+    return std::make_shared<StructValueView>(subViews, entryValue);
 }
 
 string KTestObjectParser::primitiveCharView(const types::Type &type, string value) {

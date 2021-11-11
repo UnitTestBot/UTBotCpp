@@ -47,6 +47,7 @@ namespace PrinterUtils {
 
     std::string getEqualString(const std::string& lhs, const std::string& rhs);
     std::string getDereferencePointer(const std::string& name, const size_t depth);
+    std::string getExpectedVarName(const std::string& varName);
 
     std::string initializePointer(const std::string &type, const std::string &value);
     std::string generateNewVar(int cnt);

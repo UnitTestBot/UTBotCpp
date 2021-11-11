@@ -24,7 +24,7 @@ union SuperFloat {
 
 union Vector2D {
     int m[2];
-    struct Point /*make me anonymous*/{
+    struct {
         int x, y;
     };
 };

@@ -17,7 +17,7 @@ namespace visitor {
   static thread_local std::string expectedVariable;
 
   void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name) {
-      expectedVariable = "expected_" + name;
+      expectedVariable = PrinterUtils::getExpectedVarName(name);
       string paramName = param.dataVariableName();
       types::Type paramType = param.type.arrayCloneMultiDim(usage);
       visitAny(paramType, paramName, nullptr, "", 0);
@@ -25,7 +25,7 @@ namespace visitor {
   }
 
   void VerboseAssertsParamVisitor::visitGlobal(const Tests::MethodParam &param, const std::string &name) {
-      expectedVariable = "expected_" + name;
+      expectedVariable = PrinterUtils::getExpectedVarName(name);
       visitAny(param.type, name, nullptr, "", 0);
       expectedVariable = {};
   }

@@ -88,6 +88,12 @@ namespace types {
         [[nodiscard]] Type baseTypeObj() const;
 
         /**
+         * @return String mType
+         */
+        [[nodiscard]] std::string mTypeName() const;
+
+
+        /**
          * @return Type object where the first Kind is not a pointer, but an array
          */
         [[nodiscard]] Type arrayClone(PointerUsage usage, size_t pointerSize = 0) const;
@@ -178,9 +184,11 @@ namespace types {
          */
         [[nodiscard]] bool isConstQualifiedValue() const;
 
-        bool isTypeContainsPointer() const;
+        [[nodiscard]] bool isTypeContainsPointer() const;
 
-        int indexOfFirstPointerInTypeKinds() const;
+        [[nodiscard]] bool isTypeContainsFunctionPointer() const;
+
+        [[nodiscard]] int indexOfFirstPointerInTypeKinds() const;
 
         [[nodiscard]] std::vector<size_t> arraysSizes(PointerUsage usage) const;
 
@@ -271,10 +279,12 @@ namespace types {
         std::vector<Field> fields{};
 
         FPointerMap functionFields{};
+        bool hasUnnamedFields;
     };
 
     struct UnionInfo: TypeInfo {
         std::vector<Field> fields{};
+        bool hasUnnamedFields;
     };
 
     struct EnumInfo: TypeInfo {

@@ -33,4 +33,5 @@ add_executable(syntax1
         linked_list.c
         tree.c
         different_parameters.cpp
-        simple_class.cpp)
+        simple_class.cpp
+        inner_unnamed.c)

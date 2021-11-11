@@ -92,4 +92,8 @@ namespace Paths {
     fs::path getLdGold() {
         return getUTBotDebsInstallDir() / "usr" / "bin" / "ld.gold";
     }
+
+    fs::path getLd() {
+        return getUTBotDebsInstallDir() / "usr" / "bin" / "ld";
+    }
 }

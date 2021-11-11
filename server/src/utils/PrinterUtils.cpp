@@ -170,4 +170,7 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("(%s%s)", StringUtils::repeat("*", depth), name);
     }
 
+    std::string getExpectedVarName(const std::string& varName) {
+        return "expected_" + varName;
+    }
 }

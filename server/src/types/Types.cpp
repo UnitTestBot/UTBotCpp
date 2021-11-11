@@ -101,6 +101,10 @@ types::Type types::Type::baseTypeObj() const {
     return baseTypeObj(getDimension());
 }
 
+std::string types::Type::mTypeName() const {
+    return this->mType;
+}
+
 size_t types::Type::getDimension() const {
     // usage doesn't matter here
     return arraysSizes(PointerUsage::PARAMETER).size();
@@ -291,6 +295,15 @@ bool types::Type::isConstQualifiedValue() const {
 bool types::Type::isTypeContainsPointer() const {
     for (const auto &kind : pointerArrayKinds()) {
         if (kind->getKind() == AbstractType::OBJECT_POINTER) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool types::Type::isTypeContainsFunctionPointer() const {
+    for (const auto &kind : mKinds) {
+        if (kind->getKind() == AbstractType::FUNCTION_POINTER) {
             return true;
         }
     }
@@ -863,7 +876,7 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
               }
               if (isStruct(type)) {
                   auto structInfo = getStructInfo(type);
-                  return unsupportedFields(structInfo.fields);
+                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
               }
               return false;
             } },
@@ -919,7 +932,7 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
               };
               if (isStruct(type)) {
                   auto structInfo = getStructInfo(type);
-                  return unsupportedFields(structInfo.fields);
+                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
               }
 
               if (isUnion(type)) {

@@ -192,6 +192,16 @@ namespace printer {
             } else {
                 if (paramTypes[i].isPointerToArray()) {
                     auto decomposedType = StringUtils::split(paramTypes[i].usedType(), '*');
+                    /*
+                     * code example
+                     * typedef int int_array[1];
+                     * int_array* int_array_pointer;
+                     * usedType == int_array*
+                     * mTypeName == int_array*[1]
+                     */
+                    if (decomposedType.size() != 2) {
+                        decomposedType = StringUtils::split(paramTypes[i].mTypeName(), '*');
+                    }
                     LOG_IF_S(ERROR, decomposedType.size() != 2) << "Type::isPointerToArray malfunction";
                     ss << decomposedType[0] << "*" << paramValues[i] << decomposedType[1];
                     named = true;
