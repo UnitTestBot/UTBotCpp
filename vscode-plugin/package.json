@@ -469,6 +469,7 @@
 				"unittestbot.paths.buildDirectory": {
 					"type": "string",
 					"default": "build",
+					"minLength": 1,
 					"markdownDescription": "%unittestbot.paths.buildDirectory.description%"
 				},
 				"unittestbot.paths.cmakeOptions": {
@@ -479,6 +480,7 @@
 				"unittestbot.paths.testsDirectory": {
 					"type": "string",
 					"default": "tests",
+					"minLength": 1,
 					"markdownDescription": "%unittestbot.paths.testsDirectory.description%"
 				},
 				"unittestbot.paths.sourceDirectories": {

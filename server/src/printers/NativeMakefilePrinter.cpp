@@ -2,6 +2,9 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
 
+#include <Paths.h>
+#include <FeaturesFilter.h>
+#include <algorithm>
 #include "NativeMakefilePrinter.h"
 #include "Synchronizer.h"
 
@@ -28,6 +31,7 @@ namespace printer {
     };
     static const std::string STATIC_FLAG = "-static";
     static const std::string SHARED_FLAG = "-shared";
+    static const std::string RELOCATE_FLAG = "-r";
     static const std::string OPTIMIZATION_FLAG = "-O0";
 
     static const std::string FORCE = ".FORCE";
@@ -267,7 +271,7 @@ namespace printer {
 
         std::vector<std::string> filesToLink{ "$(GTEST_MAIN)", "$(GTEST_ALL)", testObjectPath,
                                               sharedOutput.value() };
-        if (rootLinkUnitInfo->commands[0].isArchiveCommand()) {
+        if (rootLinkUnitInfo->commands.front().isArchiveCommand()) {
             std::vector<std::string> dynamicLinkCommandLine{ cxxLinker,          "$(LDFLAGS)",
                                                              pthreadFlag,        coverageLinkFlags,
                                                              sanitizerLinkFlags, "-o",
@@ -279,7 +283,7 @@ namespace printer {
             declareTarget(testExecutablePath, filesToLink,
                           { dynamicLinkCommand.toStringWithChangingDirectory() });
         } else {
-            utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands[0];
+            utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands.front();
             dynamicLinkCommand.setLinker(cxxLinker);
             dynamicLinkCommand.setOutput(testExecutablePath);
             dynamicLinkCommand.erase_if([&](std::string const &argument) {
@@ -295,6 +299,13 @@ namespace printer {
             dynamicLinkCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
             dynamicLinkCommand.addFlagsToBegin(
                 { pthreadFlag, coverageLinkFlags, sanitizerLinkFlags });
+            std::copy_if(rootLinkUnitInfo->files.begin(), rootLinkUnitInfo->files.end(), std::back_inserter(filesToLink),
+                         [](const fs::path& path) {return Paths::isLibraryFile(path);});
+            for(std::string& file : filesToLink) {
+                if (CollectionUtils::contains(buildResults, fs::path(file))) {
+                    file = buildResults.at(fs::path(file)).output.string();
+                }
+            }
             dynamicLinkCommand.addFlagsToBegin(filesToLink);
             dynamicLinkCommand.addFlagToBegin(
                 getLibraryDirectoryFlag(sharedOutput.value().parent_path()));
@@ -328,7 +339,9 @@ namespace printer {
           sanitizerLinkFlags(baseMakefilePrinter.sanitizerLinkFlags),
           buildDirectory(baseMakefilePrinter.buildDirectory),
           dependencyDirectory(baseMakefilePrinter.dependencyDirectory),
-          artifacts(baseMakefilePrinter.artifacts), sharedOutput(baseMakefilePrinter.sharedOutput) {
+          artifacts(baseMakefilePrinter.artifacts),
+          buildResults(baseMakefilePrinter.buildResults),
+          sharedOutput(baseMakefilePrinter.sharedOutput) {
         resetStream();
 
         ss << baseMakefilePrinter.ss.str();
@@ -386,15 +399,19 @@ namespace printer {
             unitBuildResults, [](BuildResult const &buildResult) { return buildResult.output; });
 
         bool isExecutable = !Paths::isLibraryFile(unitFile);
+
         fs::path recompiledFile =
             Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
+        if (isExecutable) {
+            recompiledFile = Paths::isObjectFile(Paths::addExtension(recompiledFile, ".o")) ?
+                             recompiledFile : Paths::addExtension(recompiledFile, ".o");
+        } else if (Paths::isSharedLibraryFile(unitFile)) {
+            recompiledFile = getSharedLibrary(linkUnitInfo->getOutput());
+        }
+        recompiledFile = LinkerUtils::applySuffix(recompiledFile, unitType, suffixForParentOfStubs);
+
         if (isExecutable || Paths::isSharedLibraryFile(unitFile)) {
-            sharedOutput =
-                getSharedLibrary(*linkUnitInfo, unitType, suffixForParentOfStubs);
-            recompiledFile = sharedOutput.value();
-        } else {
-            recompiledFile =
-                LinkerUtils::applySuffix(recompiledFile, unitType, suffixForParentOfStubs);
+            sharedOutput = recompiledFile;
         }
 
         auto commandActions =
@@ -407,39 +424,48 @@ namespace printer {
                     }
                 }
                 if (!linkCommand.isArchiveCommand()) {
-                    linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
-                            CompilationUtils::getCompilerName(linkCommand.getLinker())));
-                    std::vector<std::string> libraryDirectoriesFlags;
+                    if (isExecutable) {
+                        linkCommand.setLinker(Paths::getLd());
+                    } else {
+                        linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
+                                CompilationUtils::getCompilerName(linkCommand.getLinker())));
+                    }
+                    std::vector <std::string> libraryDirectoriesFlags;
                     for (std::string &argument : linkCommand.getCommandLine()) {
                         removeScriptFlag(argument);
                         removeSonameFlag(argument);
                         auto optionalLibraryAbsolutePath =
-                            getLibraryAbsolutePath(argument, linkCommand.getDirectory());
+                                getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
                             const fs::path &absolutePath = optionalLibraryAbsolutePath.value();
                             if (Paths::isSubPathOf(projectContext.buildDir, absolutePath)) {
                                 fs::path recompiledDir =
-                                    Paths::getRecompiledFile(projectContext, absolutePath);
+                                        Paths::getRecompiledFile(projectContext, absolutePath);
                                 string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
                                 libraryDirectoriesFlags.push_back(directoryFlag);
                             }
                         }
                     }
                     linkCommand.addFlagsToBegin(libraryDirectoriesFlags);
-                    linkCommand.addFlagsToBegin({ "-Wl,--allow-multiple-definition",
-                                                  coverageLinkFlags, sanitizerLinkFlags, "-Wl,--whole-archive" });
-                    if (linkCommand.isSharedLibraryCommand()) {
-                        linkCommand.addFlagToEnd(STUB_OBJECT_FILES);
-                        dependencies.emplace(STUB_OBJECT_FILES);
+                    if (!isExecutable) {
+                        linkCommand.addFlagsToBegin({"-Wl,--allow-multiple-definition",
+                                                     coverageLinkFlags, sanitizerLinkFlags, "-Wl,--whole-archive"});
+                        if (linkCommand.isSharedLibraryCommand()) {
+                            linkCommand.addFlagToEnd(STUB_OBJECT_FILES);
+                            dependencies.emplace(STUB_OBJECT_FILES);
+                        }
+                        linkCommand.addFlagToEnd("-Wl,--no-whole-archive");
+                        linkCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
                     }
-                    linkCommand.addFlagToEnd("-Wl,--no-whole-archive");
-                    linkCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
                     linkCommand.addFlagToBegin("$(LDFLAGS)");
+                    if (isExecutable) {
+                        linkCommand.addFlagToBegin(RELOCATE_FLAG);
+                    }
                 }
-                if (isExecutable) {
-                    linkCommand.addFlagToBegin(SHARED_FLAG);
-                }
-                return linkCommand.toStringWithChangingDirectory();
+                return isExecutable ? stringFormat("%s && objcopy --redefine-sym main=old_main %s",
+                                                   linkCommand.toStringWithChangingDirectory(),
+                                                   linkCommand.getOutput().string()) :
+                                      linkCommand.toStringWithChangingDirectory();
             });
         std::string removeAction = stringFormat("rm -f %s", recompiledFile);
         std::vector<std::string> actions{ removeAction };
@@ -450,8 +476,7 @@ namespace printer {
         artifacts.push_back(recompiledFile);
 
         if (!hasParent && Paths::isStaticLibraryFile(unitFile)) {
-            sharedOutput =
-                getSharedLibrary(*linkUnitInfo, unitType, suffixForParentOfStubs);
+            sharedOutput = LinkerUtils::applySuffix(getSharedLibrary(linkUnitInfo->getOutput()), unitType, suffixForParentOfStubs);
             std::vector<std::string> sharedLinkCommandLine{
                 primaryCompiler,         "$(LDFLAGS)",   SHARED_FLAG,           coverageLinkFlags,
                 sanitizerLinkFlags,      "-o",           sharedOutput.value(),
@@ -469,16 +494,12 @@ namespace printer {
     }
 
 
-    fs::path
-    NativeMakefilePrinter::getSharedLibrary(const BuildDatabase::TargetInfo &linkUnitInfo,
-                                            BuildResult::Type unitType,
-                                            std::string const &suffixForParentOfStubs) {
-        fs::path output = Paths::getRecompiledFile(projectContext, linkUnitInfo.getOutput());
-        output = CompilationUtils::removeSharedLibraryVersion(output);
+    fs::path NativeMakefilePrinter::getSharedLibrary(const fs::path &filePath) {
+        fs::path output = CompilationUtils::removeSharedLibraryVersion(filePath);
         fs::path sharedLibrary = Paths::isSharedLibraryFile(output)
                                      ? output
                                      : Paths::addPrefix(Paths::addExtension(output, ".so"), "lib");
-        return LinkerUtils::applySuffix(sharedLibrary, unitType, suffixForParentOfStubs);
+        return sharedLibrary;
     }
 
     void NativeMakefilePrinter::addStubs(const CollectionUtils::FileSet &stubsSet) {

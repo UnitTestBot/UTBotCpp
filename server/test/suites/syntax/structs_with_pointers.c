@@ -70,11 +70,10 @@ struct StructWithPointerInField some_calc(int a, int b) {
         st.a.a = 3;
         st.a.str = "CCC";
         return st;
-    } else {
-        st.ll = 0;
-        st.sh = 0;
-        st.a.a = 0;
-        st.a.str = "DDD";
-        return st;
     }
+    st.ll = 0;
+    st.sh = 0;
+    st.a.a = 0;
+    st.a.str = "DDD";
+    return st;
 }

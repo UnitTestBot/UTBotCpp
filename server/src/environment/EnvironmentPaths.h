@@ -39,7 +39,9 @@ namespace Paths {
 
     fs::path getLdGold();
 
-    // Gcc is used only in tests
+    fs::path getLd();
+
+  // Gcc is used only in tests
     fs::path getGcc();
     fs::path getGpp();
 }

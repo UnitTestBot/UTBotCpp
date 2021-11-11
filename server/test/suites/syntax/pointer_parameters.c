@@ -34,3 +34,14 @@ int pointer_as_array_parameter(int *a, int *b, int c) {
     *b = 4;
     return a[1] + *b + c;
 }
+
+typedef int int_array[1];
+
+int typedef_as_parameter_and_return(int_array* a) {
+    if((*a)[0] == 0) {
+        (*a)[0] = 42;
+    } else {
+        (*a)[0] = 24;
+    }
+    return (*a)[0];
+};

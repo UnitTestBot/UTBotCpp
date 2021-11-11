@@ -48,9 +48,7 @@ namespace printer {
         void gtestMainTargets(const utbot::CompileCommand &defaultCompileCommand,
                               const fs::path &gtestBuildDir);
 
-        fs::path getSharedLibrary(const BuildDatabase::TargetInfo &linkUnitInfo,
-                                  BuildResult::Type unitType,
-                                  std::string const &suffixForParentOfStubs);
+        fs::path getSharedLibrary(const fs::path &filePath);
 
         void addTestTarget(const fs::path &sourcePath);
 

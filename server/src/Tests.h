@@ -204,14 +204,18 @@ namespace tests {
      * In order to get fields and subfields values (leaves in terms of trees) method fieldEntryValues().
      */
     struct StructValueView : AbstractValueView {
-        explicit StructValueView(vector<shared_ptr<AbstractValueView>> subViews)
-            : AbstractValueView(std::move(subViews)) {}
+        explicit StructValueView(vector<shared_ptr<AbstractValueView>> subViews, std::optional<std::string> entryValue)
+                    : AbstractValueView(std::move(subViews)), entryValue(entryValue) {}
 
         [[nodiscard]] const vector<shared_ptr<AbstractValueView>> &getSubViews() const override {
             return this->subViews;
         }
 
         [[nodiscard]] string getEntryValue() const override {
+            if (entryValue.has_value()) {
+                return entryValue.value();
+            }
+
             vector<string> entries;
             for (const auto &subView : subViews) {
                 entries.push_back(subView->getEntryValue());
@@ -241,6 +245,8 @@ namespace tests {
             }
             return false;
         }
+    private:
+        std::optional<std::string> entryValue;
     };
 
     /**
@@ -304,7 +310,9 @@ namespace tests {
             }
 
             bool isChangeable() const {
-                if((type.isObjectPointer() || type.isLValueReference()) && !type.isConstQualifiedValue()) {
+                if((type.isObjectPointer() || type.isLValueReference()) &&
+                    !type.isTypeContainsFunctionPointer() &&
+                    !type.isConstQualifiedValue()) {
                     return true;
                 }
                 return false;

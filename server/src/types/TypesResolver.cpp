@@ -74,6 +74,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
         sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = name;
+    structInfo.hasUnnamedFields = false;
 
 
     if (Paths::isGtest(structInfo.filePath)) {
@@ -117,6 +118,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
+        structInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
         fields.push_back(field);
     }
     structInfo.fields = fields;
@@ -218,6 +220,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     ss << "Union: " << unionInfo.name << "\n"
        << "\tFile path: " << unionInfo.filePath.string() << "";
     std::vector<types::Field> fields;
+    unionInfo.hasUnnamedFields = false;
     for (const clang::FieldDecl *F : D->fields()) {
         types::Field field;
         string fieldName = F->getNameAsString();
@@ -228,6 +231,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
+        unionInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
         fields.push_back(field);
     }
     unionInfo.fields = fields;

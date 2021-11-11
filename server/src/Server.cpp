@@ -541,9 +541,6 @@ Status Server::TestsGenServiceImpl::PrintModulesContent(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
-    fs::path compileCommandsJsonPath =
-        CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
-            request->projectpath(), request->builddirrelativepath());
     fs::path serverBuildDir = Paths::getTmpDir(request->projectname());
     utbot::ProjectContext projectContext{ *request };
     shared_ptr<BuildDatabase> buildDatabase = BuildDatabase::create(projectContext);
