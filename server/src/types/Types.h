@@ -215,6 +215,8 @@ namespace types {
          */
         static Type createConstTypeFromName(const TypeName &type, size_t pointersNum=0);
 
+        static Type createArray(const Type &type);
+
         static Type CStringType();
 
         static Type intType();
@@ -241,7 +243,7 @@ namespace types {
         static const std::string &getStdinParamName();
     private:
 
-        explicit Type(const TypeName& type,  size_t pointersNum=0);
+        explicit Type(const TypeName& type, size_t pointersNum=0);
 
         TypeName mType;
         TypeName mBaseType;

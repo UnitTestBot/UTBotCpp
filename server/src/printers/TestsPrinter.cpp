@@ -136,6 +136,18 @@ void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDes
     }
 }
 
+void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDescription,
+                                      const Tests::MethodTestCase &testCase) {
+    for (int i = 0; i < testCase.stubParamValues.size(); i++) {
+        auto stub = testCase.stubParamValues[i];
+        types::Type stubType = testCase.stubParamTypes[i].type;
+        std::string bufferSuffix = "_buffer";
+        std::string buffer = stub.name + bufferSuffix;
+        strDeclareArrayVar(stubType, buffer, types::PointerUsage::PARAMETER, stub.view->getEntryValue());
+        strMemcpy(stub.name, buffer, false);
+    }
+}
+
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
@@ -145,6 +157,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printClassObject(methodDescription);
     printLazyVariables(methodDescription, testCase);
     printLazyReferences(methodDescription, testCase);
+    printStubVariables(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, true);
     parametrizedAsserts(methodDescription, testCase, predicateInfo);
     ss << RB() << NL;

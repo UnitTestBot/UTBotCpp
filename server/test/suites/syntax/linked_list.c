@@ -131,3 +131,53 @@ int sort_list(struct Node *head) {
     }
     return 0;
 }
+
+int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int)) {
+    int n = len_bound(head, SIZE);
+    if (n == SIZE) {
+        for (int i = 0; i < n - 2; i++) {
+            struct Node *cop = head;
+            while (cop->next != NULL) {
+                if (!cmp(cop->x, cop->next->x)) {
+                    int t = cop->x;
+                    cop->x = cop->next->x;
+                    cop->next->x = t;
+                }
+                cop = cop->next;
+            }
+        }
+        int fl = 1;
+        struct Node *cop = head;
+        while (cop->next != NULL) {
+            if (!cmp(cop->x, cop->next->x)) {
+                fl = -1;
+            }
+            cop = cop->next;
+        }
+        if (fl == 1) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int find_maximum(int x, int y, int (*compare) (int, int)) {
+    int t = compare(x, y);
+    if (t) {
+        return x;
+    } else {
+        return y;
+    }
+}
+
+int vowel_consonant(char c, char (*vowel) (char)) {
+    char s = vowel(c);
+    if (s == 'a' || s == 'e' || s == 'i' || s == 'o' || s == 'u' || s == 'y') {
+        return 1;
+    } else {
+        return -1;
+    }
+
+}

@@ -73,6 +73,21 @@ types::Type types::Type::createConstTypeFromName(const types::TypeName& type, si
     return res;
 }
 
+types::Type types::Type::createArray(const types::Type &type) {
+    Type res;
+    res.mType = type.typeName() + "*";
+    res.mUsedType = res.mType;
+    res.mBaseType = type.baseType();
+    res.mKinds = type.mKinds;
+    res.mKinds.insert(res.mKinds.begin(), std::shared_ptr<AbstractType>(new ArrayType(
+        TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::PARAMETER), false)));
+    res.dimension = type.dimension + 1;
+    res.mTypeId = 0;
+    res.mBaseTypeId = type.mBaseTypeId;
+    res.maybeArray = true;
+    return res;
+}
+
 types::TypeName types::Type::typeName() const {
     return mType;
 }

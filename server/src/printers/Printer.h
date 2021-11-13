@@ -102,6 +102,8 @@ namespace printer {
 
         Stream strAssignVar(std::string_view name, std::string_view value);
 
+        std::stringstream& checkOverflowStubArray(const string &cntCall);
+
         Stream strTabIf(bool needTabs);
 
         Stream strFunctionDecl(
@@ -178,7 +180,6 @@ namespace printer {
 
         Stream strReturn(std::string_view value);
 
-
         Stream strTypedefFunctionPointer(const types::FunctionInfo& method, const string& name);
 
         Stream strDeclareArrayOfFunctionPointerVar(const string&arrayType, const string& arrayName,
@@ -187,7 +188,7 @@ namespace printer {
         Stream strStubForMethod(const Tests::MethodDescription& method,
                                 const types::TypesHandler&typesHandler,
                                 const string& prefix,
-                                const string& suffix, bool makeSymbolic = false,
+                                const string& suffix,
                                 bool makeStatic = false);
 
         static string getStubSymbolicVarName(const string& methodName);

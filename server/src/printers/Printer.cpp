@@ -9,6 +9,7 @@
 #include "utils/ArgumentsUtils.h"
 #include "utils/Copyright.h"
 #include "visitors/VerboseParameterVisitor.h"
+#include "printers/KleeConstraintsPrinter.h"
 
 #include "loguru.h"
 
@@ -385,15 +386,30 @@ namespace printer {
         return ss;
     }
 
+    std::stringstream& Printer::checkOverflowStubArray(const string &cntCall) {
+        ss << TAB_N() << "if (" << cntCall << " == " <<
+           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << NL;
+        tabsDepth++;
+        ss << TAB_N() << cntCall << "--;" << NL;
+        ss << RB();
+        return ss;
+    }
+
+
     std::stringstream &Printer::strStubForMethod(const Tests::MethodDescription &method,
                                                  const types::TypesHandler &typesHandler,
                                                  const string &prefix,
                                                  const string &suffix,
-                                                 bool makeSymbolic,
                                                  bool makeStatic) {
         auto methodCopy = method;
-
         methodCopy.name = method.name;
+
+        string stubSymbolicVarName = getStubSymbolicVarName(method.name);
+        if (!types::TypesHandler::isVoid(method.returnType)) {
+            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
+                               types::PointerUsage::PARAMETER);
+        }
+
         if (!prefix.empty()) {
             methodCopy.name = prefix + "_" + methodCopy.name;
         }
@@ -411,23 +427,31 @@ namespace printer {
             strReturn(returnValue) << RB() << NL;
             return ss;
         }
-        if (makeSymbolic) {
-            string firstTimeCallVar = "firstTimeCall";
-            string stubSymbolicVarName = getStubSymbolicVarName(method.name);
-            strDeclareVar("static int", firstTimeCallVar, "1");
-            ss << TAB_N() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
-            tabsDepth++;
-            ss << TAB_N() << "if (" << firstTimeCallVar << " == 1)" << LB();
-            strAssignVar(firstTimeCallVar, "0");
-            strKleeMakeSymbolic(stubSymbolicVarName, !method.returnType.isArray(),
-                                stubSymbolicVarName);
-            ss << RB();
-            tabsDepth--;
-            ss << TAB_N() << "#endif" << NL;
-            returnValue = stubSymbolicVarName;
-        } else {
-            returnValue = typesHandler.getDefaultValueForType(methodCopy.returnType, getLanguage());
-        }
+
+        string firstTimeCallVar = "firstTimeCall";
+        strDeclareVar("static int", firstTimeCallVar, "1");
+        const string cntCall = "cntCall";
+        strDeclareVar("static int", cntCall, "0");
+        ss << TAB_N() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
+        tabsDepth++;
+        ss << TAB_N() << "if (" << firstTimeCallVar << " == 1)" << LB();
+        strAssignVar(firstTimeCallVar, "0");
+        strKleeMakeSymbolic(stubSymbolicVarName, !method.returnType.isArray(),
+                            stubSymbolicVarName);
+        types::TypeMaps tempMap = {};
+        auto temp = shared_ptr <types::TypesHandler>(new types::TypesHandler(tempMap, types::TypesHandler::SizeContext()));
+        printer::KleeConstraintsPrinter preferWriter(temp.get(), srcLanguage);
+        preferWriter.setTabsDepth(tabsDepth);
+        preferWriter.genConstraints(
+            {types::Type::createArray(method.returnType), stubSymbolicVarName, std::nullopt});
+        ss << preferWriter.ss.str();
+        ss << RB();
+        tabsDepth--;
+        ss << TAB_N() << "#endif" << NL;
+
+        checkOverflowStubArray(cntCall);
+
+        returnValue = stubSymbolicVarName + "[" + cntCall + "++]";
         strReturn(returnValue) << RB() << NL;
         return ss;
     }
@@ -552,7 +576,7 @@ namespace printer {
             strTypedefFunctionPointer(*fInfo, typedefName);
         }
         strStubForMethod(tests::Tests::MethodDescription::fromFunctionInfo(*fInfo), *typesHandler,
-                         stubName, "stub", false, makeStatic);
+                         stubName, "stub", makeStatic);
     }
 
     void Printer::genStubForStructFunctionPointer(const string &structName,
