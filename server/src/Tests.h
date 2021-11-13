@@ -570,16 +570,9 @@ namespace tests {
         testParameterView(const RawKleeParam &kleeParam,
                           const Tests::TypeAndVarName &param,
                           types::PointerUsage usage,
-                          const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt,
-                          const std::optional<MapAddressName> &fromAddressToName = std::nullopt);
-
-        shared_ptr<AbstractValueView>
-        testParameterView(const RawKleeParam &kleeParam,
-                          const Tests::TypeAndVarName &param,
-                          types::PointerUsage usage,
-                          const std::optional<const Tests::MethodDescription> &testingMethod,
-                          const std::optional<MapAddressName> &fromAddressToName,
-                          std::vector<InitReference> &initReferences);
+                          const MapAddressName &fromAddressToName,
+                          std::vector<InitReference> &initReferences,
+                          const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
 
         shared_ptr<ArrayValueView> multiArrayView(const vector<char> &byteArray,
                                                   const types::Type &type,
@@ -618,7 +611,7 @@ namespace tests {
                                                types::PointerUsage usage,
                                                const std::optional<const Tests::MethodDescription> &testingMethod,
                                                const std::string &name,
-                                               const std::optional<MapAddressName> &fromAddressToName,
+                                               const MapAddressName &fromAddressToName,
                                                std::vector<InitReference> &initReferences);
 
         shared_ptr<PrimitiveValueView> primitiveView(const vector<char> &byteArray,

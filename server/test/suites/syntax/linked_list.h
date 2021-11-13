@@ -39,4 +39,8 @@ int middle_length2(struct Kuku *head);
 
 int cycle_list3(struct Node *head);
 
+int len_bound(struct Node *head, int bound);
+
+int sort_list(struct Node *head);
+
 #endif

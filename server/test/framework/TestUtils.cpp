@@ -138,7 +138,8 @@ namespace testUtils {
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
                        const vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
-            EXPECT_EQ(testsgen::TestStatus::TEST_PASSED, testStatusMap.at(filename).at(testname));
+            EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == testStatusMap.at(filename).at(testname)) ||
+                        (testsgen::TestStatus::TEST_DEATH == testStatusMap.at(filename).at(testname)));
         }
     }
 
@@ -183,9 +184,10 @@ namespace testUtils {
                                                    const string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
-                                                   bool useStubs) {
+                                                   bool useStubs,
+                                                   bool verbose) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, useStubs);
+                                                   srcPaths, useStubs, verbose);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 

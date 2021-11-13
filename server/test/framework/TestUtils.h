@@ -70,7 +70,8 @@ namespace testUtils {
                                                    const string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
-                                                   bool useStubs = false);
+                                                   bool useStubs = false,
+                                                   bool verbose = true);
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,

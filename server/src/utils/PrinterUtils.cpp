@@ -51,7 +51,12 @@ namespace PrinterUtils {
     }
 
     std::string initializePointer(const std::string &type, const std::string &value) {
-        return "(" + type + ") " + value;
+        if (value == C_NULL || value == "0") {
+            return C_NULL;
+        } else {
+            return "(" + type + ") " + value;
+        }
+
     }
 
     std::string generateNewVar(int cnt) {

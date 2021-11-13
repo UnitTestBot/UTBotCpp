@@ -102,4 +102,48 @@ int cycle_list3(struct Node *head) {
     if (head->next->next->next == NULL) {
         return -3;
     }
+    return 17;
+}
+
+int len_bound(struct Node *head, int bound) {
+    int len = 0;
+    while (head != NULL && bound > 0) {
+        ++len;
+        --bound;
+        head = head->next;
+    }
+    return head != NULL ? -1 : len;
+}
+
+#define SIZE 4
+
+int sort_list(struct Node *head) {
+    int n = len_bound(head, SIZE);
+    if (n == SIZE) {
+        for (int i = 0; i < n - 2; i++) {
+            struct Node *cop = head;
+            while (cop->next != NULL) {
+                if (cop->x > cop->next->x) {
+                    int t = cop->x;
+                    cop->x = cop->next->x;
+                    cop->next->x = t;
+                }
+                cop = cop->next;
+            }
+        }
+        int fl = 1;
+        struct Node *cop = head;
+        while (cop->next != NULL) {
+            if (cop->x > cop->next->x) {
+                fl = -1;
+            }
+            cop = cop->next;
+        }
+        if (fl == 1) {
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    return 0;
 }
