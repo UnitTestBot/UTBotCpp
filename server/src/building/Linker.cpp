@@ -533,6 +533,18 @@ std::string getArchiveArgument(std::string const &argument,
     return argument;
 }
 
+static void moveKleeTemporaryFileArgumentToBegin(std::vector<std::string> &arguments) {
+    auto iteratorToCurrentFile = std::find_if(arguments.begin(), arguments.end(), [] (const std::string &argument) {
+      return StringUtils::endsWith(argument, "_klee.bc");
+    });
+    if (iteratorToCurrentFile == arguments.end()) {
+        LOG_S(ERROR) << "Don't find temporary klee file";
+        return;
+    }
+    auto iteratorToSwap = std::find(arguments.begin(), arguments.end(), "-o");
+    std::iter_swap(iteratorToSwap + 2, iteratorToCurrentFile);
+}
+
 static std::vector<utbot::LinkCommand>
 getArchiveCommands(fs::path const &workingDir,
                    CollectionUtils::MapFileTo<fs::path> const &dependencies,
@@ -547,6 +559,8 @@ getArchiveCommands(fs::path const &workingDir,
                                               output, linkCommand, hasArchiveOption);
                 });
             arguments.erase(arguments.begin());
+            moveKleeTemporaryFileArgumentToBegin(arguments);
+
             if (hasArchiveOption) {
                 arguments.insert(arguments.begin(), { "ar" });
             } else {

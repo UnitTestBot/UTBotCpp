@@ -10,6 +10,8 @@
 
 #include "utils/path/FileSystemPath.h"
 #include <functional>
+#include <streams/coverage/ServerCoverageAndResultsWriter.h>
+#include <coverage/CoverageAndResultsGenerator.h>
 
 namespace {
     using grpc::Channel;
@@ -421,7 +423,7 @@ namespace {
             vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                     string expectedString = StringUtils::stringFormat("{%s, {%s, %s}, 0}",
-                                                                      "(struct RecursiveDoublePointer **) 0", PrinterUtils::C_NULL, PrinterUtils::C_NULL);
+                                                                      PrinterUtils::C_NULL, PrinterUtils::C_NULL, PrinterUtils::C_NULL);
                   return testCase.returnValueView->getEntryValue() ==  expectedString &&
                         testCase.paramValues[0].view->getEntryValue() == expectedString &&
                         testCase.globalPostValues[0].view->getEntryValue() == expectedString;
@@ -1083,7 +1085,7 @@ namespace {
                   return testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL;
                 },
                  [] (const tests::Tests::MethodTestCase& testCase) {
-                   return testCase.returnValueView->getEntryValue() == "{(char *) 0}";
+                   return testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL;
                  }
                 })
         );
@@ -1767,8 +1769,52 @@ namespace {
                                 },
                                 [] (const tests::Tests::MethodTestCase& testCase) {
                                     return stoi(testCase.returnValueView->getEntryValue()) == -3;
+                                },
+                                [] (const tests::Tests::MethodTestCase& testCase) {
+                                    return stoi(testCase.returnValueView->getEntryValue()) == 17;
                                 }
                         })
+        );
+    }
+
+    TEST_F(Syntax_Test, len_bound) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 92);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                    return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                    return stoi(testCase.returnValueView->getEntryValue()) > -1;
+                }
+            })
+        );
+    }
+
+    TEST_F(Syntax_Test, sort_list) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 104);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                    return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                    return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                    return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                }
+            })
         );
     }
 
@@ -1871,6 +1917,70 @@ namespace {
               return testCase.returnValueView->getEntryValue() == "-1";
             } }),
             "check_option");
+    }
+
+    TEST_F(Syntax_Test, Run_Tests_For_Linked_List) {
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, linked_list_c, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(linked_list_c);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path linked_list_test_cpp = Paths::sourcePathToTestPath(utbot::ProjectContext(
+            projectName, suitePath, testsDirPath, buildDirRelativePath), linked_list_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(linked_list_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        testUtils::checkStatuses(statusMap, tests);
+    }
+
+    TEST_F(Syntax_Test, Run_Tests_For_Tree) {
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, tree_c, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(tree_c);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path tree_test_cpp = Paths::sourcePathToTestPath(utbot::ProjectContext(
+            projectName, suitePath, testsDirPath, buildDirRelativePath), tree_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(tree_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        testUtils::checkStatuses(statusMap, tests);
     }
 
     TEST_F(Syntax_Test, Simple_parameter_cpp) {
