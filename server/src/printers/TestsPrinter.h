@@ -138,6 +138,9 @@ namespace printer {
         void printLazyReferences(const Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase);
 
+        void printStubVariables(const Tests::MethodDescription &methodDescription,
+                                const Tests::MethodTestCase &testCase);
+
         static Tests::MethodParam getValueParam(const Tests::MethodParam &param);
     };
 }

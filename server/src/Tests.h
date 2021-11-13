@@ -335,6 +335,7 @@ namespace tests {
                                const shared_ptr<AbstractValueView> &view)
                 : name(std::move(name)), alignment(alignment), view(view) {};
         };
+
         struct TestCaseDescription {
             string scopeName;
 
@@ -374,6 +375,8 @@ namespace tests {
             vector<TestCaseParamValue> paramValues;
             vector<TestCaseParamValue> paramPostValues;
             vector<TestCaseParamValue> lazyValues;
+            vector<TestCaseParamValue> stubParamValues;
+            vector<MethodParam> stubParamTypes;
             shared_ptr<AbstractValueView> returnValueView;
 
             bool isError() const;
@@ -665,7 +668,10 @@ namespace tests {
                                    vector<RawKleeParam> &rawKleeParams);
 
         void assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
-                                                     const Tests::MethodDescription &methodDescription);
+                                  const Tests::MethodDescription &methodDescription);
+
+        void assignTypeStubVar(Tests::MethodTestCase &testCase,
+                               const Tests::MethodDescription &methodDescription);
 
         void workWithStructInBFS(std::queue<JsonNumAndType> &order, std::vector<bool> &visited,
                                  const Offset &off, std::vector<UTBotKTestObject> &objects, const types::StructInfo &structInfo);

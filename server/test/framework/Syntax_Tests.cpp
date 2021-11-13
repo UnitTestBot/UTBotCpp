@@ -1818,6 +1818,44 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, sort_list_with_cmp) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 135);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, find_maximum) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 166);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        EXPECT_EQ(2, testUtils::getNumberOfTests(testGen.tests));
+    }
+
+    TEST_F(Syntax_Test, vowel_consonant) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 175);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        EXPECT_TRUE(testUtils::getNumberOfTests(testGen.tests) >= 2);
+    }
+
     TEST_F(Syntax_Test, tree_deep) {
         auto [testGen, status] = createTestForFunction(tree_c, 3, 45);
 
