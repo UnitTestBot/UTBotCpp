@@ -11,7 +11,7 @@ MOUNT_NAME=$USER-utbot
 MOUNT_LOCAL_NAME=$MOUNT_NAME-local-mnt
 
 read -e -p "Enter base image tag: " IMAGE_TAG
-IMAGE="docker pull ghcr.io/unittestbot/utbotcpp/base_env:$IMAGE_TAG"
+IMAGE="ghcr.io/unittestbot/utbotcpp/base_env:$IMAGE_TAG"
 
 echo "Pulling docker image '$IMAGE'"
 if ! docker pull $IMAGE > /dev/null; then
@@ -49,7 +49,6 @@ docker run -d --restart=unless-stopped \
  --name=$CONTAINER_NAME \
  -p $UTBOT_SSH_PORT:2020 \
  -p $UTBOT_SERVER_PORT:2121 \
- -v $MOUNT_NAME:/home/utbot \
  -v $MOUNT_LOCAL_NAME:/home/utbot/mnt \
  -v /etc/localtime:/etc/localtime:ro \
  $IMAGE > /dev/null

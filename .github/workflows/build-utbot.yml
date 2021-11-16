@@ -20,29 +20,24 @@ jobs:
         UTBOT_INSTALL_DIR: /utbot_distr/install
         GRPC_PATH: /utbot_distr/install
         CLI_PATH: /utbot_distr/cli
+        DOCKER_TAG: 20-10-2021
+        ARTIFACT_DIR: utbot-artifact
     steps:
-      - name: Install git
-        run: |
-          apt install -y software-properties-common
-          apt update
-          add-apt-repository -y ppa:git-core/ppa
-          apt update
-          apt install -y git
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           submodules: recursive
       - name: build UTBot and run unit tests
         run: |
-          source docker/building_dependencies/runtime_env.sh
-          chmod +x build.sh
-          ./build.sh
-          cd server/build
-          chmod +x UTBot_UnitTests
-          ./UTBot_UnitTests info --log `pwd`
+          chmod +x docker/action-scripts/build-and-unit-tests.sh
+          ./docker/action-scripts/build-and-unit-tests.sh
         shell: bash
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: UTBot unit tests logs
           path: server/build/logs
+      - name: build VSCode plugin
+        run: |
+          chmod +x docker/action-scripts/build-vsix.sh
+          ./docker/action-scripts/build-vsix.sh
