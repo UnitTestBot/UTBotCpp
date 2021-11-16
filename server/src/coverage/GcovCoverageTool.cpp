@@ -87,12 +87,10 @@ std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const vector<Un
 }
 
 static void addLine(int lineNumber, bool covered, FileCoverage &fileCoverage) {
-    FileCoverage::SourcePosition position{ lineNumber - 1, 0 };
-    FileCoverage::SourceRange sourceRange{ position, position };
     if (covered) {
-        fileCoverage.coveredRanges.push_back(sourceRange);
+        fileCoverage.fullCoverageLines.insert({lineNumber - 1});
     } else {
-        fileCoverage.uncoveredRanges.push_back(sourceRange);
+        fileCoverage.noCoverageLines.insert({lineNumber - 1});
     }
 }
 

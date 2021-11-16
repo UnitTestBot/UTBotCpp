@@ -40,13 +40,17 @@ void ServerCoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap
         auto fileCoverageGrpc = response.add_coverages();
         fileCoverageGrpc->set_filepath(filepath);
 
-        for (const auto &sourceRange : coverage.coveredRanges) {
-            auto sourceRangeGrpc = fileCoverageGrpc->add_coveredranges();
-            writeSourceRange(sourceRangeGrpc, sourceRange);
+        for (const auto &sourceLine : coverage.fullCoverageLines) {
+            auto sourceLineGrpc = fileCoverageGrpc->add_fullcoveragelines();
+            writeSourceLine(sourceLineGrpc, sourceLine);
         }
-        for (const auto &sourceRange : coverage.uncoveredRanges) {
-            auto sourceRangeGrpc = fileCoverageGrpc->add_uncoveredranges();
-            writeSourceRange(sourceRangeGrpc, sourceRange);
+        for (const auto &sourceLine : coverage.partialCoverageLines) {
+            auto sourceLineGrpc = fileCoverageGrpc->add_partialcoveragelines();
+            writeSourceLine(sourceLineGrpc, sourceLine);
+        }
+        for (const auto &sourceLine : coverage.noCoverageLines) {
+            auto sourceLineGrpc = fileCoverageGrpc->add_nocoveragelines();
+            writeSourceLine(sourceLineGrpc, sourceLine);
         }
     }
 

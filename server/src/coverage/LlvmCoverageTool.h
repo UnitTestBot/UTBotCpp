@@ -22,6 +22,8 @@ public:
     void cleanCoverage() const override;
 private:
     const utbot::ProjectContext projectContext;
+    void countLineCoverage(Coverage::CoverageMap& coverageMap, const string& filename) const;
+    void checkLineForPartial(Coverage::FileCoverage::SourceLine line, Coverage::FileCoverage& fileCoverage) const;
 };
 
 

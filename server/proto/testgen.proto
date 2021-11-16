@@ -152,20 +152,15 @@ message TestsResponse {
     Progress progress = 3;
 }
 
-message SourcePosition {
+message SourceLine {
     uint32 line = 1;
-    uint32 character = 2;
-}
-
-message SourceRange {
-    SourcePosition start = 1;
-    SourcePosition end = 2;
 }
 
 message FileCoverageSimplified {
     string filePath = 1;
-    repeated SourceRange coveredRanges = 2;
-    repeated SourceRange uncoveredRanges = 3;
+    repeated SourceLine fullCoverageLines = 2;
+    repeated SourceLine partialCoverageLines = 3;
+    repeated SourceLine noCoverageLines = 4;
 }
 
 message TestFilter {

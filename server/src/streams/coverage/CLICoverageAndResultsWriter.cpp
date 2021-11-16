@@ -43,14 +43,14 @@ void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &t
     ss << "Coverage summary." << std::endl;
     for (const auto &[filepath, coverage] : coverageMap) {
         ss << "==== Coverage in " << filepath << std::endl;
-        ss << "======== covered line ranges: ";
-        for (const auto &sourceRange : coverage.coveredRanges) {
-            ss << sourceRange.start.line << "-" << sourceRange.end.line << " ";
+        ss << "======== covered lines: ";
+        for (const auto &sourceLine : coverage.fullCoverageLines) {
+            ss << sourceLine.line << " ";
         }
         ss << std::endl;
         ss << "======== uncovered line ranges: ";
-        for (const auto &sourceRange : coverage.uncoveredRanges) {
-            ss << sourceRange.start.line << "-" << sourceRange.end.line << " ";
+        for (const auto &sourceLine : coverage.noCoverageLines) {
+            ss << sourceLine.line << " ";
         }
         ss << std::endl;
     }
