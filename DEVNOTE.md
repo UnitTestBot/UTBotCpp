@@ -23,12 +23,13 @@ To build UTBot from sources:
 
 5. `cd` into `UTBotCpp` directory and run `build.sh` — it is the script that builds KLEE UTBot and runs UTBot unit tests
 6. Navigate to `UTBotCpp/server/build` directory and launch the binary with `./utbot server` command. Now the server is running.
-7. Launch VS Code on your local machine. Use VS Code [Remote-SSH](https://code.visualstudio.com/docs/remote/ssh) to get access to the docker insides. Navigate to `UTBotCpp/vscode-plugin` directory and press F5. This will build and run UTBot VS Code plugin.
-8. A new VS Code window will open; this window will have UTBot VS Code plugin enabled. In this new folder, open `UTBotCpp/integration-tests/c-example` directory.
-9.  When UTBot Quickstart Wizard requests you to enter server host and port, specify `localhost` and UTBot server run port, respectively.
+7. Launch VS Code on your local machine. Use VS Code [Remote-SSH](https://code.visualstudio.com/docs/remote/ssh) to get access to the docker insides. Navigate to `UTBotCpp/vscode-plugin` directory and run `build.sh` script.
+8. Press F5 (*Run Extension*). This will run UTBot VS Code plugin.
+9. A new VS Code window will open; this window will have UTBot VS Code plugin enabled. In this new folder, open `UTBotCpp/integration-tests/c-example` directory.
+10.  When UTBot Quickstart Wizard requests you to enter server host and port, specify `localhost` and UTBot server run port, respectively.
    ![Oops, something went wrong! Please look at wizardInstall.gif](media/wizardInstall.gif "UTBot Wizard Demo")
-6.  Select project path as `/home/utbot/UTBotCpp/integration-tests/c-example`;
-7.  You are now ready to experience UTBot capabilities! You can view possible commands in Command Palette (Press F1 and type in UTBot).
+11.  Select project path as `/home/utbot/UTBotCpp/integration-tests/c-example`;
+12.  You are now ready to experience UTBot capabilities! You can view possible commands in Command Palette (Press F1 and type in UTBot).
 
 If you want to change UTBot test generation preferences, you can edit them in  File > Preferences > Settings > Extensions > UnitTestBot.
 After UTBot configuration, you can select your source directories with the tab on the VSCode toolbar on the left. Then, you can generate tests with the use of Command Palette. Press **F1** and type in "UTBot": You will see tests generation options.

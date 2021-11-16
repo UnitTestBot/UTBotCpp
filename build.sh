@@ -6,7 +6,7 @@
 set -e
 set -o pipefail
 pwd=$PWD
-chmod +x $pwd/klee/build.sh $pwd/Bear/build.sh $pwd/server/build.sh
-cd $pwd/klee && ./build.sh
-cd $pwd/Bear && ./build.sh
+chmod +x $pwd/submodules/klee/build.sh $pwd/submodules/Bear/build.sh $pwd/server/build.sh
+cd $pwd/submodules/klee && ./build.sh
+cd $pwd/submodules/Bear && ./build.sh
 cd $pwd/server && ./build.sh

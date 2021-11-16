@@ -43,20 +43,21 @@ SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}
 
 get_filename_component(UTBOT_DIR ${PROJECT_SOURCE_DIR} DIRECTORY)
 
-set(LOGGER_DIR "${UTBOT_DIR}/loguru")
+set(SUBMODULES_DIR "${UTBOT_DIR}/submodules")
+set(LOGGER_DIR "${SUBMODULES_DIR}/loguru")
 set(LOGGER_AUX_DIR "${PROJECT_SOURCE_DIR}/logger-aux")
 add_library(loguru ${LOGGER_DIR}/loguru.cpp ${LOGGER_AUX_DIR}/loguru_debug.cpp)
 target_include_directories(loguru PUBLIC ${LOGGER_DIR})
 include_directories(${LOGGER_AUX_DIR})
 
-set(JSON_PATH "${UTBOT_DIR}/json")
+set(JSON_PATH "${SUBMODULES_DIR}/json")
 include_directories(${JSON_PATH}/src)
 
-set(TSL_PATH "${UTBOT_DIR}/ordered-map")
+set(TSL_PATH "${SUBMODULES_DIR}/ordered-map")
 message("tsl include from here: ${TSL_PATH}/include")
 include_directories(${TSL_PATH}/include)
 
-set(PARALLEL_HASHMAP_PATH "${UTBOT_DIR}/parallel-hashmap")
+set(PARALLEL_HASHMAP_PATH "${SUBMODULES_DIR}/parallel-hashmap")
 include_directories(${PARALLEL_HASHMAP_PATH})
 
 set(KLEE_PATH $ENV{UTBOT_ALL}/klee/)
