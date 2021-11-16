@@ -74,15 +74,22 @@ namespace testUtils {
         CoverageLines actualLinesCovered;
         CoverageLines actualLinesUncovered;
         for (const auto &[filePath, fileCoverage] : coverageMap) {
-            for (const auto &sourceRange : fileCoverage.coveredRanges) {
-                for (size_t i = sourceRange.start.line; i <= sourceRange.end.line; i++) {
-                    actualLinesCovered[filePath].insert(i);
-                }
+//            for (const auto &sourceRange : fileCoverage.coveredRanges) {
+//                for (size_t i = sourceRange.start.line; i <= sourceRange.end.line; i++) {
+//                    actualLinesCovered[filePath].insert(i);
+//                }
+//            }
+            for(const auto &sourceLine : fileCoverage.fullCoverageLines) {
+                actualLinesCovered[filePath].insert(sourceLine.line);
             }
-            for (const auto &sourceRange : fileCoverage.uncoveredRanges) {
-                for (size_t i = sourceRange.start.line; i <= sourceRange.end.line; i++) {
-                    actualLinesUncovered[filePath].insert(i);
-                }
+
+//            for (const auto &sourceRange : fileCoverage.uncoveredRanges) {
+//                for (size_t i = sourceRange.start.line; i <= sourceRange.end.line; i++) {
+//                    actualLinesUncovered[filePath].insert(i);
+//                }
+//            }
+            for(const auto &sourceLine : fileCoverage.noCoverageLines) {
+                actualLinesUncovered[filePath].insert(sourceLine.line);
             }
         }
         for (const auto &[filePath, fileCoverage] : expectedLinesCovered) {

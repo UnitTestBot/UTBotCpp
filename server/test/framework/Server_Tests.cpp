@@ -1158,7 +1158,7 @@ namespace {
         linesUncovered[basic_functions_c] = {};
         linesNone[basic_functions_c] = { 4, 5, 14, 23 };
 
-        linesCovered[simple_loop_uncovered_c] = {6, 7, 8, 9, 10, 11, 12, 15, 16};
+        linesCovered[simple_loop_uncovered_c] = {6, 7, 8, 9, 10, 11, 16, 17};
         linesUncovered[simple_loop_uncovered_c] = { 13 };
         linesNone[simple_loop_uncovered_c] = { 4, 5 };
 

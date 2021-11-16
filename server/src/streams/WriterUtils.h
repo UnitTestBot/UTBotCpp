@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
@@ -10,6 +11,6 @@
 
 #include <protobuf/testgen.grpc.pb.h>
 
-void writeSourceRange(testsgen::SourceRange *sourceRangeGrpc, Coverage::FileCoverage::SourceRange sourceRange);
+void writeSourceLine(testsgen::SourceLine *sourceLineGrpc, Coverage::FileCoverage::SourceLine sourceLine);
 
 #endif //UNITTESTBOT_WRITERUTILS_H

@@ -8,7 +8,7 @@ import * as messages from '../config/notificationMessages';
 import { Prefs } from '../config/prefs';
 import { DataLoader } from "../dataloader/dataLoader";
 import { StateDecorationTypes } from "../interface/stateDecorationTypes";
-import { FileCoverageSimplified, SourceRange } from "../proto-ts/testgen_pb";
+import { FileCoverageSimplified, SourceLine } from "../proto-ts/testgen_pb";
 import * as pathUtils from '../utils/pathUtils';
 import { Visualizer } from "./visualizer";
 
@@ -19,9 +19,6 @@ export class CoverageVisualizer implements Visualizer, DataLoader<FileCoverageSi
     private decorations: StateDecorationTypes;
     private coverages: CoverageObject = {};
     private editors: Set<vs.TextEditor> = new Set();
-
-    rangeFor = (start: number, end: number): number[] =>
-        Array.from({ length: (end - start + 1) }, (v, k) => k + start);
 
     constructor(context: vs.ExtensionContext) {
         this.decorations = new StateDecorationTypes(context);
@@ -58,10 +55,9 @@ export class CoverageVisualizer implements Visualizer, DataLoader<FileCoverageSi
         for (const fn in this.coverages) {
             this.coverages[fn].update();
         }
-        this.checkRanges(simplifiedFileCoverages);
+        this.checkLines(simplifiedFileCoverages);
         if (simplifiedFileCoverages !== undefined) {
-            this.getRanges(simplifiedFileCoverages);
-            this.getLines();
+            this.getLines(simplifiedFileCoverages);
         }
     }
 
@@ -138,26 +134,19 @@ export class CoverageVisualizer implements Visualizer, DataLoader<FileCoverageSi
         }
     }
 
-    checkRanges(simplifiedFileCoverages: Array<FileCoverageSimplified> | undefined = undefined): void {
+    checkLines(simplifiedFileCoverages: Array<FileCoverageSimplified> | undefined = undefined): void {
         if (simplifiedFileCoverages === undefined ||
-            simplifiedFileCoverages.filter(f => { return f.getCoveredrangesList().length > 0; }).length === 0) {
+            simplifiedFileCoverages.filter(f => { return f.getFullcoveragelinesList().length > 0; }).length === 0) {
             messages.showInfoMessage(`There are no covered lines. Maybe some of the tests were aborted.`);
-
         }
     }
 
-    getRange(element: SourceRange): vs.Range | undefined {
-        const startLine = element.getStart()?.getLine();
-        const startCharacter = element.getStart()?.getCharacter();
-        const endLine = element.getEnd()?.getLine();
-        const endCharacter = element.getEnd()?.getCharacter();
-        if (startLine !== undefined && startCharacter !== undefined &&
-            endLine !== undefined && endCharacter !== undefined) {
-            return new vs.Range(startLine, startCharacter, endLine, endCharacter);
-        }
+    getLine(element: SourceLine): number | undefined {
+        const line = element.getLine();
+        return line;
     }
 
-    getRanges(implifiedFileCoverages: Array<FileCoverageSimplified>): void {
+    getLines(implifiedFileCoverages: Array<FileCoverageSimplified>): void {
         for (const simplifiedFileCoverage of implifiedFileCoverages) {
             let filepath = simplifiedFileCoverage.getFilepath();
             if (process.platform === 'win32') {
@@ -169,48 +158,24 @@ export class CoverageVisualizer implements Visualizer, DataLoader<FileCoverageSi
                 this.coverages[filepath] = new FileCoverage();
             }
             const cov = this.coverages[filepath];
-            simplifiedFileCoverage.getCoveredrangesList().forEach(element => {
-                const range = this.getRange(element);
-                if (range !== undefined) {
-                    cov.coveredRanges.push(range);
+          
+            simplifiedFileCoverage.getFullcoveragelinesList().forEach(element => {
+                const line = this.getLine(element);
+                if(line !== undefined) {
+                    cov.fullCoverageLines.add(line);
                 }
             });
-            simplifiedFileCoverage.getUncoveredrangesList().forEach(element => {
-                const range = this.getRange(element);
-                if (range !== undefined) {
-                    cov.noCoveredRanges.push(range);
+            simplifiedFileCoverage.getPartialcoveragelinesList().forEach(element => {
+                const line = this.getLine(element);
+                if(line !== undefined) {
+                    cov.partialCoverageLines.add(line);
                 }
             });
-        }
-    }
-
-    checkLineForPartial(line: number, filename: string): void {
-        if (this.coverages[filename].noCoverageLinesBorders.has(line)) {
-            this.coverages[filename].partialCoverageLines.add(line);
-            this.coverages[filename].noCoverageLines.delete(line);
-        } else {
-            this.coverages[filename].fullCoverageLines.add(line);
-        }
-    }
-
-    getLines(): void {
-        for (const filename in this.coverages) {
-            const cov = this.coverages[filename];
-            cov.noCoveredRanges.forEach(range => {
-                cov.noCoverageLinesBorders.add(range.start.line);
-                cov.noCoverageLinesBorders.add(range.end.line);
-                this.rangeFor(range.start.line, range.end.line).forEach(line => {
+            simplifiedFileCoverage.getNocoveragelinesList().forEach(element => {
+                const line = this.getLine(element);
+                if(line !== undefined) {
                     cov.noCoverageLines.add(line);
-                });
-            });
-            cov.coveredRanges.forEach(range => {
-                this.checkLineForPartial(range.start.line, filename);
-                this.checkLineForPartial(range.end.line, filename);
-                this.rangeFor(range.start.line + 1, range.end.line - 1).forEach(line => {
-                    if (!cov.noCoverageLines.has(line)) {
-                        cov.fullCoverageLines.add(line);
-                    }
-                });
+                }
             });
         }
     }
@@ -223,9 +188,6 @@ class FileCoverage {
     noCoverageLines: Set<number> = new Set<number>();
 
     noCoverageLinesBorders: Set<number> = new Set<number>();
-
-    noCoveredRanges: vs.Range[] = [];
-    coveredRanges: vs.Range[] = [];
 
     public static setToRanges(lines: Set<number>): vs.Range[] {
         const ranges: vs.Range[] = [];
@@ -241,7 +203,5 @@ class FileCoverage {
         this.partialCoverageLines = new Set();
         this.noCoverageLines = new Set();
         this.noCoverageLinesBorders = new Set();
-        this.noCoveredRanges = [];
-        this.coveredRanges = [];
     }
 }
