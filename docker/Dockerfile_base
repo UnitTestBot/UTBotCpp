@@ -127,6 +127,12 @@ RUN echo "StrictHostKeyChecking no" >> /home/utbot/.ssh/config
 
 USER root
 ARG OPERATING_SYSTEM_TAG
+
+# When we switch to Ubuntu 20 container, we may still need old libssl if we support Ubuntu < 18
+# RUN "deb http://security.ubuntu.com/ubuntu bionic-security main" | sudo tee -a /etc/apt/sources.list
+# RUN apt update && apt-cache policy libssl1.0-dev
+# RUN apt install -y --no-install-recommends libssl1.0-dev
+
 RUN if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]] ; then apt update && apt install -y --no-install-recommends nodejs-dev node-gyp libssl1.0-dev ; fi
 RUN apt update && apt install -y --no-install-recommends nodejs npm openssh-server net-tools gdb vim-nox rsync
 RUN pip3 install git+https://chromium.googlesource.com/external/gyp

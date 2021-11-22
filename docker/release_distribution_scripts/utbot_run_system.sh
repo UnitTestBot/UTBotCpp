@@ -24,7 +24,7 @@ export UTBOT_ALL=$CURRENT_FOLDER
 export UTBOT_INSTALL_DIR=$UTBOT_ALL/install
 export CC=$UTBOT_ALL/debs-install/usr/bin/gcc-9
 export CXX=$UTBOT_ALL/debs-install/usr/bin/g++-9
-export CPATH=$CPATH:$UTBOT_ALL/klee/include # Path for C and C++ includes
+export CPATH=$UTBOT_ALL/klee/include:$CPATH # Path for C and C++ includes
 export PATH=$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH
 export KLEE_RUNTIME_LIBRARY_PATH=$UTBOT_ALL/klee/lib/klee/runtime/
 
@@ -34,8 +34,8 @@ IS_SUSE="$(grep '^NAME=' /etc/os-release | tr '[:upper:]' '[:lower:]' | grep sus
 # Setting environment variables for debian packages
 export PATH=$UTBOT_ALL/debs-install/usr/bin:$PATH
 export LD_LIBRARY_PATH=$UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/lib:$UTBOT_ALL/install/lib
-export CPATH=$CPATH:$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/
-export C_INCLUDE_PATH=$C_INCLUDE_PATH:$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include/
+export CPATH=$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/:$CPATH
+export C_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include/:$C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:$UTBOT_ALL/debs-install/usr/include
 export LDFLAGS="-fuse-ld=gold -B $UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/ -L $UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/  -B $UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu/ -L $UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu/ -L$UTBOT_ALL/debs-install/usr/lib64/ -B $UTBOT_ALL/debs-install/usr/lib64/ -L /lib64/ -B /lib64/" # Paths for object files and libraries with which compiler should link the project
 # This function moves dev version of libc into $UTBOT_ALL/debs-install directory
