@@ -54,20 +54,18 @@ if [ -z "$IS_SUSE" ]
 then
       # If the system is not suse, use debian packages
       move-libc-dev debian-libc-dev-install
-      X86_LIBS=lib/x86_64-linux-gnu
+      export X86_LIBS=lib/x86_64-linux-gnu
 else
       # If the system is suse, use rpm packages
       move-libc-dev suse-libc-dev-install
-      X86_LIBS=lib64
-
-      # Updating libm.so so that it contains valid path to libmvec_nonshared.a
-      echo "/* GNU ld script
-*/
+      export X86_LIBS=lib64
+fi
+# Updating libm.so so that it contains valid path to libmvec_nonshared.a
+echo "/* GNU ld script */
 OUTPUT_FORMAT(elf64-x86-64)
 GROUP ( /$X86_LIBS/libm.so.6  AS_NEEDED ( $UTBOT_ALL/debs-install/usr/$X86_LIBS/libmvec_nonshared.a /$X86_LIBS/libmvec.so.1 ) )" > $UTBOT_ALL/debs-install/usr/$X86_LIBS/libm.so
 
-      export LDFLAGS="$LDFLAGS -L$UTBOT_ALL/debs-install/usr/lib64/ -B $UTBOT_ALL/debs-install/usr/lib64/ -L /lib64/ -B /lib64/"
-fi
+export LDFLAGS="$LDFLAGS -L$UTBOT_ALL/debs-install/usr/lib64/ -B $UTBOT_ALL/debs-install/usr/lib64/ -L /lib64/ -B /lib64/"
 
 # Updating libc.so so that it contains valid path to libc_nonshared.a
 echo "/* GNU ld script
