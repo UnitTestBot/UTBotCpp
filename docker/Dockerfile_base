@@ -34,7 +34,7 @@ RUN ln -s /usr/bin/gcov-9 /usr/bin/gcov
 RUN ln -s /usr/bin/gcc-9 /usr/bin/gcc
 RUN ln -s /usr/bin/g++-9 /usr/bin/g++
 
-#install git
+# install git
 RUN apt install -y software-properties-common
 RUN apt update
 RUN add-apt-repository -y ppa:git-core/ppa
@@ -157,11 +157,11 @@ RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so
 ENV NOTVISIBLE "in users profile"
 RUN echo "export VISIBLE=now" >> /etc/profile
 
- # Append installation paths
+# Append installation paths
 RUN mkdir $UTBOT_ALL/klee && chown utbot: $UTBOT_ALL/klee/
 RUN mkdir $UTBOT_ALL/server-install && chown utbot: $UTBOT_ALL/server-install/
 
-#Installing patched version of lit to handle Klee unit-test execution properly
+# Installing patched version of lit to handle Klee unit-test execution properly
 USER root
 COPY building_dependencies/patches/lit.py /usr/local/bin/lit
 RUN chmod +x /usr/local/bin/lit
@@ -173,9 +173,12 @@ RUN sudo ln -s /usr/bin/python3 /usr/bin/python
 RUN wget https://github.com/CLIUtils/CLI11/releases/download/v1.9.1/CLI11.hpp -P $UTBOT_ALL/cli
 RUN wget https://github.com/agauniyal/rang/releases/download/v3.1.0/rang.hpp -P $UTBOT_ALL/cli
 
-#Applying environment variables to all users
+# Applying environment variables to all users
 COPY building_dependencies/runtime_env.sh /home/utbot/.bashrc
 COPY building_dependencies/runtime_env.sh /root/.bashrc
+
+# Download library for access private members
+RUN git clone https://github.com/martong/access_private.git $UTBOT_ALL/access_private
 
 RUN chsh -s /bin/bash utbot
 EXPOSE 2020
