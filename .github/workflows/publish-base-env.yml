@@ -5,7 +5,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: base_env
-  TAG: 20-10-2021
+  TAG: 24-11-2021
 
 jobs:
   build-docker:

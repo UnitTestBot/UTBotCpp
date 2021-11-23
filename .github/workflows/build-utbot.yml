@@ -11,7 +11,7 @@ jobs:
       # It is impossible to parametrize image via workflow environment,
       # so its name is hard-coded.
       # https://github.com/actions/runner/issues/480
-      image: ghcr.io/unittestbot/utbotcpp/base_env:20-10-2021
+      image: ghcr.io/unittestbot/utbotcpp/base_env:24-11-2021
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -20,7 +20,7 @@ jobs:
         UTBOT_INSTALL_DIR: /utbot_distr/install
         GRPC_PATH: /utbot_distr/install
         CLI_PATH: /utbot_distr/cli
-        DOCKER_TAG: 20-10-2021
+        DOCKER_TAG: 24-11-2021
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
