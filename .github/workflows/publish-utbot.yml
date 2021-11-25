@@ -5,18 +5,30 @@ on:
     branches: [main]
 
 jobs:
+  matrix-prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Read config from matrix.json
+        uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
+          echo "::set-output name=matrix::$TASKS"
+
   publish:
-    runs-on: ubuntu-18.04
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
     env:
       # Environment for the job and for the container is, sadly, duplicated
       # https://github.com/docker/compose/issues/1837
       VERSION: ${{ format('1.0.{0}', github.run_number) }}
       ARTIFACT_DIR: utbot-artifact
     container:
-      # It is impossible to parametrize image via workflow environment,
-      # so its name is hard-coded.
-      # https://github.com/actions/runner/issues/480
-      image: ghcr.io/unittestbot/utbotcpp/base_env:24-11-2021
+      image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
