@@ -6,11 +6,10 @@
 #define CORE_KLEEUTIL_H
 
 #include <grpcpp/server_context.h>
-
 #include <string>
+#include <string_view>
 
 #include "Tests.h"
-#include <string_view>
 
 namespace KleeUtils {
     using std::string;

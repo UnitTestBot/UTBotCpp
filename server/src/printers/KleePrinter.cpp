@@ -19,15 +19,6 @@
 
 #include <unordered_set>
 
-#define TAB "    "
-
-#define KLEE_PREFER_CEX "klee_prefer_cex"
-#define KLEE_ASSUME "klee_assume"
-#define KLEE_PATH_FLAG "kleePathFlag"
-#define KLEE_PATH_FLAG_SYMBOLIC "kleePathFlagSymbolic"
-#define EQ " == "
-#define ASSIGN " = "
-
 using namespace types;
 using printer::KleePrinter;
 
@@ -81,13 +72,16 @@ fs::path KleePrinter::writeTmpKleeFile(
     bool predicate = predicateInfo.has_value();
     if (!onlyForOneEntity && !testedMethod.empty() && !predicate) {
         strInclude(KLEE_GLOBAL_VAR_H);
-        strDeclareVar("int", KLEE_PATH_FLAG, "0");
+        strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG, "0");
     }
 
     strInclude("klee/klee.h");
     strInclude("stdlib.h", true);
     ss << NL;
     writeStubsForStructureFields(tests);
+
+    writePrivateAccessMacros(typesHandler, tests);
+
     for (const auto &[methodName, testMethod] : tests.methods) {
         if (!methodFilter(testMethod)) {
             continue;
@@ -211,7 +205,7 @@ string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
                 ss << BNL;
             }
             if (!needAssertion) {
-                ss << KLEE_PATH_FLAG << " = 1" << SCNL;
+                ss << PrinterUtils::KLEE_PATH_FLAG << " = 1" << SCNL;
             }
         }
         if (lineCounter == lineInfo->begin + lineInfo->insertAfter + 1) {
@@ -222,7 +216,7 @@ string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
         if (lineCounter == lineInfo->begin) {
             if (needAssertion) {
                 ss << "#pragma push_macro(\"assert\")\n";
-                ss << "#define assert(expr) if (!(expr)) {" << KLEE_PATH_FLAG << " = 1;}" << NL;
+                ss << "#define assert(expr) if (!(expr)) {" << PrinterUtils::KLEE_PATH_FLAG << " = 1;}" << NL;
             }
         }
         ss << currentLine << NL;
@@ -236,7 +230,7 @@ string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
     fs::path flagFileFolder = Paths::getFlagsDir(projectContext);
 
     fs::path globalFlagFilePath = flagFileFolder / KLEE_GLOBAL_VAR_H;
-    FileSystemUtils::writeToFile(globalFlagFilePath, StringUtils::stringFormat("extern int %s;", KLEE_PATH_FLAG));
+    FileSystemUtils::writeToFile(globalFlagFilePath, StringUtils::stringFormat("extern int %s;", PrinterUtils::KLEE_PATH_FLAG));
 
     fs::path flagFilePath = flagFileFolder / lineInfo->filePath.filename();
     FileSystemUtils::writeToFile(flagFilePath, ss.str());
@@ -383,9 +377,9 @@ void KleePrinter::genParamsKleeAssumes(
     bool onlyForOneEntity) {
     visitor::KleeAssumeReturnValueVisitor(typesHandler, this).visit(testMethod, predicateInfo);
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
-        string assumption = concat("(", KLEE_PATH_FLAG, EQ, KLEE_PATH_FLAG_SYMBOLIC, ") & (",
-                                   KLEE_PATH_FLAG_SYMBOLIC, EQ, "1)");
-        strFunctionCall(KLEE_ASSUME, { assumption });
+        string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR, PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
+                                   PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, PrinterUtils::EQ_OPERATOR, "1)");
+        strFunctionCall(PrinterUtils::KLEE_ASSUME, { assumption });
     }
 }
 
@@ -402,8 +396,8 @@ void KleePrinter::genKleePathSymbolicIfNeeded(
     const string &testedMethod,
     bool onlyForOneEntity) {
     if (!predicateInfo.has_value() && !onlyForOneEntity && !testedMethod.empty()) {
-        strDeclareVar("int", KLEE_PATH_FLAG_SYMBOLIC);
-        strKleeMakeSymbolic(KLEE_PATH_FLAG_SYMBOLIC, true);
+        strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC);
+        strKleeMakeSymbolic(PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, true);
     }
 }
 
@@ -449,8 +443,13 @@ void KleePrinter::genKleePathSymbolicAssumeIfNeeded(const std::optional<PredInfo
                                                     const string &testedMethod,
                                                     bool onlyForOneEntity) {
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
-        strFunctionCall(KLEE_ASSUME, { concat("(", KLEE_PATH_FLAG, EQ, KLEE_PATH_FLAG_SYMBOLIC,
-                                              ") & (", KLEE_PATH_FLAG_SYMBOLIC, EQ, "1)") });
+        strFunctionCall(PrinterUtils::KLEE_ASSUME, { concat("(", PrinterUtils::KLEE_PATH_FLAG,
+                                                            PrinterUtils::EQ_OPERATOR,
+                                                            PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
+                                                            ") & (",
+                                                            PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
+                                                            PrinterUtils::EQ_OPERATOR,
+                                                            "1)") });
     }
 }
 

@@ -17,9 +17,8 @@ class Fetcher;
 class TypesResolver {
 private:
     const Fetcher *const parent;
-    const utbot::Language srcLanguage;
 public:
-    explicit TypesResolver(Fetcher const *parent, utbot::Language srcLanguage = utbot::Language::C);
+    explicit TypesResolver(Fetcher const *parent);
 
     void resolveStruct(const clang::RecordDecl *D, const std::string &name);
 

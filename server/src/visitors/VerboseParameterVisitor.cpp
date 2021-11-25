@@ -25,7 +25,7 @@ namespace visitor {
                                         const std::optional<uint64_t> alignment) {
 
         parameterAlignment = alignment;
-        visitAny(type, name, view, "", 0);
+        visitAny(type, name, view, PrinterUtils::DEFAULT_ACCESS, 0);
     }
 
     void VerboseParameterVisitor::visitPointer(const types::Type &type,

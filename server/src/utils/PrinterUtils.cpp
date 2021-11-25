@@ -28,6 +28,22 @@ namespace PrinterUtils {
                                       "    close(fds[1]);\n"
                                       "}";
 
+
+    const std::string DEFAULT_ACCESS = "%s";
+    const std::string KLEE_PREFER_CEX = "klee_prefer_cex";
+    const std::string KLEE_ASSUME = "klee_assume";
+    const std::string KLEE_PATH_FLAG = "kleePathFlag";
+    const std::string KLEE_PATH_FLAG_SYMBOLIC = "kleePathFlagSymbolic";
+    const std::string EQ_OPERATOR = " == ";
+    const std::string ASSIGN_OPERATOR = " = ";
+    const std::string TAB = "    ";
+
+    const std::string EXPECTED = "expected";
+    const std::string ACTUAL = "actual";
+    const std::string ABS_ERROR = "utbot_abs_error";
+    const std::string EXPECT_ = "EXPECT_";
+    const std::string EQ = "EQ";
+
     std::string convertToBytesFunctionName(const std::string &typeName) {
         return StringUtils::stringFormat("from_bytes<%s>", typeName);
     }
@@ -43,11 +59,25 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("%s_%s", declName, mangledPath);
     }
 
+    std::string getFieldAccess (std::string const& objectName, types::Field const &field) {
+        if (field.name.empty()) {
+            return objectName;
+        }
+        if (field.accessSpecifier == types::Field::AS_pubic) {
+            return getFieldAccess(objectName, field.name);
+        }
+        return StringUtils::stringFormat("access_private::%s(%s)", field.name, objectName);
+    }
+
     std::string getFieldAccess(std::string const& objectName, std::string const& fieldName) {
         if (fieldName.empty()) {
             return objectName;
         }
         return objectName + "." + fieldName;
+    }
+
+    std::string fillVarName(std::string const &access, std::string const &varName) {
+        return StringUtils::stringFormat(access, varName);
     }
 
     std::string initializePointer(const std::string &type, const std::string &value) {

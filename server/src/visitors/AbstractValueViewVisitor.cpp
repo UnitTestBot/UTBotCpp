@@ -99,9 +99,9 @@ namespace visitor {
         auto subViews = view ? &view->getSubViews() : nullptr;
         for (int i = 0; i < structInfo.fields.size(); i++) {
             auto const &field = structInfo.fields[i];
-            auto newName = PrinterUtils::getFieldAccess(name, field.name);
+            auto newName = PrinterUtils::getFieldAccess(name, field);
             auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
-            auto newAccess = PrinterUtils::getFieldAccess(access, field.name);
+            auto newAccess = PrinterUtils::getFieldAccess(access, field);
             visitAny(field.type, newName, newView, newAccess, depth + 1);
         }
     }
@@ -143,10 +143,10 @@ namespace visitor {
                                                                 size_t pointersCount, const string& access) {
         if (access.empty() || pointersCount == 0) {
             return StringUtils::repeat("*", pointersCount) +
-                varName + access;
+                    PrinterUtils::fillVarName(access, varName);
         } else {
-            return "(" + StringUtils::repeat("*", pointersCount) +
-                varName + ")" + access;
+            return PrinterUtils::fillVarName(access, "(" + StringUtils::repeat("*", pointersCount) +
+                                                     varName + ")");
         }
     }
 }

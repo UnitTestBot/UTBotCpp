@@ -137,6 +137,9 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
                                "-fno-elide-constructors",
                                "-D" + PrinterUtils::KLEE_MODE + "=1",
                                SanitizerUtils::CLANG_SANITIZER_CHECKS_FLAG };
+    if(Paths::isCXXFile(srcFilePath)) {
+        command.addFlagToBegin(StringUtils::stringFormat("-I%s", Paths::getAccessPrivateLibPath()));
+    }
     command.addFlagsToBegin(flags);
     command.addFlagsToBegin(extraFlags);
     command.addFlagToBegin(

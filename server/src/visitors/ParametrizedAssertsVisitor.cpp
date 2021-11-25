@@ -30,7 +30,7 @@ namespace visitor {
         } else {
             additionalPointersCount = 0;
         }
-        visitAny(returnType, "", testCase.returnValueView.get(), "", 0);
+        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0);
         functionCall = {};
         additionalPointersCount = 0;
     }
@@ -48,9 +48,9 @@ namespace visitor {
                     return;
                 } else {
                     printer->strDeclareVar(
-                            printer::Printer::getConstQualifier(type) + type.usedType(), ACTUAL,
+                            printer::Printer::getConstQualifier(type) + type.usedType(), PrinterUtils::ACTUAL,
                             functionCall, std::nullopt, true, additionalPointersCount);
-                    printer->strDeclareArrayVar(type, EXPECTED + access, usage,
+                    printer->strDeclareArrayVar(type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
                                                 view->getEntryValue(), true);
                 }
             } else {
@@ -62,8 +62,8 @@ namespace visitor {
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(name, sizes);
         const auto newAccess = printer::Printer::constrMultiIndex(access, iterators);
 
-        auto p = processExpect(type.baseTypeObj(), "EQ",
-                               {EXPECTED + newAccess, ACTUAL + newAccess});
+        auto p = processExpect(type.baseTypeObj(), PrinterUtils::EQ,
+                               {PrinterUtils::EXPECTED + newAccess, PrinterUtils::ACTUAL + newAccess});
         printer->strFunctionCall(p.name, p.args, SCNL, std::nullopt, true, 0, std::nullopt,
                                  inUnion);
         printer->closeBrackets(sizes.size());
@@ -76,8 +76,8 @@ namespace visitor {
                                                  int depth) {
         if (depth == 0) {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                   ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
-            printer->strDeclareVar(type.typeName(), EXPECTED + access, view->getEntryValue());
+                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
+            printer->strDeclareVar(type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), view->getEntryValue());
         }
         AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
     }
@@ -89,8 +89,8 @@ namespace visitor {
                                                 int depth) {
         if (depth == 0) {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                   ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
-            printer->strDeclareVar(type.typeName(), EXPECTED, view->getEntryValue());
+                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
+            printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED, view->getEntryValue());
         }
         AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
     }
@@ -105,7 +105,7 @@ namespace visitor {
                 printer->writeCodeLine(functionCall);
             } else {
                 printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                       ACTUAL, functionCall, std::nullopt, true,
+                                       PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                        additionalPointersCount);
                 const auto &gtestMacro = predicateMapping.at(predicate);
                 auto signature =
@@ -120,7 +120,8 @@ namespace visitor {
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
             auto signature =
-                    processExpect(type, gtestMacro, {getDecorateActualVarName(access), EXPECTED + access});
+                    processExpect(type, gtestMacro, {getDecorateActualVarName(access),
+                                                     PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED)});
             signature = changeSignatureToNullCheck(signature, type, view, access);
             printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                      std::nullopt, inUnion);

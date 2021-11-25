@@ -19,8 +19,7 @@ public:
     explicit FunctionDeclsMatchCallback(const Fetcher *parent,
                                         bool onlyNames,
                                         bool toResolveReturnTypes,
-                                        bool onlyReturnTypes,
-                                        utbot::Language srcLanguage = utbot::Language::C);
+                                        bool onlyReturnTypes);
 
     void run(const MatchFinder::MatchResult &Result) override;
 
@@ -30,7 +29,6 @@ private:
     bool onlyNames;
     bool toResolveReturnTypes;
     bool onlyReturnTypes;
-    const utbot::Language srcLanguage;
 
     using MethodsSet =
         std::unordered_set<tests::Tests::MethodDescription, tests::Tests::MethodDescriptionHash>;

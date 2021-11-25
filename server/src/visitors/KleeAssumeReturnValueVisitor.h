@@ -50,7 +50,7 @@ namespace visitor {
     private:
         bool returnTypeIsArray = false;
 
-        [[nodiscard]] std::string getDecorateTmpVarName(const string& access = "") const;
+        [[nodiscard]] std::string getDecorateTmpVarName(const string& access = PrinterUtils::DEFAULT_ACCESS) const;
 
         void checkNotNullBefore();
 

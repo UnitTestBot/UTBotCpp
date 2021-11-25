@@ -70,7 +70,7 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
     auto &method = methods[usage.functionName];
     const clang::QualType realParamType = varDecl->getType().getCanonicalType();
     const std::string usedParamTypeString = varDecl->getType().getAsString();
-    types::Type paramType(realParamType, usedParamTypeString);
+    types::Type paramType = types::Type(realParamType, usedParamTypeString, sourceManager);
     method.globalParams.emplace_back(paramType, usage.variableName, AlignmentFetcher::fetch(varDecl));
 }
 

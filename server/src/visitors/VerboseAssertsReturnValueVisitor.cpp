@@ -18,11 +18,11 @@ namespace visitor {
                               : methodDescription.returnType.baseTypeObj();
         if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-            printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s == " + PrinterUtils::C_NULL + ")", ACTUAL));
+            printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")", PrinterUtils::ACTUAL));
             return;
         }
         additionalPointersCount = 0;
-        visitAny(returnType, "", testCase.returnValueView.get(),"", 0);
+        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,
@@ -31,7 +31,7 @@ namespace visitor {
                                                           const string &access,
                                                           int depth) {
         const auto &gtestMacro = predicateMapping.at(predicate);
-        auto signature = processExpect(type, gtestMacro, { EXPECTED + access, getDecorateActualVarName(access) });
+        auto signature = processExpect(type, gtestMacro, {PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), getDecorateActualVarName(access) });
         signature = changeSignatureToNullCheck(signature, type, view, access);
         printer->strFunctionCall(signature.name, signature.args);
     }

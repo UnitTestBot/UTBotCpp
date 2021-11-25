@@ -21,12 +21,12 @@ namespace visitor {
         used.clear();
         for (const auto &[methodName, testMethod] : tests.methods) {
             for (auto const &param : testMethod.params) {
-                visitAny(param.type, param.name, nullptr, "", 0);
+                visitAny(param.type, param.name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
             }
             for (auto const &param : testMethod.globalParams) {
-                visitAny(param.type, param.name, nullptr, "", 0);
+                visitAny(param.type, param.name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
             }
-            visitAny(testMethod.returnType, "", nullptr, "", 0);
+            visitAny(testMethod.returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         }
         return printer.ss.str();
     }

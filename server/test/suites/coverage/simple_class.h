@@ -7,8 +7,8 @@
 #define UNITTESTBOT_SIMPLE_CLASS_H
 
 class Point_2d {
-public:
   int x;
+public:
   int y;
 
   Point_2d();
@@ -23,6 +23,9 @@ public:
 
   friend Point_2d operator+(const Point_2d& lhs, const Point_2d& rhs);
   friend Point_2d operator-(Point_2d lhs, const Point_2d& rhs);
+  friend double get_dist(const Point_2d& lhs, Point_2d& rhs);
+  friend void set_to_zero(Point_2d& point);
+  friend void set_abs_by_ref(Point_2d& point);
 
   double get_dist_to_zero() const;
 };

@@ -33,7 +33,7 @@ namespace types {
     public:
         Type() = default;
 
-        explicit Type(clang::QualType qualType, TypeName usedTypeName);
+        explicit Type(clang::QualType qualType, TypeName usedTypeName, const clang::SourceManager &sourceManager);
 
         /**
          * @return string representation of this type.
@@ -265,6 +265,13 @@ namespace types {
         unsigned int size;
         // reassigned in structFields
         unsigned int offset = 0;
+        enum AccessSpecifier {
+            AS_pubic,
+            AS_protected,
+            AS_private,
+            AS_none
+        };
+        AccessSpecifier accessSpecifier = AS_pubic;
     };
 
     struct TypeInfo {

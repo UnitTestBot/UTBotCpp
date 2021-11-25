@@ -73,6 +73,10 @@ namespace Paths {
         return getUTBotRootDir() / "gtest";
     }
 
+    fs::path getAccessPrivateLibPath() {
+        return getUTBotRootDir() / "access_private/include";
+    }
+
     fs::path getLLVMprofdata() {
         return getUTBotInstallDir() / "bin/llvm-profdata";
     }

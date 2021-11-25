@@ -15,9 +15,14 @@
 /*
  * class Type
  */
-types::Type::Type(clang::QualType qualType, TypeName usedTypeName): mUsedType(std::move(usedTypeName)) {
+types::Type::Type(clang::QualType qualType, TypeName usedTypeName, const clang::SourceManager &sourceManager): mUsedType(std::move(usedTypeName)) {
     clang::QualType canonicalType = qualType.getCanonicalType();
-    mType = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString();
+    auto pp = clang::PrintingPolicy(clang::LangOptions());
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
+        pp.adjustForCPlusPlus();
+    }
+    mType = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
     TypeVisitor visitor;
     visitor.TraverseType(qualType);
     mKinds = visitor.getKinds();
