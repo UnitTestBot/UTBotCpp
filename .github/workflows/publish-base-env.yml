@@ -5,11 +5,25 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: base_env
-  TAG: 24-11-2021
 
 jobs:
+  matrix-prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Read config from matrix.json
+        uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
+          echo "::set-output name=matrix::$TASKS"
+
   build-docker:
-    runs-on: ubuntu-18.04
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
     permissions:
       contents: read
       packages: write
@@ -31,7 +45,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{env.IMAGE_NAME}}-${{ env.TAG }}
+          key: ${{ runner.os }}-buildx-${{env.IMAGE_NAME}}-${{ matrix.DOCKER_TAG }}
           restore-keys: |
             ${{ runner.os }}-buildx-buildx
 
@@ -41,7 +55,7 @@ jobs:
         with:
           images: ${{env.REGISTRY}}/${{github.repository}}/${{env.IMAGE_NAME}}
           tags: |
-            type=raw,value=${{ env.TAG }}
+            type=raw,value=${{ matrix.DOCKER_TAG }}
 
       - name: Build and push image
         uses: docker/build-push-action@v2
@@ -55,7 +69,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
           build-args: |
-            OPERATING_SYSTEM_TAG=18.04
+            OPERATING_SYSTEM_TAG=${{ matrix.OPERATING_SYSTEM_TAG }}
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896

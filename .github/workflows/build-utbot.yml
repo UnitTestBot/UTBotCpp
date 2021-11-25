@@ -5,13 +5,25 @@ on:
     branches: [main]
 
 jobs:
+  matrix-prep:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Read config from matrix.json
+        uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
+          echo "::set-output name=matrix::$TASKS"
+
   build:
-    runs-on: ubuntu-18.04
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
     container:
-      # It is impossible to parametrize image via workflow environment,
-      # so its name is hard-coded.
-      # https://github.com/actions/runner/issues/480
-      image: ghcr.io/unittestbot/utbotcpp/base_env:24-11-2021
+      image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
@@ -20,7 +32,7 @@ jobs:
         UTBOT_INSTALL_DIR: /utbot_distr/install
         GRPC_PATH: /utbot_distr/install
         CLI_PATH: /utbot_distr/cli
-        DOCKER_TAG: 24-11-2021
+        DOCKER_TAG: ${{ matrix.DOCKER_TAG }}
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
