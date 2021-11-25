@@ -51,7 +51,7 @@ namespace visitor {
             if (methodDescription.returnType.maybeReturnArray()) {
                 returnType = methodDescription.returnType.arrayClone(usage);
             }
-            visitAny(returnType, "", nullptr, "", 0);
+            visitAny(returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         }
         checkNotNullAfter();
         functionCall = {};
@@ -64,7 +64,7 @@ namespace visitor {
                                                       const string &access,
                                                       int depth) {
         string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
-                                                         KleeUtils::RESULT_VARIABLE_NAME + access);
+                                             PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
         kleeAssumeWithNullCheck(assumption);
     }
 
@@ -75,7 +75,7 @@ namespace visitor {
                                                    int depth) {
         if (depth == 0) {
             kleeAssumeWithNullCheck("", false);
-            AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, "",
+            AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
                                                   depth);
         } else {
             AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);

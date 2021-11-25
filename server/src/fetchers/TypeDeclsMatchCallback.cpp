@@ -43,7 +43,7 @@ void TypeDeclsMatchCallback::checkStruct(const MatchFinder::MatchResult &Result)
         typesResolver.resolveStruct(ST, name);
     }
 
-    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(INNER_TYPEDEF_CLASS_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(INNER_TYPEDEF_CLASS_DECL)) {
       string name = ST->getNameAsString();
       if (name.empty()) {
         if (const auto *TD = Result.Nodes.getNodeAs<TypedefDecl>(TYPEDEF_CLASS_DECL)) {
@@ -53,7 +53,7 @@ void TypeDeclsMatchCallback::checkStruct(const MatchFinder::MatchResult &Result)
       }
     }
 
-    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(CLASS_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(CLASS_DECL)) {
       string name = ST->getNameAsString();
       typesResolver.resolveStruct(ST, name);
     }

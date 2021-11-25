@@ -249,6 +249,9 @@ namespace printer {
         testCompilationCommand.filterCFlags();
         testCompilationCommand.removeIncludeFlags();
         testCompilationCommand.addFlagToBegin(stringFormat("-I%s", Paths::getGtestLibPath() / "googletest/include"));
+        if (Paths::isCXXFile(sourcePath)) {
+            testCompilationCommand.addFlagToBegin(stringFormat("-I%s", Paths::getAccessPrivateLibPath()));
+        }
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
 

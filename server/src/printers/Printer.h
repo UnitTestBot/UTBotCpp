@@ -229,6 +229,8 @@ namespace printer {
                                const string& name,
                                const string& stubName, bool needToTypedef, bool makeStatic);
 
+        void writePrivateAccessMacros(types::TypesHandler const *typesHandler, const Tests &tests);
+
         void genStubForStructFunctionPointer(const string& structName,
                                              const string& fieldName,
                                              const string& stubName);
@@ -243,6 +245,9 @@ namespace printer {
         Stream strMemcpyImpl(std::string_view dest, std::string_view src, bool needDereference);
 
         void printAlignmentIfExists(const std::optional<uint64_t> &alignment);
+
+        void addAccessor(const types::TypesHandler *typesHandler, const types::Type &type,
+                         std::unordered_set<uint64_t> &checkedOnPrivate);
 
     protected:
         virtual void writeCopyrightHeader();

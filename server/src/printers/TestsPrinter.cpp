@@ -13,11 +13,6 @@
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
 
-#define EXPECTED "expected"
-#define ACTUAL "actual"
-#define EQ "EQ"
-#define ABS_ERROR "utbot_abs_error"
-
 using printer::TestsPrinter;
 
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
@@ -53,7 +48,7 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 
-    strDeclareAbsError(ABS_ERROR);
+    strDeclareAbsError(PrinterUtils::ABS_ERROR);
 
     for (const auto &commentBlock : tests.commentBlocks) {
         strComment(commentBlock) << NL;
@@ -180,6 +175,8 @@ void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath)
             strInclude(header.path);
         }
     }
+
+    writePrivateAccessMacros(typesHandler, tests);
 }
 
 static string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
@@ -327,7 +324,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
         strComment("No output variable check for function returning null");
     } else {
         visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
-            .visit(expectedType, EXPECTED, testCase.returnValueView.get(), std::nullopt);
+            .visit(expectedType, PrinterUtils::EXPECTED, testCase.returnValueView.get(), std::nullopt);
     }
 }
 
@@ -346,7 +343,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
             returnPointersCount = methodDescription.returnType.countReturnPointers(true);
         }
         auto type = Printer::getConstQualifier(expectedType) + expectedType.usedType();
-        strDeclareVar(type, ACTUAL, methodCall, std::nullopt, true, returnPointersCount);
+        strDeclareVar(type, PrinterUtils::ACTUAL, methodCall, std::nullopt, true, returnPointersCount);
     } else {
         ss << TAB_N() << methodCall << SCNL;
     }

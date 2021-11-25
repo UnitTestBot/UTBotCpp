@@ -15,7 +15,7 @@
 #include "utils/path/FileSystemPath.h"
 #include <vector>
 
-TypesResolver::TypesResolver(const Fetcher *parent, utbot::Language srcLanguage) : parent(parent), srcLanguage(srcLanguage) {
+TypesResolver::TypesResolver(const Fetcher *parent) : parent(parent) {
 }
 
 static bool canBeReplaced(const string &nameInMap, const string &name) {
@@ -71,7 +71,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     }
     types::StructInfo structInfo;
     fs::path filename =
-        sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
+            sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = name;
     structInfo.hasUnnamedFields = false;
@@ -86,23 +86,20 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     ss << "Struct: " << structInfo.name << "\n"
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     for (const clang::FieldDecl *F : D->fields()) {
         types::Field field;
         field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
-        field.type = types::Type(paramType, paramType.getAsString());
+        field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                F->getFunctionType(), field.name, sourceManager,
-                field.type.isArrayOfPointersToFunction());
+                    F->getFunctionType(), field.name, sourceManager,
+                    field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
             if (returnType->isPointerType() && returnType->getPointeeType()->isStructureType()) {
-                fs::path sourceFilePath =
-                    sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                        ->tryGetRealPathName()
-                        .str();
                 string structName =
-                    returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
+                        returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
                                                   structName)) {
                     (*parent->structsToDeclare)[sourceFilePath].insert(structName);
@@ -110,8 +107,8 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
             }
         } else if (field.type.isArrayOfPointersToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
-                field.name, sourceManager, field.type.isArrayOfPointersToFunction());
+                    F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
+                    field.name, sourceManager, field.type.isArrayOfPointersToFunction());
         }
         field.size = context.getTypeSize(F->getType()) / 8;
         field.offset = context.getFieldOffset(F) / 8;
@@ -119,6 +116,24 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
         structInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
+        if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
+            switch (F->getAccess()) {
+                case clang::AccessSpecifier::AS_private :
+                    field.accessSpecifier = types::Field::AS_private;
+                    break;
+                case clang::AccessSpecifier::AS_protected :
+                    field.accessSpecifier = types::Field::AS_protected;
+                    break;
+                case clang::AccessSpecifier::AS_public :
+                    field.accessSpecifier = types::Field::AS_pubic;
+                    break;
+                case clang::AccessSpecifier::AS_none :
+                    field.accessSpecifier = types::Field::AS_none;
+                    break;
+            }
+        } else {
+            field.accessSpecifier = types::Field::AS_pubic;
+        }
         fields.push_back(field);
     }
     structInfo.fields = fields;
@@ -226,7 +241,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
         string fieldName = F->getNameAsString();
         field.name = fieldName;
         const clang::QualType paramType = F->getType().getCanonicalType();
-        field.type = types::Type(paramType, paramType.getAsString());
+        field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         // TODO: add flag in logger that prevents line ending
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";

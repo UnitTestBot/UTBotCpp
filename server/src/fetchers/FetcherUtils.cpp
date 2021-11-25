@@ -11,11 +11,12 @@
 using std::shared_ptr;
 
 types::Type ParamsHandler::getType(const clang::QualType &paramDef,
-                                   const clang::QualType &paramDecl) {
+                                   const clang::QualType &paramDecl,
+                                   const clang::SourceManager &sourceManager) {
     const clang::QualType realParamType = paramDef.getCanonicalType();
     const std::string usedParamTypeString =
-        paramDecl.getNonReferenceType().getUnqualifiedType().getAsString();
-    return types::Type(realParamType, usedParamTypeString);
+            paramDecl.getNonReferenceType().getUnqualifiedType().getAsString();
+    return types::Type(realParamType, usedParamTypeString, sourceManager);
 }
 
 std::shared_ptr<types::FunctionInfo>
@@ -26,17 +27,19 @@ ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
     auto functionParamDescription = std::make_shared<types::FunctionInfo>();
     functionParamDescription->name = fName;
     functionParamDescription->returnType = types::Type(fType->getReturnType().getCanonicalType(),
-                                                       fType->getReturnType().getAsString());
+                                                       fType->getReturnType().getAsString(),
+                                                       mng);
     int paramCounter = 0;
     if (auto fProtoType = llvm::dyn_cast<clang::FunctionProtoType>(fType)) {
         for (const auto &ftParam : fProtoType->getParamTypes()) {
             functionParamDescription->params.push_back(
-                { getType(ftParam, ftParam), "param" + std::to_string(++paramCounter) });
+                { getType(ftParam, ftParam, mng), "param" + std::to_string(++paramCounter) });
         }
     }
     functionParamDescription->isArray = isArray;
     return functionParamDescription;
 }
+
 ClangToolRunner::ClangToolRunner(
     std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
     : compilationDatabase(std::move(compilationDatabase)) {

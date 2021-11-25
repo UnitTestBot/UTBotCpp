@@ -27,6 +27,6 @@ namespace visitor {
     }
 
     void KleeAssumeVisitor::kleeAssume(const string &assumption) {
-        printer->strFunctionCall("klee_assume", { assumption });
+        printer->strFunctionCall(PrinterUtils::KLEE_ASSUME, { assumption });
     }
 }

@@ -11,12 +11,6 @@
 #include <unordered_map>
 
 namespace visitor {
-    static const std::string EXPECTED = "expected";
-    static const std::string ACTUAL = "actual";
-    static const std::string ABS_ERROR = "utbot_abs_error";
-    static const std::string EXPECT_ = "EXPECT_";
-    static const std::string EQ = "EQ";
-
     class AssertsVisitor : public AbstractValueViewVisitor {
     protected:
         printer::TestsPrinter *const printer;

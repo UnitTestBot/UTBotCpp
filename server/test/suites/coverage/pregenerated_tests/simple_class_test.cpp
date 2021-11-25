@@ -5,6 +5,11 @@
 #include "simple_class_test.h"
 
 #include "gtest/gtest.h"
+
+#include "access_private.hpp"
+
+ACCESS_PRIVATE_FIELD(Point_2d, int, x);
+
 namespace UTBot {
   static const float utbot_abs_error = 1e-6;
 
@@ -40,10 +45,10 @@ namespace UTBot {
       class Point_2d rhs = {0, 0};
       class Point_2d actual = Point_2d_obj.operator+=(rhs);
       class Point_2d expected = {0, 0};
-      EXPECT_EQ(actual.x, expected.x);
+      EXPECT_EQ(access_private::x(actual), access_private::x(expected));
       EXPECT_EQ(actual.y, expected.y);
       class Point_2d expected_rhs = {0, 0};
-      EXPECT_EQ(expected_rhs.x, rhs.x);
+      EXPECT_EQ(access_private::x(expected_rhs), access_private::x(rhs));
       EXPECT_EQ(expected_rhs.y, rhs.y);
   }
 
@@ -54,10 +59,10 @@ namespace UTBot {
       class Point_2d rhs = {0, 0};
       class Point_2d actual = Point_2d_obj.operator-=(rhs);
       class Point_2d expected = {0, 0};
-      EXPECT_EQ(actual.x, expected.x);
+      EXPECT_EQ(access_private::x(actual), access_private::x(expected));
       EXPECT_EQ(actual.y, expected.y);
       class Point_2d expected_rhs = {0, 0};
-      EXPECT_EQ(expected_rhs.x, rhs.x);
+      EXPECT_EQ(access_private::x(expected_rhs), access_private::x(rhs));
       EXPECT_EQ(expected_rhs.y, rhs.y);
   }
 
@@ -76,13 +81,13 @@ namespace UTBot {
       class Point_2d rhs = {0, 0};
       class Point_2d actual = operator+(lhs, rhs);
       class Point_2d expected = {0, 0};
-      EXPECT_EQ(actual.x, expected.x);
+      EXPECT_EQ(access_private::x(actual), access_private::x(expected));
       EXPECT_EQ(actual.y, expected.y);
       class Point_2d expected_lhs = {0, 0};
-      EXPECT_EQ(expected_lhs.x, lhs.x);
+      EXPECT_EQ(access_private::x(expected_lhs), access_private::x(lhs));
       EXPECT_EQ(expected_lhs.y, lhs.y);
       class Point_2d expected_rhs = {0, 0};
-      EXPECT_EQ(expected_rhs.x, rhs.x);
+      EXPECT_EQ(access_private::x(expected_rhs), access_private::x(rhs));
       EXPECT_EQ(expected_rhs.y, rhs.y);
   }
 
@@ -92,10 +97,10 @@ namespace UTBot {
       class Point_2d rhs = {0, 0};
       class Point_2d actual = operator-({0, 0}, rhs);
       class Point_2d expected = {0, 0};
-      EXPECT_EQ(actual.x, expected.x);
+      EXPECT_EQ(access_private::x(actual), access_private::x(expected));
       EXPECT_EQ(actual.y, expected.y);
       class Point_2d expected_rhs = {0, 0};
-      EXPECT_EQ(expected_rhs.x, rhs.x);
+      EXPECT_EQ(access_private::x(expected_rhs), access_private::x(rhs));
       EXPECT_EQ(expected_rhs.y, rhs.y);
   }
 
@@ -107,10 +112,10 @@ namespace UTBot {
       double actual = get_dist(lhs, rhs);
       EXPECT_NEAR(0.000000e+00, actual, utbot_abs_error);
       class Point_2d expected_lhs = {0, 0};
-      EXPECT_EQ(expected_lhs.x, lhs.x);
+      EXPECT_EQ(access_private::x(expected_lhs), access_private::x(lhs));
       EXPECT_EQ(expected_lhs.y, lhs.y);
       class Point_2d expected_rhs = {0, 0};
-      EXPECT_EQ(expected_rhs.x, rhs.x);
+      EXPECT_EQ(access_private::x(expected_rhs), access_private::x(rhs));
       EXPECT_EQ(expected_rhs.y, rhs.y);
   }
 
@@ -120,7 +125,7 @@ namespace UTBot {
       class Point_2d point = {-1, 2};
       set_to_zero(point);
       class Point_2d expected_point = {0, 0};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 
@@ -129,7 +134,7 @@ namespace UTBot {
       class Point_2d point = {1, -1};
       set_to_zero(point);
       class Point_2d expected_point = {0, 0};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 
@@ -138,7 +143,7 @@ namespace UTBot {
       class Point_2d point = {-1, -1};
       set_to_zero(point);
       class Point_2d expected_point = {0, 0};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 
@@ -148,7 +153,7 @@ namespace UTBot {
       class Point_2d point = {0, -1};
       set_abs_by_ref(point);
       class Point_2d expected_point = {0, 1};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 
@@ -157,7 +162,7 @@ namespace UTBot {
       class Point_2d point = {0, 0};
       set_abs_by_ref(point);
       class Point_2d expected_point = {0, 0};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 
@@ -166,7 +171,7 @@ namespace UTBot {
       class Point_2d point = {-1, -1};
       set_abs_by_ref(point);
       class Point_2d expected_point = {1, 1};
-      EXPECT_EQ(expected_point.x, point.x);
+      EXPECT_EQ(access_private::x(expected_point), access_private::x(point));
       EXPECT_EQ(expected_point.y, point.y);
   }
 

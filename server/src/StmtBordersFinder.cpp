@@ -72,7 +72,7 @@ void StmtBordersFinder::run(const MatchFinder::MatchResult &Result) {
         lineInfo.scopeName = nodeParent != nullptr ? nodeParent->getNameAsString() : path.stem().string();
         lineInfo.methodName = FS->getNameAsString();
         const clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
-        lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType);
+        lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         lineInfo.initialized = true;
 
         string strRepresentation = ASTPrinter::getSourceText(currentStmt->getSourceRange(), sourceManager);

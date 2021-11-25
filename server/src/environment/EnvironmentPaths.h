@@ -30,7 +30,10 @@ namespace Paths {
 
     fs::path getGtestLibPath();
 
+    fs::path getAccessPrivateLibPath();
+
     fs::path getLLVMprofdata();
+
     fs::path getLLVMcov();
 
     fs::path getLLVMgold();

@@ -20,13 +20,13 @@ namespace visitor {
       expectedVariable = PrinterUtils::getExpectedVarName(name);
       string paramName = param.dataVariableName();
       types::Type paramType = param.type.arrayCloneMultiDim(usage);
-      visitAny(paramType, paramName, nullptr, "", 0);
+      visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       expectedVariable = {};
   }
 
   void VerboseAssertsParamVisitor::visitGlobal(const Tests::MethodParam &param, const std::string &name) {
       expectedVariable = PrinterUtils::getExpectedVarName(name);
-      visitAny(param.type, name, nullptr, "", 0);
+      visitAny(param.type, name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       expectedVariable = {};
   }
 
@@ -65,7 +65,7 @@ namespace visitor {
                                                         const tests::AbstractValueView *view,
                                                         const string &access,
                                                         int depth) {
-      auto signature = processExpect(type, EQ, { expectedVariable + access, name });
+      auto signature = processExpect(type, PrinterUtils::EQ, {PrinterUtils::fillVarName(access, expectedVariable), name });
       printer->strFunctionCall(signature.name, signature.args);
   }
 }

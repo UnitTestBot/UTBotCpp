@@ -21,14 +21,14 @@ namespace visitor {
       outVariable = _outVariable;
       string name = param.dataVariableName();
       auto paramType = param.type.arrayCloneMultiDim(usage);
-      visitAny(paramType, name, nullptr, "", 0);
+      visitAny(paramType, name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       outVariable = {};
   }
 
   void KleeAssumeParamVisitor::visitGlobal(const Tests::MethodParam &globalParam,
                                            const string &_outVariable) {
       outVariable = _outVariable;
-      visitAny(globalParam.type, globalParam.name, nullptr, "", 0);
+      visitAny(globalParam.type, globalParam.name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       outVariable = {};
   }
 
@@ -37,7 +37,7 @@ namespace visitor {
                                                     const tests::AbstractValueView *view,
                                                     const string &access,
                                                     int depth) {
-      kleeAssume(PrinterUtils::getEqualString(name, outVariable + access));
+      kleeAssume(PrinterUtils::getEqualString(name, PrinterUtils::fillVarName(access, outVariable)));
   }
 
   void KleeAssumeParamVisitor::visitPointer(const types::Type &type,

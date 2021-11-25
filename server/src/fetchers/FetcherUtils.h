@@ -76,8 +76,9 @@ private:
 
 class ParamsHandler {
 public:
-    static types::Type getType(const clang::QualType& paramDef,
-                                    const clang::QualType& paramDecl);
+    static types::Type getType(const clang::QualType &paramDef,
+                               const clang::QualType &paramDecl,
+                               const clang::SourceManager &sourceManager);
 
     static std::shared_ptr<types::FunctionInfo> getFunctionPointerDeclaration(
         const clang::FunctionType* fType,

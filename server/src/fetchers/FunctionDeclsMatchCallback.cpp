@@ -16,11 +16,9 @@ using namespace clang;
 FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
                                                        bool onlyNames,
                                                        bool toResolveReturnTypes,
-                                                       bool onlyReturnTypes,
-                                                       utbot::Language srcLanguage)
+                                                       bool onlyReturnTypes)
     : parent(parent), typesResolver(parent), onlyNames(onlyNames),
-      toResolveReturnTypes(toResolveReturnTypes), onlyReturnTypes(onlyReturnTypes),
-      srcLanguage(srcLanguage) {
+      toResolveReturnTypes(toResolveReturnTypes), onlyReturnTypes(onlyReturnTypes) {
 }
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
@@ -41,7 +39,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             return;
         }
         const clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
-        methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType);
+        methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         if (onlyReturnTypes) {
             addMethod(sourceFilePath, methodDescription);
             return;
@@ -64,7 +62,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             string className = nodeParent->getNameAsString();
             methodDescription.className = className;
         }
-        methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType);
+        methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);
         if (toResolveReturnTypes) {
             typesResolver.resolve(realReturnType);
@@ -101,7 +99,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             if (name == methodDescription.name) {
                 name = mangledName;
             }
-            auto paramType = ParamsHandler::getType(defParam->getType(), declParam->getType());
+            auto paramType = ParamsHandler::getType(defParam->getType(), declParam->getType(), sourceManager);
             addFunctionPointer(methodDescription.functionPointers, declParam->getFunctionType(),
                                declParam->getType(), name, sourceManager, paramType);
             auto alignment = AlignmentFetcher::fetch(defParam);

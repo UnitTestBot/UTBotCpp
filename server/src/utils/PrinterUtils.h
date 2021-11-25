@@ -10,14 +10,31 @@
 #include <grpcpp/grpcpp.h>
 #include <protobuf/testgen.grpc.pb.h>
 
-#include "utils/path/FileSystemPath.h"
 #include <optional>
 #include <string>
+
+#include "types/Types.h"
+#include "utils/path/FileSystemPath.h"
 
 
 namespace PrinterUtils {
     extern const std::string fromBytes;
     extern const std::string redirectStdin;
+
+    extern const std::string DEFAULT_ACCESS;
+    extern const std::string KLEE_PREFER_CEX;
+    extern const std::string KLEE_ASSUME;
+    extern const std::string KLEE_PATH_FLAG;
+    extern const std::string KLEE_PATH_FLAG_SYMBOLIC;
+    extern const std::string EQ_OPERATOR;
+    extern const std::string ASSIGN_OPERATOR;
+    extern const std::string TAB;
+
+    extern const std::string EXPECTED;
+    extern const std::string ACTUAL;
+    extern const std::string ABS_ERROR;
+    extern const std::string EXPECT_;
+    extern const std::string EQ;
 
     std::string convertToBytesFunctionName(std::string const &typeName);
 
@@ -27,7 +44,11 @@ namespace PrinterUtils {
                             utbot::ProjectContext const &projectContext,
                             const fs::path& sourceFilePath);
 
+    std::string getFieldAccess(std::string const& objectName, types::Field const &field);
+
     std::string getFieldAccess(std::string const &objectName, std::string const &fieldName);
+
+    std::string fillVarName(std::string const &temp, std::string const &varName);
 
     std::string getFunctionPointerStubName(const std::optional<std::string> &scopeName,
                                            const std::string &methodName,
