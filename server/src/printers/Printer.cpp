@@ -405,7 +405,7 @@ namespace printer {
         methodCopy.name = method.name;
 
         string stubSymbolicVarName = getStubSymbolicVarName(method.name);
-        if (!types::TypesHandler::isVoid(method.returnType)) {
+        if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
