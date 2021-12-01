@@ -8,6 +8,8 @@ No future change can break the code without being noticed once it's covered with
 This way, modifications made by developers to an existing code are much safer.
 Hence, with the help of generated unit tests, UTBot provides dramatic code quality improvement.
 
+Short video demonstration: [![UTBot C/C++ Demo](https://img.youtube.com/vi/bDJyWEeYhvk/0.jpg)](https://www.youtube.com/watch?v=bDJyWEeYhvk "UTBot C/C++ Demo")
+
 ## How to install and use UTBot
 
 For now, you can only use UTBot under Ubuntu.
