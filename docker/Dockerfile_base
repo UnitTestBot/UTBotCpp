@@ -56,7 +56,7 @@ RUN mkdir $UTBOT_ALL/llvm_gold_plugin
 COPY building_dependencies/llvm_gold_plugin/plugin-api.h $UTBOT_ALL/llvm_gold_plugin
 
 RUN apt install -y --no-install-recommends ninja-build python3-setuptools
-RUN git clone -b llvmorg-10.0.0 --depth=1 https://github.com/llvm/llvm-project.git $UTBOT_ALL/llvm
+RUN git clone -b llvmorg-12.0.0 --depth=1 https://github.com/llvm/llvm-project.git $UTBOT_ALL/llvm
 WORKDIR $UTBOT_ALL/llvm
 RUN mkdir build && cd build  \
   && $UTBOT_CMAKE_BINARY -DCMAKE_BUILD_TYPE="Release" \
