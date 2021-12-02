@@ -66,7 +66,7 @@ RUN mkdir build && cd build  \
   -DLLVM_ENABLE_RTTI=ON \
   -DLLVM_ENABLE_EH=ON \
   -DLLVM_TARGETS_TO_BUILD="host" \
-  -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libc;libclc;libcxx;libcxxabi;lld;lldb;clang-tools-extra" -G "Ninja" ../llvm \
+  -DLLVM_ENABLE_PROJECTS="clang-12.0.0;compiler-rt;libc;libclc;libcxx;libcxxabi;lld;lldb;clang-tools-extra" -G "Ninja" ../llvm \
   && $UTBOT_CMAKE_BINARY --build . --target install \
   && cd $UTBOT_ALL \
   && rm -rf $UTBOT_ALL/llvm
