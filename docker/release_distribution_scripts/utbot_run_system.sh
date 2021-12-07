@@ -7,6 +7,22 @@
 # This script can launch server, cli and tests
 #arguments - add MODE (server | cli | test)
 
+# Check os version
+os_tag=$(lsb_release -i | cut -f2)
+os_version=$(lsb_release -r | cut -f2)
+major_os_version=${os_version%%.*}
+
+if [ "$os_tag" != "Ubuntu" ] || [ "$major_os_version" -lt "18" ]
+then
+    echo "warning: $(lsb_release -d | cut -f2) unsupported system"
+    echo "UTBotCPP support ubuntu 18.04 and above"
+    read -r -p "Are want to continue? [y/N] " response
+    if ! [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+    then
+        exit 0;
+    fi
+fi
+
 # Check if arguments are correct
 if [ "$1" != "cli" ] && [ "$1" != "server" ] && [ "$1" != "test" ]
 then
