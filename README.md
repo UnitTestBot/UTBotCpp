@@ -30,4 +30,5 @@ To install UTBot VSCode plugin, use VSCode *Install from VSIX* command.
 
 ## How to contribute to UTBot
 
-See **DEVNOTE.md**.
+See [**DEVNOTE.md**](DEVNOTE.md)
+and [**CONTRIBUTING.md**](CONTRIBUTING.md)
