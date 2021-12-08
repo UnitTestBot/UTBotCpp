@@ -68,21 +68,18 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
     auto stubSources = stubGen.getStubSources(target);
 
     CollectionUtils::MapFileTo<fs::path> filesToLink;
-    filesToLink.insert({ objectFile, compilationUnitInfo->kleeFilesInfo->getKleeBitcodeFile() });
     for (const auto &sibling : siblings) {
-        if (sibling != objectFile) {
-            auto siblingCompilationUnitInfo =
-                testGen.buildDatabase->getClientCompilationUnitInfo(sibling);
-            fs::path siblingObjectFile = siblingCompilationUnitInfo->getOutputFile();
-            fs::path bitcodeFile = testGen.buildDatabase->getBitcodeForSource(
-                siblingCompilationUnitInfo->getSourcePath());
-            if (CollectionUtils::contains(stubSources,
-                                          siblingCompilationUnitInfo->getSourcePath())) {
-                bitcodeFile =
-                    LinkerUtils::applySuffix(bitcodeFile, BuildResult::Type::ALL_STUBS, "");
-            }
-            filesToLink.emplace(siblingObjectFile, bitcodeFile);
+        auto siblingCompilationUnitInfo =
+            testGen.buildDatabase->getClientCompilationUnitInfo(sibling);
+        fs::path siblingObjectFile = siblingCompilationUnitInfo->getOutputFile();
+        fs::path bitcodeFile = testGen.buildDatabase->getBitcodeForSource(
+            siblingCompilationUnitInfo->getSourcePath());
+        if (CollectionUtils::contains(stubSources,
+                                      siblingCompilationUnitInfo->getSourcePath())) {
+            bitcodeFile =
+                LinkerUtils::applySuffix(bitcodeFile, BuildResult::Type::ALL_STUBS, "");
         }
+        filesToLink.emplace(siblingObjectFile, bitcodeFile);
     }
     kleeGenerator->buildByCDb(filesToLink, stubSources);
 
