@@ -97,6 +97,8 @@ namespace printer {
         if (needDecorate()) {
             ss << NameDecorator::decorate(type) << additionalPointers << " "
                << NameDecorator::decorate(name);
+        } else if (getLanguage() == utbot::Language::CXX) {
+            ss << types::TypesHandler::cBoolToCpp(std::string(type)) << additionalPointers << " " << name;
         } else {
             ss << type << additionalPointers << " " << name;
         }
@@ -579,7 +581,7 @@ namespace printer {
                          stubName, "stub", makeStatic);
     }
 
-    void Printer::writePrivateAccessMacros(types::TypesHandler const *typesHandler, const Tests &tests) {
+    void Printer::writePrivateAccessMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {
         if (srcLanguage == utbot::Language::CXX) {
             ss << NL;
             strInclude("access_private.hpp");
@@ -588,7 +590,7 @@ namespace printer {
             for (const auto &[methodName, testMethod] : tests.methods) {
                 addAccessor(typesHandler, testMethod.returnType, checkedOnPrivate);
                 for (const auto& param : testMethod.params) {
-                    if (param.isChangeable()) {
+                    if (!onlyChangeable || param.isChangeable()) {
                         addAccessor(typesHandler, param.type, checkedOnPrivate);
                     }
                 }

@@ -51,7 +51,7 @@ Point_2d operator-(Point_2d lhs, const Point_2d& rhs) {
 }
 
 
-double get_dist(const Point_2d& lhs, Point_2d& rhs) {
+double get_dist(const Point_2d& lhs, const Point_2d& rhs) {
     auto t = lhs - rhs;
     return t.get_dist_to_zero();
 }

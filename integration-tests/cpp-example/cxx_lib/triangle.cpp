@@ -2,7 +2,8 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
 
-#include "triangle.hpp"
+#include "triangle.h"
+#include "point_2d.hpp"
 #include <cmath>
 
 
@@ -35,9 +36,9 @@ double Triangle::get_perimeter() {
 }
 
 double Triangle::get_area() {
-    auto side1 = get_dist(vertex[0], vertex[1]);
-    auto side2 = get_dist(vertex[1], vertex[2]);
-    auto side3 = get_dist(vertex[2], vertex[0]);
+    double side1 = get_dist(vertex[0], vertex[1]);
+    double side2 = get_dist(vertex[1], vertex[2]);
+    double side3 = get_dist(vertex[2], vertex[0]);
     auto p = this->get_perimeter();
     return sqrt(p * (p - side1) * (p - side2) * (p - side3));
 }
