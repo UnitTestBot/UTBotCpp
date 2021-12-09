@@ -1,0 +1,8 @@
+{
+  "include": [
+    {
+      "DOCKER_TAG": "24-11-2021",
+      "OPERATING_SYSTEM_TAG": "18.04"
+    }
+  ]
+}
