@@ -1,28 +1,51 @@
+#UTBot Developer Guide
+
 ## How to build UTBotCpp from source
 
 UTBot has many dependencies, so the easiest way to build the tool from source and develop it is to use the docker container.
 
-UTBot has a published package called [base_env](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env).
-It contains all the needed dependencies such as Git, LLVM, GRPC, GoogleTest and so on. **base_env** has multiple versions tagged with dates.
-If you are developing the tool, you are most likely to need the most recent version.
+UTBot has a published docker package called [base_env](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env).
+It contains all the needed dependencies such as Git, LLVM, GRPC, GoogleTest and others. **base_env** has multiple versions tagged with dates.
+If you are developing the tool, you are most likely to need the most recent version from [here](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env). 
 
+Supported and tested development configuration are Ubuntu 18.04, Ubuntu 20.04 or Windows Subsystem for Linux (+Ubuntu 18.04 / 20.04).
+ 
 To build UTBot from sources:
-1. Install [docker](https://docs.docker.com/engine/install/ubuntu/)
-2. Run the command  
+1. Install docker for [Ubuntu](https://docs.docker.com/engine/install/ubuntu/) or [WSL+Ubuntu](https://docs.docker.com/desktop/windows/wsl/)
+2. Install docker plugin that allows to mount host filesystem and remap owner and group:  
    ```
    docker plugin install lebokus/bindfs
    ```
-3. You need to do `docker login` to `ghcr.io` as described [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
-4. Run `utbot_docker_dev.sh` [script](https://github.com/UnitTestBot/UTBotCpp/blob/main/docker/utbot_docker_dev.sh). It will unpack the docker image and mount UTBot sources inside it.
-   UTBot binary can be built in the docker and run in it.
-   The script will prompt you to enter docker image tag. You can find the most recent tag [here](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env), for example `24-11-2021`. Also it will ask about `ssh` port required to ssh into the container using `ssh utbot@host -p $port`, where `host` is docker host IP address (it may be `localhost`). Please, specify a port that is not taken by any process. Also, you will be prompted to enter a port where UTBot itself will be run.
-5. Get access to the container via
+3. Login into github docker registry: 
+   ```
+   docker login -u <github-username> -p <github-personal-access-token> ghcr.io
+   ``` 
+   > You can create new <personal-access-token> on [this github page](https://github.com/settings/tokens/new). Don't forget to check `read:packages` permission.   
+   > More details are described [here](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-to-the-container-registry).
    
-  `ssh utbot@host -p $port` 
+4. Run `docker/utbot_docker_dev.sh` [script](https://github.com/UnitTestBot/UTBotCpp/blob/main/docker/utbot_docker_dev.sh). It will unpack the docker image and mount UTBot sources inside it.
+   UTBot binary can be built in the docker and run in it.
+   The script will prompt you to enter docker image tag. You can find the most recent tag [here](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env), for example `24-11-2021`. 
+   
+   Installer will ask about `ssh_port` on host machine. This port will be forwarded inside container's ssh port (by default `sshd` in container listens 2020). 
+   You may then login inside docker via `ssh utbot@host -p $ssh_port`, where `host` is a host machine IP address.
+   > ⚠ Specify free port that is not in use on host machine!
+    
+   Also, you will be prompted to enter a gRPC port on host machine that will be forwarded inside container's 2121 port where UTBot listens gRPC requests.   
+   > Script will run docker image, mount specified folder on host filesystem into container's filesystem and forward ports for ssh and gRPC.
+    
+   
+ 
+5. Login via ssh into newly started container
+   ``` 
+   ssh utbot@host -p $ssh_port 
+   ``` 
+   > You can type `localhost` as `host` if you are inside terminal of a host machine)
+   > If you are prompted a password, enter `utbot`.
 
-   If you are prompted a password, type in `utbot`.
-
-5. Clone UTBotCpp repository into home directory inside docker container, preferably with ssh. And don't forget to clone modules with `git submodule update --init --recursive`
+5. Clone UTBotCpp repository into home directory **inside docker container**, preferably with ssh. 
+   
+And don't forget to clone modules with `git submodule update --init --recursive`
 6. `cd` into `UTBotCpp` directory and run `build.sh` — it is the script that builds KLEE UTBot and runs UTBot unit tests
 7. Navigate to `UTBotCpp/server/build` directory and launch the binary with `./utbot server` command. Now the server is running.
 8. Launch VS Code on your local machine. Use VS Code [Remote-SSH](https://code.visualstudio.com/docs/remote/ssh) to get access to the docker insides. Navigate to `UTBotCpp/vscode-plugin` directory and run `build.sh` script.

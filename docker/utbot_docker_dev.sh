@@ -14,7 +14,7 @@ read -e -p "Enter base image tag: " IMAGE_TAG
 IMAGE="ghcr.io/unittestbot/utbotcpp/base_env:$IMAGE_TAG"
 
 echo "Pulling docker image '$IMAGE'"
-if ! docker pull $IMAGE > /dev/null; then
+if ! docker pull $IMAGE ; then
   echo "Failed to fetch the image. Aborting.."
   exit 1
 fi

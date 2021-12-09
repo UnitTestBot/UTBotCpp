@@ -27,7 +27,7 @@ Move binary and script into a new separate directory
 and run installation script in it
 ```
     cd utbot-release-version
-    chmod +x unpack_and_run_utbot.sh && ./unpack_and_run_utbot.sh
+    ./unpack_and_run_utbot.sh
 ```
 Check process is up and running
 
@@ -42,7 +42,7 @@ PID/port 2121 should be found
 -[ ]  Perform client setup:
 
    - In local VSCode look for *Install from VSIX* command, select early downloaded ```utbot_plugin.vsix``` and install it - "UnitTestBot for C/C++" plugin should be visible in Extensions
-   - For Win: setup SSH remote connection with server - locally installed UTBot plugin should be available in remote mode (no new installation required)
+   - For Win: setup SSH remote connection with server![img.png](img.png)- locally installed UTBot plugin should be available in remote mode (no new installation required)
    - Open folder with source code, test connection as proposed, click Next and finish setup configuring project
 
 ##Check UTBot: Generate Tests

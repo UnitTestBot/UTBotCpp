@@ -13,6 +13,13 @@ If not - create a new one containing:
  * Steps to reproduce *(to be on the same page)*
  * Actual and expected result *(what went wrong?)*
 
-If you already have a PR with solution - link it with the created issue 
+If you already have a PR with solution - link it with the created issue. 
 
-Please refer to [SmokeTest.md](SmokeTest.md) before submitting PR
+##How to setup development environment?
+
+Please refer [Developer guide](DEVNOTE.md) to setup developer environment, build and run UTBot.
+
+##How to test you PR? 
+
+Currently, not all checks are automized. It's required to do manual testing after PR. 
+Please perform steps from [SmokeTest.md](SmokeTest.md) before submitting PR for reviewing.

@@ -24,11 +24,10 @@ UTBot is distrbuted as an archive that contains
 4. A run script `unpack_and_run_utbot.sh`.
 
 To launch UTBot, `unzip` the archive and run the 
-`chmod +x unpack_and_run_utbot.sh && ./unpack_and_run_utbot.sh` command (we recommend doing it in a fresh directory to make UTBot removing easier). To remove UTBot, simply delete this directory.
+`./unpack_and_run_utbot.sh` command (we recommend doing it in a fresh directory to make UTBot removing easier). To remove UTBot, simply delete this directory.
 
 To install UTBot VSCode plugin, use VSCode *Install from VSIX* command.
 
 ## How to contribute to UTBot
 
-See [**DEVNOTE.md**](DEVNOTE.md)
-and [**CONTRIBUTING.md**](CONTRIBUTING.md)
+See [**CONTRIBUTING.md**](Contributing guidelines) and [**Developer guide**](DEVNOTE.md)
