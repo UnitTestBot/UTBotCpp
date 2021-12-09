@@ -80,7 +80,7 @@ fs::path KleePrinter::writeTmpKleeFile(
     ss << NL;
     writeStubsForStructureFields(tests);
 
-    writePrivateAccessMacros(typesHandler, tests);
+    writePrivateAccessMacros(typesHandler, tests, false);
 
     for (const auto &[methodName, testMethod] : tests.methods) {
         if (!methodFilter(testMethod)) {
@@ -354,8 +354,7 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
                           : testMethod.returnType;
     bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
-    auto baseType = returnType.baseType();
-    ss << TAB_N() << returnType.baseType() << " " << KleeUtils::RESULT_VARIABLE_NAME;
+    strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);

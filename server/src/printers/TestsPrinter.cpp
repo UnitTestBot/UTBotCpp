@@ -176,7 +176,7 @@ void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath)
         }
     }
 
-    writePrivateAccessMacros(typesHandler, tests);
+    writePrivateAccessMacros(typesHandler, tests, true);
 }
 
 static string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
