@@ -15,16 +15,16 @@
 namespace Coverage {
     struct FileCoverage {
         struct SourcePosition {
-            int line;
-            int character;
+            uint32_t line;
+            uint32_t character;
         };
         struct SourceRange {
             SourcePosition start;
             SourcePosition end;
         };
         struct SourceLine {
-            int line;
-            const bool operator < (const SourceLine& r) const {
+            uint32_t line;
+            bool operator< (const SourceLine& r) const {
                 return (line < r.line);
             }
         };

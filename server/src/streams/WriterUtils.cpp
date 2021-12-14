@@ -5,5 +5,5 @@
 #include "WriterUtils.h"
 
 void writeSourceLine(testsgen::SourceLine *sourceLineGrpc, Coverage::FileCoverage::SourceLine sourceLine) {
-    sourceLineGrpc->set_line(static_cast<uint32_t>(sourceLine.line));
+    sourceLineGrpc->set_line(sourceLine.line);
 }

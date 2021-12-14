@@ -16,12 +16,11 @@
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/path/FileSystemPath.h"
 
 #include "loguru.h"
-
 #include "json.hpp"
 
-#include "utils/path/FileSystemPath.h"
 #include <utility>
 
 using Coverage::CoverageMap;
@@ -86,7 +85,8 @@ std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const vector<Un
     };
 }
 
-static void addLine(int lineNumber, bool covered, FileCoverage &fileCoverage) {
+static void addLine(uint32_t lineNumber, bool covered, FileCoverage &fileCoverage) {
+    assert(lineNumber > 0);
     if (covered) {
         fileCoverage.fullCoverageLines.insert({lineNumber - 1});
     } else {
@@ -96,7 +96,7 @@ static void addLine(int lineNumber, bool covered, FileCoverage &fileCoverage) {
 
 static void setLineNumbers(const nlohmann::json &file, FileCoverage &fileCoverage) {
     for (const nlohmann::json &line : file.at("lines")) {
-        int lineNumber = line.at("line_number").get<int>();
+        uint32_t  lineNumber = line.at("line_number").get<int>();
         bool covered = line.at("count").get<int>() > 0;
         addLine(lineNumber, covered, fileCoverage);
     }
@@ -104,13 +104,14 @@ static void setLineNumbers(const nlohmann::json &file, FileCoverage &fileCoverag
 
 static void setFunctionBorders(const nlohmann::json &file, FileCoverage &fileCoverage) {
     for (const nlohmann::json &function : file.at("functions")) {
-        int startLine = function.at("start_line");
-        int endLine = function.at("end_line");
+        uint32_t startLine = function.at("start_line");
+        uint32_t endLine = function.at("end_line");
         bool covered = function.at("execution_count").get<int>() > 0;
         addLine(startLine, covered, fileCoverage);
         addLine(endLine, covered, fileCoverage);
     }
 }
+
 CoverageMap GcovCoverageTool::getCoverageInfo() const {
     ExecUtils::throwIfCancelled();
 
@@ -138,7 +139,6 @@ CoverageMap GcovCoverageTool::getCoverageInfo() const {
                 setFunctionBorders(jsonFile, coverageMap[filePath]);
             }
         });
-
     return coverageMap;
 }
 

@@ -133,10 +133,10 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
                 for (const nlohmann::json &region : function.at("regions")) {
                     // In an LLVM coverage mapping format a region is an array with line and
                     // character position
-                    FileCoverage::SourcePosition startPosition{ region.at(0).get<int>() - 1,
-                                                                region.at(1).get<int>() - 1 };
-                    FileCoverage::SourcePosition endPosition{ region.at(2).get<int>() - 1,
-                                                              region.at(3).get<int>() - 1 };
+                    FileCoverage::SourcePosition startPosition{ region.at(0).get<uint32_t>() - 1,
+                                                                region.at(1).get<uint32_t>() - 1 };
+                    FileCoverage::SourcePosition endPosition{ region.at(2).get<uint32_t>() - 1,
+                                                              region.at(3).get<uint32_t>() - 1 };
                     FileCoverage::SourceRange sourceRange{ startPosition, endPosition };
                     // The 4th element in LLVM coverage mapping format of a region
                     if (region.at(4).get<int>() == 0) {
@@ -160,14 +160,14 @@ void LlvmCoverageTool::countLineCoverage(Coverage::CoverageMap &coverageMap,
     for (auto range : coverageMap[filename].uncoveredRanges) {
         coverageMap[filename].noCoverageLinesBorders.insert({ range.start.line });
         coverageMap[filename].noCoverageLinesBorders.insert({ range.end.line });
-        for (int i = range.start.line; i <= range.end.line; i++) {
+        for (uint32_t i = range.start.line; i <= range.end.line; i++) {
             coverageMap[filename].noCoverageLines.insert({ i });
         }
     }
     for (auto range : coverageMap[filename].coveredRanges) {
         checkLineForPartial({ range.start.line }, coverageMap[filename]);
         checkLineForPartial({ range.end.line }, coverageMap[filename]);
-        for (int i = range.start.line + 1; i < range.end.line; i++) {
+        for (uint32_t i = range.start.line + 1; i < range.end.line; i++) {
             if (coverageMap[filename].noCoverageLines.count({ i }) == 0) {
                 coverageMap[filename].fullCoverageLines.insert({ i });
             }
