@@ -6,9 +6,8 @@
 #define POINT_2D_HPP
 
 class Point_2d {
-private:
-  int x;
 public:
+  int x;
   int y;
 
   Point_2d();
