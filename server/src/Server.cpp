@@ -55,13 +55,22 @@ void Server::run(uint16_t customPort) {
     }
     string address = host + ":" + std::to_string(port);
 
-    LOG_S(INFO) << "address: " << address << endl;
 
     ServerBuilder builder;
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
     builder.RegisterService(&testsService);
-    gRPCServer = builder.BuildAndStart();
-    gRPCServer->Wait();
+    if (ServerUtils::checkPort(host, port)) {
+        LOG_S(INFO) << "Address: " << address << std::endl;
+        /* Launches the watcher in a separate thread that releases
+         * unused grpc::ServerWriter<> resources.
+         */
+        logChannelsWatcherTask =
+                std::async(std::launch::async, LogUtils::logChannelsWatcher, std::ref(*this));
+        gRPCServer = builder.BuildAndStart();
+        gRPCServer->Wait();
+    } else {
+        LOG_S(ERROR) << "Port unavailable: " << port << std::endl;
+    }
 }
 
 uint16_t Server::getPort() {
@@ -72,11 +81,6 @@ uint16_t Server::getPort() {
 }
 
 Server::Server() {
-    /* Launches the watcher in a separate thread that releases
-     * unused grpc::ServerWriter<> resources.
-     */
-    logChannelsWatcherTask =
-        std::async(std::launch::async, LogUtils::logChannelsWatcher, std::ref(*this));
 }
 
 Server::Server(bool testMode) : testsService(testMode) {

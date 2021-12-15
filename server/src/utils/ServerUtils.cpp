@@ -4,6 +4,11 @@
 
 #include "ServerUtils.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+
 #include "FileSystemUtils.h"
 #include "LogUtils.h"
 #include "RequestEnvironment.h"
@@ -29,7 +34,7 @@ namespace ServerUtils {
             throw CancellationException();
         }
         auto &ref = context->client_metadata().find("clientid")->second;
-        string id{ ref.begin(), ref.end() };
+        string id{ref.begin(), ref.end()};
         RequestEnvironment::setClientId(id);
         RequestEnvironment::setServerContext(context);
         loguru::set_thread_name(id.c_str());
@@ -46,7 +51,7 @@ namespace ServerUtils {
             client = LogUtils::UNNAMED_CLIENT;
             if (!clients.in(client)) {
                 LOG_S(WARNING) << "Received registration of an unnamed client.\n"
-                      "Perhaps $USER variable could not be fetched?";
+                                  "Perhaps $USER variable could not be fetched?";
             }
         }
         clients.insert(client);
@@ -68,7 +73,7 @@ namespace ServerUtils {
                 auto modified = TimeUtils::convertFileToSystemClock(ftime);
                 auto now = std::chrono::system_clock::now();
                 std::chrono::duration<double> elapsed_seconds{
-                    std::chrono::duration_cast<std::chrono::duration<double>>(now - modified)
+                        std::chrono::duration_cast<std::chrono::duration<double>>(now - modified)
                 };
                 if (elapsed_seconds.count() < TimeUtils::DAY_DURATION.count()) {
                     result.insert(client);
@@ -81,5 +86,29 @@ namespace ServerUtils {
                 fs::create_directories(Paths::getClientTmpDir(client));
             }
         }
+    }
+
+    bool checkPort(std::string host, uint16_t port) {
+        bool result = false;
+        int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if (sock != -1) {
+            sockaddr_in sin;
+            sin.sin_family = AF_INET;
+            sin.sin_port = htons(port);
+            sin.sin_addr.s_addr = inet_addr(host.c_str());
+            if (bind(sock, (sockaddr *) (&sin), sizeof(sin)) == 0) {
+                int so_error;
+                socklen_t len = sizeof so_error;
+                if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &so_error, &len) == 0) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            } else {
+                result = false;
+            }
+            close(sock);
+        }
+        return result;
     }
 }

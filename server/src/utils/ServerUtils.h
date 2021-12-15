@@ -17,6 +17,12 @@ namespace ServerUtils {
     void registerClient(concurrent_set<string> &clients, string client);
 
     void loadClientsData(concurrent_set<string> &result);
+
+    /**
+     * @return true if can use port
+     * it's not guarantee that port will be available after call this function
+     */
+    bool checkPort(std::string host, uint16_t port);
 }
 
 #endif //UNITTESTBOT_SERVERUTIL_H
