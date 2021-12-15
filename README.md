@@ -15,7 +15,7 @@ Features demonstration in 5 min (click to see on [Youtube](https://www.youtube.c
 ## How to install and use UTBot
 
 For now, you can only use UTBot under Ubuntu.
-UTBot has been tested under Ubuntu 14, 16, and 18.
+UTBot has been tested under Ubuntu 18.04 and above.
 Navigate to the **Releases** GitHub page and download any version of UTBot.
 UTBot is distrbuted as an archive that contains
 1. A pack `utbot_distr.tar.gz` that contains UTBot binary and its dependencies;

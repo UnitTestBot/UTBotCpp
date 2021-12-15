@@ -124,6 +124,13 @@ then
 
   log "Starting a new server process; logs are written into [$UTBOT_LOGS_FOLDER] folder"
   start_process $UTBOT_PROCESS_PATTERN $UTBOT_EXECUTABLE_PATH "$UTBOT_SERVER_OPTIONS" $UTBOT_STDOUT_LOG_FILE $UTBOT_PID_FILE
+  repeats=0
+  while [ $repeats -le 20 ] && [ $(wc -l < $UTBOT_STDOUT_LOG_FILE) -lt 5 ]
+  do
+    sleep 0.1
+    repeats=$(( repeats + 1 ))
+  done
+  head $UTBOT_STDOUT_LOG_FILE -n 5
 fi
 
 if [ "$1" = "cli" ]
