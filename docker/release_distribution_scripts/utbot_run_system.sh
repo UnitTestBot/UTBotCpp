@@ -49,11 +49,11 @@ IS_SUSE="$(grep '^NAME=' /etc/os-release | tr '[:upper:]' '[:lower:]' | grep sus
 
 # Setting environment variables for debian packages
 export PATH=$UTBOT_ALL/debs-install/usr/bin:$PATH
-export LD_LIBRARY_PATH=$UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/lib:$UTBOT_ALL/install/lib
-export CPATH=$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/:$CPATH
-export C_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include:$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include/:$C_INCLUDE_PATH
-export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:$UTBOT_ALL/debs-install/usr/include
-export LDFLAGS="-fuse-ld=gold -B $UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/ -L $UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/  -B $UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu/ -L $UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu/ -L$UTBOT_ALL/debs-install/usr/lib64/ -B $UTBOT_ALL/debs-install/usr/lib64/ -L /lib64/ -B /lib64/" # Paths for object files and libraries with which compiler should link the project
+export LD_LIBRARY_PATH=$UTBOT_ALL/install/lib:$UTBOT_ALL/debs-install/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/local/lib:$UTBOT_ALL/debs-install/lib:$UTBOT_ALL/debs-install/usr/lib:$LD_LIBRARY_PATH
+export CPATH=$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/9/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/include:$CPATH
+export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:$CPLUS_INCLUDE_PATH
+export LDFLAGS="-fuse-ld=gold $LDFLAGS"
+
 # This function moves dev version of libc into $UTBOT_ALL/debs-install directory
 # Prerequisites: path/to/directory should exist
 # Arguments:
@@ -80,8 +80,6 @@ fi
 echo "/* GNU ld script */
 OUTPUT_FORMAT(elf64-x86-64)
 GROUP ( /$X86_LIBS/libm.so.6  AS_NEEDED ( $UTBOT_ALL/debs-install/usr/$X86_LIBS/libmvec_nonshared.a /$X86_LIBS/libmvec.so.1 ) )" > $UTBOT_ALL/debs-install/usr/$X86_LIBS/libm.so
-
-export LDFLAGS="$LDFLAGS -L$UTBOT_ALL/debs-install/usr/lib64/ -B $UTBOT_ALL/debs-install/usr/lib64/ -L /lib64/ -B /lib64/"
 
 # Updating libc.so so that it contains valid path to libc_nonshared.a
 echo "/* GNU ld script

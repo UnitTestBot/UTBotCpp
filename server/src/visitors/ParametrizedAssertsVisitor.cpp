@@ -63,7 +63,8 @@ namespace visitor {
         const auto newAccess = printer::Printer::constrMultiIndex(access, iterators);
 
         auto p = processExpect(type.baseTypeObj(), PrinterUtils::EQ,
-                               {PrinterUtils::EXPECTED + newAccess, PrinterUtils::ACTUAL + newAccess});
+                               {PrinterUtils::fillVarName(newAccess, PrinterUtils::EXPECTED),
+                                PrinterUtils::fillVarName(newAccess, PrinterUtils::ACTUAL)});
         printer->strFunctionCall(p.name, p.args, SCNL, std::nullopt, true, 0, std::nullopt,
                                  inUnion);
         printer->closeBrackets(sizes.size());
