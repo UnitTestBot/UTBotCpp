@@ -1,0 +1,5 @@
+add_library(src)
+target_include_directories(src PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+file(GLOB_RECURSE ALL_SOURCES "*.c" "*.h")
+target_sources(src PRIVATE ${ALL_SOURCES})
+target_link_libraries(src lib)
