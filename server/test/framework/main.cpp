@@ -51,6 +51,8 @@ int main(int argc, char **argv) {
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("cli"));
 
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("library-project"));
+
         for (auto const &subproject : { "executable", "static_library", "shared_library", "timeout" }) {
             for (auto const &compiler : { clang, gcc }) {
                 testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("run") / subproject, compiler);

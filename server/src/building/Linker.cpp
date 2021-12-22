@@ -412,7 +412,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
             return stubsSetResult.getError().value();
         }
         stubsSet = stubsSetResult.getOpt().value();
-        auto linkResult = linkWithStubsIfNeeded(linkMakefile);
+        auto linkResult = linkWithStubsIfNeeded(linkMakefile, targetBitcode);
         if (!linkResult.isSuccess()) {
             return linkResult.getError().value();
         }
@@ -497,7 +497,18 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
     return stubsSet;
 }
 
-Result<utbot::Void> Linker::linkWithStubsIfNeeded(const fs::path &linkMakefile) const {
+Result<utbot::Void> Linker::linkWithStubsIfNeeded(const fs::path &linkMakefile, const fs::path &targetBitcode) const {
+    //We already have .bc file for target. If we don't remove this file, Makefile won't execute target "all",
+    //because neither stub files, nor .bc change. However, current .bc file is incorrect, because it has compiled without stubs,
+    //so it has external functions without body.
+    bool removeStatus = fs::remove(targetBitcode);
+    if (!removeStatus) {
+        string errorMessage =
+            StringUtils::stringFormat("Can't remove file: %s", targetBitcode);
+        LOG_S(ERROR) << errorMessage;
+        return errorMessage;
+    }
+
     auto command = MakefileUtils::makefileCommand(testGen.projectContext, linkMakefile, "all");
     auto [out, status, _] = command.run(testGen.serverBuildDir);
     if (status != 0) {

@@ -91,7 +91,7 @@ private:
     Result<CollectionUtils::FileSet> generateStubsMakefile(const fs::path &root,
                                                            const fs::path &outputFile,
                                                            const fs::path &stubsMakefile) const;
-    Result<utbot::Void> linkWithStubsIfNeeded(const fs::path& linkMakefile) const;
+    Result<utbot::Void> linkWithStubsIfNeeded(const fs::path &linkMakefile, const fs::path &targetBitcode) const;
 
     void declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
                                   const fs::path &output,
