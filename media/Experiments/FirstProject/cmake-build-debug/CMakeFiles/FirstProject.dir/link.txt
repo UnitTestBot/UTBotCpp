@@ -1,0 +1,1 @@
+/usr/bin/clang++-13 -g CMakeFiles/FirstProject.dir/main.cpp.o -o FirstProject 

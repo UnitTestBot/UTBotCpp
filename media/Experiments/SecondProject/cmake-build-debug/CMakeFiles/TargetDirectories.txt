@@ -1,0 +1,3 @@
+/home/andrey/CLionProjects/UTBotCpp/media/Experiments/SecondProject/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/andrey/CLionProjects/UTBotCpp/media/Experiments/SecondProject/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/andrey/CLionProjects/UTBotCpp/media/Experiments/SecondProject/cmake-build-debug/CMakeFiles/SecondProject.dir
