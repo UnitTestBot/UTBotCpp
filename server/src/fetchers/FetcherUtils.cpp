@@ -40,8 +40,7 @@ ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
     return functionParamDescription;
 }
 
-ClangToolRunner::ClangToolRunner(
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
+ClangToolRunner::ClangToolRunner(std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
     : compilationDatabase(std::move(compilationDatabase)) {
 }
 

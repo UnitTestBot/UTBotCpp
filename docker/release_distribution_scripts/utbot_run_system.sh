@@ -50,7 +50,7 @@ IS_SUSE="$(grep '^NAME=' /etc/os-release | tr '[:upper:]' '[:lower:]' | grep sus
 # Setting environment variables for debian packages
 export PATH=$UTBOT_ALL/debs-install/usr/bin:$PATH
 export LD_LIBRARY_PATH=$UTBOT_ALL/install/lib:$UTBOT_ALL/debs-install/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/lib/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/local/lib:$UTBOT_ALL/debs-install/lib:$UTBOT_ALL/debs-install/usr/lib:$LD_LIBRARY_PATH
-export CPATH=$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/9/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/include:$CPATH
+export CPATH=$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include:$UTBOT_ALL/debs-install/usr/local/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/include:$CPATH
 export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:$CPLUS_INCLUDE_PATH
 export LDFLAGS="-fuse-ld=gold $LDFLAGS"
 

@@ -201,6 +201,19 @@ namespace testUtils {
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
 
+    std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
+                                                   const fs::path &projectPath,
+                                                   const string &buildDirRelativePath,
+                                                   const std::vector<fs::path> &srcPaths,
+                                                   const fs::path &filePath,
+                                                   int line,
+                                                   bool verbose,
+                                                   int kleeTimeout) {
+        auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
+                                             srcPaths, filePath, line, verbose, kleeTimeout);
+        return GrpcUtils::createClassRequest(std::move(lineRequest));
+    }
+
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
                                                          const fs::path &filePath) {

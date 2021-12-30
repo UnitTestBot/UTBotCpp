@@ -319,6 +319,20 @@ namespace Paths {
         return makefileDir / makefileName;
     }
 
+    std::optional<fs::path> headerPathToSourcePath(const fs::path &source) {
+        std::vector<std::string> sourceExtensions({".cc", ".cp", ".cpp", ".c++", ".cxx"});
+        if (Paths::isHeaderFile(source)) {
+            for (const std::string &extension : sourceExtensions) {
+                fs::path sourceFilePath = replaceExtension(source, extension);
+                if (fs::exists(sourceFilePath)) {
+                    return {sourceFilePath};
+                }
+            }
+        }
+        return std::nullopt;
+    }
+
+
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext,
                                 const fs::path &source) {
         return fs::relative(source.parent_path(), projectContext.projectPath);

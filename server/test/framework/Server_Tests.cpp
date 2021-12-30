@@ -52,6 +52,8 @@ namespace {
         fs::path keywords_c = getTestFilePath("keywords.c");
         fs::path alignment_c = getTestFilePath("alignment.c");
         fs::path symbolic_stdin_c = getTestFilePath("symbolic_stdin.c");
+        fs::path multiple_classes_h = getTestFilePath("multiple_classes.h");
+        fs::path multiple_classes_cpp = getTestFilePath("multiple_classes.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -961,7 +963,7 @@ namespace {
             vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
                        stoi(testCase.returnValueView->getEntryValue()) == -1;
-            } }),
+                } }),
             "sqr_positive");
     }
 
@@ -981,6 +983,51 @@ namespace {
                            stoi(testCase.paramValues[0].view->getEntryValue());
             } }),
             "sqr_positive");
+    }
+
+    TEST_P(Parameterized_Server_Test, Class_test1) {
+        auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                          multiple_classes_h, 10);
+        auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(multiple_classes_cpp);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
+                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValueView->getEntryValue() == "1";} }),
+                "get1");
+    }
+
+    TEST_P(Parameterized_Server_Test, Class_test2) {
+        auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                          multiple_classes_h, 15);
+        auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(multiple_classes_cpp);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
+                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                "get2");
+    }
+
+    TEST_P(Parameterized_Server_Test, DISABLED_Class_test3) {
+        auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                          multiple_classes_h, 18);
+        auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(multiple_classes_cpp);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
+                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                "get3");
     }
 
     TEST_P(Parameterized_Server_Test, Function_Test) {

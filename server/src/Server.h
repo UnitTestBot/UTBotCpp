@@ -6,7 +6,7 @@
 #define UNITTESTBOT_SERVER_H
 
 #include "KleeGenerator.h"
-#include "StmtBordersFinder.h"
+#include "BordersFinder.h"
 #include "ThreadSafeContainers.h"
 #include "TimeExecStatistics.h"
 #include "exceptions/CancellationException.h"

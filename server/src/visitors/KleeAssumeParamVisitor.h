@@ -7,7 +7,7 @@
 
 
 #include "KleeAssumeVisitor.h"
-#include "StmtBordersFinder.h"
+#include "BordersFinder.h"
 #include "Tests.h"
 
 namespace visitor {

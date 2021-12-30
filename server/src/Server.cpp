@@ -218,11 +218,24 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto lineTestGen = dynamic_cast<LineTestGen *>(&testGen);
 
         if (lineTestGen != nullptr) {
-            lineInfo = getLineInfo(*lineTestGen);
-            CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
-                                      [&lineInfo](const auto &methodDescription) {
-                                          return methodDescription.name != lineInfo->methodName;
-                                      });
+            if (isSameType<ClassTestGen>(testGen) && Paths::isHeaderFile(lineTestGen->filePath)) {
+                BordersFinder classFinder(lineTestGen->filePath, lineTestGen->line,
+                                          lineTestGen->compilationDatabase,
+                                          lineTestGen->compileCommandsJsonPath);
+                classFinder.findClass();
+                lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
+                lineInfo->filePath = lineTestGen->testingMethodsSourcePaths[0];
+                CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
+                                          [&lineInfo](const auto &methodDescription) {
+                                              return methodDescription.className != lineInfo->scopeName;
+                                          });
+            } else {
+                lineInfo = getLineInfo(*lineTestGen);
+                CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
+                                          [&lineInfo](const auto &methodDescription) {
+                                              return methodDescription.name != lineInfo->methodName;
+                                          });
+            }
         }
 
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
@@ -230,7 +243,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
         PathSubstitution pathSubstitution = {};
         if (lineTestGen != nullptr) {
-            lineInfo = getLineInfo(*lineTestGen);
             lineInfo->forMethod = isSameType<FunctionTestGen>(testGen);
             lineInfo->forClass = isSameType<ClassTestGen>(testGen);
             lineInfo->forAssert = isSameType<AssertionTestGen>(testGen);
@@ -238,8 +250,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 LOG_S(DEBUG) << "Added test line flag for file " << lineInfo->filePath;
                 fs::path flagFilePath =
                     printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath))
-                        .addTestLineFlag(lineInfo, isSameType<AssertionTestGen>(testGen),
-                                         testGen.projectContext);
+                        .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
                 pathSubstitution = { testGen.testingMethodsSourcePaths[0], flagFilePath };
             }
         }
@@ -290,10 +301,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 }
 
 shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
-    StmtBordersFinder stmtFinder(lineTestGen.testingMethodsSourcePaths[0], lineTestGen.line,
-                                 lineTestGen.compilationDatabase,
-                                 lineTestGen.compileCommandsJsonPath);
-    stmtFinder.launch();
+    BordersFinder stmtFinder(lineTestGen.testingMethodsSourcePaths[0], lineTestGen.line,
+                             lineTestGen.compilationDatabase,
+                             lineTestGen.compileCommandsJsonPath);
+    stmtFinder.findFunction();
     if (!stmtFinder.getLineInfo().initialized) {
         throw NoTestGeneratedException(
             "Maybe you tried to generate tests placing cursor on invalid line.");

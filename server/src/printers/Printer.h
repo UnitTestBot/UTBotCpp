@@ -6,7 +6,7 @@
 #define UNITTESTBOT_PRINTER_H
 
 #include "Language.h"
-#include "StmtBordersFinder.h"
+#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "stubs/Stubs.h"

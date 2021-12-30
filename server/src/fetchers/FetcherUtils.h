@@ -27,9 +27,10 @@ public:
     void run(const fs::path &file,
              const ToolAction &toolAction,
              bool ignoreDiagnostics = false,
-             std::optional<std::string> const &virtualFileContent = std::nullopt) {
+             std::optional<std::string> const &virtualFileContent = std::nullopt,
+             bool onlySource = true) {
         MEASURE_FUNCTION_EXECUTION_TIME
-        if (!Paths::isCFile(file) && !Paths::isCXXFile(file)) {
+        if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
             return;
         }
         auto clangTool =

@@ -38,13 +38,14 @@ void SourceToHeaderMatchCallback::run(const ast_matchers::MatchFinder::MatchResu
 }
 
 void SourceToHeaderMatchCallback::checkStruct(const MatchFinder::MatchResult &Result) {
-    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(TOPLEVEL_STRUCT_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(TOPLEVEL_STRUCT_OR_CLASS_DECL)) {
         std::string name = ST->getNameAsString();
         if (!name.empty()) {
             handleStruct(ST);
         }
     }
 }
+
 void SourceToHeaderMatchCallback::checkEnum(const MatchFinder::MatchResult &Result) {
     if (const auto *EN = Result.Nodes.getNodeAs<EnumDecl>(TOPLEVEL_ENUM_DECL)) {
         std::string name = EN->getNameAsString();

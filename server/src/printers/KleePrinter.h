@@ -8,7 +8,7 @@
 #include "PathSubstitution.h"
 #include "Printer.h"
 #include "ProjectContext.h"
-#include "StmtBordersFinder.h"
+#include "BordersFinder.h"
 #include "Tests.h"
 #include "LineInfo.h"
 #include "building/BuildDatabase.h"

@@ -89,14 +89,22 @@ namespace ServerUtils {
     }
 
     bool checkPort(std::string host, uint16_t port) {
-        bool result = false;
+        bool result = true;
         int sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         if (sock != -1) {
-            sockaddr_in sin;
-            sin.sin_family = AF_INET;
-            sin.sin_port = htons(port);
-            sin.sin_addr.s_addr = inet_addr(host.c_str());
-            if (bind(sock, (sockaddr *) (&sin), sizeof(sin)) == 0) {
+            sockaddr_in socketIn;
+            socketIn.sin_family = AF_INET;
+            socketIn.sin_port = htons(port);
+            socketIn.sin_addr.s_addr = inet_addr(host.c_str());
+            const int MAX_CONNECT = 10;
+            int connect = 0;
+            while (bind(sock, (sockaddr *) (&socketIn), sizeof(socketIn)) != 0 && connect < MAX_CONNECT) {
+                connect++;
+                if(connect > MAX_CONNECT) {
+                    result = false;
+                }
+            }
+            if (result) {
                 int so_error;
                 socklen_t len = sizeof so_error;
                 if (getsockopt(sock, SOL_SOCKET, SO_ERROR, &so_error, &len) == 0) {
@@ -104,8 +112,6 @@ namespace ServerUtils {
                 } else {
                     result = false;
                 }
-            } else {
-                result = false;
             }
             close(sock);
         }

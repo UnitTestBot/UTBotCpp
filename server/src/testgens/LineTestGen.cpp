@@ -6,11 +6,16 @@
 
 LineTestGen::LineTestGen(const testsgen::LineRequest &request,
                          ProgressWriter *progressWriter,
-                         bool testMode)
-    : ProjectTestGen(request.projectrequest(), progressWriter, testMode) {
+                         bool testMode, bool forHeader)
+        : ProjectTestGen(request.projectrequest(), progressWriter, testMode) {
     filePath = request.sourceinfo().filepath();
     line = request.sourceinfo().line();
-    testingMethodsSourcePaths = { filePath };
+    std::optional sourcePath = Paths::headerPathToSourcePath(filePath);
+    if (forHeader && sourcePath.has_value()) {
+        testingMethodsSourcePaths = {sourcePath.value()};
+    } else {
+        testingMethodsSourcePaths = {filePath};
+    }
     setInitializedTestsMap();
 }
 
