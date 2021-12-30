@@ -7,7 +7,7 @@
 ClassTestGen::ClassTestGen(const testsgen::ClassRequest &request,
                            ProgressWriter *progressWriter,
                            bool testMode)
-    : LineTestGen(request.linerequest(), progressWriter, testMode) {
+    : LineTestGen(request.linerequest(), progressWriter, testMode, true) {
 }
 
 string ClassTestGen::toString() {

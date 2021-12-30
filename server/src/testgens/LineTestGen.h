@@ -11,7 +11,8 @@ class LineTestGen : public ProjectTestGen {
 public:
     LineTestGen(const testsgen::LineRequest &request,
                 ProgressWriter *progressWriter,
-                bool testMode);
+                bool testMode,
+                bool forHeader = false);
     
     ~LineTestGen() override = default;
 

@@ -82,6 +82,15 @@ namespace testUtils {
                                                    bool verbose = true,
                                                    int kleeTimeout = 60);
 
+    std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
+                                                    const fs::path &projectPath,
+                                                    const string &buildDirRelativePath,
+                                                    const std::vector<fs::path> &srcPaths,
+                                                    const fs::path &filePath,
+                                                    int line,
+                                                    bool verbose = true,
+                                                    int kleeTimeout = 60);
+
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
                                     const fs::path &projectPath,

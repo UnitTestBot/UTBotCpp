@@ -14,17 +14,11 @@ namespace Matchers {
     using DeclarationMatcher = clang::ast_matchers::DeclarationMatcher;
     using StatementMatcher = clang::ast_matchers::StatementMatcher;
 
-    static inline const std::string STRUCT_DECL = "struct_decl";
-    static inline const std::string STRUCT_JUST_DECL = "struct_just_decl";
-    static inline const std::string TOPLEVEL_STRUCT_DECL = "toplevel_struct_decl";
-    static inline const std::string INNER_TYPEDEF_STRUCT_DECL = "the_struct";
-    static inline const std::string TYPEDEF_STRUCT_DECL = "the_struct_typedef";
-
-    static inline const std::string CLASS_DECL = "class_decl";
-    static inline const std::string CLASS_JUST_DECL = "class_just_decl";
-    static inline const std::string TOPLEVEL_CLASS_DECL = "toplevel_class_decl";
-    static inline const std::string INNER_TYPEDEF_CLASS_DECL = "the_class";
-    static inline const std::string TYPEDEF_CLASS_DECL = "the_class_typedef";
+    static inline const std::string STRUCT_OR_CLASS_DECL = "struct_decl";
+    static inline const std::string STRUCT_OR_CLASS_JUST_DECL = "struct_just_decl";
+    static inline const std::string TOPLEVEL_STRUCT_OR_CLASS_DECL = "toplevel_struct_decl";
+    static inline const std::string INNER_TYPEDEF_STRUCT_OR_CLASS_DECL = "the_struct";
+    static inline const std::string TYPEDEF_STRUCT_OR_CLASS_DECL = "the_struct_typedef";
 
     static inline const std::string ENUM_DECL = "enum_decl";
     static inline const std::string TOPLEVEL_ENUM_DECL = "toplevel_enum_decl";
@@ -53,6 +47,11 @@ namespace Matchers {
     extern const DeclarationMatcher structJustDeclMatcher;
     extern const DeclarationMatcher typedefStructMatcher;
     extern const DeclarationMatcher toplevelStructMatcher;
+
+    extern const DeclarationMatcher classMatcher;
+    extern const DeclarationMatcher classJustDeclMatcher;
+    extern const DeclarationMatcher typedefClassMatcher;
+    extern const DeclarationMatcher toplevelClassMatcher;
 
     extern const DeclarationMatcher enumMatcher;
     extern const DeclarationMatcher typedefEnumMatcher;

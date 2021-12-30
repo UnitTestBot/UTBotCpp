@@ -221,13 +221,13 @@ namespace Paths {
 
     static inline bool isCXXFile(const fs::path &path) {
         return path.extension() == ".cc" || path.extension() == ".cp" ||
-               path.extension() == ".cpp" || path.extension() == "c++" ||
+               path.extension() == ".cpp" || path.extension() == ".c++" ||
                path.extension() == ".cxx";
     }
 
     static inline bool isHppFile(const fs::path &path) {
         return path.extension() == ".hh" || path.extension() == ".hpp" ||
-               path.extension() == "hxx";
+               path.extension() == ".hxx";
     }
 
     static inline bool isHeaderFile(const fs::path &path) {
@@ -354,6 +354,8 @@ namespace Paths {
     fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+
+    std::optional<fs::path> headerPathToSourcePath(const fs::path &source);
     //endregion
 
     //region stubs

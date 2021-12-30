@@ -157,6 +157,8 @@ target_link_libraries(
         UnitTestBotLib
 )
 
+add_test(UTBot_UnitTests UTBot_UnitTests)
+
 install(TARGETS utbot
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         )

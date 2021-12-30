@@ -9,7 +9,7 @@
 #include "ProjectContext.h"
 #include "Result.h"
 #include "SettingsContext.h"
-#include "StmtBordersFinder.h"
+#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "exceptions/CompilationDatabaseException.h"

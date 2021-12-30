@@ -28,4 +28,5 @@ add_executable(server
         types.c
         alignment.c
         symbolic_stdin.c
+        multiple_classes.cpp
         )

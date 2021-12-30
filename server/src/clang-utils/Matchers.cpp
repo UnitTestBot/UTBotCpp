@@ -18,19 +18,19 @@ namespace Matchers {
 
     const DeclarationMatcher structMatcher =
         recordDecl(isStruct(), isDefinition(), hasIndependentType())
-            .bind(STRUCT_DECL);
+            .bind(STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher classMatcher =
         recordDecl(isClass(), isDefinition(), hasIndependentType())
-            .bind(CLASS_DECL);
+            .bind(STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher structJustDeclMatcher =
         recordDecl(isStruct())
-            .bind(STRUCT_JUST_DECL);
+            .bind(STRUCT_OR_CLASS_JUST_DECL);
 
     const DeclarationMatcher classJustDeclMatcher =
         recordDecl(isClass())
-            .bind(CLASS_JUST_DECL);
+            .bind(STRUCT_OR_CLASS_JUST_DECL);
 
     const DeclarationMatcher typedefStructMatcher =
         typedefDecl(
@@ -39,8 +39,8 @@ namespace Matchers {
                     namesType(
                         recordType(
                             hasDeclaration(
-                                recordDecl(isStruct(), isDefinition(), hasIndependentType()).bind(INNER_TYPEDEF_STRUCT_DECL)))))))
-            .bind(TYPEDEF_STRUCT_DECL);
+                                recordDecl(isStruct(), isDefinition(), hasIndependentType()).bind(INNER_TYPEDEF_STRUCT_OR_CLASS_DECL)))))))
+            .bind(TYPEDEF_STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher typedefClassMatcher =
         typedefDecl(
@@ -49,16 +49,16 @@ namespace Matchers {
                     namesType(
                         recordType(
                             hasDeclaration(
-                                recordDecl(isClass(), isDefinition(), hasIndependentType()).bind(INNER_TYPEDEF_STRUCT_DECL)))))))
-                  .bind(TYPEDEF_CLASS_DECL);
+                                recordDecl(isClass(), isDefinition(), hasIndependentType()).bind(INNER_TYPEDEF_STRUCT_OR_CLASS_DECL)))))))
+                  .bind(TYPEDEF_STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher toplevelStructMatcher =
         recordDecl(isStruct(), TopLevelDecl, hasIndependentType())
-            .bind(TOPLEVEL_STRUCT_DECL);
+            .bind(TOPLEVEL_STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher toplevelClassMatcher =
         recordDecl(isClass(), TopLevelDecl, hasIndependentType())
-            .bind(TOPLEVEL_CLASS_DECL);
+            .bind(TOPLEVEL_STRUCT_OR_CLASS_DECL);
 
     const DeclarationMatcher enumMatcher =
         enumDecl(isDefinition(), hasIndependentType()).bind(ENUM_DECL);

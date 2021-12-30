@@ -28,39 +28,39 @@ void TypeDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
 }
 
 void TypeDeclsMatchCallback::checkStruct(const MatchFinder::MatchResult &Result) {
-    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(INNER_TYPEDEF_STRUCT_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(INNER_TYPEDEF_STRUCT_OR_CLASS_DECL)) {
         string name = ST->getNameAsString();
         if (name.empty()) {
-            if (const auto *TD = Result.Nodes.getNodeAs<TypedefDecl>(TYPEDEF_STRUCT_DECL)) {
+            if (const auto *TD = Result.Nodes.getNodeAs<TypedefDecl>(TYPEDEF_STRUCT_OR_CLASS_DECL)) {
                 string typedefName = TD->getNameAsString();
                 typesResolver.resolveStruct(ST, typedefName);
             }
         }
     }
 
-    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(STRUCT_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(STRUCT_OR_CLASS_DECL)) {
         string name = ST->getNameAsString();
         typesResolver.resolveStruct(ST, name);
     }
 
-    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(INNER_TYPEDEF_CLASS_DECL)) {
-      string name = ST->getNameAsString();
-      if (name.empty()) {
-        if (const auto *TD = Result.Nodes.getNodeAs<TypedefDecl>(TYPEDEF_CLASS_DECL)) {
-          string typedefName = TD->getNameAsString();
-          typesResolver.resolveStruct(ST, typedefName);
+    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(INNER_TYPEDEF_STRUCT_OR_CLASS_DECL)) {
+        string name = ST->getNameAsString();
+        if (name.empty()) {
+            if (const auto *TD = Result.Nodes.getNodeAs<TypedefDecl>(TYPEDEF_STRUCT_OR_CLASS_DECL)) {
+                string typedefName = TD->getNameAsString();
+                typesResolver.resolveStruct(ST, typedefName);
+            }
         }
-      }
     }
 
-    if (const auto *ST = Result.Nodes.getNodeAs<CXXRecordDecl>(CLASS_DECL)) {
-      string name = ST->getNameAsString();
-      typesResolver.resolveStruct(ST, name);
+    if (const auto *ST = Result.Nodes.getNodeAs<RecordDecl>(STRUCT_OR_CLASS_DECL)) {
+        string name = ST->getNameAsString();
+        typesResolver.resolveStruct(ST, name);
     }
 }
 
 void TypeDeclsMatchCallback::checkStructDecl(const MatchFinder::MatchResult &Result) {
-    if (const auto *ST = Result.Nodes.getNodeAs<clang::RecordDecl>(Matchers::STRUCT_JUST_DECL)) {
+    if (const auto *ST = Result.Nodes.getNodeAs<clang::RecordDecl>(Matchers::STRUCT_OR_CLASS_JUST_DECL)) {
         clang::SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
                                       ->tryGetRealPathName()
