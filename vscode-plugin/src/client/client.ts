@@ -42,6 +42,7 @@ import { Protos } from '../requests/protos';
 import { Wrapper } from '../utils/utils';
 import { ClientEventsEmitter } from './clientEventsEmitter';
 import { ResponseHandler, SomeResponse } from '../responses/responseHandler';
+import { Status } from 'grpc/build/src/constants';
 const { logger, setupLogger } = ExtensionLogger;
 
 type ResolveType<T> = (value: T | PromiseLike<T>) => void;
@@ -70,6 +71,7 @@ export class Client {
     }
 
     private connectionStatus: ConnectionStatus = ConnectionStatus.INIT;
+    private isNoConnectionEstablishedErrorLogged: boolean = true;
 
     private _newClient = true;
     get newClient(): boolean {
@@ -117,12 +119,12 @@ export class Client {
     public setEventsHandlers(): void {
         this.events.onDidHeartbeatFailureEventEmitter.on(errorMessage => {
             if (!this.isConnectionBroken()) {
-                const logMesage = this.isConnectionInInitState()
+                const logMessage = this.isConnectionInInitState()
                     ? `Connection with server can't be established`
                     : `Connection with server lost`;
                 this.updateConnectionState(ConnectionStatus.BROKEN);
                 messages.showErrorMessage(messages.serverIsDeadError);
-                logger.warn(logMesage);
+                logger.warn(logMessage);
                 logger.debug(errorMessage);
             }
         });
@@ -207,7 +209,7 @@ export class Client {
             return new Promise<void>((resolve, reject) => {
                 this.testsService.registerClient(registerClientRequest, (err) => {
                     if (err) {
-                        reject(err.message);
+                        reject(err);
                     } else {
                         resolve();
                     }
@@ -217,7 +219,16 @@ export class Client {
                 this.metadata.add('clientId', clientId as string);
                 resolve();
             }).then(undefined, err => {
-                logger.error(err);
+                let targetCode = Status.UNAVAILABLE;
+
+                if (err.code === targetCode) {
+                    if (this.isNoConnectionEstablishedErrorLogged) {
+                        this.isNoConnectionEstablishedErrorLogged = false;
+                        logger.error(err.message);
+                    }
+                } else {
+                    logger.error(err.message);
+                }
                 resolve();
             });
         });
@@ -296,6 +307,10 @@ export class Client {
     }
 
     private updateConnectionState(connectionStatus: ConnectionStatus): void {
+        if (connectionStatus !== this.connectionStatus 
+            && connectionStatus === ConnectionStatus.ESTABLISHED) {
+            this.isNoConnectionEstablishedErrorLogged = true;
+        }
         this.connectionStatus = connectionStatus;
         utbotUI.indicators().connectionStatusBarItem.text =
             this.getTitleByConnectionStatus(connectionStatus);
