@@ -104,3 +104,10 @@ Remove the following line in utbot_docker_dev.sh:
 ```shell
  -v $MOUNT_LOCAL_NAME:/home/utbot/mnt \
 ```
+
+### Problems with build in Visual Studio Code
+If you experience this error:
+```shell
+command npm run watch terminated with exit code 1
+```
+Then there is compilation error and if it is not fixed the previous version of the code will run (debugger won't work correctly)
