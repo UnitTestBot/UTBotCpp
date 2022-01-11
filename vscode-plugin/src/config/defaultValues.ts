@@ -25,8 +25,8 @@ export class DefaultConfigValues {
     }
 
     public static getDefaultRemotePath(): string {
-        if (os.platform() === 'win32') {
-            return "";
+        if (Prefs.isRemoteScenario()) {
+            return vsUtils.getRemotePathFromSftpConfig();
         } else {
             return vsUtils.getProjectDirByOpenedFile().fsPath;
         }
