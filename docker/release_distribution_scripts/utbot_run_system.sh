@@ -36,6 +36,12 @@ export UTBOT_RELEASE=true
 # Retrieving path to $UTBOT_ALL from absolute path to current script
 export UTBOT_ALL=$CURRENT_FOLDER
 
+# Common variables
+export UTBOT_PROCESS_PATTERN=utbot
+export UTBOT_BINARIES_FOLDER=$UTBOT_ALL/server-install
+export UTBOT_PID_FILE=$UTBOT_BINARIES_FOLDER/$UTBOT_PROCESS_PATTERN.pid
+export UTBOT_LOGS_FOLDER=$UTBOT_ALL
+
 # Setting environment variables according to $UTBOT_ALL
 export UTBOT_INSTALL_DIR=$UTBOT_ALL/install
 export CC=$UTBOT_ALL/debs-install/usr/bin/gcc-9
@@ -95,13 +101,10 @@ echo "/* GNU ld script
 OUTPUT_FORMAT(elf64-x86-64)
 GROUP ( /$X86_LIBS/libpthread.so.0 $UTBOT_ALL/debs-install/usr/$X86_LIBS/libpthread_nonshared.a )" > $UTBOT_ALL/debs-install/usr/$X86_LIBS/libpthread.so
 
-# Creating logs directories so that watchdog and utbot can launch
-mkdir -p /home/$USER/logs/watchdog
-mkdir -p /home/$USER/logs/utbot
+mkdir -p $UTBOT_LOGS_FOLDER/logs
 
 # Path to common functions
-WATCHDOG_SCRIPT_FOLDER=$UTBOT_ALL/utbot_scripts
-COMMON_FUNCTIONS_SCRIPT_PATH=$WATCHDOG_SCRIPT_FOLDER/common_functions.sh
+COMMON_FUNCTIONS_SCRIPT_PATH=$UTBOT_ALL/utbot_scripts/common_functions.sh
 source $COMMON_FUNCTIONS_SCRIPT_PATH
 
 if [ "$1" = "server" ]
@@ -116,9 +119,8 @@ then
 
   #Server-specific parameters
   UTBOT_EXECUTABLE_PATH=$UTBOT_BINARIES_FOLDER/$UTBOT_PROCESS_PATTERN
-  UTBOT_STDOUT_LOG_FILE=$UTBOT_LOGS_FOLDER/$UTBOT_PROCESS_PATTERN-$(now).log
-  UTBOT_TMP_FOLDER=$UTBOT_LOGS_FOLDER/tmp
-  UTBOT_SERVER_OPTIONS="$UTBOT_MODE --port $UTBOT_PORT --log=$UTBOT_LOGS_FOLDER --tmp=$UTBOT_TMP_FOLDER"
+  UTBOT_STDOUT_LOG_FILE=$UTBOT_LOGS_FOLDER/logs/$UTBOT_PROCESS_PATTERN-$(now).log
+  UTBOT_SERVER_OPTIONS="$UTBOT_MODE --port $UTBOT_PORT --log=$UTBOT_LOGS_FOLDER --tmp=$UTBOT_ALL"
 
   log "Starting a new server process; logs are written into [$UTBOT_LOGS_FOLDER] folder"
   start_process $UTBOT_PROCESS_PATTERN $UTBOT_EXECUTABLE_PATH "$UTBOT_SERVER_OPTIONS" $UTBOT_STDOUT_LOG_FILE $UTBOT_PID_FILE
