@@ -180,7 +180,7 @@ async function runWithProgress(
                 const skip = 'Skip';
                 const fileTargets = await client.requestFileTargets(filePath, progressKey, token);
                 const targetsList = fileTargets.getTargetsList();
-                const message = `${details}: ${pathUtils.substituteLocalPath(filePath)}. See [documentation](http://utbot.inhuawei.com/docs/cpp) for more details.`;
+                const message = `${details}: ${pathUtils.substituteLocalPath(filePath)}. See [documentation](https://github.com/UnitTestBot/UTBotCpp/wiki) for more details.`;
                 return vs.window.showWarningMessage(message, ...[chooseTarget, skip]).then(async selection => {
                     if (selection === chooseTarget) {
                         const quickPickItems = targetsList
