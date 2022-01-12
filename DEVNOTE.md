@@ -43,18 +43,17 @@ To build UTBot from sources:
    > You can type `localhost` as `host` if you are inside terminal of a host machine)
    > If you are prompted a password, enter `utbot`.
 
-5. Clone UTBotCpp repository into home directory **inside docker container**, preferably with ssh. 
-   
-And don't forget to clone modules with `git submodule update --init --recursive`
-6. `cd` into `UTBotCpp` directory and run `build.sh` — it is the script that builds KLEE UTBot and runs UTBot unit tests
-7. Navigate to `UTBotCpp/server/build` directory and launch the binary with `./utbot server` command. Now the server is running.
-8. Launch VS Code on your local machine. Use VS Code [Remote-SSH](https://code.visualstudio.com/docs/remote/ssh) to get access to the docker insides. Navigate to `UTBotCpp/vscode-plugin` directory and run `build.sh` script.
-9. Press F5 (*Run Extension*). This will run UTBot VS Code plugin.
-10. A new VS Code window will open; this window will have UTBot VS Code plugin enabled. In this new folder, open `UTBotCpp/integration-tests/c-example` directory.
-11. When UTBot Quickstart Wizard requests you to enter server host and port, specify `localhost` and UTBot server run port 2121, respectively.
+6. Clone UTBotCpp repository into home directory **inside docker container**, preferably with ssh.
+7. `cd` into `UTBotCpp` directory and run `build.sh` — it is the script that builds KLEE UTBot and runs UTBot unit tests
+8. Clone submodules `git submodule update --init --recursive`
+9. Navigate to `UTBotCpp/server/build` directory and launch the binary with `./utbot server` command. Now the server is running.
+10. Launch VS Code on your local machine. Use VS Code [Remote-SSH](https://code.visualstudio.com/docs/remote/ssh) to get access to the docker insides. Navigate to `UTBotCpp/vscode-plugin` directory and run `build.sh` script.
+11. Press F5 (*Run Extension*). This will run UTBot VS Code plugin.
+12. A new VS Code window will open; this window will have UTBot VS Code plugin enabled. In this new folder, open `UTBotCpp/integration-tests/c-example` directory.
+13. When UTBot Quickstart Wizard requests you to enter server host and port, specify `localhost` and UTBot server run port 2121, respectively.
    ![Oops, something went wrong! Please look at wizardInstall.gif](media/wizardInstall.gif "UTBot Wizard Demo")
-12. Select project path as `/home/utbot/UTBotCpp/integration-tests/c-example`;
-13. You are now ready to experience UTBot capabilities! You can view possible commands in Command Palette (Press F1 and type in UTBot).
+14. Select project path as `/home/utbot/UTBotCpp/integration-tests/c-example`;
+15. You are now ready to experience UTBot capabilities! You can view possible commands in Command Palette (Press F1 and type in UTBot).
 
 If you want to change UTBot test generation preferences, you can edit them in  File > Preferences > Settings > Extensions > UnitTestBot.
 After UTBot configuration, you can select your source directories with the tab on the VSCode toolbar on the left. Then, you can generate tests with the use of Command Palette. Press **F1** and type in "UTBot": You will see tests generation options.
@@ -104,6 +103,18 @@ Remove the following line in utbot_docker_dev.sh:
 ```shell
  -v $MOUNT_LOCAL_NAME:/home/utbot/mnt \
 ```
+
+### Failed to load project in CLion
+If error like this happens then you try load Cmake in CLion
+```
+CMake File API: C:\Users\kWX1061625\work\UTBotCpp\server\cmake-build-debug-remote-host-ml: target-gmock-Debug-0b6fa789e179f468efb4.json: no CMakeLists.txt file at '\utbot_distr\gtest\googlemock\CMakeLists.txt'
+```
+Settings | Advanced Settings -> "Use legacy generator for CMake 3.20 and higher".
+
+Settings | Build, Execution, Deployment | CMake -> Generator: "Use default"
+
+[issue](https://youtrack.jetbrains.com/issue/CPP-27998)
+
 
 ### Problems with build in Visual Studio Code
 If you experience this error:
