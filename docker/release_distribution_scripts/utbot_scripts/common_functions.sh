@@ -6,12 +6,6 @@
 
 # The script provides bash functions that are commonly used in other scripts
 
-# Common variables
-export UTBOT_PROCESS_PATTERN=utbot
-export UTBOT_BINARIES_FOLDER=$UTBOT_ALL/server-install
-export UTBOT_PID_FILE=$UTBOT_BINARIES_FOLDER/$UTBOT_PROCESS_PATTERN.pid
-export UTBOT_LOGS_FOLDER=/home/$USER/logs/utbot
-
 # Common functions
 
 # Returns current timestamp
