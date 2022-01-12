@@ -42,7 +42,7 @@ namespace {
         }
     };
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-372
+    // uint_32t parameters/return values and call external printf
     TEST_F(Regression_Test, SAT_372_Printf_Symbolic_Parameter) {
         fs::path helloworld_c = getTestFilePath("helloworld.c");
 
@@ -60,7 +60,6 @@ namespace {
             "helloworld");
     }
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-752
     TEST_F(Regression_Test, Null_Return) {
         fs::path source = getTestFilePath("SAT-752.c");
 
@@ -78,7 +77,7 @@ namespace {
         }
     }
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-760
+    // struct definition, declaration, usage in separate files
     TEST_F(Regression_Test, Incomplete_Array_Type) {
         fs::path folderPath = suitePath / "SAT-760";
         auto projectRequest = testUtils::createProjectRequest(
@@ -120,7 +119,7 @@ namespace {
         }
     }
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-766
+    // array type needs an explicit size or an initializer
     TEST_F(Regression_Test, Global_Char_Array) {
         fs::path source = getTestFilePath("SAT-766.c");
 
@@ -138,7 +137,7 @@ namespace {
             "first");
     }
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-767
+    // Index array into array of struct
     TEST_F(Regression_Test, Index_Out_Of_Bounds) {
         fs::path source = getTestFilePath("SAT-767.c");
         auto [testGen, status] = createTestForFunction(source, 12);
@@ -157,7 +156,7 @@ namespace {
             "first");
     }
 
-    // http://jira-msc.rnd.huawei.com/browse/SAT-777
+    // null pointer
     TEST_F(Regression_Test, Global_Array_Of_Pointers) {
         fs::path source = getTestFilePath("SAT-777.c");
         auto [testGen, status] = createTestForFunction(source, 9);

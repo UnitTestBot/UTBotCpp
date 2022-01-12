@@ -15,7 +15,7 @@ import { ProjectConfigEventsEmitter } from './projectConfigEventsEmitter';
 const { logger } = ExtensionLogger;
 
 export class ProjectConfig {
-    private static readonly guideUri = "http://utbot.inhuawei.com/docs/cpp";
+    private static readonly guideUri = "https://github.com/UnitTestBot/UTBotCpp/wiki";
 
     private readonly projectName: string;
     private readonly projectPath: string;

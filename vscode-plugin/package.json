@@ -2,7 +2,7 @@
 	"name": "unittestbot",
 	"displayName": "UnitTestBot for C/C++",
 	"publisher": "Huawei",
-	"repository": "https://rnd-gitlab-msc.huawei.com/unittestbot/UnitTestBot",
+	"repository": "https://github.com/UnitTestBot/UTBotCpp",
 	"description": "Provides instruments for auto generating regression tests in C/C++ projects.",
 	"version": "0.0.1",
 	"engines": {
@@ -24,11 +24,11 @@
 		"viewsWelcome": [
 			{
 				"view": "UTBotTargets",
-				"contents": "No targets can be found in current workspace.\n[Learn more about UTBot C/C++](https://confluence-msc.rnd.huawei.com/display/SAT/UnitTestBot+CPP+Manual)."
+				"contents": "No targets can be found in current workspace.\n[Learn more about UTBot C/C++](https://github.com/UnitTestBot/UTBotCpp/wiki/targets)."
 			},
 			{
 				"view": "UTBotFolders",
-				"contents": "No folders can be found in current workspace.\n[Learn more about UTBot C/C++](http://utbot.inhuawei.com/docs/cpp)."
+				"contents": "No folders can be found in current workspace.\n[Learn more about UTBot C/C++](https://github.com/UnitTestBot/UTBotCpp/wiki)."
 			}
 		],
 		"viewsContainers": {
