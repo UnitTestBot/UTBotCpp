@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as vs from 'vscode';
 import { Prefs } from '../config/prefs';
 import * as vsUtils from './vscodeUtils';
+import {isWin32} from './utils';
 
 export function substituteRemotePath(localFilePath: string): string {
     if (!Prefs.isRemoteScenario()) {
@@ -16,7 +17,7 @@ export function substituteRemotePath(localFilePath: string): string {
     const projectDirName = path.basename(vsUtils.getProjectDirByOpenedFile().fsPath);
     let remoteFilePath = fsJoin(remoteProjectDirPath,
         localFilePath.slice(localFilePath.indexOf(projectDirName) + projectDirName.length));
-    if (os.platform() === 'win32') {
+    if (isWin32()) {
         remoteFilePath = remoteFilePath.replace(/\\/g, '/');
     }
     remoteFilePath = normalizeRawPosixPath(remoteFilePath);
@@ -32,7 +33,7 @@ export function substituteLocalPath(remoteFilePath: string): string {
     const projectDirName = path.basename(remoteRoot);
     const relative = remoteFilePath.slice(remoteFilePath.indexOf(projectDirName) + projectDirName.length);
     const localFilePath = fsJoin(root.fsPath, relative);
-    if (os.platform() === 'win32') {
+    if (isWin32()) {
         return path.win32.normalize(localFilePath);
     }
     return localFilePath;
@@ -56,7 +57,7 @@ export function getRootPath(): string | undefined {
 }
 
 export function fsJoin(...paths: string[]): string {
-    if (os.platform() === 'win32') {
+    if (isWin32()) {
         return path.win32.join(...paths);
     } else {
         return path.posix.join(...paths);

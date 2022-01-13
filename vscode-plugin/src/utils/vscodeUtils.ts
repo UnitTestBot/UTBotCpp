@@ -49,16 +49,14 @@ export function getTextEditor(): vs.TextEditor | undefined {
     return undefined;
 }
 
-export function getRemotePathFromSftpConfig(): string {
+export function getFromSftpConfig(param: string): string | undefined {
     let workspaceFolder = vs.workspace.workspaceFolders?.[0].uri.fsPath;
     if (workspaceFolder) {
         let sftpConfigPath = pathUtils.fsJoin(workspaceFolder, '.vscode', 'sftp.json');
         if (fs.existsSync(sftpConfigPath)) {
             let rawData = fs.readFileSync(sftpConfigPath);
             let configJson = JSON.parse(rawData.toString());
-            if (configJson.remotePath) {
-                return configJson.remotePath;
-            }
+            return configJson[param];
         }
     }
     return "";
