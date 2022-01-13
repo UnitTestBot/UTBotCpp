@@ -8,6 +8,7 @@ import * as vs from 'vscode';
 import * as vsUtils from '../utils/vscodeUtils';
 import { Prefs } from './prefs';
 import * as pathUtils from '../utils/pathUtils';
+import { isIP } from 'net';
 
 export class DefaultConfigValues {
     public static readonly DEFAULT_HOST = "127.0.0.1";
@@ -17,7 +18,12 @@ export class DefaultConfigValues {
     public static readonly POSSIBLE_TEST_DIR_NAMES = ['test'];
 
     public static getDefaultHost(): string {
-        return Prefs.getGlobalHost();
+        var host = Prefs.getGlobalHost();
+        let sftHost = vsUtils.getFromSftpConfig("host");
+        if (sftHost && isIP(sftHost)) {
+            host = sftHost;
+        }
+        return host;
     }
 
     public static getDefaultPort(): number {
@@ -25,11 +31,16 @@ export class DefaultConfigValues {
     }
 
     public static getDefaultRemotePath(): string {
+        var remotePath = ""
         if (Prefs.isRemoteScenario()) {
-            return vsUtils.getRemotePathFromSftpConfig();
+            let sftpRemotePath = vsUtils.getFromSftpConfig("remotePath");
+            if (sftpRemotePath) {
+                remotePath = sftpRemotePath;
+            }
         } else {
-            return vsUtils.getProjectDirByOpenedFile().fsPath;
+            remotePath = vsUtils.getProjectDirByOpenedFile().fsPath;
         }
+        return remotePath;
     }
 
     public static async getDefaultBuildDirectoryPath(): Promise<string> {

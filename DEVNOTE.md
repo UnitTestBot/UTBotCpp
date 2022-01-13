@@ -109,11 +109,7 @@ If error like this happens then you try load Cmake in CLion
 ```
 CMake File API: C:\Users\kWX1061625\work\UTBotCpp\server\cmake-build-debug-remote-host-ml: target-gmock-Debug-0b6fa789e179f468efb4.json: no CMakeLists.txt file at '\utbot_distr\gtest\googlemock\CMakeLists.txt'
 ```
-Settings | Advanced Settings -> "Use legacy generator for CMake 3.20 and higher".
-
-Settings | Build, Execution, Deployment | CMake -> Generator: "Use default"
-
-[issue](https://youtrack.jetbrains.com/issue/CPP-27998)
+[check solution in issue](https://youtrack.jetbrains.com/issue/CPP-27998)
 
 
 ### Problems with build in Visual Studio Code
