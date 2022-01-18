@@ -2,7 +2,6 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
 
-import * as os from 'os';
 import * as path from 'path';
 import * as vs from 'vscode';
 import * as vsUtils from '../utils/vscodeUtils';
@@ -18,8 +17,8 @@ export class DefaultConfigValues {
     public static readonly POSSIBLE_TEST_DIR_NAMES = ['test'];
 
     public static getDefaultHost(): string {
-        var host = Prefs.getGlobalHost();
-        let sftHost = vsUtils.getFromSftpConfig("host");
+        let host = Prefs.getGlobalHost();
+        const sftHost = vsUtils.getFromSftpConfig("host");
         if (sftHost && isIP(sftHost)) {
             host = sftHost;
         }
@@ -31,9 +30,9 @@ export class DefaultConfigValues {
     }
 
     public static getDefaultRemotePath(): string {
-        var remotePath = ""
+        let remotePath = "";
         if (Prefs.isRemoteScenario()) {
-            let sftpRemotePath = vsUtils.getFromSftpConfig("remotePath");
+            const sftpRemotePath = vsUtils.getFromSftpConfig("remotePath");
             if (sftpRemotePath) {
                 remotePath = sftpRemotePath;
             }
