@@ -64,7 +64,6 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
     testGen.setTargetPath(target);
 
     auto siblings = testGen.buildDatabase->getArchiveObjectFiles(target);
-    checkSiblingsExist(siblings);
     auto stubSources = stubGen.getStubSources(target);
 
     CollectionUtils::MapFileTo<fs::path> filesToLink;
@@ -143,7 +142,6 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     auto targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
     auto siblings = testGen.buildDatabase->getArchiveObjectFiles(target);
 
-    checkSiblingsExist(siblings);
     auto stubSources = stubGen.getStubSources(target);
 
     CollectionUtils::MapFileTo<fs::path> filesToLink;
@@ -238,20 +236,6 @@ void Linker::addToGenerated(const CollectionUtils::FileSet &objectFiles, const f
             !CollectionUtils::contains(testedFiles, sourcePath)) {
             testedFiles.insert(sourcePath);
             bitcodeFileName[sourcePath] = output;
-        }
-    }
-}
-
-void Linker::checkSiblingsExist(const CollectionUtils::FileSet &archivedFiles) const {
-    for (const auto &objectFile : archivedFiles) {
-        auto objectInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
-        const fs::path &sourcePath = objectInfo->getSourcePath();
-        if (!CollectionUtils::contains(testGen.sourcePaths, sourcePath)) {
-            throw CompilationDatabaseException(
-                "Source file is not registered: " + sourcePath.string() +
-                "\nPlease check if directory is in source directories in UTBot extension "
-                "settings: " +
-                sourcePath.parent_path().string());
         }
     }
 }

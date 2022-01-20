@@ -14,7 +14,8 @@ class ProjectTestGen : public BaseTestGen {
 public:
     ProjectTestGen(const testsgen::ProjectRequest &request,
                    ProgressWriter *progressWriter,
-                   bool testMode);
+                   bool testMode,
+                   bool autoDetect = true);
 
     ~ProjectTestGen() override = default;
 
@@ -26,6 +27,12 @@ public:
 
 private:
     testsgen::ProjectRequest const *const request;
+
+    vector<fs::path> getSourcePathCandidates() const;
+
+    vector<fs::path> getRequestSourcePaths() const;
+
+    void autoDetectSourcePathsIfNotEmpty();
 };
 
 
