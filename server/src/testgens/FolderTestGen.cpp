@@ -9,7 +9,7 @@
 FolderTestGen::FolderTestGen(const testsgen::FolderRequest &request,
                              ProgressWriter *progressWriter,
                              bool testMode)
-    : ProjectTestGen(request.projectrequest(), progressWriter, testMode),
+    : ProjectTestGen(request.projectrequest(), progressWriter, testMode, false),
       folderPath(request.folderpath()) {
     testingMethodsSourcePaths = {};
     std::copy_if(sourcePaths.begin(), sourcePaths.end(),

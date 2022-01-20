@@ -11,7 +11,8 @@
 
 ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
                                ProgressWriter *progressWriter,
-                               bool testMode)
+                               bool testMode,
+                               bool autoDetect)
     : BaseTestGen(request.projectcontext(),
                   request.settingscontext(),
                   progressWriter,
@@ -22,20 +23,12 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     buildDatabase =
         std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
     compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
-    vector<fs::path> sourcePathsCandidates;
-    for (const auto &compileCommand : compilationDatabase->getAllCompileCommands()) {
-        try {
-            fs::path path = Paths::getCCJsonFileFullPath(compileCommand.Filename, compileCommand.Directory);
-            sourcePathsCandidates.push_back(path);
-        } catch (...) {
-            throw CompilationDatabaseException("Cannot detect file: " + compileCommand.Filename +
-                                               ". Maybe you need to rebuild the project.");
-        }
+    if (autoDetect) {
+        autoDetectSourcePathsIfNotEmpty();
+    } else {
+        vector<fs::path> sourcePathsCandidates = getSourcePathCandidates();
+        sourcePaths = sourcePathsCandidates;
     }
-    auto requestSourcePaths = CollectionUtils::transformTo<vector<fs::path>>(
-        request.sourcepaths(), [](std::string const &sourcePath) { return fs::path(sourcePath); });
-    sourcePaths =
-        Paths::filterPathsByDirNames(sourcePathsCandidates, requestSourcePaths, { ".c", ".cpp", ".cc" });
     testingMethodsSourcePaths = sourcePaths;
     setInitializedTestsMap();
 }
@@ -55,3 +48,36 @@ void ProjectTestGen::setTargetForSource(const fs::path &sourcePath) {
 const testsgen::ProjectRequest *ProjectTestGen::getRequest() const {
     return request;
 }
+
+vector<fs::path> ProjectTestGen::getRequestSourcePaths() const {
+    return CollectionUtils::transformTo<vector<fs::path>>(
+            request->sourcepaths(), [](std::string const &sourcePath) { return fs::path(sourcePath); });
+}
+
+vector<fs::path> ProjectTestGen::getSourcePathCandidates() const {
+    vector<fs::path> sourcePathsCandidates;
+    for (const auto &compileCommand : compilationDatabase->getAllCompileCommands()) {
+        try {
+            fs::path path = Paths::getCCJsonFileFullPath(compileCommand.Filename, compileCommand.Directory);
+            sourcePathsCandidates.push_back(path);
+        } catch (...) {
+            throw CompilationDatabaseException("Cannot detect file: " + compileCommand.Filename +
+            ". Maybe you need to rebuild the project.");
+        }
+    }
+    return sourcePathsCandidates;
+}
+void ProjectTestGen::autoDetectSourcePathsIfNotEmpty() {
+    // requestSourcePaths are from settings.json
+    auto requestSourcePaths = getRequestSourcePaths();
+    // sourcePathsCandidates are from compile_commands.json
+    auto sourcePathsCandidates = getSourcePathCandidates();
+    if (!requestSourcePaths.empty()) {
+        sourcePaths =
+                Paths::filterPathsByDirNames(sourcePathsCandidates, requestSourcePaths, Paths::isSourceFile);
+    } else {
+        sourcePaths = sourcePathsCandidates;
+    }
+}
+
+

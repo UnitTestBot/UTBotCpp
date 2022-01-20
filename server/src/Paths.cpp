@@ -24,14 +24,14 @@ namespace Paths {
 
     vector<fs::path> filterPathsByDirNames(const vector<fs::path> &paths,
                                            const vector<fs::path> &dirPaths,
-                                           const vector<string> &allowedExt) {
+                                           const std::function<bool(const fs::path &path)> &filter) {
         std::vector<fs::path> filtered;
         std::copy_if(paths.begin(), paths.end(), std::back_inserter(filtered),
-                     [&dirPaths, &allowedExt](const fs::path &path) {
+                     [&dirPaths, &filter](const fs::path &path) {
                          return std::any_of(
                              dirPaths.begin(), dirPaths.end(), [&](const auto &dirPath) {
                                  return path.parent_path() == dirPath && fs::exists(path) &&
-                                        CollectionUtils::contains(allowedExt, path.extension());
+                                        filter(path);
                              });
                      });
         return filtered;
@@ -320,9 +320,8 @@ namespace Paths {
     }
 
     std::optional<fs::path> headerPathToSourcePath(const fs::path &source) {
-        std::vector<std::string> sourceExtensions({".cc", ".cp", ".cpp", ".c++", ".cxx"});
         if (Paths::isHeaderFile(source)) {
-            for (const std::string &extension : sourceExtensions) {
+            for (const std::string &extension : CXXFileExtensions) {
                 fs::path sourceFilePath = replaceExtension(source, extension);
                 if (fs::exists(sourceFilePath)) {
                     return {sourceFilePath};
@@ -354,5 +353,10 @@ namespace Paths {
     }
 
     //endregion
+
+    const std::vector<std::string> CXXFileExtensions({".cc", ".cp", ".cpp", ".c++", ".cxx"});
+    const std::vector<std::string> HPPFileExtensions({".hh", ".hpp", ".hxx"});
+    const std::vector<std::string> CFileSourceExtensions({".c"});
+    const std::vector<std::string> CFileHeaderExtensions({".h"});
 
 }

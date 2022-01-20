@@ -72,7 +72,7 @@ namespace {
                                      projectPath / "zzz/snippet.c"
                              };
         vector<fs::path> dirNames{ projectPath };
-        auto filteredPaths = Paths::filterPathsByDirNames(paths, dirNames, { ".c" });
+        auto filteredPaths = Paths::filterPathsByDirNames(paths, dirNames, Paths::isCFile);
         EXPECT_EQ(vector<fs::path>({
                                            projectPath / "basic_functions.c",
                                            projectPath / "types.c"}),

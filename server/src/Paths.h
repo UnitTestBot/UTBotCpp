@@ -39,7 +39,7 @@ namespace Paths {
      */
     vector<fs::path> filterPathsByDirNames(const vector<fs::path> &path,
                                            const vector<fs::path> &dirNames,
-                                           const vector<string> &allowedExt);
+                                           const std::function<bool(const fs::path &path)> &filter);
 
     static inline void setOptPath(fs::path &path, const string &value) {
         path = fs::path(value);
@@ -211,23 +211,24 @@ namespace Paths {
     //endregion
 
     //region extensions
+    extern const std::vector<std::string> CFileHeaderExtensions;
     static inline bool isHFile(const fs::path &path) {
-        return path.extension() == ".h";
+        return CollectionUtils::contains(CFileHeaderExtensions, path.extension());
     }
 
+    extern const std::vector<std::string> CFileSourceExtensions;
     static inline bool isCFile(const fs::path &path) {
-        return path.extension() == ".c";
+        return CollectionUtils::contains(CFileSourceExtensions, path.extension());
     }
 
+    extern const std::vector<std::string> CXXFileExtensions;
     static inline bool isCXXFile(const fs::path &path) {
-        return path.extension() == ".cc" || path.extension() == ".cp" ||
-               path.extension() == ".cpp" || path.extension() == ".c++" ||
-               path.extension() == ".cxx";
+        return CollectionUtils::contains(CXXFileExtensions, path.extension());
     }
 
+    extern const std::vector<std::string> HPPFileExtensions;
     static inline bool isHppFile(const fs::path &path) {
-        return path.extension() == ".hh" || path.extension() == ".hpp" ||
-               path.extension() == ".hxx";
+        return CollectionUtils::contains(HPPFileExtensions, path.extension());
     }
 
     static inline bool isHeaderFile(const fs::path &path) {

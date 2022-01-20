@@ -924,6 +924,54 @@ namespace {
         }
     }
 
+    TEST_P(Parameterized_Server_Test, Project_Test_Auto_Detect_Src_Paths) {
+        std::string suite = "small-project";
+        setSuite(suite);
+        srcPaths = {};
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+
+        EXPECT_FALSE(testFilePaths.size() < 2) << "Not enough test files are generated";
+        EXPECT_FALSE(testFilePaths.size() > 2) << "More than needed test files are generated";
+
+        for (const auto &test : testGen.tests) {
+            for (const auto &[methodName, methodDescription] : test.second.methods) {
+                testUtils::checkMinNumberOfTests(methodDescription.testCases, 2);
+            }
+        }
+    }
+
+    TEST_P(Parameterized_Server_Test, Project_Test_Detect_Src_Paths_From_Request) {
+        std::string suite = "small-project";
+        setSuite(suite);
+        srcPaths = { suitePath / "lib"};
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+
+        EXPECT_FALSE(testFilePaths.size() < 1) << "Not enough test files are generated";
+        EXPECT_FALSE(testFilePaths.size() > 1) << "More than needed test files are generated";
+
+        for (const auto &test : testGen.tests) {
+            for (const auto &[methodName, methodDescription] : test.second.methods) {
+                testUtils::checkMinNumberOfTests(methodDescription.testCases, 2);
+            }
+        }
+    }
+
     TEST_P(Parameterized_Server_Test, File_Test) {
         auto projectRequest =
             createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
