@@ -256,7 +256,9 @@ vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &testsMap,
                 for (const auto &[methodName, methodDescription] : tests.methods) {
                     fs::path currentKleeFilePath = kleePrinter.writeTmpKleeFile(
                         tests, projectTmpPath, pathSubstitution, std::nullopt,
-                        methodDescription.name, methodDescription.className, true, false);
+                        methodDescription.name,
+                        methodDescription.getClassName(),
+                        true, false);
                     auto currentKleeBitcodeFile =
                         defaultBuild(filename, currentKleeFilePath, buildDirPath, includeFlags);
                     if (currentKleeBitcodeFile.isSuccess()) {
@@ -308,8 +310,8 @@ void KleeGenerator::parseKTestsToFinalCode(
         Tests::MethodDescription &methodDescription = it.value();
         if (lineInfo) {
             bool methodNotMatch = lineInfo->forMethod && methodName != lineInfo->methodName;
-            bool classNotMatch = lineInfo->forClass &&
-                                 methodDescription.className.value() != lineInfo->scopeName;
+            bool classNotMatch = lineInfo->forClass && methodDescription.isClassMethod() &&
+                                 methodDescription.getClassName().value() != lineInfo->scopeName;
             if (methodNotMatch || classNotMatch) {
                 continue;
             }

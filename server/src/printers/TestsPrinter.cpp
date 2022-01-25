@@ -149,7 +149,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     parametrizedArrayParameters(methodDescription, testCase);
-    printClassObject(methodDescription);
+    printClassObject(methodDescription, testCase);
     printLazyVariables(methodDescription, testCase);
     printLazyReferences(methodDescription, testCase);
     printStubVariables(methodDescription, testCase);
@@ -176,13 +176,13 @@ void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath)
         }
     }
 
-    writePrivateAccessMacros(typesHandler, tests, true);
+    writeAccessPrivateMacros(typesHandler, tests, true);
 }
 
 static string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
     string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
-    string testBaseName = methodDescription.className.has_value()
-        ? StringUtils::stringFormat("%s_%s", methodDescription.className.value(),
+    string testBaseName = methodDescription.isClassMethod()
+        ? StringUtils::stringFormat("%s_%s", methodDescription.classObj->type.typeName(),
                                     renamedMethodDescription)
         : renamedMethodDescription;
 
@@ -257,7 +257,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
     if (!testCase.paramValues.empty()) {
         strComment("Construct input");
     }
-    printClassObject(methodDescription);
+    printClassObject(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, false);
 }
 
@@ -286,7 +286,8 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
                                     const Tests::TestCaseParamValue &value,
                                     bool needDeclaration) {
     string stubFunctionName =
-        PrinterUtils::getFunctionPointerStubName(method.className, method.name, param.name);
+        PrinterUtils::getFunctionPointerStubName(method.getClassTypeName(),
+                                                 method.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(method.name, param.name, false), param.name,
                       stubFunctionName);
@@ -299,10 +300,12 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
     }
 }
 
-void printer::TestsPrinter::printClassObject(const Tests::MethodDescription &methodDescription) {
+void printer::TestsPrinter::printClassObject(const Tests::MethodDescription &methodDescription,
+                                             const Tests::MethodTestCase &testCase) {
     if (methodDescription.isClassMethod()) {
-        auto init = Printer::getClassInstanceName(methodDescription.className);
-        strDeclareVar(methodDescription.className.value(), init.value());
+        const auto &param = methodDescription.classObj.value();
+        const auto &value = testCase.classPreValues.value();
+        verboseParameter(methodDescription, param, value, true);
     }
 }
 
@@ -369,10 +372,33 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
         globalParamsAsserts(methodDescription, testCase);
     }
 
+    if (methodDescription.isClassMethod()) {
+        ss << NL;
+        strComment("Check class fields mutation");
+        classAsserts(methodDescription, testCase);
+    }
+
     if (!testCase.paramPostValues.empty()) {
         ss << NL;
         strComment("Check function parameters");
         changeableParamsAsserts(methodDescription, testCase);
+    }
+}
+
+void TestsPrinter::classAsserts(const Tests::MethodDescription &methodDescription,
+                                           const Tests::MethodTestCase &testCase) {
+    if (methodDescription.isClassMethod()) {
+        auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true,
+                                                                 types::PointerUsage::PARAMETER);
+        auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
+        auto usage = types::PointerUsage::PARAMETER;
+        size_t param_i = 0;
+        auto param = methodDescription.classObj.value();
+        auto const &value = testCase.classPostValues.value();
+        string expectedName = PrinterUtils::getExpectedVarName(param.name);
+        const types::Type expectedType = param.type.arrayCloneMultiDim(usage);
+        parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
+        assertsVisitor.visit(param, param.name);
     }
 }
 
@@ -418,7 +444,7 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
         if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
             auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
             string stubName = PrinterUtils::getFunctionPointerStubName(
-                methodDescription.className, methodDescription.name, param.name);
+                methodDescription.getClassTypeName(), methodDescription.name, param.name);
             strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
         } else if (types::TypesHandler::isCStringType(param.type)) {
             strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER, value.view->getEntryValue(), param.alignment);
@@ -445,6 +471,7 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
     globalParamsAsserts(methodDescription, testCase);
+    classAsserts(methodDescription, testCase);
     changeableParamsAsserts(methodDescription, testCase);
 }
 
@@ -503,7 +530,7 @@ string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &m
         methodDescription.returnType.isObjectPointer()) {
         castType = types::Type::minimalScalarPointerType();
     }
-    auto classObjName = Printer::getClassInstanceName(methodDescription.className);
+    auto classObjName = methodDescription.getClassName();
     size_t returnPointersCount = 0;
     if (testCase.returnValueView && testCase.returnValueView->getEntryValue() != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);

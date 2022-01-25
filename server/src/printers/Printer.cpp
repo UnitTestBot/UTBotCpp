@@ -287,7 +287,7 @@ namespace printer {
             string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
             parameters.push_back(maybeAmpersand + param.name);
         }
-        auto classObjName = Printer::getClassInstanceName(method.className);
+        auto classObjName = method.getClassName();
         return strFunctionCall(method.name, parameters, end, classObjName, needTabs, returnPointers);
     }
 
@@ -544,7 +544,7 @@ namespace printer {
     void printer::Printer::writeStubsForFunctionParams(const types::TypesHandler *typesHandler,
                                                        const Tests::MethodDescription &testMethod,
                                                        bool forKlee) {
-        string scopeName = forKlee ? testMethod.className.value_or("") : "";
+        string scopeName = (forKlee ? testMethod.getClassName().value_or("") : "");
         string prefix = PrinterUtils::getKleePrefix(forKlee);
         for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
             string stubName = PrinterUtils::getFunctionPointerStubName(scopeName,
@@ -581,7 +581,7 @@ namespace printer {
                          stubName, "stub", makeStatic);
     }
 
-    void Printer::writePrivateAccessMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {
+    void Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {
         if (srcLanguage == utbot::Language::CXX) {
             ss << NL;
             strInclude("access_private.hpp");
@@ -589,6 +589,9 @@ namespace printer {
             std::unordered_set<uint64_t> checkedOnPrivate;
             for (const auto &[methodName, testMethod] : tests.methods) {
                 addAccessor(typesHandler, testMethod.returnType, checkedOnPrivate);
+                if (testMethod.isClassMethod()) {
+                    addAccessor(typesHandler, testMethod.classObj->type, checkedOnPrivate);
+                }
                 for (const auto& param : testMethod.params) {
                     if (!onlyChangeable || param.isChangeable()) {
                         addAccessor(typesHandler, param.type, checkedOnPrivate);
@@ -634,13 +637,6 @@ namespace printer {
         strAssignVar(name, stubName);
         tabsDepth--;
         ss << TAB_N() << "}" << NL;
-    }
-
-    std::optional<string> Printer::getClassInstanceName(const std::optional<string> &className) {
-        if (className.has_value()) {
-            return className.value() + "_obj";
-        }
-        return std::nullopt;
     }
 
     void Printer::writeStubsForStructureFields(const Tests &tests) {

@@ -321,7 +321,9 @@ vector<tests::TestMethod> Linker::getTestMethods() {
                 }
                 for (const auto &[methodName, method] : tests.methods) {
                     if (methodName == lineInfo->methodName ||
-                        (lineInfo->forClass && method.className == lineInfo->scopeName)) {
+                        (lineInfo->forClass &&
+                         method.classObj.has_value() &&
+                         method.classObj->type.typeName() == lineInfo->scopeName)) {
                         auto compilationUnitInfo =
                             testGen.buildDatabase->getClientCompilationUnitInfo(fileName);
                         if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {

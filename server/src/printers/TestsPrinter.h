@@ -71,7 +71,8 @@ namespace printer {
                               const Tests::TestCaseParamValue &value,
                               bool needDeclaration);
 
-        void printClassObject(const tests::Tests::MethodDescription &methodDescription);
+        void printClassObject(const tests::Tests::MethodDescription &methodDescription,
+                              const Tests::MethodTestCase &testCase);
 
         void verboseParameters(const tests::Tests::MethodDescription &methodDescription,
                                const Tests::MethodTestCase &testCase);
@@ -89,6 +90,9 @@ namespace printer {
         void verboseAsserts(const tests::Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase,
                             std::optional<LineInfo::PredicateInfo> predicateInfo);
+
+        void classAsserts(const Tests::MethodDescription &methodDescription,
+                                        const Tests::MethodTestCase &testCase);
 
         void changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase);

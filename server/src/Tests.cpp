@@ -692,6 +692,8 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             // if all of the data characters are not printable the case is skipped
             continue;
         }
+        swap(testCase.classPreValues, testCaseDescription.classPreValues);
+        swap(testCase.classPostValues, testCaseDescription.classPostValues);
         swap(testCase.globalPreValues, testCaseDescription.globalPreValues);
         swap(testCase.globalPostValues, testCaseDescription.globalPostValues);
         swap(testCase.paramPostValues, testCaseDescription.paramPostValues);
@@ -794,6 +796,25 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
     }
 
     const RawKleeParam emptyKleeParam = {"", {}};
+
+    if (methodDescription.isClassMethod()) {
+        auto methodParam = methodDescription.classObj.value();
+        shared_ptr<AbstractValueView> testParamView;
+        auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
+        if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
+            testParamView = testParameterView(
+                    emptyKleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.fromAddressToName,
+                    testCaseDescription.lazyReferences, methodDescription);
+        } else {
+            const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
+            testParamView = testParameterView(kleeParam, {paramType, methodParam.name }, PointerUsage::PARAMETER,
+                                              testCaseDescription.fromAddressToName, testCaseDescription.lazyReferences,
+                                              methodDescription);
+        }
+        testCaseDescription.classPreValues = { methodParam.name, methodParam.alignment, testParamView };
+        processClassPostValue(testCaseDescription, methodParam, rawKleeParams);
+    }
+
     for (auto &methodParam : methodDescription.params) {
         shared_ptr<AbstractValueView> testParamView;
         auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
@@ -898,6 +919,20 @@ void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseDescription &
     testCaseDescription.globalPostValues.emplace_back( globalParam.name, globalParam.alignment, testParamView );
 }
 
+void KTestObjectParser::processClassPostValue(Tests::TestCaseDescription &testCaseDescription,
+                                                  const Tests::MethodParam &param,
+                                                  vector<RawKleeParam> &rawKleeParams) {
+    const auto usage = types::PointerUsage::PARAMETER;
+    auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
+    auto kleeParam = getKleeParamOrThrow(rawKleeParams, symbolicVariable);
+    types::Type paramType = param.type.arrayCloneMultiDim(usage);
+    auto type = typesHandler.getReturnTypeToCheck(paramType);
+    Tests::TypeAndVarName typeAndVarName{ type, param.name };
+    auto testParamView = testParameterView(kleeParam, typeAndVarName, usage, testCaseDescription.fromAddressToName,
+                                           testCaseDescription.lazyReferences);
+    testCaseDescription.classPostValues = { param.name, param.alignment, testParamView };
+}
+
 void KTestObjectParser::processParamPostValue(Tests::TestCaseDescription &testCaseDescription,
                                                   const Tests::MethodParam &param,
                                                   vector<RawKleeParam> &rawKleeParams) {
@@ -961,9 +996,10 @@ shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
                 return arrayView(rawData, paramType.baseTypeObj(), rawData.size(), 0, usage);
             }
         case TypeKind::FUNCTION_POINTER:
-            if (!testingMethod.has_value())
+            if (!testingMethod.has_value()) {
                 return functionPointerView(std::nullopt, "", param.varName);
-            return functionPointerView(testingMethod->className, testingMethod->name, param.varName);
+            }
+            return functionPointerView(testingMethod->getClassTypeName(), testingMethod->name, param.varName);
         case TypeKind::ENUM:
             enumInfo = typesHandler.getEnumInfo(paramType);
             return enumView(rawData, enumInfo, 0, rawData.size());

@@ -2243,7 +2243,40 @@ namespace {
                       }
                       }),
               "change_class_by_ref_2_cpp");
-  }
+    }
+
+    TEST_F(Syntax_Test, Change_class_by_method_cpp) {
+        auto [testGen, status] = createTestForFunction(simple_class_cpp, 64);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 3);
+
+        checkTestCasePredicates(
+              testGen.tests.at(simple_class_cpp).methods.begin().value().testCases,
+              vector<TestCasePredicate>(
+                      {[] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.classPostValues.has_value() &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[0]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[0]->getEntryValue())) &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[1]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[1]->getEntryValue()));
+                      }, [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.classPostValues.has_value() &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[0]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[0]->getEntryValue())) &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[1]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[0]->getEntryValue()));
+                      }, [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.classPostValues.has_value() &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[0]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[0]->getEntryValue())) &&
+                               stoi(testCase.classPostValues.value().view->getSubViews()[1]->getEntryValue())
+                                   == abs(stoi(testCase.classPreValues.value().view->getSubViews()[0]->getEntryValue()));
+                      }
+                      }),
+              "change_class_by_method_cpp");
+    }
 
     TEST_F(Syntax_Test, Inner_unnamed_union_return) {
         auto[testGen, status] = createTestForFunction(inner_unnamed_c, 8);

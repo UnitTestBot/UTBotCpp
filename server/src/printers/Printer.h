@@ -205,8 +205,6 @@ namespace printer {
             return StringUtils::stringFormat("%s_%s_arg%s", parentFNameCopy, name, isArray ? "_arr" : "");
         }
 
-        static std::optional<string> getClassInstanceName(const std::optional<string>&className);
-
         string constrFunctionCall(const Tests::MethodDescription &method,
                                   size_t returnPointers,
                                   const string &end = "",
@@ -229,7 +227,7 @@ namespace printer {
                                const string& name,
                                const string& stubName, bool needToTypedef, bool makeStatic);
 
-        void writePrivateAccessMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
+        void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
 
         void genStubForStructFunctionPointer(const string& structName,
                                              const string& fieldName,

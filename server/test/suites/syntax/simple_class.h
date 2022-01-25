@@ -18,6 +18,8 @@ public:
   int get_x() const;
   int get_y() const;
 
+  void abs();
+
   Point_2d operator+=(const Point_2d& rhs);
 
   friend Point_2d operator+(const Point_2d& lhs, const Point_2d& rhs);

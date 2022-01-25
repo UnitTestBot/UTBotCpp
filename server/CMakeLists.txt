@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 project(UnitTestBot)
 
-if(UNIX)
+if (UNIX)
     add_compile_definitions(_LINUX)
-endif()
+endif ()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,7 +30,7 @@ set(GRPC_PATH $ENV{GRPC_PATH})
 set(CMAKE_PREFIX_PATH ${GRPC_PATH}/lib/cmake/grpc ${GRPC_PATH}/lib/cmake/protobuf)
 if (NOT DEFINED _GRPC_CPP_PLUGIN_EXECUTABLE)
     set(_GRPC_CPP_PLUGIN_EXECUTABLE ${GRPC_PATH}/bin/grpc_cpp_plugin)
-endif()
+endif ()
 include_directories(${GRPC_PATH}/include)
 
 find_package(Threads REQUIRED)
@@ -99,7 +99,7 @@ set(PROTO_COMPILE_DIR "${CMAKE_CURRENT_BINARY_DIR}/protobuf")
 file(GLOB PROTO_FILES "${PROTO_DIR}/*.proto")
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protobuf)
 
-foreach(proto_file ${PROTO_FILES})
+foreach (proto_file ${PROTO_FILES})
     get_filename_component(proto_src ${proto_file} PATH)
     get_filename_component(proto_filename ${proto_file} NAME_WE)
     execute_process(
@@ -149,6 +149,7 @@ add_executable(
         UTBot_UnitTests
         ${ALL_TESTS}
 )
+
 target_include_directories(UTBot_UnitTests PUBLIC src src/include $ENV{UTBOT_ALL}/gtest/googletest)
 target_link_libraries(
         UTBot_UnitTests
@@ -157,7 +158,7 @@ target_link_libraries(
         UnitTestBotLib
 )
 
-add_test(UTBot_UnitTests UTBot_UnitTests)
+add_test(NAME test COMMAND UTBot_UnitTests)
 
 install(TARGETS utbot
         DESTINATION ${CMAKE_INSTALL_PREFIX}

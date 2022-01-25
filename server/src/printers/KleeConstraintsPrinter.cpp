@@ -14,33 +14,37 @@ printer::KleeConstraintsPrinter::KleeConstraintsPrinter(const types::TypesHandle
     : Printer(srcLanguage), typesHandler(typesHandler) {}
 
 printer::KleeConstraintsPrinter::Stream
-KleeConstraintsPrinter::genConstraints(const Tests::MethodParam &param, const string &methodName) {
-
-    ConstraintsState state = { "&" + param.name, param.name, param.type, true };
-    auto paramType = param.type;
-    if (param.type.maybeJustPointer()) {
-        state.curType = paramType = param.type.baseTypeObj();
+KleeConstraintsPrinter::genConstraints(const string &name, const types::Type& type) {
+    ConstraintsState state = { "&" + name, name, type, true };
+    auto paramType = type;
+    if (type.maybeJustPointer()) {
+        state.curType = paramType = type.baseTypeObj();
     }
     switch (typesHandler->getTypeKind(paramType)) {
-    case TypeKind::OBJECT_POINTER:
-    case TypeKind::ARRAY:
-        state = { param.name, param.name, paramType, state.endString };
-        genConstraintsForPointerOrArray(state);
-        break;
-    case TypeKind::STRUCT:
-        genConstraintsForStruct(state);
-        break;
-    case TypeKind::ENUM:
-        genConstraintsForEnum(state);
-        break;
-    case TypeKind::UNION:
-        genConstraintsForUnion(state);
-        break;
-    default:
-        genConstraintsForPrimitive(state);
+        case TypeKind::OBJECT_POINTER:
+        case TypeKind::ARRAY:
+            state = { name, name, paramType, state.endString };
+            genConstraintsForPointerOrArray(state);
+            break;
+        case TypeKind::STRUCT:
+            genConstraintsForStruct(state);
+            break;
+        case TypeKind::ENUM:
+            genConstraintsForEnum(state);
+            break;
+        case TypeKind::UNION:
+            genConstraintsForUnion(state);
+            break;
+        default:
+            genConstraintsForPrimitive(state);
     }
 
     return ss;
+}
+
+printer::KleeConstraintsPrinter::Stream
+KleeConstraintsPrinter::genConstraints(const Tests::MethodParam &param) {
+    return genConstraints(param.name, param.type);
 }
 
 void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &state) {

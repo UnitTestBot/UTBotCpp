@@ -80,13 +80,14 @@ fs::path KleePrinter::writeTmpKleeFile(
     ss << NL;
     writeStubsForStructureFields(tests);
 
-    writePrivateAccessMacros(typesHandler, tests, false);
+    writeAccessPrivateMacros(typesHandler, tests, false);
 
     for (const auto &[methodName, testMethod] : tests.methods) {
         if (!methodFilter(testMethod)) {
             continue;
         }
-        if ((onlyForOneFunction && methodName != testedMethod) || (onlyForOneClass && testMethod.className != testedClass)) {
+        if ((onlyForOneFunction && methodName != testedMethod) ||
+            (onlyForOneClass && testMethod.isClassMethod() && testMethod.classObj->type.typeName() != testedClass)) {
             continue;
         }
         try {
@@ -158,36 +159,50 @@ Tests::MethodParam KleePrinter::getKleeGlobalPostParam(const Tests::MethodParam 
 
 void KleePrinter::genPostGlobalSymbolicVariables(const Tests::MethodDescription &testMethod) {
     for (const auto &globalParam : testMethod.globalParams) {
-        Tests::MethodParam kleeParam = getKleeGlobalPostParam(globalParam);
-        bool isArray = genParamDeclaration(testMethod, kleeParam);
-        strKleeMakeSymbolic(kleeParam.type, kleeParam.name, !isArray);
+        genPostSymbolicVariable(testMethod, getKleeGlobalPostParam(globalParam));
     }
 }
 
 void KleePrinter::genPostParamsSymbolicVariables(const Tests::MethodDescription &testMethod) {
+    if (testMethod.isClassMethod()) {
+        genPostSymbolicVariable(testMethod, getKleePostParam(testMethod.classObj.value()));
+    }
     for (const auto &param : testMethod.params) {
         if (param.isChangeable()) {
-            Tests::MethodParam kleeParam = getKleePostParam(param);
-            bool isArray = genParamDeclaration(testMethod, kleeParam);
-            strKleeMakeSymbolic(kleeParam.type, kleeParam.name, !isArray);
+            genPostSymbolicVariable(testMethod, getKleePostParam(param));
         }
     }
+}
+
+void KleePrinter::genPostSymbolicVariable(const Tests::MethodDescription &testMethod, const Tests::MethodParam &kleeParam) {
+    bool isArray = genParamDeclaration(testMethod, kleeParam);
+    strKleeMakeSymbolic(kleeParam.type, kleeParam.name, !isArray);
 }
 
 void KleePrinter::genGlobalsKleeAssumes(const Tests::MethodDescription &testMethod) {
     for (const auto &globalParam : testMethod.globalParams) {
-        auto outVariable = KleeUtils::postSymbolicVariable(globalParam.name);
-        visitor::KleeAssumeParamVisitor(typesHandler, this).visitGlobal(globalParam, outVariable);
+        genPostAssumes(globalParam, true);
     }
 }
 
 void KleePrinter::genPostParamsKleeAssumes(const Tests::MethodDescription &testMethod) {
+    if (testMethod.isClassMethod()) {
+        genPostAssumes(testMethod.classObj.value());
+    }
     for (auto &param : testMethod.params) {
         if (param.isChangeable()) {
-            auto outVariable = KleeUtils::postSymbolicVariable(param.name);
-            auto paramVisitor = visitor::KleeAssumeParamVisitor(typesHandler, this);
-            paramVisitor.visit(param, outVariable);
+            genPostAssumes(param);
         }
+    }
+}
+
+void KleePrinter::genPostAssumes(const Tests::MethodParam &param, bool visitGlobal) {
+    auto outVariable = KleeUtils::postSymbolicVariable(param.name);
+    visitor::KleeAssumeParamVisitor paramVisitor(typesHandler, this);
+    if (visitGlobal) {
+        paramVisitor.visitGlobal(param, outVariable);
+    } else {
+        paramVisitor.visit(param, outVariable);
     }
 }
 
@@ -281,8 +296,14 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
 
 void KleePrinter::genParamsDeclarations(const Tests::MethodDescription &testMethod) {
     if (testMethod.isClassMethod()) {
-        auto init = Printer::getClassInstanceName(testMethod.className);
-        strDeclareVar(testMethod.className.value(), init.value());
+        strDeclareVar(testMethod.classObj->type.typeName(), testMethod.classObj->name);
+        strKleeMakeSymbolic(testMethod.classObj->type, testMethod.classObj->name, testMethod.classObj->name, true);
+
+        KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
+        constraintsPrinter.setTabsDepth(tabsDepth);
+        const auto constraintsBlock = constraintsPrinter.genConstraints(testMethod.classObj->name,
+                                                                        testMethod.classObj->type).str();
+        ss << constraintsBlock;
     }
     for (const auto &param : testMethod.params) {
         tests::Tests::MethodParam kleeParam = getKleeMethodParam(param);
@@ -301,7 +322,8 @@ void KleePrinter::genParamsDeclarations(const Tests::MethodDescription &testMeth
 bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod,
                                       const Tests::MethodParam &param) {
     string stubFunctionName =
-        PrinterUtils::getFunctionPointerStubName(testMethod.className, testMethod.name, param.name);
+        PrinterUtils::getFunctionPointerStubName(testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
+                                                 testMethod.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(testMethod.name, param.name, false), param.name,
                       stubFunctionName, param.alignment);
@@ -385,9 +407,8 @@ void KleePrinter::genParamsKleeAssumes(
 void KleePrinter::genConstraints(const Tests::MethodParam &param, const string& methodName) {
     KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
     constraintsPrinter.setTabsDepth(tabsDepth);
-    const auto constraintsBlock = constraintsPrinter.genConstraints(param, methodName).str();
+    const auto constraintsBlock = constraintsPrinter.genConstraints(param).str();
     ss << constraintsBlock;
-
 }
 
 void KleePrinter::genKleePathSymbolicIfNeeded(
