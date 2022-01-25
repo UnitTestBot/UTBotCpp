@@ -57,3 +57,12 @@ void set_abs_by_ref(Point_2d& point) {
         point.y *= -1;
     }
 }
+
+void Point_2d::abs() {
+    if (x < 0) {
+        x = -1 * x;
+    }
+    if (y < 0) {
+        y *= -1;
+    }
+}

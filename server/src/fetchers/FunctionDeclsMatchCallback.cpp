@@ -60,7 +60,11 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
         if (FS->isCXXClassMember()) {
             string className = nodeParent->getNameAsString();
-            methodDescription.className = className;
+            const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
+            auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);
+            methodDescription.classObj = { classType,
+                                           classType.typeName() + "_obj",
+                                           std::nullopt };
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);

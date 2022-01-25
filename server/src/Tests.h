@@ -22,6 +22,7 @@
 #include <memory>
 #include <utility>
 #include <queue>
+#include <optional>
 
 namespace tests {
     using std::string;
@@ -355,6 +356,8 @@ namespace tests {
             TestCaseParamValue functionReturnNotNullValue;
             TestCaseParamValue kleePathFlagSymbolicValue;
             std::optional <TestCaseParamValue> stdinValue = std::nullopt;
+            std::optional<TestCaseParamValue> classPreValues;
+            std::optional<TestCaseParamValue> classPostValues;
         };
 
         struct MethodTestCase {
@@ -378,6 +381,8 @@ namespace tests {
             vector<TestCaseParamValue> stubParamValues;
             vector<MethodParam> stubParamTypes;
             shared_ptr<AbstractValueView> returnValueView;
+            std::optional<TestCaseParamValue> classPreValues;
+            std::optional<TestCaseParamValue> classPostValues;
 
             bool isError() const;
         };
@@ -389,10 +394,10 @@ namespace tests {
         };
 
         struct MethodDescription {
-            std::optional<string> className;
-            string name;
-            string code;
-            string paramsString;
+            std::optional<MethodParam> classObj;
+            std::string name;
+            std::string code;
+            std::string paramsString;
 
             types::Type returnType;
             bool hasIncompleteReturnType = false;
@@ -400,7 +405,7 @@ namespace tests {
             std::optional<string> sourceBody;
             Modifiers modifiers;
             bool isVariadic = false;
-            vector<MethodParam> globalParams;
+            std::vector<MethodParam> globalParams;
             std::vector<MethodParam> params;
 
             typedef std::unordered_map<string, std::shared_ptr<types::FunctionInfo>> FPointerMap;
@@ -442,10 +447,6 @@ namespace tests {
                 return method;
             }
 
-            bool isClassMethod() const {
-                return className.has_value();
-            }
-
             bool hasChangeable() const {
                 for(const auto& i : params) {
                     if (i.isChangeable()) {
@@ -453,6 +454,24 @@ namespace tests {
                     }
                 }
                 return false;
+            }
+
+            bool isClassMethod() const {
+                return classObj.has_value();
+            }
+
+            std::optional<std::string> getClassName() const {
+                if (isClassMethod()) {
+                    return std::make_optional(classObj->name);
+                }
+                return std::nullopt;
+            }
+
+            std::optional<std::string> getClassTypeName() const {
+                if (isClassMethod()) {
+                    return std::make_optional(classObj->type.typeName());
+                }
+                return std::nullopt;
             }
         };
 
@@ -658,6 +677,10 @@ namespace tests {
         void processGlobalParamPostValue(Tests::TestCaseDescription &testCaseDescription,
                                      const Tests::MethodParam &globalParam,
                                      vector<RawKleeParam> &rawKleeParams);
+
+        void processClassPostValue(Tests::TestCaseDescription &testCaseDescription,
+                                                      const Tests::MethodParam &param,
+                                                      vector<RawKleeParam> &rawKleeParams);
 
         void processParamPostValue(Tests::TestCaseDescription &testCaseDescription,
                                        const Tests::MethodParam &param,

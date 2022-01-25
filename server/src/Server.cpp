@@ -226,8 +226,9 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
                 lineInfo->filePath = lineTestGen->testingMethodsSourcePaths[0];
                 CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
-                                          [&lineInfo](const auto &methodDescription) {
-                                              return methodDescription.className != lineInfo->scopeName;
+                                          [&lineInfo](const tests::Tests::MethodDescription &methodDescription) {
+                                              return methodDescription.isClassMethod() &&
+                                                     methodDescription.classObj->type.typeName() != lineInfo->scopeName;
                                           });
             } else {
                 lineInfo = getLineInfo(*lineTestGen);
@@ -321,7 +322,7 @@ shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineT
     auto &methods = lineTestGen.tests.at(lineInfo->filePath).methods;
     CollectionUtils::erase_if(methods, [&lineInfo](auto const &method) {
         return (lineInfo->forMethod && method.name != lineInfo->methodName) ||
-               (lineInfo->forClass && method.className != lineInfo->scopeName);
+               (lineInfo->forClass && method.isClassMethod() && method.classObj->type.typeName() != lineInfo->scopeName);
     });
     return lineInfo;
 }

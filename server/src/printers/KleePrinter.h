@@ -137,6 +137,10 @@ namespace printer {
         static Tests::MethodParam getKleeGlobalParam(tests::Tests::MethodParam const &param);
 
         static Tests::MethodParam getKleeGlobalPostParam(const Tests::MethodParam &globalParam);
+
+        void genPostSymbolicVariable(const Tests::MethodDescription &testMethod, const Tests::MethodParam &param);
+
+        void genPostAssumes(const Tests::MethodParam &param, bool visitGlobal = false);
     };
 }
 

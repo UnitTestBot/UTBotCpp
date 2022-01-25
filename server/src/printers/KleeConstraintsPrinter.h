@@ -19,7 +19,9 @@ namespace printer {
 
         utbot::Language getLanguage() const override;
 
-        Stream genConstraints(const Tests::MethodParam &param, const string& methodName = "");
+        Stream genConstraints(const string &name, const types::Type& type);
+
+        Stream genConstraints(const Tests::MethodParam &param);
 
         void setTabsDepth(const size_t depth) {
             tabsDepth = depth;
