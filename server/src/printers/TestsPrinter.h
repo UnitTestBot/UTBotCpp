@@ -146,6 +146,14 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase);
 
         static Tests::MethodParam getValueParam(const Tests::MethodParam &param);
+
+        void genCodeBySuiteName(const string &targetSuiteName,
+                                Tests::MethodDescription &methodDescription,
+                                const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                bool verbose,
+                                int& testNum);
+
+        void printSuite(const string &suiteName, const Tests::MethodsMap &methods);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

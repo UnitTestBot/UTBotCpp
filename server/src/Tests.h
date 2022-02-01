@@ -338,7 +338,7 @@ namespace tests {
         };
 
         struct TestCaseDescription {
-            string scopeName;
+            string suiteName;
 
             vector<TestCaseParamValue> globalPreValues;
             vector<TestCaseParamValue> globalPostValues;
@@ -361,7 +361,7 @@ namespace tests {
         };
 
         struct MethodTestCase {
-            string scopeName;
+            string suiteName;
 
             vector<TestCaseParamValue> globalPreValues;
             vector<TestCaseParamValue> globalPostValues;
@@ -396,7 +396,8 @@ namespace tests {
         struct MethodDescription {
             std::optional<MethodParam> classObj;
             std::string name;
-            std::string code;
+            typedef std::unordered_map<string, string> SuiteNameToCodeTextMap;
+            SuiteNameToCodeTextMap codeText;
             std::string paramsString;
 
             types::Type returnType;
@@ -411,8 +412,12 @@ namespace tests {
             typedef std::unordered_map<string, std::shared_ptr<types::FunctionInfo>> FPointerMap;
             FPointerMap functionPointers;
             vector<MethodTestCase> testCases;
+            typedef std::unordered_map<string, vector<MethodTestCase>> SuiteNameToTestCasesMap;
+            SuiteNameToTestCasesMap suiteTestCases;
 
             bool operator==(const MethodDescription &other) const;
+
+            MethodDescription();
 
             [[nodiscard]] vector<types::Type> getParamTypes() const {
                 return CollectionUtils::transform(params, [](auto const& param) {
@@ -484,8 +489,8 @@ namespace tests {
 
         using MethodsMap = tsl::ordered_map<std::string, MethodDescription>;
 
-        static const string DEFAULT_SCOPE_NAME;
-        static const string ERROR_SCOPE_NAME;
+        static const string DEFAULT_SUITE_NAME;
+        static const string ERROR_SUITE_NAME;
         static const MethodParam &getStdinMethodParam();
 
         fs::path sourceFilePath;

@@ -1295,6 +1295,17 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, Correct_CodeText_For_Regression_And_Error) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 3);
+        const string code = testGen.tests.begin()->second.code;
+        const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
+        const string endRegion = std::string("#pragma endregion") + NL;
+        const string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
+        ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
+        ASSERT_TRUE(code.find(beginErrorRegion) != std::string::npos) << "No error begin region";
+    }
+
     TEST_F(Syntax_Test, Function_Pointers_StructFieldParam) {
         auto [testGen, status] = createTestForFunction(functions_as_params_c, 52);
 
