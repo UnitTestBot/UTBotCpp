@@ -15,14 +15,22 @@ using namespace types;
 static const string INT64_MIN_STRING =
     std::to_string(std::numeric_limits<int64_t>::min());
 
-const string Tests::DEFAULT_SCOPE_NAME = "regression";
-const string Tests::ERROR_SCOPE_NAME = "error";
+const string Tests::DEFAULT_SUITE_NAME = "regression";
+const string Tests::ERROR_SUITE_NAME = "error";
 
 const Tests::MethodParam &tests::Tests::getStdinMethodParam() {
     static const Tests::MethodParam stdinMethodParam =
         MethodParam(types::Type::CStringType(), types::Type::getStdinParamName(), std::nullopt);
     return stdinMethodParam;
 }
+
+Tests::MethodDescription::MethodDescription() : suiteTestCases{
+    {Tests::DEFAULT_SUITE_NAME, std::vector<MethodTestCase>()},
+    {Tests::ERROR_SUITE_NAME, std::vector<MethodTestCase>()}
+}, codeText{
+    {Tests::DEFAULT_SUITE_NAME, std::string()},
+    {Tests::ERROR_SUITE_NAME, std::string()}
+} {}
 
 static string makeDecimalConstant(string value, const string &typeName) {
     if (typeName == "long") {
@@ -516,13 +524,13 @@ void KTestObjectParser::parseKTest(const MethodKtests &batch,
     }
 }
 
-static string getScopeName(const UTBotKTest::Status &status,
+static string getSuiteName(const UTBotKTest::Status &status,
                            const shared_ptr<LineInfo> lineInfo) {
     bool forAssert = lineInfo != nullptr && lineInfo->forAssert;
     if (status == UTBotKTest::Status::FAILED || forAssert) {
-        return Tests::ERROR_SCOPE_NAME;
+        return Tests::ERROR_SUITE_NAME;
     }
-    return Tests::DEFAULT_SCOPE_NAME;
+    return Tests::DEFAULT_SUITE_NAME;
 }
 
 int KTestObjectParser::findFieldIndex(const StructInfo &structInfo, unsigned int offset) {
@@ -671,8 +679,8 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
     for (const auto &case_ : cases) {
         std::stringstream traceStream;
         traceStream << "Test case #" << (++caseCounter) << ":\n";
-        string scopeName = getScopeName(case_.status, lineInfo);
-        Tests::MethodTestCase testCase{ scopeName };
+        string suiteName = getSuiteName(case_.status, lineInfo);
+        Tests::MethodTestCase testCase{ suiteName };
         vector<Tests::TestCaseParamValue> paramValues;
 
         Tests::TestCaseDescription testCaseDescription;
@@ -734,6 +742,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
         assignTypeStubVar(testCase, methodDescription);
 
         methodDescription.testCases.push_back(testCase);
+        methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
     }
 }
 
@@ -1124,6 +1133,6 @@ bool isUnnamed(char *name) {
 }
 
 bool Tests::MethodTestCase::isError() const {
-    return scopeName == ERROR_SCOPE_NAME;
+    return suiteName == ERROR_SUITE_NAME;
 }
 }

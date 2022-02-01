@@ -828,6 +828,16 @@ namespace {
         checkFloatingPointPlain_C(testGen);
     }
 
+    TEST_F(Server_Test, Correct_CodeText_For_Regression) {
+        auto [testGen, status] = performFeatureFileTestsRequest(floating_point_plain_c);
+        const string code = testGen.tests.begin()->second.code;
+        const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
+        const string endRegion = std::string("#pragma endregion") + NL;
+        const string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
+        ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
+    }
+
     TEST_F(Server_Test, Linkage) {
         auto [testGen, status] = performFeatureFileTestsRequest(linkage_c);
         ASSERT_TRUE(status.ok()) << status.error_message();

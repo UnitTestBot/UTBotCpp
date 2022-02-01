@@ -55,14 +55,26 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     }
     writeStubsForStructureFields(tests);
     ss << NL;
-    for (const auto &[methodName, methodStub] : tests.methods) {
-        if (methodStub.code.empty()) {
-            continue;
-        }
-        ss << methodStub.code;
-    }
+    printSuite(Tests::DEFAULT_SUITE_NAME, tests.methods);
+    printSuite(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
     tests.code = ss.str();
+}
+
+void TestsPrinter::printSuite(const string &suiteName, const Tests::MethodsMap &methods) {
+    if (std::all_of(methods.begin(), methods.end(), [&suiteName](const auto& method) {
+        return method.second.codeText.at(suiteName).empty();
+    })) {
+        return;
+    }
+    ss << "#pragma region " << suiteName << NL;
+    for (const auto &[methodName, methodStub] : methods) {
+        if (methodStub.codeText.at(suiteName).empty()) {
+            continue;
+        }
+        ss << methodStub.codeText.at(suiteName);
+    }
+    ss << "#pragma endregion" << NL;
 }
 
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
@@ -78,9 +90,33 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
 
     writeStubsForFunctionParams(typesHandler, methodDescription, false);
     writeExternForSymbolicStubs(methodDescription);
-    for (auto &testCase : methodDescription.testCases) {
+
+    genCodeBySuiteName(Tests::DEFAULT_SUITE_NAME,
+                       methodDescription,
+                       predicateInfo,
+                       verbose,
+                       testNum);
+    resetStream();
+    genCodeBySuiteName(Tests::ERROR_SUITE_NAME,
+                       methodDescription,
+                       predicateInfo,
+                       verbose,
+                       testNum);
+    resetStream();
+}
+
+void TestsPrinter::genCodeBySuiteName(const string &targetSuiteName,
+                                      Tests::MethodDescription &methodDescription,
+                                      const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                      bool verbose,
+                                      int& testNum) {
+    const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
+    if (testCases.empty()) {
+        return;
+    }
+    for (auto &testCase : testCases) {
         testNum++;
-        testHeader(testCase.scopeName, methodDescription, testNum);
+        testHeader(testCase.suiteName, methodDescription, testNum);
         redirectStdin(methodDescription, testCase, verbose);
         if (verbose) {
             genVerboseTestCase(methodDescription, testCase, predicateInfo);
@@ -88,7 +124,8 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
             genParametrizedTestCase(methodDescription, testCase, predicateInfo);
         }
     }
-    methodDescription.code = ss.str();
+
+    methodDescription.codeText[targetSuiteName] = ss.str();
 }
 
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
