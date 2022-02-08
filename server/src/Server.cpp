@@ -605,9 +605,11 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
         return UserProjectConfiguration::CheckProjectConfiguration(buildDirPath, writer);
     case ConfigMode::CREATE_BUILD_DIR:
         return UserProjectConfiguration::RunBuildDirectoryCreation(buildDirPath, writer);
-    case ConfigMode::GENERATE_JSON_FILES:
+    case ConfigMode::GENERATE_JSON_FILES: {
+        std::vector<string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
         return UserProjectConfiguration::RunProjectConfigurationCommands(
-            buildDirPath, projectContext.projectname(), request->cmakeoptions(), writer);
+                buildDirPath, projectContext.projectname(), cmakeOptions, writer);
+    }
     default:
         return Status(StatusCode::CANCELLED, "Invalid request type.");
     }

@@ -473,8 +473,14 @@
 					"markdownDescription": "%unittestbot.paths.buildDirectory.description%"
 				},
 				"unittestbot.paths.cmakeOptions": {
-					"type": "string",
-					"default": "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_EXPORT_LINK_COMMANDS=ON",
+					"type": "array",
+					"items": {
+						"type": "string"
+					},
+					"default": [
+						"-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+						"-DCMAKE_EXPORT_LINK_COMMANDS=ON"
+					],
 					"markdownDescription": "%unittestbot.paths.cmakeOptions.description%"
 				},
 				"unittestbot.paths.testsDirectory": {

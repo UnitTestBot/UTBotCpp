@@ -68,5 +68,9 @@ export class WizardHtmlBuilder {
         this.content = this.content.replace('{{os}}', platform);
         return this;
     }
+    public setCmakeOptions(cmakeOptions: Array<string>): WizardHtmlBuilder {
+        this.content = this.content.replace('{{cmakeOptions}}', cmakeOptions.join("\n"));
+        return this;
+    }
 
 }

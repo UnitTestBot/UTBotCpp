@@ -28,7 +28,7 @@ public:
 
     static Status RunProjectConfigurationCommands(const fs::path &buildDirPath,
                                                   const string &projectName,
-                                                  const string &cmakeOptions,
+                                                  vector<string> cmakeOptions,
                                                   ProjectConfigWriter const &writer);
 
 private:

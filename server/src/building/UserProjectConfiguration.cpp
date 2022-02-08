@@ -46,12 +46,12 @@ Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &build
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
                                                           const string &projectName,
-                                                          const string &cmakeOptions,
+                                                          vector<string> cmakeOptions,
                                                           ProjectConfigWriter const &writer) {
     try {
         fs::path bearShPath = createBearShScript(buildDirPath);
-
-        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), {cmakeOptions, ".."});
+        cmakeOptions.emplace_back("..");
+        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptions);
         ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(), {Paths::getMake(), MakefileUtils::threadFlag()});
 
 

@@ -191,6 +191,7 @@ export class UtbotWizardPanel {
             .setPredictedRemotePath(defcfg.DefaultConfigValues.getDefaultRemotePath())
             .setPredictedBuildDirectory(predictedBuildDirectory)
             .setPlatform(os.platform())
+            .setCmakeOptions(defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS)
             .build();
     }
 }
