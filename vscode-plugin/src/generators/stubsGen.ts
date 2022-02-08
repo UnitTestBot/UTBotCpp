@@ -17,7 +17,7 @@ const { logger } = ExtensionLogger;
 
 
 export async function stubProject(client: Client): Promise<void> {
-    logger.info('Stub project');
+    logger.debug('Stub project');
     
     await utbotUI.progresses().withProgress(async (progressKey, token) => {
         utbotUI.progresses().report(progressKey, "UTBot is generating stubs for project...");

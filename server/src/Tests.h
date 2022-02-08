@@ -509,6 +509,9 @@ namespace tests {
         std::vector<string> commentBlocks{};
         string stubs; // language-independent stubs definitions
 
+        std::uint32_t errorMethodsNumber;
+        std::uint32_t regressionMethodsNumber;
+
         bool isFilePresentedInCommands = true;
         bool isFilePresentedInArtifact = true;
     };

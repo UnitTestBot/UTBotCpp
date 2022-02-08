@@ -11,6 +11,8 @@ message Progress {
 message SourceCode {
     string filePath = 1;
     string code = 2;
+    uint32 errorMethodsNumber = 3;
+    uint32 regressionMethodsNumber = 4;
 }
 
 message SourceInfo {

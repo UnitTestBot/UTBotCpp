@@ -51,7 +51,15 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
             await Promise.all((testsFiles).map(async (test) => {
                 const localPath = pathUtils.substituteLocalPath(test.getFilepath());
                 const testfile = vs.Uri.file(localPath);
-                logger.info(`Write test file ${test.getFilepath()} to ${localPath}`);
+                
+                if (testfile.path.endsWith('_test.cpp')) {
+                    const codeText = test.getCode();
+                    const testsNumberInErrorSuite = test.getErrormethodsnumber();
+                    const testsNumberInRegressionSuite = test.getRegressionmethodsnumber();
+                    logger.info(`Generated test file ${localPath} with ${testsNumberInRegressionSuite} tests in regression suite and ${testsNumberInErrorSuite} tests in error suite`);
+                } else {
+                    logger.info(`Generated test file ${localPath}`);
+                }
                 await vs.workspace.fs.writeFile(testfile, Buffer.from(test.getCode()));
                 return testfile;
             }));

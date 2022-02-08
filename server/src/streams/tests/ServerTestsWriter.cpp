@@ -58,6 +58,8 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
         testSource->set_filepath(tests.testSourceFilePath);
         if (synchronizeCode) {
             testSource->set_code(tests.code);
+            testSource->set_errormethodsnumber(tests.errorMethodsNumber);
+            testSource->set_regressionmethodsnumber(tests.regressionMethodsNumber);
         }
 
         auto testHeader = response.add_testsources();
