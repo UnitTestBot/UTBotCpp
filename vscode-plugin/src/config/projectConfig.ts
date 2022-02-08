@@ -20,7 +20,7 @@ export class ProjectConfig {
     private readonly projectName: string;
     private readonly projectPath: string;
     private readonly buildDirRelativePath: string;
-    private readonly cmakeOptions: string;
+    private readonly cmakeOptions: Array<string>;
 
     constructor(private readonly client: Client) {
         this.projectName = Prefs.getProjectName();

@@ -16,6 +16,8 @@ export class DefaultConfigValues {
     public static readonly POSSIBLE_BUILD_DIR_NAMES = ['out', 'build'];
     public static readonly POSSIBLE_TEST_DIR_NAMES = ['test'];
 
+    public static readonly DEFAULT_CMAKE_OPTIONS = ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DCMAKE_EXPORT_LINK_COMMANDS=ON'];
+
     public static getDefaultHost(): string {
         let host = Prefs.getGlobalHost();
         const sftHost = vsUtils.getFromSftpConfig("host");

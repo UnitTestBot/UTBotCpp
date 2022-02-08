@@ -201,8 +201,8 @@ export class Prefs {
         return this.getLocalBuildDirPath();
     }
 
-    public static getCmakeOptions(): string {
-        return this.getAsset(Prefs.CMAKE_OPTIONS_PREF);
+    public static getCmakeOptions(): Array<string> {
+        return this.getAssetBase(Prefs.CMAKE_OPTIONS_PREF, defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS);
     }
 
 
@@ -358,7 +358,8 @@ export class Prefs {
     }
 
     public static async setCmakeOptions(options: string): Promise<void> {
-        await this.setAsset(Prefs.CMAKE_OPTIONS_PREF, options);
+        const cmakeOptions = options.split("\n")
+        await this.setAsset(Prefs.CMAKE_OPTIONS_PREF, cmakeOptions);
     }
 
     public static getBuildDirectory(): string {

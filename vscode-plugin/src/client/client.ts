@@ -379,7 +379,7 @@ export class Client {
         projectName: string,
         projectPath: string,
         buildDirRelativePath: string,
-        cmakeOptions: string,
+        cmakeOptions: Array<string>,
         configMode: ConfigMode,
         progressKey: utbotUI.ProgressKey,
         token: vs.CancellationToken,
@@ -392,7 +392,7 @@ export class Client {
             const projectConfigRequest = new ProjectConfigRequest();
             projectConfigRequest.setProjectcontext(projectContext);
             projectConfigRequest.setConfigmode(configMode);
-            projectConfigRequest.setCmakeoptions(cmakeOptions);
+            projectConfigRequest.setCmakeoptionsList(cmakeOptions);
             try {
                 const response = this.testsService.configureProject(projectConfigRequest, this.metadata);
                 await this.handleServerResponse(response, progressKey, token, resolve, reject, responseHandler);

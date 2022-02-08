@@ -219,7 +219,7 @@ enum ProjectConfigStatus {
 message ProjectConfigRequest {
     ProjectContext projectContext = 1;
     ConfigMode configMode = 2;
-    string cmakeOptions = 3;
+    repeated string cmakeOptions = 3;
 }
 
 message ProjectConfigResponse {
