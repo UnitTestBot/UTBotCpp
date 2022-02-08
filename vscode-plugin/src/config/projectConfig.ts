@@ -29,7 +29,7 @@ export class ProjectConfig {
     }
 
     public async configure(): Promise<boolean> {
-        logger.info('Configure project');
+        logger.debug('Configure project');
 
         if (this.client.isConnectionNotEstablished() || this.client.newClient) {
             try {
@@ -44,7 +44,7 @@ export class ProjectConfig {
         switch (response.getType()) {
             case ProjectConfigStatus.IS_OK: {
                 const message = `Project '${this.projectName}' was successfully configured.`;
-                logger.info(message);
+                logger.debug(message);
                 messages.showInfoMessage(message);
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 await ProjectConfigEventsEmitter.getProjectConfigEventsEmitter().onDidImportProject.fire();
@@ -94,7 +94,7 @@ export class ProjectConfig {
     }
 
     async handleBuildDirCreationRequest(): Promise<boolean> {
-        logger.info('Create build folder');
+        logger.debug('Create build folder');
 
         const response = await this.checkProjectConfiguration(ConfigMode.CREATE_BUILD_DIR);
         logger.debug(`Received response: ${response}`);

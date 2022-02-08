@@ -153,7 +153,7 @@ namespace printer {
                                 bool verbose,
                                 int& testNum);
 
-        void printSuite(const string &suiteName, const Tests::MethodsMap &methods);
+        std::uint32_t printSuiteAndReturnMethodsCount(const string &suiteName, const Tests::MethodsMap &methods);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

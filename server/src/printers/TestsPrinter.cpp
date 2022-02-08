@@ -55,26 +55,29 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     }
     writeStubsForStructureFields(tests);
     ss << NL;
-    printSuite(Tests::DEFAULT_SUITE_NAME, tests.methods);
-    printSuite(Tests::ERROR_SUITE_NAME, tests.methods);
+    tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
+    tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
     tests.code = ss.str();
 }
 
-void TestsPrinter::printSuite(const string &suiteName, const Tests::MethodsMap &methods) {
+std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const string &suiteName, const Tests::MethodsMap &methods) {
     if (std::all_of(methods.begin(), methods.end(), [&suiteName](const auto& method) {
         return method.second.codeText.at(suiteName).empty();
     })) {
-        return;
+        return 0;
     }
     ss << "#pragma region " << suiteName << NL;
+    std::uint32_t count = 0;
     for (const auto &[methodName, methodStub] : methods) {
         if (methodStub.codeText.at(suiteName).empty()) {
             continue;
         }
+        ++count;
         ss << methodStub.codeText.at(suiteName);
     }
     ss << "#pragma endregion" << NL;
+    return count;
 }
 
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,

@@ -189,7 +189,7 @@ export class Client {
 
     private initServices(): void {
         this.address = this.host + ':' + this.port;
-        logger.info(`Address is ${this.address}`);
+        logger.debug(`Address is ${this.address}`);
         this.testsService = new TestsGenServiceClient(this.address,
             grpc.credentials.createInsecure());
     }

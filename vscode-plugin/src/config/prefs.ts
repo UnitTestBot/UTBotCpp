@@ -116,7 +116,7 @@ export class Prefs {
     }
 
     public static async setPredictedSettings(): Promise<void> {
-        logger.info("Setting default settings");
+        logger.debug("Setting default settings");
         await this.setPredictedHost();
         await this.setPredictedPort();
     }
@@ -124,13 +124,13 @@ export class Prefs {
     public static async setPredictedHost(): Promise<void> {
         const predictedHost = defcfg.DefaultConfigValues.getDefaultHost();
         await Prefs.setHost(predictedHost);
-        logger.info(`Host is automatically set to '${predictedHost}'`);
+        logger.debug(`Host is automatically set to '${predictedHost}'`);
     }
 
     public static async setPredictedPort(): Promise<void> {
         const predictedPort = defcfg.DefaultConfigValues.getDefaultPort();
         await Prefs.setPort(predictedPort);
-        logger.info(`Port is automatically set to '${predictedPort}'`);
+        logger.debug(`Port is automatically set to '${predictedPort}'`);
     }
 
     /**

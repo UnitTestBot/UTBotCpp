@@ -36,6 +36,7 @@ export class ExtensionLogger {
 
 export class Logger {
     private static patternString = '%d{yyyy-MM-dd hh:mm:ss} | %20.25f{1}:%3.100l |%1.1p| %m%n';
+    private static infoPatternString = '%d{hh:mm:ss} | %m%n';
 
     constructor(){}
 
@@ -84,11 +85,29 @@ export class Logger {
                         type: 'pattern', 
                         pattern: this.patternString
                     }
+                },
+                vscodeOutChannelForClientOnlyAppender : {
+                    type: vscodeOutChannelAppender,
+                    layout: {
+                        type: 'pattern',
+                        pattern: this.infoPatternString
+                    }
+                },
+                vscodeOutChannelForInfo: {
+                    type: 'logLevelFilter',
+                    level: 'info',
+                    appender: 'vscodeOutChannelForClientOnlyAppender'
+                },
+                vscodeOutChannelForDebug: {
+                    type: 'logLevelFilter',
+                    level: 'trace',
+                    maxLevel: 'debug',
+                    appender: 'vscodeOutChannel'
                 }
 
             },
             categories: {
-                default: { appenders: ['vscodeOutChannel', 'console'], level: configLogLevel, enableCallStack: true }
+                default: { appenders: ['vscodeOutChannelForInfo', 'vscodeOutChannelForDebug', 'console'], level: configLogLevel, enableCallStack: true },
             }
         });
 
