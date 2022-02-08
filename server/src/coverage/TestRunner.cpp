@@ -182,20 +182,16 @@ bool TestRunner::buildTest(const MakefileUtils::MakefileCommand &command) {
 testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
     auto res = command.run(projectContext.buildDir, true, true, testTimeout);
     GTestLogger::log(res.output);
+    if (StringUtils::contains(res.output, "[  PASSED  ]")) {
+        return testsgen::TEST_PASSED;
+    }
+    if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {
+        return testsgen::TEST_FAILED;
+    }
     if (BaseForkTask::wasInterrupted(res.status)) {
         return testsgen::TEST_INTERRUPTED;
     }
-    if (BaseForkTask::wasInterrupted(res.status) != 0) {
-        if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {
-            return testsgen::TEST_FAILED;
-        }
-        if (StringUtils::contains(res.output, "[==========] Running 1 test from 1 test suite")) {
-            return testsgen::TEST_DEATH;
-        }
-        throw ExecutionProcessException(res.output, res.outPath.value());
-    } else {
-        return testsgen::TEST_PASSED;
-    }
+    return testsgen::TEST_DEATH;
 }
 
 const Coverage::TestStatusMap &TestRunner::getTestStatusMap() const {

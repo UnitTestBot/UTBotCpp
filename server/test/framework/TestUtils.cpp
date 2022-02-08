@@ -134,8 +134,9 @@ namespace testUtils {
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
                        const vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
-            EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == testStatusMap.at(filename).at(testname)) ||
-                        (testsgen::TestStatus::TEST_DEATH == testStatusMap.at(filename).at(testname)));
+            const auto status = testStatusMap.at(filename).at(testname);
+            EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
+                        (testsgen::TestStatus::TEST_DEATH == status));
         }
     }
 
