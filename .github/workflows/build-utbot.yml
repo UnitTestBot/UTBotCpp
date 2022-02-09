@@ -3,6 +3,8 @@ name: Build UTBot and run unit tests
 on:
   pull_request:
     branches: [main]
+  push:
+    branches: [main]
 
 jobs:
   matrix-prep:

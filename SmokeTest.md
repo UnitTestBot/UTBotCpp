@@ -1,13 +1,13 @@
-#How to check UTBot manually
+# How to check UTBot manually
 
 It's recommended to perform some smoke checks on UTBot before raising a pull request
 
-##Check installation in your own local environment
+## Check installation in your own local environment
 
 Download an archive with build artifacts on a local machine and unpack it into separate folder locally
 
 
--[ ] Check folder contains:
+- [ ] Check folder contains:
 
    - ```utbot_distr.tar.gz``` - UTbot binary/dependencies
    - ```utbot_plugin.vsix``` - UTBot plugin for VSCode
@@ -15,7 +15,7 @@ Download an archive with build artifacts on a local machine and unpack it into s
    - ```version.txt``` - version file
 
 
--[ ] Perform setup on server side:
+- [ ] Perform setup on server side:
  
 Move binary and script into a new separate directory
 
@@ -39,13 +39,13 @@ PID/port 2121 should be found
 
  If no errors and process is up then 
 
--[ ]  Perform client setup:
+- [ ]  Perform client setup:
 
    - In local VSCode look for *Install from VSIX* command, select early downloaded ```utbot_plugin.vsix``` and install it - "UnitTestBot for C/C++" plugin should be visible in Extensions
    - For Win: setup SSH remote connection with server![img.png](img.png)- locally installed UTBot plugin should be available in remote mode (no new installation required)
    - Open folder with source code, test connection as proposed, click Next and finish setup configuring project
 
-##Check UTBot: Generate Tests
+## Check UTBot: Generate Tests
 On a source code project
 - [ ] For Current Function:
 1. Move to any function in the (as example) ```file.c``` 

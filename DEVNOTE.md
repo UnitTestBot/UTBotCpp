@@ -1,4 +1,4 @@
-#UTBot Developer Guide
+# UTBot Developer Guide
 
 ## How to build UTBotCpp from source
 
