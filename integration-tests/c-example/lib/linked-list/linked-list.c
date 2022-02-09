@@ -45,6 +45,17 @@ int sum_list(struct Node *head) {
     return s;
 }
 
+int sign_sum(struct Node *head) {
+    int sum = sum_list(head);
+    if (sum > 0) {
+        return 1;
+    } else if (sum < 0) {
+        return -1;
+    } else {
+        return 0;
+    }
+}
+
 int hard_length2(struct HardNode *head) {
     if (head == NULL) {
         return 0;

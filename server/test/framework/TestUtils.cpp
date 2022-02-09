@@ -170,7 +170,7 @@ namespace testUtils {
                                                          int kleeTimeout) {
         auto projectContext = GrpcUtils::createProjectContext(
             projectName, projectPath, projectPath / "tests", buildDirRelativePath);
-        auto settingsContext = GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, true, useStubs);
+        auto settingsContext = GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext), srcPaths);
     }
