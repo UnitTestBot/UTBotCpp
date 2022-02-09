@@ -67,7 +67,8 @@ To setup it:
 2. Open **Settings > Build, Execution, Deployment > Toolchains**.
 3. Add a new *Remote Host* toolchain.
 4. In *Credentials* section, set up an `ssh` connection to the UTBot docker container you have. Consider enabling connection via OpehSSH authentification agent to ease files synchronization.
-5. All other fields should fill in automatically.
+5. In *CMake* section fill `/utbot_distr/install/bin/cmake`
+6. All other fields should fill in automatically.
 
 
 ## Troubleshooting the build
