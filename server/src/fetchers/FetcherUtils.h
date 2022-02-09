@@ -23,9 +23,8 @@ class ClangToolRunner {
 public:
     explicit ClangToolRunner(std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase);
 
-    template <typename ToolAction>
     void run(const fs::path &file,
-             const ToolAction &toolAction,
+             clang::tooling::ToolAction *toolAction,
              bool ignoreDiagnostics = false,
              std::optional<std::string> const &virtualFileContent = std::nullopt,
              bool onlySource = true) {
@@ -41,15 +40,15 @@ public:
         if (virtualFileContent.has_value()) {
             clangTool->mapVirtualFile(file.c_str(), virtualFileContent.value());
         }
+        setResourceDirOption(clangTool.get());
         int status = clangTool->run(toolAction);
         if (!ignoreDiagnostics) {
             checkStatus(status);
         }
     }
 
-    template <typename ToolAction>
     void run(tests::TestsMap *const tests,
-             const ToolAction &toolAction,
+             clang::tooling::ToolAction *toolAction,
              bool ignoreDiagnostics = false) {
         auto files = CollectionUtils::getKeys(*tests);
         for (fs::path const &file : files) {
@@ -57,9 +56,8 @@ public:
         }
     }
 
-    template <typename ToolAction>
     void runWithProgress(tests::TestsMap *const tests,
-                         const ToolAction &toolAction,
+                         clang::tooling::ToolAction *toolAction,
                          const ProgressWriter *progressWriter,
                          std::string const &message,
                          bool ignoreDiagnostics = false) {
@@ -71,8 +69,11 @@ public:
     }
 private:
     std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
+    std::optional<fs::path> resourceDir;
 
     void checkStatus(int status) const;
+
+    void setResourceDirOption(clang::tooling::ClangTool *clangTool);
 };
 
 class ParamsHandler {

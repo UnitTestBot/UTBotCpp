@@ -4,6 +4,8 @@
 
 #ifndef UNITTESTBOT_SHELLEXECTASK_H
 #define UNITTESTBOT_SHELLEXECTASK_H
+
+#include "utils/ExecutionResult.h"
 #include "BaseForkTask.h"
 #include "Paths.h"
 

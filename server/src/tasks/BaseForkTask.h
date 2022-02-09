@@ -4,7 +4,9 @@
 
 #ifndef UNITTESTBOT_BASEFORKTASK_H
 #define UNITTESTBOT_BASEFORKTASK_H
+
 #include "utils/LogUtils.h"
+#include "utils/ExecutionResult.h"
 
 #include "loguru.h"
 #include <protobuf/testgen.grpc.pb.h>
@@ -15,10 +17,6 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
-
-namespace ExecUtils {
-    struct ExecutionResult;
-}
 
 class BaseForkTask {
 public:

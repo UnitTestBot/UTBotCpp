@@ -8,11 +8,10 @@
 #include "Paths.h"
 #include "StringUtils.h"
 #include "exceptions/CompilationDatabaseException.h"
+#include "tasks/ShellExecTask.h"
 #include "environment/EnvironmentPaths.h"
 
 #include "loguru.h"
-
-#include <fstream>
 
 namespace CompilationUtils {
     using std::string;
@@ -192,6 +191,57 @@ namespace CompilationUtils {
                 return Paths::getUTBotClangPP();
             default:
                 throw CompilationDatabaseException("Couldn't get bundled compiler path for current compiler name");
+        }
+    }
+
+    std::optional<fs::path> getResourceDirectory(const fs::path &buildCompilerPath) {
+        auto compilerName = CompilationUtils::getCompilerName(buildCompilerPath);
+        switch (compilerName) {
+        case CompilerName::GCC:
+        case CompilerName::GXX: {
+            // /usr/bin/gcc -> /usr/lib/gcc/x86_64-linux-gnu/9/libgcc.a
+            string command = StringUtils::stringFormat("%s -print-libgcc-file-name", buildCompilerPath);
+            auto [output, status, outPath] = ShellExecTask::runPlainShellCommand(command);
+            if (status == 0) {
+                StringUtils::rtrim(output);
+                // /usr/lib/gcc/x86_64-linux-gnu/9/libgcc.a -> /usr/lib/gcc/x86_64-linux-gnu/9
+                fs::path resourceDirPath = fs::path(output).parent_path();
+                if (fs::exists(resourceDirPath)) {
+                    return resourceDirPath;
+                } else {
+                    LOG_S(ERROR) << "Resource directory doesn't exist: " << resourceDirPath;
+                    return std::nullopt;
+                }
+            } else {
+                LOG_S(ERROR) << "Command for detecting libgcc location failed: " << command;
+                LOG_S(ERROR) << output;
+                return std::nullopt;
+            }
+            break;
+        }
+        case CompilerName::CLANG:
+        case CompilerName::CLANGXX: {
+            // /utbot_distr/install/bin/clang -> /utbot_distr/install/lib/clang/10.0.1
+            string command = StringUtils::stringFormat("%s -print-resource-dir", buildCompilerPath);
+            auto [output, status, outPath] = ShellExecTask::runPlainShellCommand(command);
+            if (status == 0) {
+                StringUtils::rtrim(output);
+                fs::path resourceDirPath = output;
+                if (fs::exists(resourceDirPath)) {
+                    return resourceDirPath;
+                } else {
+                    LOG_S(ERROR) << "Resource directory doesn't exist: " << resourceDirPath;
+                    return std::nullopt;
+                }
+            } else {
+                LOG_S(ERROR) << "Command for detecting resource dir failed: " << command;
+                LOG_S(ERROR) << output;
+                return std::nullopt;
+            }
+            break;
+        }
+        case CompilerName::UNKNOWN:
+            return std::nullopt;
         }
     }
 }

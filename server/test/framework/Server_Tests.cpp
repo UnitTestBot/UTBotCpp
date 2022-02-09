@@ -1562,4 +1562,17 @@ namespace {
             testUtils::checkStatuses(statusMap, tests);
         }
     }
+
+    TEST_P(Parameterized_Server_Test, Clang_Resources_Directory_Test) {
+        std::string suite = "stddef";
+        setSuite(suite);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+    }
 }
