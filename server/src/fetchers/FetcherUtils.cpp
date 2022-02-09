@@ -3,6 +3,7 @@
  */
 
 #include "FetcherUtils.h"
+#include "environment/EnvironmentPaths.h"
 
 #include <clang/Tooling/CompilationDatabase.h>
 
@@ -40,11 +41,26 @@ ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
     return functionParamDescription;
 }
 
-ClangToolRunner::ClangToolRunner(std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
+ClangToolRunner::ClangToolRunner(
+    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
     : compilationDatabase(std::move(compilationDatabase)) {
+    fs::path buildCompilerPath =
+        CompilationUtils::detectBuildCompilerPath(this->compilationDatabase);
+    this->resourceDir = CompilationUtils::getResourceDirectory(buildCompilerPath);
 }
 
 void ClangToolRunner::checkStatus(int status) const {
     LOG_IF_S(ERROR, status == 1) << "Error occurred while running clang tool";
     LOG_IF_S(ERROR, status == 2) << "Some files are skipped due to missing compile commands";
+}
+
+void ClangToolRunner::setResourceDirOption(clang::tooling::ClangTool *clangTool) {
+    if (resourceDir.has_value()) {
+        string resourceDirFlag =
+            StringUtils::stringFormat("-resource-dir=%s", resourceDir.value());
+        auto resourceDirAdjuster = clang::tooling::getInsertArgumentAdjuster(
+            resourceDirFlag.c_str(), clang::tooling::ArgumentInsertPosition::END);
+        // Add "-v" to the list in order to see search list for include files
+        clangTool->appendArgumentsAdjuster(resourceDirAdjuster);
+    }
 }

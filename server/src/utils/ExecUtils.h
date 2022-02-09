@@ -10,6 +10,7 @@
 #include "streams/IStreamWriter.h"
 #include "streams/ProgressWriter.h"
 #include "tasks/ShellExecTask.h"
+#include "ExecutionResult.h"
 
 #include <grpcpp/grpcpp.h>
 
@@ -22,12 +23,6 @@ namespace ExecUtils {
     using grpc::ServerContext;
     using std::vector;
     using std::string;
-
-    struct ExecutionResult {
-        std::string output;
-        int status;
-        std::optional<fs::path> outPath;
-    };
 
     /**
      * @brief Executes command in a child process. `popen` is used.

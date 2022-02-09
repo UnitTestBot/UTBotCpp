@@ -53,6 +53,8 @@ namespace CompilationUtils {
     std::string getDefaultCompilerForSourceFile(const fs::path& sourceFilePath);
 
     fs::path getBundledCompilerPath(CompilerName compilerName);
+
+    std::optional<fs::path> getResourceDirectory(const fs::path& buildCompilerPath);
 }
 
 #endif //UNITTESTBOT_COPMILATIONUTILS_H
