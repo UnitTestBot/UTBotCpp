@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
+ */
+
 #include "linked_list.h"
 
 int length_of_linked_list3(struct Node *head) {
@@ -179,5 +183,4 @@ int vowel_consonant(char c, char (*vowel) (char)) {
     } else {
         return -1;
     }
-
 }

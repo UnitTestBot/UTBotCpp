@@ -34,4 +34,5 @@ add_executable(syntax1
         tree.c
         different_parameters.cpp
         simple_class.cpp
-        inner_unnamed.c)
+        inner_unnamed.c
+        array_sort.c)
