@@ -259,6 +259,9 @@ private:
         const string client;
     };
 
+    //recommended size from loguru
+    const static size_t LOGURU_BUFFER_SIZE = 17;
+
     static void logToClient(void *channel, const loguru::Message &message);
 
     static void gtestLog(void *channel, const loguru::Message &message);
