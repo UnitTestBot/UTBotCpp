@@ -44,8 +44,8 @@ export UTBOT_LOGS_FOLDER=$UTBOT_ALL
 
 # Setting environment variables according to $UTBOT_ALL
 export UTBOT_INSTALL_DIR=$UTBOT_ALL/install
-export CC=$UTBOT_ALL/debs-install/usr/bin/gcc-9
-export CXX=$UTBOT_ALL/debs-install/usr/bin/g++-9
+export CC=$UTBOT_ALL/install/bin/clang
+export CXX=$UTBOT_ALL/install/bin/clang++
 export CPATH=$UTBOT_ALL/klee/include:$CPATH # Path for C and C++ includes
 export PATH=$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH
 export KLEE_RUNTIME_LIBRARY_PATH=$UTBOT_ALL/klee/lib/klee/runtime/
