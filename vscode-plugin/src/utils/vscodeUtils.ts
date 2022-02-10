@@ -50,12 +50,12 @@ export function getTextEditor(): vs.TextEditor | undefined {
 }
 
 export function getFromSftpConfig(param: string): string | undefined {
-    let workspaceFolder = vs.workspace.workspaceFolders?.[0].uri.fsPath;
+    const workspaceFolder = vs.workspace.workspaceFolders?.[0].uri.fsPath;
     if (workspaceFolder) {
-        let sftpConfigPath = pathUtils.fsJoin(workspaceFolder, '.vscode', 'sftp.json');
+        const sftpConfigPath = pathUtils.fsJoin(workspaceFolder, '.vscode', 'sftp.json');
         if (fs.existsSync(sftpConfigPath)) {
-            let rawData = fs.readFileSync(sftpConfigPath);
-            let configJson = JSON.parse(rawData.toString());
+            const rawData = fs.readFileSync(sftpConfigPath);
+            const configJson = JSON.parse(rawData.toString());
             return configJson[param];
         }
     }

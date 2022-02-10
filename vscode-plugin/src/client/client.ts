@@ -219,7 +219,7 @@ export class Client {
                 this.metadata.add('clientId', clientId as string);
                 resolve();
             }).then(undefined, err => {
-                let targetCode = Status.UNAVAILABLE;
+                const targetCode = Status.UNAVAILABLE;
 
                 if (err.code === targetCode) {
                     if (this.isNoConnectionEstablishedErrorLogged) {

@@ -358,7 +358,7 @@ export class Prefs {
     }
 
     public static async setCmakeOptions(options: string): Promise<void> {
-        const cmakeOptions = options.split("\n")
+        const cmakeOptions = options.split("\n");
         await this.setAsset(Prefs.CMAKE_OPTIONS_PREF, cmakeOptions);
     }
 
