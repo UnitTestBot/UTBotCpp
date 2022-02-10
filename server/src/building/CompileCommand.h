@@ -56,6 +56,8 @@ namespace utbot {
         void filterCFlags();
 
         void removeIncludeFlags();
+
+        void removeWerror();
     };
 }
 

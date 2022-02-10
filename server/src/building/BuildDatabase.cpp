@@ -106,6 +106,7 @@ void BuildDatabase::createClangCompileCommandsJson(const fs::path &buildCommands
                            return tryConvertOptionToPath(argument, directory);
                        });
         objectInfo->command = utbot::CompileCommand(jsonArguments, directory, sourceFile);
+        objectInfo->command.removeWerror();
         fs::path outputFile = objectInfo->getOutputFile();
         fs::path kleeFilePathTemplate =
             Paths::createNewDirForFile(sourceFile, projectContext.buildDir, serverBuildDir);
