@@ -156,4 +156,9 @@ namespace utbot {
             return StringUtils::startsWith(arg, "-I");
         });
     }
+    void CompileCommand::removeWerror() {
+        CollectionUtils::erase_if(commandLine, [](const std::string &arg) {
+            return StringUtils::startsWith(arg, "-Werror");
+        });
+    }
 }
