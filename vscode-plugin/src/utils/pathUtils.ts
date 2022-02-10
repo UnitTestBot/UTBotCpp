@@ -2,7 +2,6 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
 
-import * as os from 'os';
 import * as path from 'path';
 import * as vs from 'vscode';
 import { Prefs } from '../config/prefs';
