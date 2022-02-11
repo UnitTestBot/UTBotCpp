@@ -81,11 +81,14 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
                 }
             }
         }
-        auto *nodeParent = (CXXRecordDecl *) FS->getParent();
         auto borders = getStmtBordersLines(sourceManager, currentStmt);
         lineInfo.begin = borders.start.line;
         lineInfo.end = borders.end.line;
-        lineInfo.scopeName = nodeParent != nullptr ? nodeParent->getNameAsString() : path.stem().string();
+        if (auto namedParent = dyn_cast<NamedDecl>(FS->getParent())) {
+            lineInfo.scopeName = namedParent->getNameAsString();
+        } else {
+            lineInfo.scopeName = path.stem().string();
+        }
         lineInfo.methodName = FS->getNameAsString();
         const clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
