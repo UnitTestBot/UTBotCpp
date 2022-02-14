@@ -79,6 +79,10 @@ int main(int argc, char **argv) {
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("stddef"), clang);
 
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("installed"), gcc);
+
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("installed"), clang);
+
     } catch (std::runtime_error const &e) {
         return 1;
     }
