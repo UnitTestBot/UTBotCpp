@@ -107,6 +107,20 @@ namespace CollectionUtils {
         map = filtered;
         return erased;
     }
+    template <class Pr, typename ...Args>
+    size_t erase_if(tsl::ordered_set<Args...> &set, Pr &&pred) {
+        size_t erased = 0;
+        tsl::ordered_set<Args...> filtered{ set.bucket_count() };
+        for (auto &&it : set) {
+            if (!pred(it)) {
+                filtered.insert(std::move(it));
+            } else {
+                erased++;
+            }
+        }
+        set = filtered;
+        return erased;
+    }
 
     template <typename V, class Pr>
     size_t erase_if(std::list<V> &list, Pr &&pred) {
@@ -221,6 +235,11 @@ namespace CollectionUtils {
     }
     template <typename T, typename Hash, class From>
     void extend(std::unordered_set<T, Hash> &to, From &&from) {
+        to.reserve(to.size() + from.size());
+        to.insert(std::begin(from), std::end(from));
+    }
+    template <typename T, typename Hash, class From>
+    void extend(tsl::ordered_set<T, Hash> &to, From &&from) {
         to.reserve(to.size() + from.size());
         to.insert(std::begin(from), std::end(from));
     }
