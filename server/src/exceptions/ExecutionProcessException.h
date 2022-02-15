@@ -13,7 +13,7 @@
 using std::string;
 
 struct ExecutionProcessException : public std::exception {
-    explicit ExecutionProcessException(string cmd, fs::path logFilePath);
+    explicit ExecutionProcessException(string cmd, std::optional<fs::path> logFilePath);
 
     [[nodiscard]] const char *what() const noexcept override;
 
@@ -21,7 +21,7 @@ struct ExecutionProcessException : public std::exception {
 
 private:
     string cmd;
-    fs::path logFilePath;
+    std::optional<fs::path> logFilePath;
 };
 
 #endif //UNITTESTBOT_EXECUTIONPROCESSEXCEPTION_H
