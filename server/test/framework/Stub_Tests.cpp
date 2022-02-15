@@ -237,7 +237,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{ true, true, 15, 0, true, true };
         coverageGenerator.generate(true, settingsContext);
-        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        EXPECT_TRUE(coverageGenerator.hasExceptions());
     }
 
     TEST_F(Stub_Test, File_Tests_Without_Stubs) {

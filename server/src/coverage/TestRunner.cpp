@@ -194,7 +194,7 @@ testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &c
     if (StringUtils::contains(res.output, "[  PASSED  ]")) {
         return testsgen::TEST_PASSED;
     }
-    throw ExecutionProcessException(res.output, res.outPath);
+    throw ExecutionProcessException(res.output, res.outPath.value());
 }
 
 const Coverage::TestStatusMap &TestRunner::getTestStatusMap() const {
