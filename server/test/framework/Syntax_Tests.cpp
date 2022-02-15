@@ -1298,7 +1298,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Correct_CodeText_For_Regression_And_Error) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 7);
+        auto [testGen, status] = createTestForFunction(linked_list_c, 23);
         const string code = testGen.tests.begin()->second.code;
         const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
         const string endRegion = std::string("#pragma endregion") + NL;
