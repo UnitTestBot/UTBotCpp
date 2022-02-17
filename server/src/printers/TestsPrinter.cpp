@@ -55,10 +55,10 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     }
     writeStubsForStructureFields(tests);
     ss << NL;
-    ss << RB();
-    tests.code = ss.str();
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
+    ss << RB();
+    tests.code = ss.str();
 }
 
 std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const string &suiteName, const Tests::MethodsMap &methods) {
