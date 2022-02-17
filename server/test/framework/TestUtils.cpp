@@ -135,17 +135,8 @@ namespace testUtils {
                        const vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
             const auto status = testStatusMap.at(filename).at(testname);
-            // ToDo:
-//            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
-//                EXPECT_TRUE((testsgen::TestStatus::TEST_FAILED == status) ||
-//                (testsgen::TestStatus::TEST_DEATH == status));
-//            } else {
-//                EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
-//                (testsgen::TestStatus::TEST_DEATH == status));
-//            }
             EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
-                        (testsgen::TestStatus::TEST_FAILED == status) ||
-                        testsgen::TestStatus::TEST_DEATH == status);
+                        (testsgen::TestStatus::TEST_DEATH == status));
         }
     }
 

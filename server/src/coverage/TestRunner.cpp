@@ -186,7 +186,7 @@ testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &c
         return testsgen::TEST_PASSED;
     }
     if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {
-        throw ExecutionProcessException(res.output, res.outPath.value());
+        return testsgen::TEST_FAILED;
     }
     if (BaseForkTask::wasInterrupted(res.status)) {
         return testsgen::TEST_INTERRUPTED;
