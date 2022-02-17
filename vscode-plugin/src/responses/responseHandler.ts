@@ -52,7 +52,7 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                 const localPath = pathUtils.substituteLocalPath(test.getFilepath());
                 const testfile = vs.Uri.file(localPath);
                 
-                if (testfile.path.endsWith('_test.cpp')) {
+                if (isTestFileSourceFile(testfile)) {
                     const codeText = test.getCode();
                     const testsNumberInErrorSuite = test.getErrormethodsnumber();
                     const testsNumberInRegressionSuite = test.getRegressionmethodsnumber();
@@ -75,6 +75,10 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
             }
         }
     }
+}
+
+function isTestFileSourceFile(testfile: any): boolean {
+    return testfile.path.endsWith('_test.cpp');
 }
 
 export class SnippetResponseHandler implements ResponseHandler<TestsResponse> {
