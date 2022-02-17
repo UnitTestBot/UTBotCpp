@@ -1556,7 +1556,7 @@ namespace {
         ASSERT_FALSE(statusMap.empty());
         EXPECT_EQ(this->numberOfTests, statusMap.getNumberOfTests());
         if (timeout) {
-            EXPECT_EQ(testsgen::TestStatus::TEST_DEATH,
+            EXPECT_EQ(testsgen::TestStatus::TEST_INTERRUPTED,
                       statusMap.begin()->second.begin()->second);
         } else {
             testUtils::checkStatuses(statusMap, tests);

@@ -2053,7 +2053,7 @@ namespace {
         utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
         coverageGenerator.generate(false, settingsContext);
 
-        EXPECT_TRUE(coverageGenerator.hasExceptions());
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
         auto statusMap = coverageGenerator.getTestStatusMap();
@@ -2085,7 +2085,7 @@ namespace {
         utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
         coverageGenerator.generate(false, settingsContext);
 
-        EXPECT_TRUE(coverageGenerator.hasExceptions());
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
         auto statusMap = coverageGenerator.getTestStatusMap();
