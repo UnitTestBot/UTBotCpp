@@ -36,4 +36,12 @@ namespace TimeUtils {
     systemClockTimePoint convertFileToSystemClock(const fs::file_time_type &fTime) {
         return std::chrono::system_clock::from_time_t(to_time_t(fTime));
     }
+
+    std::string getCurrentTimeStr() {
+        time_t t = std::time(nullptr);
+        tm tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%Y%m%d%H%M%S");
+        return oss.str();
+    }
 }

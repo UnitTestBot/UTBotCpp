@@ -43,7 +43,8 @@ const string Server::gtestLogPrefix = "gtestLogTo";
 
 void Server::run(uint16_t customPort) {
     LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_NUMBER;
-    LOG_S(INFO) << "Log path: " << Paths::logPath;
+    LOG_S(INFO) << "Logs directory: " << Paths::logPath;
+    LOG_S(INFO) << "Latest log path: " << Paths::getUtbotLogAllFilePath();
     LOG_S(INFO) << "Tmp directory path: " << Paths::tmpPath;
     LOG_S(INFO) << "Executable path: " << fs::current_path();
 

@@ -6,6 +6,7 @@
 
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
+#include "utils/CLIUtils.h"
 
 #include <pwd.h>
 #include <unistd.h>
