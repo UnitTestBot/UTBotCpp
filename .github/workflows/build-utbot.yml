@@ -94,6 +94,17 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
+      - name: Setup Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: zulu
+          java-version: 11
+          cache: gradle
+      - name: Run CLion Plugin Tests
+        run: |
+          ./server/build/utbot server > /dev/null 2>&1
+          cd clion-plugin
+          ./gradlew test --info
 
   build-utbot-and-generate-test:
     needs: matrix-prep
