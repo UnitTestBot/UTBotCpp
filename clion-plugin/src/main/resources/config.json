@@ -1,0 +1,4 @@
+{
+  "grpc port": 5000,
+  "grpc server name": "localhost"
+}

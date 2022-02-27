@@ -1,0 +1,96 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>com.github.vol0n.utbotcppclion</id>
+    <name>UTBotCppClion</name>
+    <vendor>vol0n</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.clion.ide</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.cidr.lang</depends>
+    <depends>com.intellij.modules.clion</depends>
+
+
+    <extensions defaultExtensionNs="com.intellij">
+         <codeInsight.lineMarkerProvider language="ObjectiveC"
+                                            implementationClass="ui.UTBotTestRunLineMarkerProvider"/>
+        <projectService serviceImplementation="services.GeneratorSettings"/>
+        <projectService serviceImplementation="services.UTBotSettings"/>
+        <coverageEngine implementation="coverage.UTBotCoverageEngine"/>
+        <postStartupActivity implementation="services.UTBotStartupActivity"/>
+        <projectConfigurable parentId="tools" instance="ui.UTBotConfigurable"
+                             id="ui.UTBotConfigurable"
+                             displayName="UTBot Settings"
+                             nonDefaultProject="true"/>
+        <notificationGroup id="Custom Notification Group" displayType="BALLOON"/>
+
+        <coverageEngine implementation="coverage.UTBotCoverageEngine"/>
+        <coverageRunner implementation="coverage.UTBotCoverageRunner"/>
+
+        <statusBarWidgetFactory implementation="ui.StatusBar"/>
+        <toolWindow id="UTBot targets"
+                    secondary="false"
+                    anchor="bottom"
+                    factoryClass="ui.UTBotTargetsToolWindowFactory"/>
+        <toolWindow factoryClass="ui.ConsoleToolWindowProvider"
+                    id="UTBot consoles"
+                    anchor="bottom"
+                    secondary="true"
+        />
+    </extensions>
+
+    <actions>
+        <group id="actions.UTBot.editor" text="UTBot Actions" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <action id="actions.GenerateForProjectAction" class="actions.GenerateForProjectAction"
+                    text="Generate for Project" description="Generate tests for whole project"/>
+            <action id="actions.GenerateForFileActionInEditor"
+                    class="actions.GenerateForFileAction" text="Generate Tests for File"
+                    description="Generates tests for file via grpc server"/>
+            <action id="actions.GenerateForLineAction"
+                    class="actions.GenerateForLineAction" text="Generate for Line"
+                    description="Generate tests for line uder carret">
+            </action>
+            <action id="actions.GenerateForPredicateAction"
+                    class="actions.GenerateForPredicateAction"
+                    text="Generate For Predicate"
+                    description="Generate tests for given predicate on call">
+            </action>
+            <action id="actions.GenerateForFunctionAction"
+                    class="actions.GenerateForFunctionAction"
+                    text="Generate For Function"
+                    description="Generate unit tests for this function">
+            </action>
+            <action id="actions.GenerateForClassAction"
+                    class="actions.GenerateForClassAction" text="Generate For Class"
+                    description="Generate unit tests for this class"/>
+            <action id="actions.GenerateForSnippetAction"
+                    class="actions.GenerateForSnippetAction" text="Generate For Snippet"
+                    description="Generate unit tests for snippet"/>
+            <action id="actions.GenerateForAssertionAction"
+                    class="actions.GenerateForAssertionAction"
+                    text="Generate Tests Failing Assertion"
+                    description="Generate unit tests that fail assertion on this line"/>
+            <action id="actions.DevAction"
+                    class="actions.DevAction" text="Development: Send HandShake"/>
+        </group>
+        <group id="actions.UTBot.projectTree" text="UTBot Actions" popup="true">
+            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="last"/>
+            <action id="actions.GenerateForFileAction"
+                    class="actions.GenerateForFileAction" text="Generate Tests for File"
+                    description="Generates tests for file via grpc server"/>
+            <action id="actions.GenerateForFolderAction"
+                    class="actions.GenerateForFolderAction" text="Generate For Folder"
+                    description="Generate unit tests for this folder"/>
+        </group>
+        <action id="actions.AskServerToGenerateBuildDir"
+                class="actions.AskServerToGenerateBuildDir"
+                text="Generate Build Directory" description="Ask server to generate build dir"/>
+        <action id="actions.ConfigureProjectAction"
+                class="actions.ConfigureProjectAction" text="Configure Project"
+                description="Configure project so that server can generate tests"/>
+        <action id="actions.AskServerToGenerateJsonForProjectConfiguration"
+                class="actions.AskServerToGenerateJsonForProjectConfiguration" text="Try To Generate Json"
+                description="Ask server to generate missing json files"/>
+    </actions>
+</idea-plugin>
