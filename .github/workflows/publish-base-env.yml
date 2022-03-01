@@ -12,9 +12,10 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Read config from matrix.json
+      - name: Checkout repository
         uses: actions/checkout@v2
       - id: set-matrix
+        name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
           echo "::set-output name=matrix::$TASKS"

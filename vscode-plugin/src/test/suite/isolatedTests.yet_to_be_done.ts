@@ -17,7 +17,7 @@ import {
 } from '../helper';
 
 suite('"Generate For Isolated File" Test Suite', () => {
-        const projectName = 'c-example';
+        const projectName = 'c-example-mini';
         const projectPath = path.resolve(__dirname,
                 '../../../../', 'integration-tests', projectName);
         const srcFileRelativePath = 'snippet.c';

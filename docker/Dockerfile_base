@@ -44,6 +44,11 @@ RUN apt install -y --no-install-recommends ninja-build python3-setuptools
 RUN apt install -y --no-install-recommends curl libcap-dev libncurses5-dev unzip libtcmalloc-minimal4 libgoogle-perftools-dev libsqlite3-dev doxygen python3-pip
 RUN apt -y install autoconf libtool
 
+# install vscode dependencies
+RUN apt install -y libxshmfence1 libglu1
+RUN apt install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm-dev libnss3-dev libxss-dev
+RUN apt install -y libasound2
+RUN apt install -y xvfb
 
 RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
 
