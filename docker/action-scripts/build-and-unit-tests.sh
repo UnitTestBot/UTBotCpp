@@ -9,4 +9,4 @@ chmod +x docker/action-scripts/build-utbot.sh
 ./docker/action-scripts/build-utbot.sh
 cd server/build
 chmod +x UTBot_UnitTests
-./UTBot_UnitTests info --log `pwd`
+./UTBot_UnitTests --verbosity info --log `pwd`
