@@ -45,22 +45,18 @@ namespace Paths {
         return pathSet;
     }
     bool isSubPathOf(const fs::path &base, const fs::path &sub) {
-        auto b = normalizedTrimmed(base);
-        auto s = normalizedTrimmed(sub).parent_path();
-        auto m = std::mismatch(b.begin(), b.end(),
-                               s.begin(), s.end());
-        return m.first == b.end();
+        auto s = sub.parent_path();
+        auto m = std::mismatch(base.begin(), base.end(), s.begin(), s.end());
+        return m.first == base.end();
     }
 
     fs::path longestCommonPrefixPath(const fs::path &a, const fs::path &b) {
-        fs::path normalizedA = normalizedTrimmed(a);
-        fs::path normalizedB = normalizedTrimmed(b);
-        if (normalizedA == normalizedB) {
-            return normalizedA;
+        if (a == b) {
+            return a;
         }
-        auto const &[mismatchA, mismatchB] = std::mismatch(normalizedA.begin(), normalizedA.end(),
-                                                           normalizedB.begin(), normalizedB.end());
-        fs::path result = std::accumulate(normalizedA.begin(), mismatchA, fs::path{},
+        auto const &[mismatchA, mismatchB] = std::mismatch(a.begin(), a.end(), b.begin(), b.end());
+        fs::path result =
+            std::accumulate(a.begin(), mismatchA, fs::path{},
                             [](fs::path const &a, fs::path const &b) { return a / b; });
         return result;
     }
