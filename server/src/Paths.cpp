@@ -44,6 +44,7 @@ namespace Paths {
         }
         return pathSet;
     }
+
     bool isSubPathOf(const fs::path &base, const fs::path &sub) {
         auto b = normalizedTrimmed(base);
         auto s = normalizedTrimmed(sub).parent_path();

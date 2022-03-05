@@ -7,6 +7,7 @@
 #include "utils/KleeUtils.h"
 
 #include "loguru.h"
+#include "exceptions/LLVMException.h"
 
 #include <llvm/BinaryFormat/Magic.h>
 #include <llvm/IR/DebugInfoMetadata.h>
@@ -20,6 +21,7 @@
 
 bool IRParser::parseModule(const fs::path &rootBitcode, tests::TestsMap &tests) {
     try {
+        LOG_S(MAX) << "Parse module: " << rootBitcode.c_str();
         llvm::LLVMContext context;
         auto module = getModule(rootBitcode, context);
         if (module) {
@@ -49,10 +51,11 @@ bool IRParser::parseModule(const fs::path &rootBitcode, tests::TestsMap &tests) 
         return false;
     }
 }
+
 std::unique_ptr<llvm::Module> IRParser::getModule(const fs::path &rootBitcode,
                                                   llvm::LLVMContext &context) {
     llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> bufferErr =
-        llvm::MemoryBuffer::getFileOrSTDIN(rootBitcode.string());
+            llvm::MemoryBuffer::getFileOrSTDIN(rootBitcode.string());
     std::error_code ec = bufferErr.getError();
     if (ec) {
         LOG_S(ERROR) << StringUtils::stringFormat("Loading file %s failed: %s", rootBitcode,
@@ -65,14 +68,25 @@ std::unique_ptr<llvm::Module> IRParser::getModule(const fs::path &rootBitcode,
     llvm::file_magic magic = identify_magic(Buffer.getBuffer());
 
     if (magic == llvm::file_magic::bitcode) {
-        llvm::SMDiagnostic Err;
-        std::unique_ptr<llvm::Module> module = llvm::parseIR(Buffer, Err, context);
-        if (!module) {
-            LOG_S(ERROR) << StringUtils::stringFormat("Loading file %s failed: %s", rootBitcode,
-                                                      Err.getMessage().str());
+        try {
+            // catch Fatal error into LLVM IR parser
+            llvm::ScopedFatalErrorHandler scopedHandler([](void *user_data,
+                                                           const std::string &reason,
+                                                           bool gen_crash_diag) {
+                LOG_S(ERROR) << "Fatal error into LLVM. " << reason;
+                throw LLVMException(reason);
+            });
+            llvm::SMDiagnostic Err;
+            std::unique_ptr<llvm::Module> module = llvm::parseIR(Buffer, Err, context);
+            if (!module) {
+                LOG_S(ERROR) << StringUtils::stringFormat("Loading file %s failed: %s", rootBitcode,
+                                                          Err.getMessage().str());
+                return nullptr;
+            }
+            return module;
+        } catch (LLVMException &e) {
             return nullptr;
         }
-        return module;
     }
 
     if (magic == llvm::file_magic::archive) {
