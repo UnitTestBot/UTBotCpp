@@ -44,6 +44,7 @@ namespace Paths {
         }
         return pathSet;
     }
+
     bool isSubPathOf(const fs::path &base, const fs::path &sub) {
         auto s = sub.parent_path();
         auto m = std::mismatch(base.begin(), base.end(), s.begin(), s.end());

@@ -11,7 +11,7 @@ import { ProjectConfig } from '../config/projectConfig';
 import { utbotUI } from '../interface/utbotUI';
 import { UTBotTargetsStorage } from '../explorer/utbotTargetsStorage';
 import { ExtensionLogger } from '../logger';
-import { TestsResponse } from '../proto-ts/testgen_pb';
+import {ConfigMode, TestsResponse} from '../proto-ts/testgen_pb';
 import { ValidationType } from "../proto-ts/util_pb";
 import { RequestTestsParams } from '../requests/params';
 import { TestsRunner } from '../runner/testsRunner';
@@ -72,7 +72,7 @@ export async function run(
         }
     }
 
-    await new ProjectConfig(client).configure();
+    await new ProjectConfig(client).configure(ConfigMode.CHECK);
 
     let targetPath: string | undefined = undefined;
     do {
