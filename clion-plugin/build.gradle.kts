@@ -35,7 +35,7 @@ plugins {
     // Kotlin support
     id("org.jetbrains.kotlin.jvm") version "1.6.10"
     // Gradle IntelliJ Plugin
-    id("org.jetbrains.intellij") version "1.3.1"
+    id("org.jetbrains.intellij") version "1.4.0"
     // Gradle Changelog Plugin
     id("org.jetbrains.changelog") version "1.3.0"
     // Gradle Qodana Plugin
@@ -155,6 +155,14 @@ tasks {
             kotlinOptions.freeCompilerArgs = listOf("-Xjsr305=strict", "-Xopt-in=kotlin.RequiresOptIn")
             kotlinOptions.jvmTarget = "11"
         }
+    }
+
+    // include tests directly, in IntelliJ Platform from 2021.3 there is a bug:
+    // https://youtrack.jetbrains.com/issue/IDEA-278926#focus=Comments-27-5561012.0-0
+    val test by getting(Test::class) {
+        setScanForTestClasses(false)
+        // Only run tests from classes that end with "Test"
+        include("**/*Test.class")
     }
 
     wrapper {
