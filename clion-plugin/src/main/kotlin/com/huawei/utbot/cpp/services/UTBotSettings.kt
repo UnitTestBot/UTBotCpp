@@ -45,7 +45,7 @@ data class UTBotSettings(
         var buildDirPath: String = "/",
         var testDirPath: String = "/",
         var synchronizeCode: Boolean = false,
-        var remotePath: String = "/",
+        var remotePath: String = "",
         var sourcePaths: List<String> = emptyList(),
         var port: Int = 2121,
         var serverName: String = "localhost"
