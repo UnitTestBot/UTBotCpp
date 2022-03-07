@@ -139,27 +139,41 @@ target_link_libraries(utbot PUBLIC
         loguru
         )
 
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-add_subdirectory($ENV{UTBOT_ALL}/gtest
-        ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
-        EXCLUDE_FROM_ALL)
-file(GLOB ALL_TESTS "${PROJECT_SOURCE_DIR}/test/framework/*.cpp")
+################################################################################
+# Testing
+################################################################################
+option(ENABLE_UNIT_TESTS "Enable unit tests" ON)
 
-add_executable(
-        UTBot_UnitTests
-        ${ALL_TESTS}
-)
+if (ENABLE_UNIT_TESTS)
+    message(STATUS "Unit tests enabled")
 
-target_include_directories(UTBot_UnitTests PUBLIC src src/include $ENV{UTBOT_ALL}/gtest/googletest)
-target_link_libraries(
-        UTBot_UnitTests
-        PUBLIC
-        gtest_main
-        UnitTestBotLib
-)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    add_subdirectory($ENV{UTBOT_ALL}/gtest
+            ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
+            EXCLUDE_FROM_ALL)
+    file(GLOB ALL_TESTS "${PROJECT_SOURCE_DIR}/test/framework/*.cpp")
 
-add_test(NAME test COMMAND UTBot_UnitTests)
+    add_executable(
+            UTBot_UnitTests
+            ${ALL_TESTS}
+    )
 
+    target_include_directories(UTBot_UnitTests PUBLIC src src/include $ENV{UTBOT_ALL}/gtest/googletest)
+    target_link_libraries(
+            UTBot_UnitTests
+            PUBLIC
+            gtest_main
+            UnitTestBotLib
+    )
+
+    add_test(NAME test COMMAND UTBot_UnitTests)
+else ()
+    message(STATUS "Unit tests disabled")
+endif ()
+
+################################################################################
+# Miscellaneous install
+################################################################################
 install(TARGETS utbot
         DESTINATION ${CMAKE_INSTALL_PREFIX}
         )
