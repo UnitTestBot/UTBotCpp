@@ -12,3 +12,6 @@ set(CMAKE_EXPORT_LINK_COMMANDS ON)
 
 add_subdirectory(lib)
 add_subdirectory(src)
+
+add_executable(c-example main.c)
+target_link_libraries(c-example lib src)

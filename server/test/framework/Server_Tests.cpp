@@ -1575,4 +1575,17 @@ namespace {
 
         testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
+
+    TEST_P(Parameterized_Server_Test, Installed_Dependency_Test) {
+        std::string suite = "installed";
+        setSuite(suite);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
+    }
 }
