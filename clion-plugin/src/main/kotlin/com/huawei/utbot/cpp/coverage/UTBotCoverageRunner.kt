@@ -5,6 +5,7 @@ import com.intellij.coverage.CoverageEngine
 import com.intellij.coverage.CoverageRunner
 import com.intellij.coverage.CoverageSuite
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.rt.coverage.data.LineCoverage
 import com.intellij.rt.coverage.data.LineData
 import com.intellij.rt.coverage.data.ProjectData
 import testsgen.Testgen
@@ -40,18 +41,18 @@ class UTBotCoverageRunner : CoverageRunner() {
                 val localFilePath = filePathFromServer.convertFromRemotePathIfNeeded(baseCoverageSuite.project)
                 val lines = arrayOfNulls<LineData>(getLineCount(localFilePath))
                 val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath))
-                fun processRanges(rangesList: List<Testgen.SourceRange?>, isCovered: Boolean) {
+                fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {
                     rangesList.filterNotNull().forEach {
-                        for (i in (it.start.line+1)..(it.end.line+1)) {
-                            val lineData = LineData(i, null)
-                            lineData.hits = if (isCovered) 1 else 0
-                            lines[i-1] = lineData
+                            val lineData = LineData(it.line + 1, null)
+                            lineData.hits = status.toInt()
+                            lineData.setStatus(status)
+                            lines[it.line-1] = lineData
                             classData.registerMethodSignature(lineData)
-                        }
                     }
                 }
-                processRanges(simplifiedCovInfo.coveredRangesList, true)
-                processRanges(simplifiedCovInfo.uncoveredRangesList, false)
+                processRanges(simplifiedCovInfo.fullCoverageLinesList, LineCoverage.FULL)
+                processRanges(simplifiedCovInfo.partialCoverageLinesList, LineCoverage.PARTIAL)
+                processRanges(simplifiedCovInfo.noCoverageLinesList, LineCoverage.NONE)
                 classData.setLines(lines)
             }
         }
@@ -66,7 +67,7 @@ class UTBotCoverageRunner : CoverageRunner() {
         return "Coverage runner ID"
     }
 
-    // actually no com.huawei.utbot.cpp.clion.coverage file exists, but this method must be implemented, see UTBotCoverageFileProvider
+    // actually no coverage file exists, but this method must be implemented, see UTBotCoverageFileProvider
     override fun getDataFileExtension(): String {
         return "txt"
     }

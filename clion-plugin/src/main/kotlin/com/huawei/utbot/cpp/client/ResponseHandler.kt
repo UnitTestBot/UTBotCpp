@@ -64,9 +64,9 @@ class ResponseHandler(val project: Project, val client: Client) {
 
         logger.debug("LAUNCHING PROCESSING OF COVERAGE")
 
-        logger.debug("com.huawei.utbot.cpp.clion.coverage list size: ${lastResponse.coveragesList.size}")
+        logger.debug("coverage list size: ${lastResponse.coveragesList.size}")
         lastResponse.coveragesList.forEach {
-            logger.info("${it.filePath.substringAfterLast('/')}: ${it.coveredRangesList.size} ${it.uncoveredRangesList.size}")
+            logger.info("${it.filePath.substringAfterLast('/')}: ${it.fullCoverageLinesCount} ${it.noCoverageLinesCount} ${it.partialCoverageLinesCount}")
         }
 
         logger.debug("test results list size: ${lastResponse.testRunResultsList.size}")
@@ -79,7 +79,7 @@ class ResponseHandler(val project: Project, val client: Client) {
         val suite = UTBotCoverageSuite(engine,
             lastResponse.coveragesList,
             coverageRunner = coverageRunner,
-            name = "UTBot com.huawei.utbot.cpp.clion.coverage suite",
+            name = "UTBot coverage suite",
             project = project
         )
         manager.coverageGathered(suite)

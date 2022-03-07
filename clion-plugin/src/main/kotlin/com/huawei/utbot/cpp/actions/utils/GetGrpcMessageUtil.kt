@@ -168,11 +168,15 @@ fun getPredicateRequestMessage(
 
 fun getProjectConfigRequestMessage(project: Project, configMode: Testgen.ConfigMode): Testgen.ProjectConfigRequest {
     LOG.info("getProjectConfigure")
-    return Testgen.ProjectConfigRequest.newBuilder()
+    val builder = Testgen.ProjectConfigRequest.newBuilder()
         .setProjectContext(getProjectContextMessage(project.service(), project))
-        .setCmakeOptions(getCmakeOptions(project) ?: "")
         .setConfigMode(configMode)
-        .build()
+
+    getCmakeOptions(project)?.let {
+        builder.setCmakeOptions(0, it)
+    }
+
+    return builder.build()
 }
 
 fun getCmakeOptions(project: Project): String? {

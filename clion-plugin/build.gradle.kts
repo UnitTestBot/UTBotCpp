@@ -74,6 +74,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
 }
 
+sourceSets {
+    main {
+        proto {
+            srcDir("../server/proto")
+        }
+    }
+}
+
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.10.1"
