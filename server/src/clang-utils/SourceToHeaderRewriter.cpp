@@ -13,6 +13,7 @@
 #include "loguru.h"
 
 #include <utility>
+#include <fstream>
 
 SourceToHeaderRewriter::SourceToHeaderRewriter(
     utbot::ProjectContext projectContext,

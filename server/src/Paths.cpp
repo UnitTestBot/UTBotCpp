@@ -7,6 +7,8 @@
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
 
+#include "loguru.h"
+
 #include <pwd.h>
 #include <unistd.h>
 
@@ -155,6 +157,25 @@ namespace Paths {
         };
         return std::any_of(internalErrorSuffixes.begin(), internalErrorSuffixes.end(),
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
+    }
+
+    //endregion
+
+    //region extensions
+
+    utbot::Language getSourceLanguage(const fs::path &path) {
+        if(isHFile(path)) {
+            LOG_S(WARNING) << "C language detected by .h file: " << path.string();
+            return utbot::Language::C;
+        }
+        if(isCFile(path)) {
+            return utbot::Language::C;
+        }
+        if(isCXXFile(path) || isHppFile(path)) {
+            return utbot::Language::CXX;
+        }
+        LOG_S(WARNING) << "Unknown source language of " << path.string();
+        return utbot::Language::UNKNOWN;
     }
 
     //endregion
@@ -355,5 +376,4 @@ namespace Paths {
     const std::vector<std::string> HPPFileExtensions({".hh", ".hpp", ".hxx"});
     const std::vector<std::string> CFileSourceExtensions({".c"});
     const std::vector<std::string> CFileHeaderExtensions({".h"});
-
 }

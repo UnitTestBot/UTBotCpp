@@ -14,10 +14,8 @@
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/Frontend/FrontendActions.h>
-#include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 #include <grpcpp/grpcpp.h>
-#include <llvm/Support/CommandLine.h>
 
 #include <string>
 #include <unordered_map>

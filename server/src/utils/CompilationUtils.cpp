@@ -13,6 +13,8 @@
 
 #include "loguru.h"
 
+#include <fstream>
+
 namespace CompilationUtils {
     using std::string;
     using std::shared_ptr;

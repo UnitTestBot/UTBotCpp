@@ -6,7 +6,6 @@
 #define UNITTESTBOT_SERVER_H
 
 #include "KleeGenerator.h"
-#include "BordersFinder.h"
 #include "ThreadSafeContainers.h"
 #include "TimeExecStatistics.h"
 #include "exceptions/CancellationException.h"
@@ -36,9 +35,10 @@
 #include <parallel_hashmap/phmap.h>
 #include <protobuf/testgen.grpc.pb.h>
 
+#include "loguru.h"
+
 #include "utils/path/FileSystemPath.h"
 #include <future>
-#include <iostream>
 #include <string>
 #include <variant>
 #include <vector>

@@ -7,6 +7,8 @@
 
 #include <clang/Tooling/CompilationDatabase.h>
 
+#include "loguru.h"
+
 #include <memory>
 
 using std::shared_ptr;
@@ -47,6 +49,51 @@ ClangToolRunner::ClangToolRunner(
     fs::path buildCompilerPath =
         CompilationUtils::detectBuildCompilerPath(this->compilationDatabase);
     this->resourceDir = CompilationUtils::getResourceDirectory(buildCompilerPath);
+}
+
+void ClangToolRunner::run(const fs::path &file,
+                          clang::tooling::ToolAction *toolAction,
+                          bool ignoreDiagnostics,
+                          const std::optional<std::string> &virtualFileContent,
+                          bool onlySource) {
+    MEASURE_FUNCTION_EXECUTION_TIME
+    if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
+        return;
+    }
+    auto clangTool =
+        std::make_unique<clang::tooling::ClangTool>(*compilationDatabase, file.string());
+    if (ignoreDiagnostics) {
+        clangTool->setDiagnosticConsumer(&ignoringDiagConsumer);
+    }
+    if (virtualFileContent.has_value()) {
+        clangTool->mapVirtualFile(file.c_str(), virtualFileContent.value());
+    }
+    setResourceDirOption(clangTool.get());
+    int status = clangTool->run(toolAction);
+    if (!ignoreDiagnostics) {
+        checkStatus(status);
+    }
+}
+
+void ClangToolRunner::run(const tests::TestsMap *const tests,
+                          clang::tooling::ToolAction *toolAction,
+                          bool ignoreDiagnostics) {
+    auto files = CollectionUtils::getKeys(*tests);
+    for (fs::path const &file : files) {
+        run(file, toolAction, ignoreDiagnostics);
+    }
+}
+
+void ClangToolRunner::runWithProgress(const tests::TestsMap *tests,
+                                      clang::tooling::ToolAction *toolAction,
+                                      const ProgressWriter *progressWriter,
+                                      const string &message,
+                                      bool ignoreDiagnostics) {
+    MEASURE_FUNCTION_EXECUTION_TIME
+    auto files = CollectionUtils::getKeys(*tests);
+    ExecUtils::doWorkWithProgress(
+        files, progressWriter, message,
+        [&](fs::path const &file) { run(file, toolAction, ignoreDiagnostics); });
 }
 
 void ClangToolRunner::checkStatus(int status) const {

@@ -4,6 +4,7 @@
 
 #include "Server.h"
 
+#include "BordersFinder.h"
 #include "FeaturesFilter.h"
 #include "GTestLogger.h"
 #include "KleeRunner.h"
@@ -35,6 +36,7 @@
 #include "utils/TypeUtils.h"
 
 #include <thread>
+#include <fstream>
 
 using TypeUtils::isSameType;
 

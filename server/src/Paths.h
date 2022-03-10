@@ -5,8 +5,6 @@
 #ifndef UNITTESTBOT_PATHS_H
 #define UNITTESTBOT_PATHS_H
 
-#include "loguru.h"
-
 #include "Language.h"
 #include "ProjectContext.h"
 #include "RequestEnvironment.h"
@@ -239,20 +237,7 @@ namespace Paths {
         return isCFile(path) || isCXXFile(path);
     }
 
-    static inline utbot::Language getSourceLanguage(const fs::path &path) {
-        if(isHFile(path)) {
-            LOG_S(WARNING) << "C language detected by .h file: " << path.string();
-            return utbot::Language::C;
-        }
-        if(isCFile(path)) {
-            return utbot::Language::C;
-        }
-        if(isCXXFile(path) || isHppFile(path)) {
-            return utbot::Language::CXX;
-        }
-        LOG_S(WARNING) << "Unknown source language of " << path.string();
-        return utbot::Language::UNKNOWN;
-    }
+    utbot::Language getSourceLanguage(const fs::path &path);
 
     static inline bool isObjectFile(const fs::path &path) {
         return path.extension() == ".o";

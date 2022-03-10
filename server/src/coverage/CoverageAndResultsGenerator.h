@@ -10,10 +10,10 @@
 #include "SettingsContext.h"
 #include "TestRunner.h"
 #include "streams/WriterUtils.h"
+#include "streams/coverage/CoverageAndResultsWriter.h"
 
 #include <protobuf/testgen.pb.h>
 
-#include <streams/coverage/CoverageAndResultsWriter.h>
 #include <utility>
 
 class CoverageAndResultsGenerator : public TestRunner {
@@ -38,4 +38,4 @@ private:
 };
 
 
-#endif // UNITTESTBOT_COVERAGEANDRESULTSGENERATOR_H
+#endif // UNITTESTBOT_COVERAGEGENERATOR_H

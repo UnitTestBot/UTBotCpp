@@ -9,7 +9,6 @@
 #include "ProjectContext.h"
 #include "Result.h"
 #include "SettingsContext.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "exceptions/CompilationDatabaseException.h"
@@ -20,8 +19,6 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
-
-#include <clang/Tooling/CommonOptionsParser.h>
 
 #include "utils/path/FileSystemPath.h"
 #include <optional>
@@ -138,7 +135,7 @@ public:
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false);
 
-    [[nodiscard]] shared_ptr<BuildDatabase> getBuildDatabase() const;
+    [[nodiscard]] std::shared_ptr<BuildDatabase> getBuildDatabase() const;
 
     void handleFailedFunctions(tests::TestsMap &testsMap);
 

@@ -9,7 +9,6 @@
 #include "Tests.h"
 #include "utils/CollectionUtils.h"
 #include "TimeExecStatistics.h"
-#include "loguru.h"
 
 #include <clang/Tooling/Tooling.h>
 
@@ -27,46 +26,17 @@ public:
              clang::tooling::ToolAction *toolAction,
              bool ignoreDiagnostics = false,
              std::optional<std::string> const &virtualFileContent = std::nullopt,
-             bool onlySource = true) {
-        MEASURE_FUNCTION_EXECUTION_TIME
-        if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
-            return;
-        }
-        auto clangTool =
-            std::make_unique<clang::tooling::ClangTool>(*compilationDatabase, file.string());
-        if (ignoreDiagnostics) {
-            clangTool->setDiagnosticConsumer(&ignoringDiagConsumer);
-        }
-        if (virtualFileContent.has_value()) {
-            clangTool->mapVirtualFile(file.c_str(), virtualFileContent.value());
-        }
-        setResourceDirOption(clangTool.get());
-        int status = clangTool->run(toolAction);
-        if (!ignoreDiagnostics) {
-            checkStatus(status);
-        }
-    }
+             bool onlySource = true);
 
-    void run(tests::TestsMap *const tests,
+    void run(const tests::TestsMap *tests,
              clang::tooling::ToolAction *toolAction,
-             bool ignoreDiagnostics = false) {
-        auto files = CollectionUtils::getKeys(*tests);
-        for (fs::path const &file : files) {
-            run(file, toolAction, ignoreDiagnostics);
-        }
-    }
+             bool ignoreDiagnostics = false);
 
-    void runWithProgress(tests::TestsMap *const tests,
+    void runWithProgress(const tests::TestsMap *tests,
                          clang::tooling::ToolAction *toolAction,
                          const ProgressWriter *progressWriter,
                          std::string const &message,
-                         bool ignoreDiagnostics = false) {
-        MEASURE_FUNCTION_EXECUTION_TIME
-        auto files = CollectionUtils::getKeys(*tests);
-        ExecUtils::doWorkWithProgress(
-            files, progressWriter, message,
-            [&](fs::path const &file) { run(file, toolAction, ignoreDiagnostics); });
-    }
+                         bool ignoreDiagnostics = false);
 private:
     std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
     std::optional<fs::path> resourceDir;

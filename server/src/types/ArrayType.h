@@ -7,8 +7,6 @@
 
 #include "AbstractType.h"
 
-#include <cstdint>
-
 class ArrayType : public AbstractType {
 public:
     explicit ArrayType(unsigned long int size, bool complete) : size(size), complete(complete) {}

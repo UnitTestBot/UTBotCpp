@@ -6,7 +6,6 @@
 #define UNITTESTBOT_KLEEASSUMERETURNVALUEVISITOR_H
 
 #include "KleeAssumeVisitor.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 
 namespace visitor {

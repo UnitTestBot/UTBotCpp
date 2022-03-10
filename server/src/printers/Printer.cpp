@@ -441,7 +441,7 @@ namespace printer {
         strKleeMakeSymbolic(stubSymbolicVarName, !method.returnType.isArray(),
                             stubSymbolicVarName);
         types::TypeMaps tempMap = {};
-        auto temp = shared_ptr <types::TypesHandler>(new types::TypesHandler(tempMap, types::TypesHandler::SizeContext()));
+        auto temp = std::make_shared<types::TypesHandler>(tempMap, types::TypesHandler::SizeContext());
         printer::KleeConstraintsPrinter preferWriter(temp.get(), srcLanguage);
         preferWriter.setTabsDepth(tabsDepth);
         preferWriter.genConstraints(

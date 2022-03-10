@@ -4,7 +4,8 @@
 
 #include "Commands.h"
 
-#include <utils/StringUtils.h>
+#include "utils/StringUtils.h"
+
 Commands::MainCommands::MainCommands(CLI::App &app) {
 
     app.set_help_all_flag("--help-all", "Expand all help");

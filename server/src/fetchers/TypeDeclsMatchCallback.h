@@ -7,8 +7,6 @@
 
 #include "types/TypesResolver.h"
 
-#include "loguru.h"
-
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 
 #include <unordered_map>
