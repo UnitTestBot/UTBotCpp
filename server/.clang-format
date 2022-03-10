@@ -21,7 +21,7 @@ IncludeCategories:
   - Regex:           '^"loguru.h"'
     Priority:        2
     SortPriority:    2
-  - Regex:           '<(nlohmann|clang|llvm|grpcpp|protobuf|klee|run_klee|tsl|parallel_hashmap)/*'
+  - Regex:           '<(clang|llvm|grpcpp|protobuf|klee|run_klee|tsl|parallel_hashmap)/*|json.hpp'
     Priority:        3
     SortPriority:    3
   - Regex:           '<.*>'
