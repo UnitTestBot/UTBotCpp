@@ -12,6 +12,8 @@
 
 #include <clang/AST/ASTContext.h>
 
+#include "loguru.h"
+
 #include "utils/path/FileSystemPath.h"
 #include <vector>
 

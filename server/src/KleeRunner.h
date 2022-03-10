@@ -43,7 +43,6 @@ private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
-    const ProgressWriter *progressWriter;
     void processBatch(tests::MethodKtests &ktestChunk,
                       const tests::TestMethod &testMethod,
                       tests::Tests &tests);

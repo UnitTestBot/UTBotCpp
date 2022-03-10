@@ -7,11 +7,11 @@
 #include "BaseTest.h"
 #include "KleeGenerator.h"
 #include "Server.h"
+#include "streams/coverage/ServerCoverageAndResultsWriter.h"
+#include "coverage/CoverageAndResultsGenerator.h"
 
 #include "utils/path/FileSystemPath.h"
 #include <functional>
-#include <streams/coverage/ServerCoverageAndResultsWriter.h>
-#include <coverage/CoverageAndResultsGenerator.h>
 
 namespace {
     using grpc::Channel;

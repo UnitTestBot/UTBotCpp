@@ -9,9 +9,6 @@
 #include "clang/Frontend/FrontendAction.h"
 #include "clang/Tooling/Tooling.h"
 
-#include <iostream>
-
-
 class TypeVisitor : public clang::RecursiveASTVisitor<TypeVisitor> {
 public:
     // Warning 'function TraverseType hides a non-virtual function from class RecursiveASTVisitor<TypeVisitor>`

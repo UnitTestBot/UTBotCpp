@@ -8,7 +8,6 @@
 #include "BaseCommand.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace utbot {

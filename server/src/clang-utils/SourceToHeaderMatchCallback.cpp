@@ -10,6 +10,8 @@
 #include "printers/Printer.h"
 #include "utils/ExecUtils.h"
 
+#include "loguru.h"
+
 #include <utility>
 
 using namespace clang;

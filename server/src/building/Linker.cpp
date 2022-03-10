@@ -11,6 +11,7 @@
 #include "environment/EnvironmentPaths.h"
 #include "exceptions/ExecutionProcessException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
+#include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/NoTestGeneratedException.h"
 #include "printers/DefaultMakefilePrinter.h"
 #include "printers/NativeMakefilePrinter.h"
@@ -27,9 +28,10 @@
 #include "utils/TypeUtils.h"
 #include "utils/path/FileSystemPath.h"
 
+#include "loguru.h"
+
 #include <unordered_set>
 #include <utility>
-#include <exceptions/FileNotPresentedInArtifactException.h>
 
 using std::string;
 using std::vector;

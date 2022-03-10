@@ -13,6 +13,8 @@
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
 
+#include "loguru.h"
+
 using printer::TestsPrinter;
 
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {

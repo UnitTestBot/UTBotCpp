@@ -9,10 +9,11 @@
 #include "stubs/StubSourcesFinder.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "coverage/CoverageAndResultsGenerator.h"
+#include "streams/coverage/ServerCoverageAndResultsWriter.h"
+#include "streams/stubs/ServerStubsWriter.h"
 
-#include <coverage/CoverageAndResultsGenerator.h>
-#include <streams/coverage/ServerCoverageAndResultsWriter.h>
-#include <streams/stubs/ServerStubsWriter.h>
+#include <fstream>
 
 namespace {
     using testUtils::createFileRequest;

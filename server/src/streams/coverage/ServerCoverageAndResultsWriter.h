@@ -9,10 +9,10 @@
 #include "SettingsContext.h"
 #include "coverage/Coverage.h"
 #include "streams/WriterUtils.h"
+#include "streams/coverage/CoverageAndResultsWriter.h"
 
 #include <protobuf/testgen.pb.h>
 
-#include <streams/coverage/CoverageAndResultsWriter.h>
 #include <utility>
 
 class ServerCoverageAndResultsWriter : public CoverageAndResultsWriter {

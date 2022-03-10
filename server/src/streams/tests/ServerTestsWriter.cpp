@@ -4,8 +4,9 @@
 
 #include "ServerTestsWriter.h"
 
-#include <utils/FileSystemUtils.h>
+#include "utils/FileSystemUtils.h"
 
+#include "loguru.h"
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                                std::string const &message,

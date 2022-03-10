@@ -7,6 +7,8 @@
 #include "utils/PrinterUtils.h"
 #include "exceptions/UnImplementedException.h"
 
+#include "loguru.h"
+
 using namespace types;
 using printer::KleeConstraintsPrinter;
 

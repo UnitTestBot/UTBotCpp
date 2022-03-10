@@ -6,20 +6,14 @@
 #define UNITTESTBOT_TESTSPRINTER_H
 
 #include "Printer.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "stubs/Stubs.h"
 #include "types/Types.h"
 #include "utils/PrinterUtils.h"
-
-#include "loguru.h"
+#include "utils/path/FileSystemPath.h"
 
 #include <cstdio>
-#include "utils/path/FileSystemPath.h"
-#include <fstream>
-#include <iostream>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <unordered_map>

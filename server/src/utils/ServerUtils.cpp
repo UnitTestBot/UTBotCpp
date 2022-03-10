@@ -17,6 +17,8 @@
 
 #include "loguru.h"
 
+#include <fstream>
+
 namespace ServerUtils {
     using json = nlohmann::json;
     using std::vector;

@@ -11,6 +11,8 @@
 #include "clang-utils/ClangUtils.h"
 #include "utils/LogUtils.h"
 
+#include "loguru.h"
+
 using namespace clang;
 
 FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,

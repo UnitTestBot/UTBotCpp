@@ -9,6 +9,8 @@
 #include "printers/TestsPrinter.h"
 #include "utils/KleeUtils.h"
 
+#include "loguru.h"
+
 using namespace tests;
 using namespace types;
 

@@ -12,12 +12,11 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
+#include "TimeExecStatistics.h"
 
 #include "loguru.h"
 
-#include <unistd.h>
 #include <utility>
-#include <stdio.h>
 
 using namespace tests;
 

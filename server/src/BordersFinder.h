@@ -10,9 +10,6 @@
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Rewrite/Frontend/Rewriters.h>
-#include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
 #include "utils/path/FileSystemPath.h"
@@ -61,7 +58,6 @@ private:
     ClangToolRunner clangToolRunner;
 
     // TODO: use rewriter for insertion
-    clang::Rewriter rewrt;
 
     Borders getStmtBordersLines(const clang::SourceManager &srcMng, const clang::Stmt *st);
 

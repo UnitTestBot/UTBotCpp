@@ -14,8 +14,11 @@
 #include "testgens/SnippetTestGen.h"
 #include "utils/TypeUtils.h"
 
+#include "loguru.h"
+
 #include <iterator>
 #include <utility>
+#include <fstream>
 
 using StubSet = std::unordered_set<StubOperator, HashUtils::StubHash>;
 

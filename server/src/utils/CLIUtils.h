@@ -10,8 +10,6 @@
 
 #include "loguru.h"
 
-#include <llvm/Support/Signals.h>
-
 #include <CLI11.hpp>
 #include <rang.hpp>
 #include <string>

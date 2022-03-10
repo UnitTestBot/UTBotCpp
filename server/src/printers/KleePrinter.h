@@ -8,17 +8,13 @@
 #include "PathSubstitution.h"
 #include "Printer.h"
 #include "ProjectContext.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "LineInfo.h"
 #include "building/BuildDatabase.h"
 #include "types/Types.h"
+#include "utils/path/FileSystemPath.h"
 
 #include <cstdio>
-#include "utils/path/FileSystemPath.h"
-#include <fstream>
-#include <iostream>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
