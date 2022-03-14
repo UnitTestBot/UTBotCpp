@@ -65,11 +65,10 @@ dependencies {
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
     implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
 
-    implementation("org.slf4j:slf4j-api:1.7.30")
-    implementation("ch.qos.logback:logback-core:1.2.3")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("io.github.microutils:kotlin-logging-jvm:2.1.20")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.6.0")
+    // tinylog for showing messages to the user
+    implementation("org.tinylog:tinylog-api-kotlin:2.5.0-M1.1")
+    implementation("org.tinylog:tinylog-impl:2.5.0-M1.1")
+    implementation("io.insert-koin:koin-core:3.1.5")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
 }

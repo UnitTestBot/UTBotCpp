@@ -1,7 +1,5 @@
 package com.huawei.utbot.cpp.dummyServer
 
-import ch.qos.logback.classic.Logger
-
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 import testsgen.Util
@@ -13,7 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
-import org.slf4j.LoggerFactory
+import org.tinylog.kotlin.Logger
 
 import java.io.File
 import java.nio.file.Files
@@ -21,7 +19,6 @@ import java.nio.file.Paths
 
 class Server(private val port: Int) {
 
-    val log: Logger = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME) as Logger
     private val server: io.grpc.Server = io.grpc.ServerBuilder
         .forPort(port)
         .intercept(LogInterceptor())
@@ -30,12 +27,12 @@ class Server(private val port: Int) {
 
     fun start() {
         server.start()
-        log.info("Server started, listening on $port")
+        Logger.info("Server started, listening on $port")
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                log.info("*** shutting down gRPC server since JVM is shutting down")
+                Logger.info("*** shutting down gRPC server since JVM is shutting down")
                 this@Server.stop()
-                log.info("*** server shut down")
+                Logger.info("*** server shut down")
             }
         )
     }
@@ -51,13 +48,9 @@ class Server(private val port: Int) {
 
     private inner class TestGenService : TestsGenServiceGrpcKt.TestsGenServiceCoroutineImplBase() {
         private val messages: MutableList<String> = mutableListOf()
-        init {
-            val appender = log.getAppender("DummyServerAppender") as DummyServerAppender
-            appender.messageBuffer = messages
-        }
 
         fun log(function: KCallable<*>, message: String) {
-            log.info("[${function.name}] $message")
+            Logger.info("[${function.name}] $message")
         }
 
         fun logStarted(function: KCallable<*>) = log(function, "started")
@@ -222,7 +215,7 @@ class Server(private val port: Int) {
 
         override fun configureProject(request: Testgen.ProjectConfigRequest): Flow<Testgen.ProjectConfigResponse> {
             return flow {
-                log.info("Before emit in configureProject!")
+                Logger.info("Before emit in configureProject!")
                 emit(
                     Testgen.ProjectConfigResponse.newBuilder()
                         .setType(
@@ -232,7 +225,7 @@ class Server(private val port: Int) {
                         )
                         .build()
                 )
-                log.info("After emit in configureProject")
+                Logger.info("After emit in configureProject")
             }
         }
     }

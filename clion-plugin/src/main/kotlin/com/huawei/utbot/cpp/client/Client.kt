@@ -26,15 +26,16 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import testsgen.TestsGenServiceGrpcKt
 
-import ch.qos.logback.classic.Logger
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.OutputWindowProvider
 import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import io.grpc.Status
-import mu.KLogger
-import mu.KotlinLogging
+
+import org.koin.core.context.startKoin
+import org.koin.dsl.module
+import org.tinylog.kotlin.Logger
 
 enum class LogLevel(val id: String) {
     INFO("INFO"), FATAL("FATAL"), ERROR("ERROR"),
@@ -54,19 +55,23 @@ class Client(val project: Project) : Disposable {
     private val clientID = generateClientID()
 
     val grpcCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Swing)
-    private val logger = setupLogger()
     private val grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
 
     init {
-        logger.info("Connecting to server on host: ${settings.serverName} , port: ${settings.port}")
+        setupLogger()
+        Logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
         subscribeToEvents()
         startPeriodicHeartBeat()
     }
 
-    private fun setupLogger(): KLogger = KotlinLogging.logger("ClientLogger").also { newLogger ->
-        (newLogger.underlyingLogger as Logger).getAppender("ClientAppender").let {
-            (it as ClientLogAppender).utBotConsole =
-                project.service<OutputWindowProvider>().outputs[OutputType.CLIENT_LOG]
+    // inject outputConsole to UserLogWriter, so messages from Logger will be printed in ui
+    private fun setupLogger() {
+        val outputConsole: UTBotConsole = project.service<OutputWindowProvider>().outputs[OutputType.CLIENT_LOG]!!
+        val writerDependencyModule = module {
+            single { outputConsole }
+        }
+        startKoin {
+            modules(writerDependencyModule)
         }
     }
 
@@ -103,7 +108,7 @@ class Client(val project: Project) : Disposable {
     }
 
     fun setLoggingLevel(newLevel: LogLevel) {
-        logger.info("Setting new log level: ${newLevel.id}")
+        Logger.info("Setting new log level: ${newLevel.id}")
         logLevel = newLevel
         grpcCoroutineScope.launch {
             provideLogChannel()
@@ -115,15 +120,15 @@ class Client(val project: Project) : Disposable {
         try {
             grpcStub.closeGTestChannel(getDummyRequest())
         } catch (e: Exception) {
-            logger.error("Exception when closing gtest channel")
-            logger.error(e.message)
+            Logger.error("Exception when closing gtest channel")
+            Logger.error(e.message)
         }
 
         val gTestConsole: UTBotConsole = project.service<OutputWindowProvider>().outputs[OutputType.GTEST]!!
         grpcStub.openGTestChannel(request)
             .catch { exception ->
-                logger.error("Exception when opening gtest channel")
-                logger.error(exception.message)
+                Logger.error("Exception when opening gtest channel")
+                Logger.error(exception.message)
             }
             .collect {
                 gTestConsole.info(it.message)
@@ -135,15 +140,15 @@ class Client(val project: Project) : Disposable {
         try {
             grpcStub.closeLogChannel(getDummyRequest())
         } catch (e: Exception) {
-            logger.error("Exception when closing log channel")
-            logger.error(e.message)
+            Logger.error("Exception when closing log channel")
+            Logger.error(e.message)
         }
 
         val serverConsole: UTBotConsole = project.service<OutputWindowProvider>().outputs[OutputType.SERVER_LOG]!!
         grpcStub.openLogChannel(request)
             .catch { exception ->
-                logger.error("Exception when opening log channel")
-                logger.error(exception.message)
+                Logger.error("Exception when opening log channel")
+                Logger.error(exception.message)
             }
             .collect {
                 serverConsole.info(it.message)
@@ -160,10 +165,10 @@ class Client(val project: Project) : Disposable {
     private fun registerClient(clientID: String) {
         grpcCoroutineScope.launch {
             try {
-                logger.info("sending REGISTER CLIENT request, clientID == $clientID")
+                Logger.info("sending REGISTER CLIENT request, clientID == $clientID")
                 grpcStub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientID).build())
             } catch (e: Exception) {
-                logger.error("Register com.huawei.utbot.cpp.clion.client failed: ${e.message}")
+                Logger.error("Register com.huawei.utbot.cpp.clion.client failed: ${e.message}")
             }
         }
     }
@@ -171,18 +176,18 @@ class Client(val project: Project) : Disposable {
     fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
 
     fun doHandShake() {
-        logger.info("in doHandShake")
+        Logger.info("in doHandShake")
         grpcCoroutineScope.launch {
             try {
                 grpcStub.handshake(Testgen.DummyRequest.newBuilder().build())
             } catch (e: Exception) {
-                logger.warn("HandShake failed with the following error: ${e.message}")
+                Logger.warn("HandShake failed with the following error: ${e.message}")
             }
         }
     }
 
     private fun startPeriodicHeartBeat() {
-        logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
+        Logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
         if (heartBeatJob != null) {
             heartBeatJob?.cancel()
         }
@@ -191,7 +196,7 @@ class Client(val project: Project) : Disposable {
                 heartBeatOnce()
                 delay(HEARTBEAT_INTERVAL)
             }
-            logger.info("Stopped heartBeating the server!")
+            Logger.info("Stopped heartBeating the server!")
         }
     }
 
@@ -199,7 +204,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.FileRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for FILE: \n$request")
+            Logger.info("Sending request to generate for FILE: \n$request")
             handler.handleTestsStream(grpcStub.generateFileTests(request), "Generate For File")
         }
     }
@@ -208,7 +213,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.LineRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for LINE: \n$request")
+            Logger.info("Sending request to generate for LINE: \n$request")
             handler.handleTestsStream(grpcStub.generateLineTests(request), "Generate For Line")
         }
     }
@@ -217,7 +222,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.PredicateRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for PREDICATE: \n$request")
+            Logger.info("Sending request to generate for PREDICATE: \n$request")
             handler.handleTestsStream(grpcStub.generatePredicateTests(request), "Generate For Predicate")
         }
     }
@@ -226,7 +231,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.FunctionRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for FUNCTION: \n$request")
+            Logger.info("Sending request to generate for FUNCTION: \n$request")
             handler.handleTestsStream(grpcStub.generateFunctionTests(request), "Generate For Function")
         }
     }
@@ -235,7 +240,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.ClassRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for CLASS: \n$request")
+            Logger.info("Sending request to generate for CLASS: \n$request")
             handler.handleTestsStream(grpcStub.generateClassTests(request), "Generate For Folder")
         }
     }
@@ -244,7 +249,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.FolderRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for FOLDER: \n$request")
+            Logger.info("Sending request to generate for FOLDER: \n$request")
             handler.handleTestsStream(grpcStub.generateFolderTests(request), "Generate For Folder")
         }
     }
@@ -253,7 +258,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.ProjectRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for PROJECT: \n$request")
+            Logger.info("Sending request to generate for PROJECT: \n$request")
             handler.handleTestsStream(grpcStub.generateProjectTests(request), "Generate for Project")
         }
     }
@@ -263,7 +268,7 @@ class Client(val project: Project) : Disposable {
         callback: (Testgen.ProjectTargetsResponse) -> Unit
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to get PROJECT TARGETS: \n$request")
+            Logger.info("Sending request to get PROJECT TARGETS: \n$request")
             val targets = grpcStub.getProjectTargets(request)
             callback(targets)
         }
@@ -273,7 +278,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.SnippetRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for SNIPPET: \n$request")
+            Logger.info("Sending request to generate for SNIPPET: \n$request")
             handler.handleTestsStream(grpcStub.generateSnippetTests(request), "Generate For Snippet")
         }
     }
@@ -282,7 +287,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.AssertionRequest
     ) {
         grpcCoroutineScope.launch {
-            logger.info("Sending request to generate for ASSERTION: \n$request")
+            Logger.info("Sending request to generate for ASSERTION: \n$request")
             handler.handleTestsStream(grpcStub.generateAssertionFailTests(request), "Generate For Assertion")
         }
     }
@@ -296,19 +301,19 @@ class Client(val project: Project) : Disposable {
     private suspend fun getFunctionReturnType(
         request: Testgen.FunctionRequest
     ): Testgen.FunctionTypeResponse = withContext(Dispatchers.IO) {
-        logger.info("Sending request to get FUNCTION RETURN TYPE: \n$request")
+        Logger.info("Sending request to get FUNCTION RETURN TYPE: \n$request")
         grpcStub.getFunctionReturnType(request)
     }
 
     suspend fun handShake(): Testgen.DummyResponse {
-        logger.info("Sending HANDSHAKE request")
+        Logger.info("Sending HANDSHAKE request")
         return grpcStub.handshake(Testgen.DummyRequest.newBuilder().build())
     }
 
     fun configureProject() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.CHECK)
         grpcCoroutineScope.launch {
-            logger.info("Sending request to CHECK PROJECT CONFIGURATION: \n$request")
+            Logger.info("Sending request to CHECK PROJECT CONFIGURATION: \n$request")
             handler.handleCheckConfigurationResponse(
                 grpcStub.configureProject(request),
                 "Checking project configuration..."
@@ -319,7 +324,7 @@ class Client(val project: Project) : Disposable {
     fun createBuildDir() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.CREATE_BUILD_DIR)
         grpcCoroutineScope.launch {
-            logger.info("Sending request to GENERATE BUILD DIR: \n$request")
+            Logger.info("Sending request to GENERATE BUILD DIR: \n$request")
             handler.handleCreateBuildDirResponse(grpcStub.configureProject(request), "Create build directory...")
         }
     }
@@ -327,7 +332,7 @@ class Client(val project: Project) : Disposable {
     fun getCoverageAndResults(request: Testgen.CoverageAndResultsRequest) {
         grpcCoroutineScope.launch {
             withContext(Dispatchers.Default) {
-                logger.info("Sending request to get COVERAGE AND RESULTS: \n$request")
+                Logger.info("Sending request to get COVERAGE AND RESULTS: \n$request")
                 handler.handleCoverageAndResultsResponse(
                     grpcStub.createTestsCoverageAndResult(request),
                     "Run Tests with Coverage"
@@ -339,7 +344,7 @@ class Client(val project: Project) : Disposable {
     fun generateJSon() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.GENERATE_JSON_FILES)
         grpcCoroutineScope.launch {
-            logger.info("Sending request to GENERATE JSON FILES: \n$request")
+            Logger.info("Sending request to GENERATE JSON FILES: \n$request")
             handler.handleGenerateJsonResponse(grpcStub.configureProject(request), "Generate JSON files...")
         }
     }
@@ -355,7 +360,7 @@ class Client(val project: Project) : Disposable {
                 connectionChangedPublisher.onHeartbeatSuccess(response)
             }
         } catch (e: Exception) {
-            logger.error("Heartbeat failed with exception: \n${e.message}")
+            Logger.error("Heartbeat failed with exception: \n${e.message}")
             val oldStatus = connectionStatus
             connectionStatus = ConnectionStatus.BROKEN
             if (!messageBus.isDisposed) {
@@ -366,11 +371,11 @@ class Client(val project: Project) : Disposable {
     }
 
     private fun handleGRPCStatusException(e: io.grpc.StatusException) {
-        logger.error("Exception when closing log and GTest channels")
-        logger.error(e.message)
+        Logger.error("Exception when closing log and GTest channels")
+        Logger.error(e.message)
         when (e.status) {
-            Status.UNAVAILABLE -> logger.error("Server is unavailable: possibly it is shut down.")
-            Status.UNKNOWN -> logger.error("Server threw an exception.")
+            Status.UNAVAILABLE -> Logger.error("Server is unavailable: possibly it is shut down.")
+            Status.UNKNOWN -> Logger.error("Server threw an exception.")
         }
     }
 
