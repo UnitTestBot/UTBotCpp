@@ -204,4 +204,19 @@ namespace {
                 } }),
             "bpf_xdp_attach");
     }
+
+    TEST_F(Regression_Test, VaList_In_Function_Pointer_Type) {
+        fs::path source = getTestFilePath("PR123.c");
+        auto [testGen, status] = createTestForFunction(source, 11);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "libbpf_set_print");
+    }
 }
