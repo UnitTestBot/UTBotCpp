@@ -72,11 +72,13 @@ namespace printer {
     }
 
     std::vector<string>
-    printer::Printer::printForLoopsAndReturnLoopIterators(const string &objectName,
-                                                          const std::vector<size_t> &bounds) {
+    printer::Printer::printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds) {
+        thread_local int counter = 0;
+        counter++;
+
         std::vector<string> iterators;
         for (size_t i = 0; i < bounds.size(); ++i) {
-            std::string it = StringUtils::stringFormat("it_%d_%d", objectName.length(), i);
+            std::string it = StringUtils::stringFormat("it_%d_%d", counter, i);
             iterators.push_back(it);
             strForBound(it, bounds[i]) << LB();
         }
@@ -524,7 +526,7 @@ namespace printer {
             strAssignVar(param.name, value);
         }
 
-        auto iterators = printForLoopsAndReturnLoopIterators(param.name, { pointerSize });
+        auto iterators = printForLoopsAndReturnLoopIterators({ pointerSize });
         auto indexing = constrMultiIndex(iterators);
         strAssignVar(param.name + indexing, param.underscoredName() + indexing);
         closeBrackets(1);

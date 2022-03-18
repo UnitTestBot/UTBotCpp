@@ -138,8 +138,7 @@ namespace printer {
 
         Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
 
-        std::vector<string> printForLoopsAndReturnLoopIterators(SRef objectName,
-                                                                const std::vector<size_t> &bounds);
+        std::vector<string> printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds);
 
         static string constrIndex(SRef arrayName, SRef ind);
 

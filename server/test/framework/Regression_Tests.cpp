@@ -174,4 +174,19 @@ namespace {
                 } }),
             "set_file_list");
     }
+
+    TEST_F(Regression_Test, Return_Pointer_Argument_GNU_90) {
+        fs::path source = getTestFilePath("PR120.c");
+        auto [testGen, status] = createTestForFunction(source, 6);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "ret");
+    }
 }
