@@ -189,4 +189,19 @@ namespace {
                 } }),
             "ret");
     }
+
+    TEST_F(Regression_Test, Unnamed_Bit_Field) {
+        fs::path source = getTestFilePath("PR124.c");
+        auto [testGen, status] = createTestForFunction(source, 12);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "bpf_xdp_attach");
+    }
 }
