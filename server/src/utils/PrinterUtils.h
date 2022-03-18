@@ -78,6 +78,7 @@ namespace PrinterUtils {
     extern const std::string TEST_NAMESPACE;
     extern const std::string DEFINES_FOR_C_KEYWORDS;
     extern const std::string UNDEFS_FOR_C_KEYWORDS;
+    extern const std::string KNOWN_IMPLICIT_RECORD_DECLS_CODE;
     extern const std::string C_NULL;
     extern const std::unordered_map <int, std::string> escapeSequences;
 
