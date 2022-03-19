@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import testsgen.TestsGenServiceGrpcKt
 
@@ -32,6 +31,7 @@ import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import io.grpc.Status
+import kotlinx.coroutines.CoroutineName
 
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -54,7 +54,11 @@ class Client(val project: Project) : Disposable {
     private val settings = project.service<UTBotSettings>()
     private val clientID = generateClientID()
 
-    val grpcCoroutineScope: CoroutineScope = CoroutineScope(Dispatchers.Swing)
+    // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
+    val shortLivingRequestsCS: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
+    val longLivingRequestsCS: CoroutineScope = CoroutineScope(Dispatchers.Default)
+
     private val grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
 
     init {
@@ -97,7 +101,7 @@ class Client(val project: Project) : Disposable {
                     }
 
                     if (newClient || !response.linked) {
-                        grpcCoroutineScope.launch {
+                        longLivingRequestsCS.launch {
                             provideLogChannel()
                             provideGTestChannel()
                         }
@@ -110,7 +114,7 @@ class Client(val project: Project) : Disposable {
     fun setLoggingLevel(newLevel: LogLevel) {
         Logger.info("Setting new log level: ${newLevel.id}")
         logLevel = newLevel
-        grpcCoroutineScope.launch {
+        longLivingRequestsCS.launch {
             provideLogChannel()
         }
     }
@@ -163,7 +167,7 @@ class Client(val project: Project) : Disposable {
     }
 
     private fun registerClient(clientID: String) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             try {
                 Logger.info("sending REGISTER CLIENT request, clientID == $clientID")
                 grpcStub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientID).build())
@@ -177,7 +181,7 @@ class Client(val project: Project) : Disposable {
 
     fun doHandShake() {
         Logger.info("in doHandShake")
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             try {
                 grpcStub.handshake(Testgen.DummyRequest.newBuilder().build())
             } catch (e: Exception) {
@@ -191,7 +195,7 @@ class Client(val project: Project) : Disposable {
         if (heartBeatJob != null) {
             heartBeatJob?.cancel()
         }
-        heartBeatJob = grpcCoroutineScope.launch {
+        heartBeatJob = longLivingRequestsCS.launch(CoroutineName("periodicHeartBeat")) {
             while (isActive) {
                 heartBeatOnce()
                 delay(HEARTBEAT_INTERVAL)
@@ -203,7 +207,7 @@ class Client(val project: Project) : Disposable {
     fun generateForFile(
         request: Testgen.FileRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for FILE: \n$request")
             handler.handleTestsStream(grpcStub.generateFileTests(request), "Generate For File")
         }
@@ -212,7 +216,7 @@ class Client(val project: Project) : Disposable {
     fun generateForLine(
         request: Testgen.LineRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for LINE: \n$request")
             handler.handleTestsStream(grpcStub.generateLineTests(request), "Generate For Line")
         }
@@ -221,7 +225,7 @@ class Client(val project: Project) : Disposable {
     fun generateForPredicate(
         request: Testgen.PredicateRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for PREDICATE: \n$request")
             handler.handleTestsStream(grpcStub.generatePredicateTests(request), "Generate For Predicate")
         }
@@ -230,7 +234,7 @@ class Client(val project: Project) : Disposable {
     fun generateForFunction(
         request: Testgen.FunctionRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for FUNCTION: \n$request")
             handler.handleTestsStream(grpcStub.generateFunctionTests(request), "Generate For Function")
         }
@@ -239,7 +243,7 @@ class Client(val project: Project) : Disposable {
     fun generateForClass(
         request: Testgen.ClassRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for CLASS: \n$request")
             handler.handleTestsStream(grpcStub.generateClassTests(request), "Generate For Folder")
         }
@@ -248,7 +252,7 @@ class Client(val project: Project) : Disposable {
     fun generateForFolder(
         request: Testgen.FolderRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for FOLDER: \n$request")
             handler.handleTestsStream(grpcStub.generateFolderTests(request), "Generate For Folder")
         }
@@ -257,7 +261,7 @@ class Client(val project: Project) : Disposable {
     fun generateForProject(
         request: Testgen.ProjectRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for PROJECT: \n$request")
             handler.handleTestsStream(grpcStub.generateProjectTests(request), "Generate for Project")
         }
@@ -267,7 +271,7 @@ class Client(val project: Project) : Disposable {
         request: Testgen.ProjectTargetsRequest,
         callback: (Testgen.ProjectTargetsResponse) -> Unit
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to get PROJECT TARGETS: \n$request")
             val targets = grpcStub.getProjectTargets(request)
             callback(targets)
@@ -277,7 +281,7 @@ class Client(val project: Project) : Disposable {
     fun generateForSnippet(
         request: Testgen.SnippetRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for SNIPPET: \n$request")
             handler.handleTestsStream(grpcStub.generateSnippetTests(request), "Generate For Snippet")
         }
@@ -286,14 +290,14 @@ class Client(val project: Project) : Disposable {
     fun generateForAssertion(
         request: Testgen.AssertionRequest
     ) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             Logger.info("Sending request to generate for ASSERTION: \n$request")
             handler.handleTestsStream(grpcStub.generateAssertionFailTests(request), "Generate For Assertion")
         }
     }
 
     fun requestFunctionReturnTypeAndProcess(request: Testgen.FunctionRequest, callback: (Testgen.FunctionTypeResponse) -> Unit) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             callback(getFunctionReturnType(request))
         }
     }
@@ -312,7 +316,7 @@ class Client(val project: Project) : Disposable {
 
     fun configureProject() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.CHECK)
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch(CoroutineName("configureProject")) {
             Logger.info("Sending request to CHECK PROJECT CONFIGURATION: \n$request")
             handler.handleCheckConfigurationResponse(
                 grpcStub.configureProject(request),
@@ -323,14 +327,14 @@ class Client(val project: Project) : Disposable {
 
     fun createBuildDir() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.CREATE_BUILD_DIR)
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch(CoroutineName("createBuildDir")) {
             Logger.info("Sending request to GENERATE BUILD DIR: \n$request")
             handler.handleCreateBuildDirResponse(grpcStub.configureProject(request), "Create build directory...")
         }
     }
 
     fun getCoverageAndResults(request: Testgen.CoverageAndResultsRequest) {
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch {
             withContext(Dispatchers.Default) {
                 Logger.info("Sending request to get COVERAGE AND RESULTS: \n$request")
                 handler.handleCoverageAndResultsResponse(
@@ -343,7 +347,7 @@ class Client(val project: Project) : Disposable {
 
     fun generateJSon() {
         val request = getProjectConfigRequestMessage(project, Testgen.ConfigMode.GENERATE_JSON_FILES)
-        grpcCoroutineScope.launch {
+        shortLivingRequestsCS.launch(CoroutineName("generateJSon")) {
             Logger.info("Sending request to GENERATE JSON FILES: \n$request")
             handler.handleGenerateJsonResponse(grpcStub.configureProject(request), "Generate JSON files...")
         }
@@ -381,7 +385,8 @@ class Client(val project: Project) : Disposable {
 
     override fun dispose() {
         // when project is closed, cancel all running coroutines
-        grpcCoroutineScope.launch {
+        heartBeatJob?.cancel()
+        shortLivingRequestsCS.launch {
             try {
                 grpcStub.closeLogChannel(getDummyRequest())
                 grpcStub.closeGTestChannel(getDummyRequest())
@@ -390,6 +395,7 @@ class Client(val project: Project) : Disposable {
             }
             cancel()
         }
+        longLivingRequestsCS.cancel()
     }
 
     companion object {

@@ -38,7 +38,14 @@ class ConsoleToolWindowProvider : ToolWindowFactory {
     }
 }
 
-class UTBotConsole(project: Project) : ConsoleViewImpl(project, true)
+class UTBotConsole(project: Project) : ConsoleViewImpl(project, true) {
+    fun info(message: String) {
+        println(message, ConsoleViewContentType.NORMAL_OUTPUT)
+    }
+    fun println(message: String, contentType: ConsoleViewContentType) {
+        print("$message\n", contentType)
+    }
+}
 
 enum class OutputType(val id: String) {
     SERVER_LOG("Server log"), CLIENT_LOG("Client log"), GTEST("GTest log")
