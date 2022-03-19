@@ -42,54 +42,54 @@
     <actions>
         <group id="actions.UTBot.editor" text="UTBot Actions" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForProjectAction" class="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForProjectAction" class="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
                     text="Generate for Project" description="Generate tests for whole project"/>
-            <action id="actions.GenerateForFileActionInEditor"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForFileActionInEditor"
                     class="com.huawei.utbot.cpp.actions.GenerateForFileAction" text="Generate Tests for File"
                     description="Generates tests for file via grpc server"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForLineAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForLineAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForLineAction" text="Generate for Line"
                     description="Generate tests for line uder carret">
             </action>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForPredicateAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForPredicateAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForPredicateAction"
                     text="Generate For Predicate"
                     description="Generate tests for given predicate on call">
             </action>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForFunctionAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForFunctionAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForFunctionAction"
                     text="Generate For Function"
                     description="Generate unit tests for this function">
             </action>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForClassAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForClassAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForClassAction" text="Generate For Class"
                     description="Generate unit tests for this class"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForSnippetAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForSnippetAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForSnippetAction" text="Generate For Snippet"
                     description="Generate unit tests for snippet"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForAssertionAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForAssertionAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForAssertionAction"
                     text="Generate Tests Failing Assertion"
                     description="Generate unit tests that fail assertion on this line"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.DevAction"
+            <action id="com.huawei.utbot.cpp.actions.DevAction"
                     class="com.huawei.utbot.cpp.actions.DevAction" text="Development: Send HandShake"/>
         </group>
         <group id="actions.UTBot.projectTree" text="UTBot Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="last"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForFileAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForFileAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForFileAction" text="Generate Tests for File"
                     description="Generates tests for file via grpc server"/>
-            <action id="com.huawei.utbot.cpp.clion.actions.GenerateForFolderAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForFolderAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForFolderAction" text="Generate For Folder"
                     description="Generate unit tests for this folder"/>
         </group>
-        <action id="com.huawei.utbot.cpp.clion.actions.AskServerToGenerateBuildDir"
+        <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir"
                 class="com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir"
                 text="Generate Build Directory" description="Ask server to generate build dir"/>
-        <action id="com.huawei.utbot.cpp.clion.actions.ConfigureProjectAction"
+        <action id="com.huawei.utbot.cpp.actions.ConfigureProjectAction"
                 class="com.huawei.utbot.cpp.actions.ConfigureProjectAction" text="Configure Project"
                 description="Configure project so that server can generate tests"/>
-        <action id="com.huawei.utbot.cpp.clion.actions.AskServerToGenerateJsonForProjectConfiguration"
+        <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration"
                 class="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration" text="Try To Generate Json"
                 description="Ask server to generate missing json files"/>
     </actions>
