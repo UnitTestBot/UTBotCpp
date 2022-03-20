@@ -112,7 +112,9 @@ data class UTBotSettings(
         get() = convertToRemotePathIfNeeded(testDirPath)
 
     val convertedTargetPath: String
-        get() = convertToRemotePathIfNeeded(targetPath)
+        get() = if (targetPath == UTBotTarget.autoTarget.path)
+            targetPath
+        else convertToRemotePathIfNeeded(targetPath)
 
     val convertedProjectPath: String
         get() {
