@@ -196,6 +196,8 @@ data class UTBotSettings(
 
         val projectPath = project?.basePath ?: return notifyError("Path to project unavailable", project)
 
+        println("PREDICTING PATHS")
+        println("projectPath: $projectPath")
         testDirPath = Paths.get(projectPath, "tests").toString()
         buildDirPath = Paths.get(projectPath, "build-utbot").toString()
         targetPath = UTBotTarget.autoTarget.path

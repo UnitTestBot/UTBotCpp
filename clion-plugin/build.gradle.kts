@@ -81,6 +81,12 @@ sourceSets {
     }
 }
 
+kotlin {
+    jvmToolchain {
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.10.1"
@@ -167,7 +173,7 @@ tasks {
     // include tests directly, in IntelliJ Platform from 2021.3 there is a bug:
     // https://youtrack.jetbrains.com/issue/IDEA-278926#focus=Comments-27-5561012.0-0
     val test by getting(Test::class) {
-        setScanForTestClasses(false)
+        isScanForTestClasses = false
         // Only run tests from classes that end with "Test"
         include("**/*Test.class")
     }
