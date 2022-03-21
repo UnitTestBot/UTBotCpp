@@ -83,6 +83,7 @@ class Client(val project: Project) : Disposable, KoinComponent {
             .subscribe(UTBotEventsListener.CONNECTION_CHANGED_TOPIC, object : UTBotEventsListener {
                 override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
                     if (oldStatus != newStatus && newStatus == ConnectionStatus.CONNECTED) {
+                        Logger.info("Successfully connected to server!")
                         configureProject()
                     }
                 }
