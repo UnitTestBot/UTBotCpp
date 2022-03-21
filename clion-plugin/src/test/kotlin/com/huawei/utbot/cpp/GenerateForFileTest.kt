@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp
 
 import com.huawei.utbot.cpp.client.Client
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.services.UTBotStartupActivity
 import com.intellij.openapi.components.service
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -11,10 +12,7 @@ import com.intellij.util.io.delete
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.runBlocking
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -38,10 +36,11 @@ class TestFixtureProxy(val testsDirectory: Path): TempDirTestFixtureImpl() {
     override fun deleteOnTearDown() = false
 }
 
-class GenerateForFileTest(arg: Unit = println("default arg of GenerateForFileTest")) : UsefulTestCase() {
+class GenerateForFileTest : UsefulTestCase() {
     init {
-        println("init block of GenerateForFileTest")
+        UTBotStartupActivity.isTestMode = true
     }
+
     private val mountedProjectPath = "../../../bindMounts/f/c-example2"
     private val realProjectPath = "../integration-tests/c-example"
     private val isMac = false
@@ -71,6 +70,7 @@ class GenerateForFileTest(arg: Unit = println("default arg of GenerateForFileTes
     // called before each test
     override fun setUp() {
         println("setUP of my UsefulTestcase")
+        println("DISPATCHER: ${client.dispatcher}")
         super.setUp()
         settings.buildDirPath = testProjectBuildDir.toString()
         settings.testDirPath = testProjectTestDir.toString()
@@ -95,27 +95,20 @@ class GenerateForFileTest(arg: Unit = println("default arg of GenerateForFileTes
     }
 
     private fun buildProject(compiler: Compiler = Compiler.Gcc, buildDirName: String) {
-        try {
-            val buildCommand = getBuildCommand(compiler, buildDirName)
-            ProcessBuilder("bash", "-c", buildCommand)
-                .directory(testProjectPath.toFile())
-                .inheritIO()
-                .start()
-                .waitFor()
-            println("build command finished!")
-            Files.list(testProjectPath).forEach {
-                println(it)
-            }
-            Files.list(testProjectBuildDir).forEach {
-                println(it)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        val buildCommand = getBuildCommand(compiler, buildDirName)
+        println("BUILD COMMAND: $buildCommand")
+        ProcessBuilder("bash", "-c", buildCommand)
+            .directory(testProjectPath.toFile())
+            .inheritIO()
+            .start()
+            .waitFor()
     }
 
     fun testGenerateForFile() {
         println("test testGenerateForFile has started!")
+        println(testProjectPath)
+        println(myFixture.tempDirFixture.tempDirPath)
+        println(myFixture.testDataPath)
         myFixture.configureFromTempProjectFile("/lib/basic_functions.c")
         myFixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForFileActionInEditor")
         waitForRequestsToFinish()
@@ -131,8 +124,8 @@ class GenerateForFileTest(arg: Unit = println("default arg of GenerateForFileTes
         // somehow project service Client is not disposed automatically by the ide, and the exception is thrown that
         // timer related to heartbeat is not disposed. So let's dispose it manually.
         client.dispose()
-        //testProjectBuildDir.delete(recursively = true)
-        //testProjectTestDir.delete(recursively = true)
+        testProjectBuildDir.delete(recursively = true)
+        testProjectTestDir.delete(recursively = true)
         super.tearDown()
         println("tearDown of myUseFulTestCase has finished!")
     }

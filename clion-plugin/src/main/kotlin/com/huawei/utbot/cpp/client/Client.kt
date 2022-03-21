@@ -31,10 +31,11 @@ import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import io.grpc.Status
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
 import org.tinylog.kotlin.Logger
 
 enum class LogLevel(val id: String) {
@@ -43,7 +44,7 @@ enum class LogLevel(val id: String) {
 }
 
 @Service
-class Client(val project: Project) : Disposable {
+class Client(val project: Project) : Disposable, KoinComponent {
     var connectionStatus = ConnectionStatus.INIT
         private set
     private val messageBus = project.messageBus
@@ -54,29 +55,20 @@ class Client(val project: Project) : Disposable {
     private val settings = project.service<UTBotSettings>()
     private val clientID = generateClientID()
 
+    val dispatcher by inject<CoroutineDispatcher>()
     // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
-    val shortLivingRequestsCS: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    // this division is needed for testing: when in test we send a generate request to server, we need to wait
+    // until it completes, the indicator that all such requests have completed is that this scope has no children
+    val shortLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher)
     // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
-    val longLivingRequestsCS: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    val longLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher)
 
     private val grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
 
     init {
-        setupLogger()
         Logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
         subscribeToEvents()
         startPeriodicHeartBeat()
-    }
-
-    // inject outputConsole to UserLogWriter, so messages from Logger will be printed in ui
-    private fun setupLogger() {
-        val outputConsole: UTBotConsole = project.service<OutputWindowProvider>().outputs[OutputType.CLIENT_LOG]!!
-        val writerDependencyModule = module {
-            single { outputConsole }
-        }
-        startKoin {
-            modules(writerDependencyModule)
-        }
     }
 
     private fun setupGrpcStub(): TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub {
