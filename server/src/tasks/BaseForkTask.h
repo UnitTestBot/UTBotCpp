@@ -161,6 +161,7 @@ protected:
      */
     static const int LOG_FAIL_CODE = 8;
     static const int TIMEOUT_CODE = 9;
+    static const int SETPGID_FAIL_CODE = 10;
 
     /**
      * Throws if the watched child process is absent.

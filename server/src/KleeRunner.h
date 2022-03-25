@@ -37,15 +37,22 @@ public:
                  const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
-                 bool isBatched);
+                 bool isBatched,
+                 bool interactiveMode);
 
 private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
-    void processBatch(tests::MethodKtests &ktestChunk,
-                      const tests::TestMethod &testMethod,
-                      tests::Tests &tests);
+
+
+    void processBatchWithoutInteractive(tests::MethodKtests &ktestChunk,
+                                        const tests::TestMethod &testMethod,
+                                        tests::Tests &tests);
+
+    void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                     tests::Tests &tests,
+                                     std::vector<tests::MethodKtests> &ktests);
     fs::path getKleeMethodOutFile(const tests::TestMethod &method);
 };
 

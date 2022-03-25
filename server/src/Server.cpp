@@ -274,8 +274,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
+        bool interactiveMode = (dynamic_cast<FileTestGen *>(&testGen) != nullptr);
+        auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched());
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode);
+        auto finish_time = std::chrono::steady_clock::now();
+        LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
     } catch (const ExecutionProcessException &e) {
         string command = e.what();
         return Status(StatusCode::FAILED_PRECONDITION,
