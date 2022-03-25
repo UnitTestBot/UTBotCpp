@@ -49,8 +49,4 @@ int sort_list(struct Node *head);
 
 int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int));
 
-int find_maximum(int x, int y, int (*compare) (int, int));
-
-int vowel_consonant(char c, char (*vowel) (char));
-
 #endif
