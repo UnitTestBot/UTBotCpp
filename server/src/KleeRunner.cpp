@@ -146,6 +146,8 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                                           "--bcov-check-interval=6s",
                                           "-istats-write-interval=5s",
                                           "--disable-verify",
+                                          "--check-div-zero=false",
+                                          "--check-overshift=false",
                                           "--skip-not-lazy-and-symbolic-pointers",
                                           outputDir };
     if (settingsContext.useDeterministicSearcher) {
@@ -258,6 +260,8 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                           "--bcov-check-interval=6s",
                                           "-istats-write-interval=5s",
                                           "--disable-verify",
+                                          "--check-div-zero=false",
+                                          "--check-overshift=false",
                                           "--skip-not-lazy-and-symbolic-pointers",
                                           "--interactive",
                                           "--process-number=5",
