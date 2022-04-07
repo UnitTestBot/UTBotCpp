@@ -355,7 +355,13 @@ namespace printer {
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
-        declareTarget("bin", { FORCE }, { stringFormat("echo %s", sharedOutput.value()) });
+
+        fs::path coverageInfoBinary = sharedOutput.value();
+        if (!Paths::isLibraryFile(coverageInfoBinary)) {
+            coverageInfoBinary = testExecutablePath.string();
+        }
+
+        declareTarget("bin", { FORCE }, { stringFormat("echo %s", coverageInfoBinary) });
 
         utbot::RunCommand testRunCommand{ { testExecutablePath.string(), "$(GTEST_FLAGS)" },
                                           buildDirectory };
@@ -407,7 +413,7 @@ namespace printer {
         fs::path recompiledFile =
             Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
         if (isExecutable) {
-            recompiledFile = Paths::isObjectFile(Paths::addExtension(recompiledFile, ".o")) ?
+            recompiledFile = Paths::isObjectFile(recompiledFile) ?
                              recompiledFile : Paths::addExtension(recompiledFile, ".o");
         } else if (Paths::isSharedLibraryFile(unitFile)) {
             recompiledFile = getSharedLibrary(linkUnitInfo->getOutput());
