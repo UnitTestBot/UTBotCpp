@@ -289,7 +289,10 @@ void SourceToHeaderMatchCallback::printReturn(const FunctionDecl *decl,
     printer::Printer printer;
     auto args = CollectionUtils::transformTo<std::vector<std::string>>(
         decl->parameters(), [](ParmVarDecl *param) { return param->getNameAsString(); });
-    printer.ss << "return ";
+    bool noReturn = decl->isNoReturn() || decl->getReturnType()->isVoidType();
+    if (!noReturn) {
+        printer.ss << "return ";
+    }
     printer.strFunctionCall(name, args);
 
     *stream << printer.ss.str();
