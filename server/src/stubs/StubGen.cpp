@@ -21,10 +21,10 @@ CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
     if (!testGen.needToBeMocked() || !testGen.settingsContext.useStubs) {
         return {};
     }
-    fs::path testedFilePath = testGen.testingMethodsSourcePaths[0];
+    fs::path testedFilePath = *testGen.testingMethodsSourcePaths.begin();
     auto stubSources = StubSourcesFinder(testGen.buildDatabase).excludeFind(testedFilePath, target);
-    return CollectionUtils::FileSet(stubSources.begin(), stubSources.end());
-}
+    return { stubSources.begin(), stubSources.end() };
+};
 
 CollectionUtils::FileSet
 StubGen::findStubFilesBySignatures(const vector<tests::Tests::MethodDescription> &signatures) {
@@ -40,8 +40,7 @@ StubGen::findStubFilesBySignatures(const vector<tests::Tests::MethodDescription>
     if (stubFiles.empty()) {
         return {};
     }
-    printer::CCJsonPrinter::createDummyBuildDB(
-        std::vector<fs::path>(stubFiles.begin(), stubFiles.end()), ccJsonDirPath);
+    printer::CCJsonPrinter::createDummyBuildDB(stubFiles, ccJsonDirPath);
     auto stubsCdb = CompilationUtils::getCompilationDatabase(ccJsonDirPath);
     tests::TestsMap stubFilesMap;
     for (const auto &file : stubFiles) {

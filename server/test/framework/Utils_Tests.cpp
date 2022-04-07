@@ -65,7 +65,7 @@ namespace {
     }
 
     TEST(Utils_Test, FilterPathsByDirNames) {
-        vector<fs::path> paths{
+        CollectionUtils::FileSet paths{
                                      projectPath / "basic_functions.c",
                                      projectPath / "types.c",
                                      projectPath / "basic_functions.h",
@@ -73,7 +73,7 @@ namespace {
                              };
         vector<fs::path> dirNames{ projectPath };
         auto filteredPaths = Paths::filterPathsByDirNames(paths, dirNames, Paths::isCFile);
-        EXPECT_EQ(vector<fs::path>({
+        EXPECT_EQ(CollectionUtils::FileSet({
                                            projectPath / "basic_functions.c",
                                            projectPath / "types.c"}),
                   filteredPaths);

@@ -84,7 +84,7 @@ namespace {
             projectName, suitePath, buildDirRelativePath, { suitePath, folderPath });
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        testUtils::setTargetForFirstSource(testGen);
 
         fs::path source1 = folderPath / "SAT-760_1.c";
         fs::path source2 = folderPath / "SAT-760_2.c";

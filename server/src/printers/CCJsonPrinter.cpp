@@ -13,7 +13,7 @@ using printer::CCJsonPrinter;
 
 const string CCJsonPrinter::DEFAULT_BUILD_FLAGS = " -c -g -O0";
 
-void printer::CCJsonPrinter::createDummyBuildDB(const vector<fs::path> &filePaths,
+void printer::CCJsonPrinter::createDummyBuildDB(const CollectionUtils::FileSet &filePaths,
                                                 const fs::path &tmpDirPath) {
     fs::create_directories(tmpDirPath);
     json compileJson = json::array(), linkJson = json::array();
@@ -42,10 +42,10 @@ void printer::CCJsonPrinter::createCDb(const vector<utbot::CompileCommand> &comp
                                        const fs::path &tmpDirPath) {
     fs::create_directories(tmpDirPath);
     json compileJson = json::array();
-    for (size_t i = 0; i < compileCommands.size(); i++) {
-        auto commandLine = compileCommands[i].getCommandLine();
+    for (const auto & compileCommand : compileCommands) {
+        auto commandLine = compileCommand.getCommandLine();
         auto compileUnit = getUnit({ commandLine.begin(), commandLine.end() }, tmpDirPath,
-                                   { compileCommands[i].getSourcePath() }, false);
+                                   { compileCommand.getSourcePath() }, false);
         compileJson.push_back(compileUnit);
     }
     JsonUtils::writeJsonToFile(tmpDirPath / "compile_commands.json", compileJson);

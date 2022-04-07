@@ -9,6 +9,7 @@
 #include "Tests.h"
 #include "utils/CollectionUtils.h"
 #include "TimeExecStatistics.h"
+#include "building/CompilationDatabase.h"
 
 #include <clang/Tooling/Tooling.h>
 
@@ -20,7 +21,7 @@
 class ClangToolRunner {
     clang::IgnoringDiagConsumer ignoringDiagConsumer;
 public:
-    explicit ClangToolRunner(std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase);
+    explicit ClangToolRunner(std::shared_ptr<CompilationDatabase> compilationDatabase);
 
     void run(const fs::path &file,
              clang::tooling::ToolAction *toolAction,
@@ -38,8 +39,7 @@ public:
                          std::string const &message,
                          bool ignoreDiagnostics = false);
 private:
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
-    std::optional<fs::path> resourceDir;
+    std::shared_ptr<CompilationDatabase> compilationDatabase;
 
     void checkStatus(int status) const;
 

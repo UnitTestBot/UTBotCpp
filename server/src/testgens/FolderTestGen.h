@@ -8,7 +8,7 @@
 #include "ProjectTestGen.h"
 
 
-class FolderTestGen : public ProjectTestGen {
+class FolderTestGen final : public ProjectTestGen {
 public:
     string folderPath;
 

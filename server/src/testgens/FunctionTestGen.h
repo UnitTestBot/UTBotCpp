@@ -8,7 +8,7 @@
 #include "LineTestGen.h"
 #include "ProjectTestGen.h"
 
-class FunctionTestGen : public LineTestGen {
+class FunctionTestGen final : public LineTestGen {
 public:
     FunctionTestGen(const testsgen::FunctionRequest &request,
                     ProgressWriter *progressWriter,

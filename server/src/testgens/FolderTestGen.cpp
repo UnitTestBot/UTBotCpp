@@ -11,10 +11,8 @@ FolderTestGen::FolderTestGen(const testsgen::FolderRequest &request,
                              bool testMode)
     : ProjectTestGen(request.projectrequest(), progressWriter, testMode, false),
       folderPath(request.folderpath()) {
-    testingMethodsSourcePaths = {};
-    std::copy_if(sourcePaths.begin(), sourcePaths.end(),
-                 std::back_inserter(testingMethodsSourcePaths),
-                 [this](const fs::path &path) { return Paths::isSubPathOf(folderPath, path); });
+    testingMethodsSourcePaths = CollectionUtils::filterOut(sourcePaths,
+                 [this](const fs::path &path) { return !Paths::isSubPathOf(folderPath, path); });
     setInitializedTestsMap();
 }
 
