@@ -57,6 +57,12 @@ void ClangToolRunner::run(const fs::path &file,
     if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
         return;
     }
+    if (onlySource) {
+        if (!CollectionUtils::contains(compilationDatabase->getAllFiles(), file)) {
+            throw CompilationDatabaseException(
+                "compile_commands.json doesn't contain a command for source file " + file.string());
+        }
+    }
     auto clangTool = std::make_unique<clang::tooling::ClangTool>(
         compilationDatabase->getClangCompilationDatabase(), file.string());
     if (ignoreDiagnostics) {
