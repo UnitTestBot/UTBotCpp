@@ -125,7 +125,8 @@ namespace printer {
               testGen.projectContext,
               testGen.buildDatabase,
               testGen.getTargetPath(),
-              CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(CompilationUtils::detectBuildCompilerPath(testGen.compilationDatabase))),
+              CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
+                  testGen.compilationDatabase->getBuildCompilerPath())),
               stubSources) {
     }
 

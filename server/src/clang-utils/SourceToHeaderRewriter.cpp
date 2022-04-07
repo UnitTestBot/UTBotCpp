@@ -17,7 +17,7 @@
 
 SourceToHeaderRewriter::SourceToHeaderRewriter(
     utbot::ProjectContext projectContext,
-    const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+    const std::shared_ptr<CompilationDatabase> &compilationDatabase,
     std::shared_ptr<Fetcher::FileToStringSet> structsToDeclare,
     fs::path serverBuildDir)
     : projectContext(std::move(projectContext)),

@@ -24,15 +24,14 @@ KleeGenerator::KleeGenerator(
     utbot::ProjectContext projectContext,
     utbot::SettingsContext settingsContext,
     fs::path serverBuildDir,
-    vector<fs::path> sourcesFilePaths,
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase,
+    std::shared_ptr<CompilationDatabase> compilationDatabase,
     types::TypesHandler &typesHandler,
     PathSubstitution filePathsSubstitution,
     std::shared_ptr<BuildDatabase> buildDatabase,
     ProgressWriter const *progressWriter)
     : projectContext(std::move(projectContext)),
       settingsContext(std::move(settingsContext)), projectTmpPath(std::move(serverBuildDir)),
-      srcFiles(std::move(sourcesFilePaths)), compilationDatabase(std::move(compilationDatabase)),
+      compilationDatabase(std::move(compilationDatabase)),
       typesHandler(typesHandler), pathSubstitution(std::move(filePathsSubstitution)),
       buildDatabase(std::move(buildDatabase)), progressWriter(progressWriter) {
     try {

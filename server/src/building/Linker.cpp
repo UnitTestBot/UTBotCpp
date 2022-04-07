@@ -45,15 +45,12 @@ bool Linker::isForOneFile() {
 }
 
 fs::path Linker::getSourceFilePath() {
-    auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen);
-    auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen);
-    fs::path sourcePath;
     if (lineInfo != nullptr) {
         return lineInfo->filePath;
-    } else if (fileTestGen != nullptr) {
+    } else if (auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen)) {
         return fileTestGen->filepath;
-    } else if (snippetTestGen != nullptr) {
-        return snippetTestGen->sourcePaths[0];
+    } else if (auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen)) {
+        return snippetTestGen->filePath;
     } else {
         throw BaseException(
             "Couldn't handle test generation of current type in function getSourcePath");
@@ -406,7 +403,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
 
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
     if (!success) {
-        string message = StringUtils::stringFormat("Couldn't parse module: ", targetBitcode);
+        string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
         throw CompilationDatabaseException(message);
     }
 

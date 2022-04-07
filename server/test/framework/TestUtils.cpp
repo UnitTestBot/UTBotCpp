@@ -341,4 +341,9 @@ namespace testUtils {
         return argv;
     }
 
+    void setTargetForFirstSource(ProjectTestGen &testGen) {
+        fs::path sourcePath = *testGen.testingMethodsSourcePaths.begin();
+        testGen.setTargetForSource(sourcePath);
+    }
+
 }

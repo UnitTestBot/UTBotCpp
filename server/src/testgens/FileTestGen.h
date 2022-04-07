@@ -8,7 +8,7 @@
 #include "ProjectTestGen.h"
 
 
-class FileTestGen : public ProjectTestGen {
+class FileTestGen final : public ProjectTestGen {
 public:
     fs::path filepath;
 
@@ -19,8 +19,6 @@ public:
     ~FileTestGen() override = default;
 
     string toString() override;
-
-    void setModuleTestingSources(const vector<fs::path> &moduleFiles);
 };
 
 

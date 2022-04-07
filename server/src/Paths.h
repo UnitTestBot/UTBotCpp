@@ -30,14 +30,15 @@ namespace Paths {
 
     /**
      * @brief Traverses all paths and removes all which parent directory is not any of `dirPaths`.
-     * @param path Vector of paths to files.
+     * @param path Set of paths to files.
      * @param dirPaths Vector of directory paths where files must be located.
      * @param allowedExt If file extension not present in `allowedExt`, skips it.
      * @return Vector of filtered paths.
      */
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &path,
-                                           const vector<fs::path> &dirNames,
-                                           const std::function<bool(const fs::path &path)> &filter);
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &path,
+                          const vector<fs::path> &dirNames,
+                          const std::function<bool(const fs::path &path)> &filter);
 
     static inline void setOptPath(fs::path &path, const string &value) {
         path = fs::path(value);

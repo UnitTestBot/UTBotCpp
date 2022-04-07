@@ -16,12 +16,14 @@ public:
     
     ~LineTestGen() override = default;
 
+    const fs::path &getSourcePath() const;
+
     string toString() override;
 
     virtual bool needToAddPathFlag();
 
     fs::path filePath;
-    int line;
+    uint32_t line;
 };
 
 

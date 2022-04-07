@@ -24,18 +24,16 @@ namespace Paths {
     fs::path logPath = getHomeDir();
     fs::path tmpPath = getHomeDir();
 
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &paths,
-                                           const vector<fs::path> &dirPaths,
-                                           const std::function<bool(const fs::path &path)> &filter) {
-        std::vector<fs::path> filtered;
-        std::copy_if(paths.begin(), paths.end(), std::back_inserter(filtered),
-                     [&dirPaths, &filter](const fs::path &path) {
-                         return std::any_of(
-                             dirPaths.begin(), dirPaths.end(), [&](const auto &dirPath) {
-                                 return path.parent_path() == dirPath && fs::exists(path) &&
-                                        filter(path);
-                             });
-                     });
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &paths,
+                          const vector<fs::path> &dirPaths,
+                          const std::function<bool(const fs::path &path)> &filter) {
+        CollectionUtils::FileSet filtered =
+            CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
+                return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
+                    return path.parent_path() == dirPath && fs::exists(path) && filter(path);
+                });
+            });
         return filtered;
     }
 

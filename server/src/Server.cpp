@@ -226,7 +226,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                           lineTestGen->compileCommandsJsonPath);
                 classFinder.findClass();
                 lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
-                lineInfo->filePath = lineTestGen->testingMethodsSourcePaths[0];
+                lineInfo->filePath = lineTestGen->getSourcePath();
                 CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
                                           [&lineInfo](const tests::Tests::MethodDescription &methodDescription) {
                                               return methodDescription.isClassMethod() &&
@@ -254,12 +254,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 fs::path flagFilePath =
                     printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath))
                         .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
-                pathSubstitution = { testGen.testingMethodsSourcePaths[0], flagFilePath };
+                pathSubstitution = { lineTestGen->filePath, flagFilePath };
             }
         }
         auto generator = std::make_shared<KleeGenerator>(
             testGen.projectContext, testGen.settingsContext,
-            testGen.serverBuildDir, testGen.sourcePaths, testGen.compilationDatabase, typesHandler,
+            testGen.serverBuildDir, testGen.compilationDatabase, typesHandler,
             pathSubstitution, testGen.buildDatabase, testGen.progressWriter);
 
         ReturnTypesFetcher returnTypesFetcher{ &testGen };
@@ -308,7 +308,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 }
 
 shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
-    BordersFinder stmtFinder(lineTestGen.testingMethodsSourcePaths[0], lineTestGen.line,
+    BordersFinder stmtFinder(lineTestGen.filePath, lineTestGen.line,
                              lineTestGen.compilationDatabase,
                              lineTestGen.compileCommandsJsonPath);
     stmtFinder.findFunction();
