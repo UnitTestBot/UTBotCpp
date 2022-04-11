@@ -513,6 +513,9 @@ std::string getArchiveArgument(std::string const &argument,
         fs::path bitcode = dependencies.at(argument);
         return fs::relative(bitcode, workingDir);
     }
+    if (CollectionUtils::contains(linkUnitInfo.installedFiles, argument)) {
+        return argument;
+    }
     if (argument == linkUnitInfo.getOutput()) {
         return output;
     }
@@ -538,6 +541,16 @@ static void moveKleeTemporaryFileArgumentToBegin(std::vector<std::string> &argum
     std::iter_swap(iteratorToSwap + 2, iteratorToCurrentFile);
 }
 
+static void moveOutputOptionToBegin(vector<std::string> &arguments, fs::path const &output) {
+    auto it = std::find(arguments.begin(), arguments.end(), "-o");
+    if (it != arguments.end()) {
+        arguments.erase(it, it + 2);
+        arguments.insert(arguments.begin() + 1, { "-o", output });
+    } else {
+        LOG_S(ERROR) << "Output option is not found for: " << StringUtils::joinWith(arguments, " ");
+    }
+}
+
 static std::vector<utbot::LinkCommand>
 getArchiveCommands(fs::path const &workingDir,
                    CollectionUtils::MapFileTo<fs::path> const &dependencies,
@@ -552,13 +565,13 @@ getArchiveCommands(fs::path const &workingDir,
                                               output, linkCommand, hasArchiveOption);
                 });
             arguments.erase(arguments.begin());
+            if (!hasArchiveOption) {
+                arguments.insert(arguments.begin(), "r");
+            }
+            moveOutputOptionToBegin(arguments, output);
             moveKleeTemporaryFileArgumentToBegin(arguments);
 
-            if (hasArchiveOption) {
-                arguments.insert(arguments.begin(), { "ar" });
-            } else {
-                arguments.insert(arguments.begin(), { "ar", "r" });
-            }
+            arguments.insert(arguments.begin(), { Paths::getAr() });
             CollectionUtils::extend(arguments,
                                     std::vector<std::string>{ "--plugin", Paths::getLLVMgold() });
             utbot::LinkCommand result{ arguments, workingDir };
