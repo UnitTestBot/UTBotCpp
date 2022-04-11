@@ -8,7 +8,9 @@ message(STATUS "Z3_FOUND: ${Z3_FOUND}")
 message(STATUS "Found Z3 ${Z3_VERSION_STRING}")
 message(STATUS "Z3_DIR: ${Z3_DIR}")
 
-add_executable(installed main.c)
+add_library(lib SHARED lib.c)
+target_include_directories(lib PRIVATE ${Z3_C_INCLUDE_DIRS})
+target_link_libraries(lib PRIVATE ${Z3_LIBRARIES})
 
-target_include_directories(installed PRIVATE ${Z3_C_INCLUDE_DIRS})
-target_link_libraries(installed PRIVATE ${Z3_LIBRARIES})
+add_executable(installed main.c)
+target_link_libraries(installed PRIVATE lib)
