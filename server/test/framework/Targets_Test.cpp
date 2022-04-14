@@ -7,7 +7,7 @@ protected:
     }
 
     void SetUp() override {
-        clearEnv();
+        clearEnv(CompilationUtils::CompilerName::CLANG);
     }
 
     fs::path parse_c = getTestFilePath("parse.c");

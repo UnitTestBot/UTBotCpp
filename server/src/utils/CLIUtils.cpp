@@ -244,7 +244,6 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
     } else {
         CLIUtils::setupLogger(serverCommandOptions.getLogPath(),
                               serverCommandOptions.getVerbosity());
-        CLIUtils::setOptPath(serverCommandOptions.getTmpPath(), Paths::tmpPath);
         Server server;
         if (serverCommandOptions.getPort() != 0) {
             server.run(serverCommandOptions.getPort());

@@ -29,6 +29,8 @@ namespace utbot {
 
         CompileCommand &operator=(CompileCommand &&other) noexcept;
 
+        CompileCommand(const CompileCommand &other, bool shouldChangeDirectory);
+
         CompileCommand(std::vector<std::string> arguments, fs::path directory, fs::path sourcePath);
 
         friend void swap(CompileCommand &a, CompileCommand &b) noexcept;

@@ -26,9 +26,10 @@ namespace CompilationUtils {
     inline static const std::string CLANG_PATH = "clang";
     inline static const std::string CLANGXX_PATH = "clang++";
 
-    static inline const std::string MOUNTED_CC_JSON_DIR_NAME = "utbot_build";
+    static inline const std::string UTBOT_BUILD_DIR_NAME = "utbot_build";
 
-    static inline const std::string FULL_COMMAND_PATTERN = R"(cd "%s" && mkdir -p %s && %s)";
+    static inline const std::string FULL_COMMAND_PATTERN_WITH_CD = R"(cd "%s" && mkdir -p %s && %s)";
+    static inline const std::string FULL_COMMAND_PATTERN = R"(mkdir -p %s && %s)";
 
     std::string getBuildDirectoryName(CompilerName compilerName);
 

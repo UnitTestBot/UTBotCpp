@@ -13,7 +13,7 @@ namespace {
         fs::path test_c = test / "test.c";
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
             srcPaths = { suitePath, test, sum };
         }
 

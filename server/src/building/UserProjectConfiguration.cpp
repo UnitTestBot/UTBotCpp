@@ -35,7 +35,7 @@ Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &build
 
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
-                                                          const std::string &projectName,
+                                                          const utbot::ProjectContext &projectContext,
                                                           std::vector<std::string> cmakeOptions,
                                                           ProjectConfigWriter const &writer) {
     try {
@@ -49,13 +49,13 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
         fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
         if (fs::exists(cmakeListsPath)) {
             LOG_S(INFO) << "Configure cmake project";
-            RunProjectConfigurationCommand(buildDirPath, cmakeParams, projectName, writer);
+            RunProjectConfigurationCommand(buildDirPath, cmakeParams, projectContext, writer);
         } else {
             LOG_S(INFO) << "CMakeLists.txt not found in root project directory: " << cmakeListsPath
                         << ". Skipping cmake step.";
         }
         LOG_S(INFO) << "Configure make project";
-        RunProjectConfigurationCommand(buildDirPath, bearMakeParams, projectName, writer);
+        RunProjectConfigurationCommand(buildDirPath, bearMakeParams, projectContext, writer);
         writer.writeResponse(ProjectConfigStatus::IS_OK);
     } catch (const std::exception &e) {
         fs::remove(getCompileCommandsJsonPath(buildDirPath));
@@ -67,11 +67,11 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
 
 void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                               const ShellExecTask::ExecutionParameters &params,
-                                                              const std::string &projectName,
+                                                              const utbot::ProjectContext &projectContext,
                                                               const ProjectConfigWriter &writer) {
-    auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectName, true, true);
+    auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectContext.projectName, true, true);
     if (status != 0) {
-        auto logFilePath = LogUtils::writeLog(out, Paths::getTmpDir(projectName), "project-import");
+        auto logFilePath = LogUtils::writeLog(out, Paths::getUtbotBuildDir(projectContext), "project-import");
         std::string message = StringUtils::stringFormat(
                 "Running command \"%s\" failed. See more info in logs.", params.toString());
         throw std::runtime_error(message);
@@ -119,11 +119,10 @@ fs::path UserProjectConfiguration::createBearShScript(const fs::path &buildDirPa
 
 Status UserProjectConfiguration::RunProjectReConfigurationCommands(const fs::path &buildDirPath,
                                                                    const fs::path &projectDirPath,
-                                                                   const std::string &projectName,
+                                                                   const utbot::ProjectContext &projectContext,
                                                                    std::vector<std::string> cmakeOptions,
                                                                    ProjectConfigWriter const &writer) {
     try {
-        fs::remove_all(Paths::getTmpDir(""));
         if (Paths::isSubPathOf(projectDirPath, buildDirPath)) {
             fs::remove_all(buildDirPath);
         } else {
@@ -138,7 +137,7 @@ Status UserProjectConfiguration::RunProjectReConfigurationCommands(const fs::pat
     if (!createBuildDirectory(buildDirPath, writer)) {
         return Status::OK;
     }
-    return UserProjectConfiguration::RunProjectConfigurationCommands(buildDirPath, projectName,
+    return UserProjectConfiguration::RunProjectConfigurationCommands(buildDirPath, projectContext,
                                                                      cmakeOptions, writer);
 }
 

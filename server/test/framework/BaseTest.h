@@ -39,8 +39,6 @@ protected:
 
     fs::path getTestFilePath(const std::string &fileName);
 
-    void clearEnv();
-
     void clearTestDirectory();
 
     void clearDirectory(const fs::path &pathToDirectory);
@@ -52,6 +50,8 @@ protected:
     fs::path getPathToGeneratedTestFileByTestedFile(const std::string &fileName);
 
     fs::path getPathToGeneratedTestHeaderFileByTestedFile(const std::string &fileName);
+
+    void clearEnv(const CompilationUtils::CompilerName &compiler);
 };
 
 #endif //UNITTESTBOT_BASETEST_H

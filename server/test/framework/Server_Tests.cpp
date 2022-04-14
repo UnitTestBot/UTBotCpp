@@ -7,7 +7,7 @@
 #include "clang-utils/SourceToHeaderRewriter.h"
 #include "coverage/CoverageAndResultsGenerator.h"
 #include "printers/HeaderPrinter.h"
-#include "printers/NativeMakefilePrinter.h"
+#include "printers/TestMakefilesPrinter.h"
 #include "printers/SourceWrapperPrinter.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/ServerUtils.h"
@@ -51,7 +51,7 @@ namespace {
         fs::path multiple_classes_cpp = getTestFilePath("multiple_classes.cpp");
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
         void generateFiles(const fs::path &sourceFile, const fs::path &testsRelativeDir) {
@@ -69,14 +69,11 @@ namespace {
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
             fs::path root = buildDatabase->getRootForSource(sourceFile);
-            printer::NativeMakefilePrinter nativeMakefilePrinter(projectContext, buildDatabase,
+            printer::TestMakefilesPrinter testMakefilePrinter(projectContext, buildDatabase,
                                                                  root, compilerPath, &stubsSources);
-            nativeMakefilePrinter.addLinkTargetRecursively(root, "");
-            std::string makefileContent =
-                printer::NativeMakefilePrinter{ nativeMakefilePrinter, sourceFile }.ss.str();
-            fs::path makefilePath =
-                Paths::getMakefilePathFromSourceFilePath(projectContext, sourceFile);
-            FileSystemUtils::writeToFile(makefilePath, makefileContent);
+            testMakefilePrinter.addLinkTargetRecursively(root, "");
+
+            testMakefilePrinter.GetMakefiles(sourceFile).write();
 
             auto compilationDatabase = CompilationUtils::getCompilationDatabase(buildPath);
             auto structsToDeclare = std::make_shared<Fetcher::FileToStringSet>();
@@ -870,7 +867,7 @@ namespace {
                                       public testing::WithParamInterface<std::tuple<CompilerName>> {
     protected:
         void SetUp() override {
-            Server_Test::SetUp();
+            clearEnv(std::get<0>(GetParam()));
             setCompiler(std::get<0>(GetParam()));
         }
     };
@@ -1189,9 +1186,10 @@ namespace {
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_EQ(1, testUtils::getNumberOfTests(testGen.tests));
-        ASSERT_FALSE(
-            testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases[0].isError());
+        ASSERT_EQ(1, testUtils::getNumberOfTests(testGen.tests));
+        const auto testCases = testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases;
+        ASSERT_FALSE(testCases.empty());
+        ASSERT_FALSE(testCases[0].isError());
     }
 
 
@@ -1505,7 +1503,7 @@ namespace {
         fs::path testsDirPath;
 
         void SetUp() override {
-            Server_Test::SetUp();
+            clearEnv(std::get<0>(GetParam()));
             setCompiler(std::get<0>(GetParam()));
             setSuite("run");
             const auto &[subProjectName, numberOfTests] = std::get<1>(GetParam());

@@ -22,7 +22,7 @@ namespace {
         }
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
         std::pair<FunctionTestGen, Status>

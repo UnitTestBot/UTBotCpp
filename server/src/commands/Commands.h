@@ -40,8 +40,6 @@ namespace Commands {
 
         fs::path getLogPath();
 
-        fs::path getTmpPath();
-
         loguru::NamedVerbosity getVerbosity();
 
         unsigned int getPort();
@@ -51,7 +49,7 @@ namespace Commands {
         unsigned int getKleeProcessNumber();
     private:
         unsigned int port = 0;
-        fs::path logPath, tmpPath;
+        fs::path logPath;
 
         loguru::NamedVerbosity verbosity;
         static const std::map<std::string, loguru::NamedVerbosity> verbosityMap;

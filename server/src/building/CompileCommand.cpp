@@ -68,6 +68,11 @@ namespace utbot {
         return *this;
     }
 
+    CompileCommand::CompileCommand(const CompileCommand &other, bool shouldChangeDirectory_) :
+                                   CompileCommand(other) {
+        shouldChangeDirectory = shouldChangeDirectory_;
+    }
+
     CompileCommand::CompileCommand(std::vector<std::string> arguments,
                                    fs::path directory,
                                    fs::path sourcePath)

@@ -38,7 +38,8 @@ public:
                              const CollectionUtils::MapFileTo<fs::path> &bitcodeFiles,
                              std::string const &suffixForParentOfStubs,
                              bool hasParent,
-                             const std::optional<fs::path> &testedFilePath);
+                             const std::optional<fs::path> &testedFilePath,
+                             bool shouldChangeDirectory = false);
 
     struct LinkResult {
         fs::path bitcodeOutput;
@@ -90,7 +91,8 @@ private:
                                       const fs::path &output,
                                       const std::vector<fs::path> &bitcodeDependencies,
                                       const fs::path &prefixPath,
-                                      std::vector<utbot::LinkCommand> archiveActions);
+                                      std::vector<utbot::LinkCommand> archiveActions,
+                                      bool shouldChangeDirectory = false);
 
     std::string getLinkArgument(const std::string &argument,
                                 const fs::path &workingDir,
@@ -102,7 +104,8 @@ private:
     getLinkActionsForExecutable(const fs::path &workingDir,
                                 const CollectionUtils::MapFileTo<fs::path> &dependencies,
                                 const BuildDatabase::TargetInfo &linkUnitInfo,
-                                const fs::path &output);
+                                const fs::path &output,
+                                bool shouldChangeDirectory = true);
 };
 
 

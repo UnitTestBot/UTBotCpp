@@ -32,7 +32,7 @@ Fetcher::Fetcher(Options options,
       pointerSize(pointerSize), maximumAlignment(maximumAlignment),
       fetchFunctionBodies(fetchFunctionBodies), clangToolRunner(compilationDatabase) {
     buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(),
-                                        CompilationUtils::MOUNTED_CC_JSON_DIR_NAME);
+                                        CompilationUtils::UTBOT_BUILD_DIR_NAME);
     if (options.has(Options::Value::TYPE)) {
         addMatcher<TypeDeclsMatchCallback>(anyTypeDeclarationMatcher);
         addMatcher<TypeDeclsMatchCallback>(structJustDeclMatcher);

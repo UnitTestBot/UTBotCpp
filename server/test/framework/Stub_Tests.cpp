@@ -41,7 +41,7 @@ namespace {
 
         void SetUp() override {
             clearTestDirectory();
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
             srcPaths = { suitePath, literals, calc };
             for (const auto& srcFilePath: modifiedSourceFiles) {
                 FileSystemUtils::copyFile(suitePath / "original" / srcFilePath.filename(), srcFilePath);

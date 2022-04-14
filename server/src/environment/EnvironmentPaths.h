@@ -40,6 +40,8 @@ namespace Paths {
 
     fs::path getLd();
 
+    fs::path getAsanLibraryPath();
+
   // Gcc is used only in tests
     fs::path getGcc();
     fs::path getGpp();

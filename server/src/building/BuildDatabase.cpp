@@ -53,7 +53,7 @@ std::shared_ptr<BuildDatabase> BuildDatabase::create(const utbot::ProjectContext
     fs::path compileCommandsJsonPath =
         CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
             projectContext.projectPath, projectContext.buildDirRelativePath);
-    fs::path serverBuildDir = Paths::getTmpDir(projectContext.projectName);
+    fs::path serverBuildDir = Paths::getUtbotBuildDir(projectContext);
     std::shared_ptr<BuildDatabase> buildDatabase =
         std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
     return buildDatabase;

@@ -22,20 +22,20 @@ public:
                                             ProjectConfigWriter const &writer);
 
     static Status RunProjectConfigurationCommands(const fs::path &buildDirPath,
-                                                  const std::string &projectName,
+                                                  const utbot::ProjectContext &projectContext,
                                                   std::vector<std::string> cmakeOptions,
                                                   ProjectConfigWriter const &writer);
 
     static Status RunProjectReConfigurationCommands(const fs::path &buildDirPath,
                                                     const fs::path &projectDirPath,
-                                                    const std::string &projectName,
+                                                    const utbot::ProjectContext &projectContext,
                                                     std::vector<std::string> cmakeOptions,
                                                     ProjectConfigWriter const &writer);
 
 private:
     static void RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                const ShellExecTask::ExecutionParameters &params,
-                                               const std::string &projectName,
+                                               const utbot::ProjectContext &projectContext,
                                                const ProjectConfigWriter &writer);
 
     static fs::path getCmakeListsPath(const fs::path &buildDirPath);

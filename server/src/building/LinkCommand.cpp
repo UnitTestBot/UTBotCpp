@@ -37,8 +37,8 @@ namespace utbot {
         return *this;
     }
 
-    LinkCommand::LinkCommand(std::list<std::string> arguments, fs::path directory)
-        : BaseCommand(std::move(arguments), std::move(directory)) {
+    LinkCommand::LinkCommand(std::list<std::string> arguments, fs::path directory, bool shouldChangeDirectory)
+    : BaseCommand(std::move(arguments), std::move(directory), shouldChangeDirectory) {
         linker = commandLine.begin();
         {
             auto it = findOutput();
@@ -57,14 +57,14 @@ namespace utbot {
         }
     }
 
-    LinkCommand::LinkCommand(std::vector<std::string> commandLine, fs::path directory)
+    LinkCommand::LinkCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
         : LinkCommand(std::list<std::string>{ commandLine.begin(), commandLine.end() },
-                      std::move(directory)) {
+                      std::move(directory), shouldChangeDirectory) {
     }
 
-    LinkCommand::LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory)
+    LinkCommand::LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
         : LinkCommand(std::list<std::string>{ commandLine.begin(), commandLine.end() },
-                      std::move(directory)) {
+                      std::move(directory), shouldChangeDirectory) {
     }
 
 

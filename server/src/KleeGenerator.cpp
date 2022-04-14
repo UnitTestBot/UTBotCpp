@@ -49,8 +49,9 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
     for (const auto &compileCommand : compileCommands) {
         fs::path output = compileCommand.getOutput();
         outfilePaths.emplace_back(output);
-        makefilePrinter.declareTarget(output, { compileCommand.getSourcePath() },
-                                      { compileCommand.toStringWithChangingDirectory() });
+        utbot::CompileCommand compileCommandWithChangingDirectory{compileCommand, true};
+        makefilePrinter.declareTarget(output, { compileCommandWithChangingDirectory.getSourcePath() },
+                                      { compileCommandWithChangingDirectory.toStringWithChangingDirectory() });
     }
 
     makefilePrinter.declareTarget("all", outfilePaths, {});

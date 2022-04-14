@@ -45,7 +45,6 @@ CLI::App *Commands::MainCommands::getAllCommand() {
 Commands::ServerCommandOptions::ServerCommandOptions(CLI::App *command) {
     command->add_option("-p,--port", port, "Port server run on.");
     command->add_option("-j", threadsPerUser, "Maximum number of threads per user.");
-    command->add_option("--tmp", tmpPath, "Path to temporary folder.");
     command->add_option("--log", logPath, "Path to folder with logs.");
     command->add_option("-v,--verbosity", verbosity, "Logger verbosity.")
         ->type_name(" ENUM:value in {" +
@@ -57,10 +56,6 @@ Commands::ServerCommandOptions::ServerCommandOptions(CLI::App *command) {
 
 fs::path Commands::ServerCommandOptions::getLogPath() {
     return logPath;
-}
-
-fs::path Commands::ServerCommandOptions::getTmpPath() {
-    return tmpPath;
 }
 
 unsigned int Commands::ServerCommandOptions::getPort() {
