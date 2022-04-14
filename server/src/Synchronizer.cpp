@@ -153,7 +153,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
                            true);
 
     fs::path ccJsonStubDirPath =
-        Paths::getTmpDir(testGen->projectContext.projectName) / "stubs_build_files";
+            Paths::getUtbotBuildDir(testGen->projectContext) / "stubs_build_files";
     auto stubsCdb = createStubsCompilationDatabase(stubFiles, ccJsonStubDirPath);
 
     auto sourceToHeaderRewriter =

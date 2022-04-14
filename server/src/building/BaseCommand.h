@@ -15,6 +15,7 @@
 namespace utbot {
     class BaseCommand {
     protected:
+        bool shouldChangeDirectory = false;
         fs::path directory;
         std::list<std::string> commandLine{};
         tsl::ordered_map<std::string, std::string> environmentVariables{};
@@ -33,9 +34,9 @@ namespace utbot {
     public:
         BaseCommand() = default;
 
-        BaseCommand(std::list<std::string> commandLine, fs::path directory);
+        BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        BaseCommand(std::vector<std::string> commandLine, fs::path directory);
+        BaseCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
         BaseCommand(BaseCommand const &other);
 
@@ -77,7 +78,9 @@ namespace utbot {
 
         [[nodiscard]] ShellExecTask::ExecutionParameters toExecutionParameters() const;
 
-        [[nodiscard]] virtual std::string toStringWithChangingDirectory() const;
+        [[nodiscard]] std::string toStringWithChangingDirectory() const;
+
+        [[nodiscard]] virtual std::string toStringWithChangingDirectoryToNew(const fs::path &targetDirectory) const;
 
         bool replace(fs::path const &from, fs::path const &to);
 

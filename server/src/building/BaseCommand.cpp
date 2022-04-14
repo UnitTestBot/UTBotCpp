@@ -17,18 +17,18 @@
 #include <utility>
 
 namespace utbot {
-    BaseCommand::BaseCommand(std::list<std::string> commandLine, fs::path directory)
-        : commandLine(std::move(commandLine)), directory(std::move(directory)) {
+    BaseCommand::BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
+        : commandLine(std::move(commandLine)), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
     }
-    BaseCommand::BaseCommand(std::vector<std::string> commandLine, fs::path directory)
-        : commandLine(commandLine.begin(), commandLine.end()), directory(std::move(directory)) {
+    BaseCommand::BaseCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
+        : commandLine(commandLine.begin(), commandLine.end()), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
     }
 
     BaseCommand::BaseCommand(BaseCommand const &other)
         : directory(other.directory), commandLine(other.commandLine),
-          environmentVariables(other.environmentVariables) {
+          environmentVariables(other.environmentVariables), shouldChangeDirectory(other.shouldChangeDirectory) {
         if (other.optimizationLevel.has_value()) {
             optimizationLevel =
                 std::next(commandLine.begin(),
@@ -39,7 +39,7 @@ namespace utbot {
     BaseCommand::BaseCommand(BaseCommand &&other) noexcept
         : directory(std::move(other.directory)), commandLine(std::move(other.commandLine)),
           environmentVariables(std::move(other.environmentVariables)),
-          optimizationLevel(other.optimizationLevel) {
+          optimizationLevel(other.optimizationLevel), shouldChangeDirectory(other.shouldChangeDirectory) {
     }
 
     void BaseCommand::initOptimizationLevel() {
@@ -108,9 +108,16 @@ namespace utbot {
         return CollectionUtils::erase_if(commandLine, f);
     }
     std::string BaseCommand::toStringWithChangingDirectory() const {
+        return toStringWithChangingDirectoryToNew(directory);
+    }
+
+    std::string BaseCommand::toStringWithChangingDirectoryToNew(const fs::path& targetDirectory) const {
         std::string baseCommand = toString();
-        return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN, directory,
-                                         getOutput().parent_path(), baseCommand);
+        if (shouldChangeDirectory) {
+            return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN_WITH_CD, targetDirectory,
+                                             getOutput().parent_path(), baseCommand);
+        }
+        return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN, getOutput().parent_path(), baseCommand);
     }
 
     void BaseCommand::setOptimizationLevel(const std::string &flag) {

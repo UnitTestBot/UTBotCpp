@@ -15,9 +15,13 @@ public:
 
     void comment(std::string const &message);
 
-    void declareVariable(std::string const &name, std::string const &value);
+    virtual void declareVariable(std::string const &name, std::string const &value);
 
     void declareAction(std::string const &name);
+
+    void declareVariableIfNotDefined(std::string const &variableName, std::string const &ifNotDefinedValue);
+
+    void declareVariableWithPriority(std::string const &variableName, std::string const &variablePath);
 
     template<class ContainerD = std::initializer_list<std::string>,
             class ContainerA = std::initializer_list<std::string>>

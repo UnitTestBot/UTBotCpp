@@ -23,7 +23,7 @@ namespace {
         TestSuite testSuite;
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
 
             testSuite = { suiteName,
                           buildPath,

@@ -53,7 +53,7 @@ namespace {
         fs::path namespace_cpp = getTestFilePath("namespace.cpp");
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
         void checkReturnEnum(FunctionTestGen &testGen) {

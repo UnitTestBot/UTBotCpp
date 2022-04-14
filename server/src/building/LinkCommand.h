@@ -24,11 +24,11 @@ namespace utbot {
 
         LinkCommand &operator=(LinkCommand &&other) noexcept;
 
-        LinkCommand(std::list<std::string> commandLine, fs::path directory);
+        LinkCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        LinkCommand(std::vector<std::string> commandLine, fs::path directory);
+        LinkCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory);
+        LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
         friend void swap(LinkCommand &a, LinkCommand &b) noexcept;
 

@@ -28,8 +28,8 @@ fs::path BaseTest::getTestFilePath(const std::string &fileName) {
     return suitePath / fileName;
 }
 
-void BaseTest::clearEnv() {
-    compilerName = CompilerName::CLANG;
+void BaseTest::clearEnv(const CompilationUtils::CompilerName& compiler) {
+    compilerName = compiler;
     setSuite(suiteName);
 
     ctx = std::make_unique<ServerContext>();
@@ -37,9 +37,9 @@ void BaseTest::clearEnv() {
 
     ServerUtils::setThreadOptions(ctx.get(), TESTMODE);
 
-    fs::path tmpDir = Paths::getTmpDir(projectName);
-    clearDirectory(tmpDir);
-    fs::create_directories(tmpDir);
+    fs::path utbotBuildDir = buildPath / CompilationUtils::UTBOT_BUILD_DIR_NAME;
+    clearDirectory(utbotBuildDir);
+    fs::create_directories(utbotBuildDir);
 }
 
 void BaseTest::clearTestDirectory() {

@@ -47,6 +47,8 @@ namespace StringUtils {
 
     bool replaceLast(std::string &str, const std::string &from, const std::string &to);
 
+    bool replaceFirst(std::string &str, const std::string &from, const std::string &to);
+
     void replaceAll(std::string &str, char from, char to);
 
     void replaceAll(std::string &str, const std::string &from, const std::string &to);

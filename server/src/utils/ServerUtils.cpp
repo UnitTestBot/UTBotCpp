@@ -41,8 +41,7 @@ namespace ServerUtils {
         if (!client.empty()) {
             if (!clients.in(client)) {
                 LOG_S(INFO)
-                << "client " << client << " was not found in server storage; assigning new directory to it.";
-                fs::create_directories(Paths::getClientTmpDir(client));
+                << "client " << client << " was not found in server storage; registering it.";
             }
         } else {
             client = LogUtils::UNNAMED_CLIENT;
@@ -76,11 +75,9 @@ namespace ServerUtils {
                     result.insert(client);
                 } else {
                     FileSystemUtils::removeAll(Paths::getClientLogDir(client));
-                    FileSystemUtils::removeAll(Paths::getClientTmpDir(client));
                 }
             } else {
                 result.insert(client);
-                fs::create_directories(Paths::getClientTmpDir(client));
             }
         }
     }
