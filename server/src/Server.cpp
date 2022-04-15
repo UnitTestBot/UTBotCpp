@@ -274,7 +274,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
-        bool interactiveMode = (dynamic_cast<FileTestGen *>(&testGen) != nullptr);
+        bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
                            lineInfo, testsWriter, testGen.isBatched(), interactiveMode);
