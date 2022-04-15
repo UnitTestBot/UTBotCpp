@@ -286,6 +286,9 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                           "--process-number=5",
                                           entrypointsArg,
                                           outputDir };
+    if (settingsContext.timeoutPerFunction.has_value()) {
+        argvData.push_back(StringUtils::stringFormat("--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
+    }
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");
     }
@@ -298,8 +301,13 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
 
     LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
     MEASURE_FUNCTION_EXECUTION_TIME
-    RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
-    ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    if (settingsContext.timeoutPerFunction.has_value()) {
+        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction.value() * testMethods.size());
+        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    } else {
+        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
+        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    }
 
     ExecUtils::throwIfCancelled();
 
