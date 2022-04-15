@@ -40,6 +40,7 @@ fs::path KleePrinter::writeTmpKleeFile(
     const std::optional<string> &testedClass,
     bool onlyForOneFunction,
     bool onlyForOneClass,
+    bool isConstructor,
     const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter) {
 
     resetStream();
@@ -102,7 +103,7 @@ fs::path KleePrinter::writeTmpKleeFile(
                 genVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
             } else {
                 genNonVoidFunctionAssumes(testMethod, predicateInfo, testedMethod,
-                                          onlyForOneEntity);
+                                          onlyForOneEntity, isConstructor);
             }
             genGlobalsKleeAssumes(testMethod);
             genPostParamsKleeAssumes(testMethod);
@@ -265,9 +266,9 @@ void KleePrinter::genVoidFunctionAssumes(const Tests::MethodDescription &testMet
 void KleePrinter::genNonVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
                                      const std::optional<PredInfo> &predicateInfo,
                                      const string &testedMethod,
-                                     bool onlyForOneEntity) {
+                                     bool onlyForOneEntity, bool isConstructor) {
     genKleePathSymbolicIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
-    genReturnDeclaration(testMethod, predicateInfo);
+    genReturnDeclaration(testMethod, predicateInfo, isConstructor);
     genParamsKleeAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
 }
 
@@ -369,7 +370,7 @@ void KleePrinter::makeBracketsForStrPredicate(const std::optional<PredInfo> &inf
 }
 
 
-void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo) {
+void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo, bool isConstructor = false) {
     // If return type is a pointer, we compare values that are stored at this pointers,
     // not the pointers themselves
     Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
@@ -377,7 +378,22 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
                           : testMethod.returnType;
     bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
-    strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
+    std::optional<std::string> initValue = std::nullopt;
+//    if (isConstructor) {
+//        std::string initialize = testMethod.name + "(";
+//        for (auto param : testMethod.getParamNames()) {
+//            initialize += param;
+//            initialize += ",";
+//        }
+//        if (testMethod.getParamNames().size()) {
+//               initialize.pop_back();
+//        }
+//        initialize += ")";
+//        initValue = std::optional<std::string>{initialize};
+//    } else {
+//        initValue = std::nullopt;
+//    }
+        strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, initValue, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);

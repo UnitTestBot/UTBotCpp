@@ -23,6 +23,7 @@ struct LineInfo {
     bool wrapInBrackets = false;
     bool insertAfter = true;
     bool initialized = false;
+    bool isConstructor = false;
     [[maybe_unused]] types::Type functionReturnType;
     struct PredicateInfo {
         testsgen::ValidationType type = testsgen::ValidationType_MIN;

@@ -93,13 +93,16 @@ namespace Matchers {
 
     static const auto functionDefinitionTraits = allOf(isDefinition(),
                                                        isExpansionInMainFile(),
-                                                       unless(cxxDestructorDecl()),
                                                        unless(cxxConstructorDecl()),
+                                                       unless(cxxDestructorDecl()),
                                                        unless(functionTemplateDecl()));
 
     const DeclarationMatcher functionDefinitionMatcher =
         functionDecl(functionDefinitionTraits)
             .bind(FUNCTION_DEF);
+
+    const DeclarationMatcher constructorDefinitionMatcher = cxxConstructorDecl(isDefinition()).bind(CONSTRUCTOR_DEF);
+    const DeclarationMatcher memberConstructorDefinitionMatcher = cxxRecordDecl(cxxConstructorDecl(isDefinition())).bind(CONSTRUCTOR_DEF);
 
     const DeclarationMatcher anyTypeDeclarationMatcher =
         anyOf(
@@ -130,7 +133,9 @@ namespace Matchers {
 
     const DeclarationMatcher anyToplevelDeclarationMatcher = anyOf(
         anyToplevelTypeDeclarationMatcher,
-        functionDefinitionMatcher);
+        functionDefinitionMatcher,
+        constructorDefinitionMatcher,
+        memberConstructorDefinitionMatcher);
 
     const DeclarationMatcher globalVariableUsageMatcher = functionDecl(functionDefinitionTraits,
         forEachDescendant(declRefExpr(

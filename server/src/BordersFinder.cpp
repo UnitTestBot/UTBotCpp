@@ -44,9 +44,12 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         lineInfo.initialized = true;
         LOG_S(MAX) << "Class name: " << ST->getNameAsString();
         LOG_S(MAX) << "Class's borders: " << lineInfo.begin << ' ' << lineInfo.end;
-    } else if (const auto *FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF)) {
+    } else if (const FunctionDecl *FS; (FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF))  ||
+                                        (FS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+        if ((Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+            lineInfo.isConstructor = true;
+        }
         SourceManager &sourceManager = Result.Context->getSourceManager();
-
         fs::path path = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
                 ->tryGetRealPathName()
                 .str();
@@ -90,7 +93,11 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
             lineInfo.scopeName = path.stem().string();
         }
         lineInfo.methodName = FS->getNameAsString();
-        const clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
+        clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
+        const CXXConstructorDecl *CS;
+        if ((CS =  Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+            realReturnType = CS->getThisObjectType();
+        }
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         lineInfo.initialized = true;
 
@@ -153,6 +160,8 @@ bool BordersFinder::containsLine(BordersFinder::Borders b) const {
 void BordersFinder::findFunction() {
     MatchFinder finder;
     finder.addMatcher(Matchers::functionDefinitionMatcher, this);
+    finder.addMatcher(Matchers::constructorDefinitionMatcher, this);
+    finder.addMatcher(Matchers::memberConstructorDefinitionMatcher, this);
     clangToolRunner.run(lineInfo.filePath, newFrontendActionFactory(&finder).get());
 }
 

@@ -52,6 +52,12 @@ namespace {
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
         fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
         fs::path array_sort_c = getTestFilePath("array_sort.c");
+        fs::path default_constructor_cpp = getTestFilePath("struct_with_default_constructor.cpp");
+        fs::path copy_constructor_cpp = getTestFilePath("struct_with_copy_constructor.cpp");
+        fs::path move_constructor_cpp = getTestFilePath("struct_with_move_constructor.cpp");
+        fs::path parametrized_constructor_cpp = getTestFilePath("struct_with_parametrized_constructor.cpp");
+        fs::path constructor_with_pointers_cpp = getTestFilePath("constructor_with_pointer_parameter.cpp");
+        fs::path constructor_with_if_stmt = getTestFilePath("constructor_with_if_stmt.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -2449,6 +2455,63 @@ namespace {
                            "24" == testCase.returnValueView->getEntryValue();
                 }
                                           }));
+    }
+
+    TEST_F(Syntax_Test, Default_constructor) {
+        auto [testGen, status] = createTestForFunction(default_constructor_cpp, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(default_constructor_cpp).methods.begin().value().testCases, 1);
+    }
+
+    TEST_F(Syntax_Test, Constructor_with_parameters) {
+        auto [testGen, status] = createTestForFunction(parametrized_constructor_cpp, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(parametrized_constructor_cpp).methods.begin().value().testCases, 1);
+    }
+
+    TEST_F(Syntax_Test, Copy_constructor) {
+        auto [testGen, status] = createTestForFunction(copy_constructor_cpp, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(copy_constructor_cpp).methods.begin().value().testCases, 2);
+    }
+
+    TEST_F(Syntax_Test, Move_constructor) {
+        auto [testGen, status] = createTestForFunction(move_constructor_cpp, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(move_constructor_cpp).methods.begin().value().testCases, 2);
+    }
+
+    TEST_F(Syntax_Test, Constructor_with_pointers) {
+        auto [testGen, status] = createTestForFunction(constructor_with_pointers_cpp, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructor_with_pointers_cpp).methods.begin().value().testCases, 3);
+    }
+
+    TEST_F(Syntax_Test, Constructor_with_if_stmt) {
+        auto [testGen, status] = createTestForFunction(constructor_with_if_stmt, 8);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases, 2);
+
+        checkTestCasePredicates(
+            testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases,
+            vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                                           return "false" == testCase.paramValues.front().view->getEntryValue();
+                                       }, [](const tests::Tests::MethodTestCase &testCase) {
+                                            return "true" == testCase.paramValues.front().view->getEntryValue();
+                                        }
+            }));
     }
 }
 
