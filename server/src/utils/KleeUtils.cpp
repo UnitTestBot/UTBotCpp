@@ -57,11 +57,11 @@ namespace KleeUtils {
         };
 
         const std::string OPERATOR = "operator";
-
-        if (methodName.size() > OPERATOR.size() && methodName.substr(0, OPERATOR.size()) == OPERATOR) {
+        size_t operatorStartPos = methodName.find(OPERATOR);
+        if (operatorStartPos != std::string::npos) {
             std::stringstream newName;
-            newName << "operator";
-            std::string_view operatorEnd = methodName.substr(8, methodName.size());
+            newName << methodName.substr(0, operatorStartPos + OPERATOR.size());
+            std::string_view operatorEnd = methodName.substr(operatorStartPos + OPERATOR.size(), std::string::npos);
             auto operator_name = CPP_OPERATORS.find(operatorEnd);
             if (isBrackets(operatorEnd, '(')) {
                 newName << "_parentheses";
@@ -83,7 +83,9 @@ namespace KleeUtils {
                                    const std::string &methodName,
                                    bool needToMangle,
                                    bool isWrapped) {
-        std::string methodNewName = getRenamedOperator(methodName);
+        std::string methodNewName = methodName;
+        StringUtils::replaceAll(methodNewName, ':', '_');
+        methodNewName = getRenamedOperator(methodNewName);
         if (isWrapped) {
             methodNewName += PrinterUtils::WRAPPED_SUFFIX;
         }

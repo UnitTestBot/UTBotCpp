@@ -109,3 +109,16 @@ void ClangToolRunner::setResourceDirOption(clang::tooling::ClangTool *clangTool)
         clangTool->appendArgumentsAdjuster(resourceDirAdjuster);
     }
 }
+
+types::AccessSpecifier getAcessSpecifier(const clang::Decl *D) {
+    switch (D->getAccess()) {
+        case clang::AS_private :
+            return types::AS_private;
+        case clang::AS_protected :
+            return types::AS_protected;
+        case clang::AS_public :
+            return types::AS_pubic;
+        case clang::AS_none :
+            return types::AS_none;
+    }
+}

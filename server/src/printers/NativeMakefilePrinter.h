@@ -10,8 +10,6 @@
 #include <vector>
 
 namespace printer {
-    static const std::string FORCE = ".FORCE";
-
     class NativeMakefilePrinter : public RelativeMakefilePrinter {
         friend class TestMakefilesPrinter;
     private:

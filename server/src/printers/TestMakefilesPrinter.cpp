@@ -78,18 +78,16 @@ namespace printer {
         generalMakefilePrinter.ss << getProjectStructureRelativeTo(generalMakefilePath);
         generalMakefilePrinter.ss << ss.str();
 
-        generalMakefilePrinter.declareTarget(FORCE, {}, {});
-
         const std::string sharedMakefilePathRelative =
                 sharedMakefilePrinter.getRelativePath(sharedMakefilePath);
         const std::string objMakefilePathRelative =
                 objMakefilePrinter.getRelativePath(objMakefilePath);
-        generalMakefilePrinter.declareTarget("bin", {FORCE}, {
+        generalMakefilePrinter.declareTarget("bin", {TARGET_FORCE}, {
                 StringUtils::joinWith(
                         MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "bin", true),
                         " ")
         });
-        generalMakefilePrinter.declareTarget(TARGET_BUILD, {FORCE}, {
+        generalMakefilePrinter.declareTarget(TARGET_BUILD, {TARGET_FORCE}, {
                 StringUtils::stringFormat("%s || %s",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
                                                   sharedMakefilePathRelative, TARGET_BUILD, true), " "),
@@ -97,7 +95,7 @@ namespace printer {
                                                   objMakefilePathRelative, TARGET_BUILD, true), " "))
         });
 
-        generalMakefilePrinter.declareTarget(TARGET_RUN, {FORCE}, {
+        generalMakefilePrinter.declareTarget(TARGET_RUN, {TARGET_FORCE}, {
                 StringUtils::stringFormat("%s && { %s; exit $$?; } || { %s && { %s; exit $$?; } }",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
                                                   sharedMakefilePathRelative, TARGET_BUILD, true), " "),
@@ -108,7 +106,7 @@ namespace printer {
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
                                                   objMakefilePathRelative, TARGET_RUN, true), " "))
         });
-        generalMakefilePrinter.declareTarget("clean", {FORCE}, {
+        generalMakefilePrinter.declareTarget("clean", {TARGET_FORCE}, {
                 StringUtils::joinWith(
                         MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "clean", true), " "),
                 StringUtils::joinWith(

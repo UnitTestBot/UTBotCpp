@@ -43,4 +43,5 @@ add_executable(syntax1
         file.c
         bitfields.c
         function_with_rvalue_params.cpp
-        hard_linked_list.c)
+        hard_linked_list.c
+        unsupported_class.cpp)

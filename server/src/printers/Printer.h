@@ -201,10 +201,6 @@ namespace printer {
                                        const std::string &end = "",
                                        bool needTabs = true);
 
-        std::stringstream &strFunctionDeclWithParamString(const Tests::MethodDescription &method,
-                                                          const std::string &end ,
-                                                          const std::vector<std::string> &modifiers = {});
-
         void writeStubsForFunctionParams(const types::TypesHandler* typesHandler,
                                          const Tests::MethodDescription& testMethod,
                                          bool forKlee);
@@ -219,6 +215,9 @@ namespace printer {
                                const std::shared_ptr<types::FunctionInfo> &fInfo,
                                const std::string &methodName,
                                const std::string &stubName, bool needToTypedef, bool makeStatic);
+
+        void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable,
+                                      const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter);
 
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
 

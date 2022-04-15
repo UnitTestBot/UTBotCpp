@@ -194,13 +194,14 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
 
 static std::string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
     std::string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
+    StringUtils::replaceAll(renamedMethodDescription, ':', '_');
     std::string testBaseName = methodDescription.isClassMethod()
                                    ? StringUtils::stringFormat("%s_%s",
                                                                methodDescription.classObj->type.typeName(),
                                                                renamedMethodDescription)
                                    : renamedMethodDescription;
 
-    return printer::Printer::concat(testBaseName, "_test_", testNum);
+    return printer::Printer::concat(testBaseName, Paths::TEST_SUFFIX, testNum);
 }
 
 void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
@@ -446,7 +447,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
             const auto &param = methodDescription.globalParams[i];
             const auto &value = testCase.globalPreValues[i];
             if (param.type.isTwoDimensionalPointer()) {
-                Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
+                Tests::MethodParam valueParam{param.type, param.underscoredName(), param.alignment };
                 verboseParameter(methodDescription, valueParam, value, true);
                 gen2DPointer(param, false);
             } else {
@@ -456,7 +457,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         ss << NL;
     }
 
-    std::vector<std::vector<tests::Tests::MethodParam>> types = { testCase.stubValuesTypes, testCase.stubParamTypes };
+    std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes };
     std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = { testCase.stubParamValues, testCase.stubParamValues };
 
     for (int j = 0; j < types.size(); j++) {
@@ -468,7 +469,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
                 const auto &param = types[j][i];
                 const auto &value = values[j][i];
                 if (param.type.isTwoDimensionalPointer()) {
-                    Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
+                    Tests::MethodParam valueParam{param.type, param.underscoredName(), param.alignment };
                     verboseParameter(methodDescription, valueParam, value, true);
                     gen2DPointer(param, false);
                 } else {
@@ -529,6 +530,9 @@ void printer::TestsPrinter::printClassObject(const Tests::MethodDescription &met
     if (methodDescription.isClassMethod()) {
         const auto &param = methodDescription.classObj.value();
         const auto &value = testCase.classPreValues.value();
+        if (!typesHandler->getStructInfo(param.type).isCLike) {
+            strComment("struct/class maybe can't be construct");
+        }
         verboseParameter(methodDescription, param, value, true);
     }
 }
@@ -587,11 +591,11 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
     } else if (types::TypesHandler::isPointerToFunction(methodDescription.returnType) ||
                types::TypesHandler::isArrayOfPointersToFunction(methodDescription.returnType)) {
         strComment("No check results for function returning pointer to function");
+    } else if (methodDescription.isConstructor()) {
+        strComment("No check results for constructor in current version");
     } else {
         auto visitor = visitor::VerboseAssertsReturnValueVisitor(typesHandler, this, predicateInfo);
-        if (!methodDescription.isConstructor()) {
-            visitor.visit(methodDescription, testCase);
-        }
+        visitor.visit(methodDescription, testCase);
     }
 
     if (!methodDescription.globalParams.empty()) {
@@ -779,7 +783,7 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
-    std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName,
+    std::string functionCall = constrFunctionCall(methodDescription.callName, methodArgs, "", classObjName,
                                                   false, returnPointersCount, castType);
     if (methodDescription.isMoveConstructor()) {
         functionCall = "std::move(" + functionCall + ")";

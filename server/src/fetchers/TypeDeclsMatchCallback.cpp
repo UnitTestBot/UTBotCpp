@@ -2,6 +2,7 @@
 
 #include "Fetcher.h"
 #include "clang-utils/ASTPrinter.h"
+#include "clang-utils/ClangUtils.h"
 #include "utils/LogUtils.h"
 
 using namespace clang;
@@ -56,10 +57,7 @@ void TypeDeclsMatchCallback::checkStruct(const MatchFinder::MatchResult &Result)
 
 void TypeDeclsMatchCallback::checkStructDecl(const MatchFinder::MatchResult &Result) {
     if (const auto *ST = Result.Nodes.getNodeAs<clang::RecordDecl>(Matchers::STRUCT_OR_CLASS_JUST_DECL)) {
-        clang::SourceManager &sourceManager = Result.Context->getSourceManager();
-        fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                                      ->tryGetRealPathName()
-                                      .str();
+        fs::path sourceFilePath = ClangUtils::getSourceFilePath(Result.Context->getSourceManager());
         (*parent->structsDeclared)[sourceFilePath].insert(ST->getNameAsString());
     }
 }

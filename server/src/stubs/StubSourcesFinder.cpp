@@ -26,7 +26,12 @@ std::vector<fs::path> StubSourcesFinder::excludeFind(const fs::path &testedFileP
         if (CollectionUtils::contains(libraryBitcodeFiles, bitcodeFile))
             continue;
         fs::path sourcePath =
-            buildDatabase->getClientCompilationUnitInfo(bitcodeFile)->getSourcePath();
+                buildDatabase->getClientCompilationUnitInfo(bitcodeFile)->getSourcePath();
+        // TODO Support stubs for c++ code
+        if (Paths::isCXXFile(sourcePath)) {
+            LOG_S(DEBUG) << "CXX stubs not supported now, file: " << sourcePath;
+            continue;
+        }
         stubSources.emplace_back(std::move(sourcePath));
     }
     return stubSources;

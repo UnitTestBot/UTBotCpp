@@ -1123,7 +1123,7 @@ namespace {
             "sqr_positive");
     }
 
-    TEST_P(Parameterized_Server_Test, Class_test1) {
+    TEST_P(Parameterized_Server_Test, Class_test1_cpp) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                           multiple_classes_h, 6);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
@@ -1137,9 +1137,9 @@ namespace {
                 "get1");
     }
 
-    TEST_P(Parameterized_Server_Test, Class_test2) {
+    TEST_P(Parameterized_Server_Test, Class_test2_cpp) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 11);
+                                          multiple_classes_h, 14);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1151,9 +1151,9 @@ namespace {
                 "get2");
     }
 
-    TEST_P(Parameterized_Server_Test, DISABLED_Class_test3) {
+    TEST_P(Parameterized_Server_Test, DISABLED_Class_test3_cpp) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 14);
+                                          multiple_classes_h, 18);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();

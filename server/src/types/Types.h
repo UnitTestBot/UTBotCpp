@@ -26,6 +26,13 @@ namespace types {
     enum class PointerUsage;
     enum class ReferenceType;
 
+    enum AccessSpecifier {
+        AS_pubic,
+        AS_protected,
+        AS_private,
+        AS_none
+    };
+
     class Type {
     public:
         Type() = default;
@@ -274,12 +281,6 @@ namespace types {
         size_t size;
         /// offset in @b bits, reassigned in structFields
         size_t offset = 0;
-        enum AccessSpecifier {
-            AS_pubic,
-            AS_protected,
-            AS_private,
-            AS_none
-        };
         AccessSpecifier accessSpecifier = AS_pubic;
     };
 
@@ -306,6 +307,7 @@ namespace types {
         bool hasAnonymousStructOrUnion;
         bool isCLike;
         SubType subType;
+        bool hasDefaultPublicConstructor;
     };
 
     struct EnumInfo: TypeInfo {

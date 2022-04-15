@@ -235,6 +235,9 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
         "--use-tbaa",
         "--output-dir=" + kleeOut.string()
     };
+    if (Paths::isCXXFile(testMethod.sourceFilePath)) {
+        argvData.emplace_back("--libcxx=true");
+    }
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");
     }
