@@ -77,9 +77,9 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
             LOG_S(MAX) << logStream.str();
         }
         if (interactiveMode) {
-          if (!testMethods.empty()) {
-              processBatchWithInteractive(testMethods, tests, ktests);
-          }
+            if (!batch.empty()) {
+                processBatchWithInteractive(batch, tests, ktests);
+            }
         } else {
           for (auto const &testMethod : batch) {
               MethodKtests ktestChunk;
@@ -129,6 +129,14 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
     if (!tests.isFilePresentedInArtifact) {
         return;
     }
+    if (testMethod.sourceFilePath != tests.sourceFilePath) {
+        std::string message = StringUtils::stringFormat(
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n", 
+                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+        LOG_S(WARNING) << message;
+    }
+
     string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
     auto kleeOut = getKleeMethodOutFile(testMethod);
@@ -233,6 +241,17 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     if (!tests.isFilePresentedInArtifact) {
         return;
     }
+
+    for (const auto &method : testMethods) {
+        if (method.sourceFilePath != tests.sourceFilePath) {
+            std::string message = StringUtils::stringFormat(
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n", 
+                tests.sourceFilePath, method.methodName, method.sourceFilePath);
+            LOG_S(WARNING) << message;
+        }
+    }
+
     TestMethod testMethod = testMethods[0];
     string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
