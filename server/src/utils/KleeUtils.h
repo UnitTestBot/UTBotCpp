@@ -25,6 +25,8 @@ namespace KleeUtils {
                               bool needToMangle = false);
 
     std::string postSymbolicVariable(const string& variableName);
+
+    std::string processNumberOption();
 }
 
 #endif // CORE_KLEEUTIL_H
