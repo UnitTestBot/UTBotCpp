@@ -1573,7 +1573,7 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
     }
 
     TEST_P(Parameterized_Server_Test, Installed_Dependency_Test) {
