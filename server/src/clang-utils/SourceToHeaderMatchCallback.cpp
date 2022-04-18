@@ -145,7 +145,10 @@ void SourceToHeaderMatchCallback::handleTypedef(const TypedefDecl *decl) {
     auto name = decl->getName().str();
     auto canonicalName = canonicalType.getAsString();
     if (name == "wchar_t" && !forStubHeader) {
-        // wchar_t is builtin type in C++ but is typedef in C
+        // wchar_t is builtin type in C++ but is typedef in C, so let's define it
+        if (externalStream != nullptr) {
+            *externalStream << NameDecorator::defineWcharT(canonicalName) << "\n";
+        }
         return;
     }
     if (name == canonicalName) {
