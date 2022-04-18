@@ -57,6 +57,9 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     }
     writeStubsForStructureFields(tests);
     ss << NL;
+    writeStubsForParameters(tests);
+    ss << NL;
+
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
@@ -95,6 +98,9 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
 
     writeStubsForFunctionParams(typesHandler, methodDescription, false);
     writeExternForSymbolicStubs(methodDescription);
+
+    methodDescription.stubsText = ss.str();
+    resetStream();
 
     genCodeBySuiteName(Tests::DEFAULT_SUITE_NAME,
                        methodDescription,

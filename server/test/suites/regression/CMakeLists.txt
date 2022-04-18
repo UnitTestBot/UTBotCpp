@@ -30,4 +30,6 @@ add_library(PR123 PR123.c)
 
 add_library(PR124 PR124.c)
 
+add_library(PR153 PR153.c)
+
 set_target_properties(regression PROPERTIES LINK_WHAT_YOU_USE TRUE)

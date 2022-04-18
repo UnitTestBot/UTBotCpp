@@ -29,7 +29,6 @@ namespace tests {
     using std::shared_ptr;
 
     const std::string LAZYNAME = "unnamed";
-    const std::string KLEERESULT = "utbot_result";
 
     using MapAddressName = std::unordered_map<size_t , std::string>;
 
@@ -396,6 +395,7 @@ namespace tests {
             std::optional<MethodParam> classObj;
             std::string name;
             typedef std::unordered_map<string, string> SuiteNameToCodeTextMap;
+            std::string stubsText;
             SuiteNameToCodeTextMap codeText;
             std::string paramsString;
 

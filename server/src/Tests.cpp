@@ -591,7 +591,7 @@ void KTestObjectParser::assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
         }
     }
     {
-        int ind = findObjectIndex(testCase.objects, KLEERESULT);
+        int ind = findObjectIndex(testCase.objects, KleeUtils::RESULT_VARIABLE_NAME);
         if (ind != testCase.objects.size()) {
             visited[ind] = true;
             order.push({ind, methodDescription.returnType});
