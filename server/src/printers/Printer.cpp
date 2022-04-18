@@ -645,6 +645,15 @@ namespace printer {
         ss << tests.stubs << NL;
     }
 
+    void Printer::writeStubsForParameters(const Tests &tests) {
+        for (const auto &[methodName, methodDescription] : tests.methods) {
+            if (methodDescription.stubsText.empty()) {
+                continue;
+            }
+            ss << methodDescription.stubsText << NL;
+        }
+    }
+
     utbot::Language Printer::getLanguage() const {
         return srcLanguage;
     }

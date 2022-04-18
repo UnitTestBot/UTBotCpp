@@ -215,6 +215,8 @@ namespace printer {
 
         void writeStubsForStructureFields(const Tests &tests);
 
+        void writeStubsForParameters(const Tests &tests);
+
         void writeStubForParam(const types::TypesHandler* typesHandler,
                                const std::shared_ptr<types::FunctionInfo> &fInfo,
                                const string& name,
