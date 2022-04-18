@@ -6,6 +6,9 @@
 
 #include "utils/StringUtils.h"
 
+uint32_t Commands::threadsPerUser = 0;
+uint32_t Commands::kleeProcessNumber = 0;
+
 Commands::MainCommands::MainCommands(CLI::App &app) {
 
     app.set_help_all_flag("--help-all", "Expand all help");
@@ -44,6 +47,8 @@ Commands::ServerCommandOptions::ServerCommandOptions(CLI::App *command) {
         ->type_name(" ENUM:value in {" +
                     StringUtils::joinWith(CollectionUtils::getKeys(verbosityMap), "|") + "}")
         ->transform(CLI::CheckedTransformer(verbosityMap, CLI::ignore_case));
+    command->add_option("--klee-process-number", kleeProcessNumber,
+                        "Number of threads for KLEE in interactive mode");
 }
 
 fs::path Commands::ServerCommandOptions::getLogPath() {
@@ -64,6 +69,10 @@ loguru::NamedVerbosity Commands::ServerCommandOptions::getVerbosity() {
 
 unsigned int Commands::ServerCommandOptions::getThreadsPerUser() {
     return threadsPerUser;
+}
+
+unsigned int Commands::ServerCommandOptions::getKleeProcessNumber() {
+    return kleeProcessNumber;
 }
 
 const std::map<std::string, loguru::NamedVerbosity> Commands::ServerCommandOptions::verbosityMap = {

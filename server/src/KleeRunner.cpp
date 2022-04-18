@@ -283,7 +283,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                           "--check-overshift=false",
                                           "--skip-not-lazy-and-symbolic-pointers",
                                           "--interactive",
-                                          "--process-number=5",
+                                          KleeUtils::processNumberOption(),
                                           entrypointsArg,
                                           outputDir };
     if (settingsContext.timeoutPerFunction.has_value()) {

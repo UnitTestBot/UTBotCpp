@@ -15,8 +15,6 @@
 #include <string>
 
 namespace CLIUtils {
-    extern unsigned int threadsPerUser;
-
     void setOptPath(const std::string &optPath, fs::path &var);
 
     void setupLogger(const std::string &logPath,
