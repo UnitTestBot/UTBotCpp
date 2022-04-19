@@ -203,7 +203,7 @@ namespace printer {
         compileCommand.addFlagToBegin(
             stringFormat("-MT $@ -MMD -MP -MF %s", temporaryDependencyFile));
         compileCommand.addFlagToBegin(
-            stringFormat("-I%s", compilationUnitInfo.getSourcePath().parent_path()));
+            stringFormat("-iquote%s", compilationUnitInfo.getSourcePath().parent_path()));
 
         string makingDependencyDirectory =
             stringFormat("mkdir -p %s", dependencyFile.parent_path());
