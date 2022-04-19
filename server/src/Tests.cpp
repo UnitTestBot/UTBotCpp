@@ -650,7 +650,7 @@ void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
             std::string stubFuncName = obj.name.substr(0, obj.name.length() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.length());
             if (!CollectionUtils::contains(methodDescription.functionPointers, stubFuncName)) {
                 std::string message = "Can't find function pointer with name " + stubFuncName;
-                LOG_S(ERROR) << message;
+                LOG_S(WARNING) << message;
                 continue;
             }
             types::Type stubType = types::Type::createArray(methodDescription.functionPointers.at(stubFuncName)->returnType);

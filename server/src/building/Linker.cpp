@@ -534,7 +534,7 @@ static void moveKleeTemporaryFileArgumentToBegin(std::vector<std::string> &argum
       return StringUtils::endsWith(argument, "_klee.bc");
     });
     if (iteratorToCurrentFile == arguments.end()) {
-        LOG_S(ERROR) << "Don't find temporary klee file";
+        LOG_S(WARNING) << "Don't find temporary klee file";
         return;
     }
     auto iteratorToSwap = std::find(arguments.begin(), arguments.end(), "-o");
