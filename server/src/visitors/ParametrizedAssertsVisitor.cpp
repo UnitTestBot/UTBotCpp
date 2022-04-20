@@ -50,8 +50,9 @@ namespace visitor {
                     printer->strDeclareVar(
                             printer::Printer::getConstQualifier(type) + type.usedType(), PrinterUtils::ACTUAL,
                             functionCall, std::nullopt, true, additionalPointersCount);
-                    printer->strDeclareArrayVar(type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                                                view->getEntryValue(), true);
+                    printer->strDeclareArrayVar(
+                        type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
+                        view->getEntryValue(), std::nullopt, true);
                 }
             } else {
                 return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
