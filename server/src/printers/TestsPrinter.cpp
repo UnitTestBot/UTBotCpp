@@ -141,7 +141,7 @@ void TestsPrinter::genCodeBySuiteName(const string &targetSuiteName,
 
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
-                                      std::optional<LineInfo::PredicateInfo> predicateInfo) {
+                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
     if (!testCase.isError()) {
@@ -402,7 +402,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
 
 void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescription,
                                   const Tests::MethodTestCase &testCase,
-                                  std::optional<LineInfo::PredicateInfo> predicateInfo) {
+                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     strComment("Check results");
     if (types::TypesHandler::isVoid(methodDescription.returnType)) {
         strComment("No check results for void function");
