@@ -43,6 +43,7 @@ namespace printer {
     }
 
     static void removeLinkerFlag(string &argument, string const &flag) {
+        eraseIfWlaAsNeeded(argument);
         auto options = StringUtils::split(argument, ',');
         size_t erased = CollectionUtils::erase_if(options, [&flag](string const &option) {
             return StringUtils::startsWith(option, flag);
