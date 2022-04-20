@@ -488,10 +488,12 @@ namespace printer {
         if (!hasParent && Paths::isStaticLibraryFile(unitFile)) {
             sharedOutput = LinkerUtils::applySuffix(getSharedLibrary(linkUnitInfo->getOutput()), unitType, suffixForParentOfStubs);
             std::vector<std::string> sharedLinkCommandLine{
-                primaryCompiler,         "$(LDFLAGS)",   SHARED_FLAG,           coverageLinkFlags,
-                sanitizerLinkFlags,      "-o",           sharedOutput.value(),
-                "-Wl,--whole-archive",   recompiledFile, STUB_OBJECT_FILES,
-                "-Wl,--no-whole-archive"
+                primaryCompiler,      "$(LDFLAGS)",
+                SHARED_FLAG,          coverageLinkFlags,
+                sanitizerLinkFlags,   "-o",
+                sharedOutput.value(), "-Wl,--whole-archive",
+                recompiledFile,       "-Wl,--allow-multiple-definition",
+                STUB_OBJECT_FILES,    "-Wl,--no-whole-archive"
             };
             utbot::LinkCommand sharedLinkCommand{ sharedLinkCommandLine, buildDirectory };
             declareTarget(sharedOutput.value(), { recompiledFile, STUB_OBJECT_FILES },
