@@ -504,7 +504,8 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
                 strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(), param.alignment);
             } else {
                 auto paramName = param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
-                strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER, value.view->getEntryValue(), true);
+                strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
+                                   value.view->getEntryValue(), param.alignment, true);
             }
         }
         if (param.type.isTwoDimensionalPointer()) {
