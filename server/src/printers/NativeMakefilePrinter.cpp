@@ -42,6 +42,7 @@ namespace printer {
             argument = "";
         }
     }
+
     static void removeLinkerFlag(string &argument, string const &flag) {
         auto options = StringUtils::split(argument, ',');
         size_t erased = CollectionUtils::erase_if(options, [&flag](string const &option) {
@@ -52,6 +53,20 @@ namespace printer {
         }
         argument = StringUtils::joinWith(options, ",");
         eraseIfWlOnly(argument);
+    }
+
+    // transforms -Wl,<arg>,<arg2>... to <arg> <arg2>...
+    // https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-wl-arg-arg2
+    static void transformCompilerFlagsToLinkerFlags(string &argument) {
+        auto options = StringUtils::split(argument, ',');
+        if (options.empty()) {
+            return;
+        }
+        if (options.front() != "-Wl") {
+            return;
+        }
+        CollectionUtils::erase(options, options.front());
+        argument = StringUtils::joinWith(options, " ");
     }
 
     static void removeScriptFlag(string &argument) {
@@ -436,6 +451,9 @@ namespace printer {
                 if (!linkCommand.isArchiveCommand()) {
                     if (isExecutable) {
                         linkCommand.setLinker(Paths::getLd());
+                        for (std::string &argument : linkCommand.getCommandLine()) {
+                            transformCompilerFlagsToLinkerFlags(argument);
+                        }
                     } else {
                         linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
                                 CompilationUtils::getCompilerName(linkCommand.getLinker())));

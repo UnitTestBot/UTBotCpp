@@ -66,7 +66,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
             strFunctionDecl(methodCopy, " ");
             ss << methodCopy.sourceBody.value() << NL;
         } else {
-            strStubForMethod(methodCopy, typesHandler, "", "");
+            strStubForMethod(methodCopy, typesHandler, "", "", "", methodCopy.name);
         };
         ss << NL;
     }
