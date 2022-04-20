@@ -404,12 +404,14 @@ namespace printer {
                                                  const types::TypesHandler &typesHandler,
                                                  const string &prefix,
                                                  const string &suffix,
+                                                 const string& methodName,
                                                  bool makeStatic) {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
         string stubSymbolicVarName = getStubSymbolicVarName(method.name);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
+            stubSymbolicVarName = getStubSymbolicVarName(methodName + "_" + method.name);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -580,7 +582,7 @@ namespace printer {
             strTypedefFunctionPointer(*fInfo, typedefName);
         }
         strStubForMethod(tests::Tests::MethodDescription::fromFunctionInfo(*fInfo), *typesHandler,
-                         stubName, "stub", makeStatic);
+                         stubName, "stub", name, makeStatic);
     }
 
     void Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {

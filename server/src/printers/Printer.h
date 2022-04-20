@@ -182,6 +182,7 @@ namespace printer {
                                 const types::TypesHandler&typesHandler,
                                 const string& prefix,
                                 const string& suffix,
+                                const string& methodName,
                                 bool makeStatic = false);
 
         static string getStubSymbolicVarName(const string& methodName);

@@ -42,7 +42,15 @@ namespace printer {
             argument = "";
         }
     }
+
+    static void eraseIfWlaAsNeeded(string &argument) {
+        if (argument == "-Wl,--as-needed") {
+            argument = "";
+        }
+    }
+
     static void removeLinkerFlag(string &argument, string const &flag) {
+        eraseIfWlaAsNeeded(argument);
         auto options = StringUtils::split(argument, ',');
         size_t erased = CollectionUtils::erase_if(options, [&flag](string const &option) {
             return StringUtils::startsWith(option, flag);
