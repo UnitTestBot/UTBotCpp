@@ -50,7 +50,7 @@ namespace printer {
 
         void genVerboseTestCase(const tests::Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase,
-                                std::optional<LineInfo::PredicateInfo> predicateInfo);
+                                const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void testHeader(const string &scopeName,
                         const tests::Tests::MethodDescription &methodDescription,
@@ -83,7 +83,7 @@ namespace printer {
 
         void verboseAsserts(const tests::Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase,
-                            std::optional<LineInfo::PredicateInfo> predicateInfo);
+                            const std::optional<LineInfo::PredicateInfo>& predicateInfo);
 
         void classAsserts(const Tests::MethodDescription &methodDescription,
                                         const Tests::MethodTestCase &testCase);

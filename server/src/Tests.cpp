@@ -128,20 +128,21 @@ shared_ptr<UnionValueView> KTestObjectParser::unionView(const vector<char> &byte
 }
 
 
-shared_ptr<StringValueView> KTestObjectParser::stringLiteralView(const vector<char> &byteArray, int length) {
+shared_ptr<StringValueView> KTestObjectParser::stringLiteralView(const vector<char> &byteArray,
+                                                                 size_t length) {
     string value = "\"";
     bool skip = (length == 0);
     if (length == 0) {
-        length = (int)byteArray.size();
+        length = byteArray.size();
     }
-    for (int i = 0; i < length; i++) {
+    for (size_t i = 0; i < length; i++) {
         char c = byteArray[i];
         if (c == '\0' && skip) {
             break; //prefer the shortest example
         } else {
             value += StringUtils::charCodeToLiteral(static_cast<int>(c));
         }
-        if (!StringUtils::isPrintable(static_cast<int>(c)) && i < (int)byteArray.size() - 1) {
+        if (!StringUtils::isPrintable(static_cast<int>(c)) && i + 1 < byteArray.size()) {
             value += "\"\"";
         }
     }
@@ -150,10 +151,10 @@ shared_ptr<StringValueView> KTestObjectParser::stringLiteralView(const vector<ch
 }
 shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const vector<char> &byteArray,
                                                              const types::Type &type,
-                                                             int arraySize,
-                                                             unsigned int offset,
+                                                             size_t arraySize,
+                                                             size_t offset,
                                                              PointerUsage usage) {
-    int len;
+    size_t len;
     std::string message;
     types::EnumInfo enumInfo;
     types::UnionInfo unionInfo;
@@ -204,7 +205,7 @@ shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const vector<char> 
     for (size_t i = sizes.size() - 1; i > 0; i--) {
         size_t size = sizes[i];
         std::vector<shared_ptr<AbstractValueView>> newViews;
-        for (int j = 0; j < views.size(); j += size) {
+        for (size_t j = 0; j < views.size(); j += size) {
             std::vector<shared_ptr<AbstractValueView>> curViews =
                 std::vector(views.begin() + j, views.begin() + j + size);
             newViews.push_back(std::make_shared<ArrayValueView>(curViews));
@@ -216,7 +217,7 @@ shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const vector<char> 
 }
 
 shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(
-    std::optional<string> scopeName, const string &methodName, const string &paramName) {
+    const std::optional<string>& scopeName, const string &methodName, const string &paramName) {
     string value =
         PrinterUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
     return std::make_shared<FunctionPointerView>(value);
@@ -296,7 +297,7 @@ shared_ptr<StructValueView> KTestObjectParser::structView(const vector<char> &by
     unsigned int curPos = offset;
 
     for (const auto &field: curStruct.fields) {
-        int len = typesHandler.typeSize(field.type);
+        size_t len = typesHandler.typeSize(field.type);
         unsigned int offsetField = field.offset;
         types::EnumInfo innerEnum;
         types::UnionInfo innerUnion;
@@ -535,7 +536,7 @@ static string getSuiteName(const UTBotKTest::Status &status,
     return Tests::DEFAULT_SUITE_NAME;
 }
 
-int KTestObjectParser::findFieldIndex(const StructInfo &structInfo, unsigned int offset) {
+int KTestObjectParser::findFieldIndex(const StructInfo &structInfo, size_t offset) {
     int indField = std::upper_bound(structInfo.fields.begin(), structInfo.fields.end(), offset, [] (int offset, const Field &field) {
         return offset < field.offset;
     }) - structInfo.fields.begin();
@@ -559,7 +560,7 @@ int KTestObjectParser::findObjectIndex(const std::vector<UTBotKTestObject> &obje
     return indObj;
 }
 
-types::Type KTestObjectParser::traverseStruct(const StructInfo &structInfo, int offset) {
+types::Type KTestObjectParser::traverseStruct(const StructInfo &structInfo, size_t offset) {
     int indField = findFieldIndex(structInfo, offset);
     const types::Field &next = structInfo.fields[indField];
     if (typesHandler.getTypeKind(next.type) == TypeKind::STRUCT) {
@@ -693,7 +694,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             LOG_S(WARNING) << "Skipping test case: " << e.what();
             continue;
         }
-        int size = case_.objects.size();
+        size_t size = case_.objects.size();
         bool isVoidOrFPointer = types::TypesHandler::skipTypeInReturn(methodDescription.returnType);
         if ((isVoidOrFPointer && size > 0) || (!isVoidOrFPointer && size > 1) ||
             methodDescription.params.empty()) {
@@ -781,8 +782,8 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
                                        const std::unordered_map<string, types::Type>& methodNameToReturnTypeMap,
                                        const std::stringstream &traceStream) {
     std::vector<RawKleeParam> rawKleeParams;
-    for (auto &param : ktest.objects) {
-        rawKleeParams.push_back({ std::move(param.name), std::move(param.bytes) });
+    for (auto const &param : ktest.objects) {
+        rawKleeParams.emplace_back(param.name, param.bytes);
     }
 
     Tests::TestCaseDescription testCaseDescription;
@@ -802,7 +803,7 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
             visited[off.index] = true;
             testCaseDescription.objects[off.index].name = PrinterUtils::generateNewVar(++cnt);
             uint64_t address = std::stoull(readBytesAsValueForType(obj.bytes, PointerWidthType, off.offset, PointerWidthSize));
-            testCaseDescription.fromAddressToName.insert({address, testCaseDescription.objects[off.index].name});
+            testCaseDescription.fromAddressToName.emplace(address, testCaseDescription.objects[off.index].name);
         }
     }
 
@@ -840,8 +841,8 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
                                               testCaseDescription.fromAddressToName, testCaseDescription.lazyReferences,
                                               methodDescription);
         }
-        testCaseDescription.funcParamValues.push_back(
-            { methodParam.name, methodParam.alignment, testParamView });
+        testCaseDescription.funcParamValues.emplace_back(methodParam.name, methodParam.alignment,
+                                                         testParamView);
 
         if (methodParam.isChangeable()) {
             processParamPostValue(testCaseDescription, methodParam, rawKleeParams);
@@ -1037,7 +1038,7 @@ KTestObjectParser::collectUnionSubViews(const vector<char> &byteArray,
                                         types::PointerUsage usage) {
     vector<shared_ptr<AbstractValueView>> subViews;
     for (const auto &field : info.fields) {
-        int len = typesHandler.typeSize(field.type);
+        size_t len = typesHandler.typeSize(field.type);
         types::EnumInfo innerEnum;
         types::UnionInfo innerUnion;
         types::StructInfo innerStruct;
