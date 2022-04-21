@@ -1490,7 +1490,7 @@ namespace {
 
         StatusCountMap expectedStatusCountMap{
             {testsgen::TEST_FAILED, 4},
-            {testsgen::TEST_PASSED, 8}};
+            {testsgen::TEST_PASSED, 9}};
         testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
     }
 
