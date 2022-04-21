@@ -183,6 +183,7 @@ namespace printer {
                                 const string& prefix,
                                 const string& suffix,
                                 const string& methodName,
+                                const string& nameForStub,
                                 bool makeStatic = false);
 
         static string getStubSymbolicVarName(const string& methodName);
@@ -218,7 +219,7 @@ namespace printer {
 
         void writeStubForParam(const types::TypesHandler* typesHandler,
                                const std::shared_ptr<types::FunctionInfo> &fInfo,
-                               const string& name,
+                               const string& methodName,
                                const string& stubName, bool needToTypedef, bool makeStatic);
 
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
