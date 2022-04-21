@@ -55,6 +55,20 @@ namespace printer {
         eraseIfWlOnly(argument);
     }
 
+    // transforms -Wl,<arg>,<arg2>... to <arg> <arg2>...
+    // https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-wl-arg-arg2
+    static void transformCompilerFlagsToLinkerFlags(string &argument) {
+        auto options = StringUtils::split(argument, ',');
+        if (options.empty()) {
+            return;
+        }
+        if (options.front() != "-Wl") {
+            return;
+        }
+        CollectionUtils::erase(options, options.front());
+        argument = StringUtils::joinWith(options, " ");
+    }
+
     static void removeScriptFlag(string &argument) {
         removeLinkerFlag(argument, "--version-script");
     }
@@ -438,7 +452,7 @@ namespace printer {
                     if (isExecutable) {
                         linkCommand.setLinker(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
-                            removeLinkerFlag(argument, "--as-needed");
+                            transformCompilerFlagsToLinkerFlags(argument);
                         }
                     } else {
                         linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
