@@ -2071,7 +2071,11 @@ namespace {
         auto statusMap = coverageGenerator.getTestStatusMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{
+            {testsgen::TEST_DEATH, 26},
+            {testsgen::TEST_PASSED, 37}};
+        testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
     }
 
     TEST_F(Syntax_Test, Run_Tests_For_Tree) {
@@ -2103,7 +2107,10 @@ namespace {
         auto statusMap = coverageGenerator.getTestStatusMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        testUtils::checkStatuses(statusMap, tests);
+        StatusCountMap expectedStatusCountMap{
+            {testsgen::TEST_DEATH, 4},
+            {testsgen::TEST_PASSED, 6}};
+        testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
     }
 
     TEST_F(Syntax_Test, Simple_parameter_cpp) {

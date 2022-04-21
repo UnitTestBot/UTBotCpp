@@ -1341,7 +1341,8 @@ namespace {
 
         ASSERT_FALSE(statusMap.empty());
 
-        testUtils::checkStatuses(statusMap, tests);
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 25}};
+        testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
     }
 
 
@@ -1486,7 +1487,11 @@ namespace {
 
         ASSERT_FALSE(statusMap.empty());
         EXPECT_GT(statusMap.getNumberOfTests(), 2);
-        testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{
+            {testsgen::TEST_FAILED, 4},
+            {testsgen::TEST_PASSED, 8}};
+        testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
     }
 
     struct ProjectInfo {
@@ -1559,7 +1564,9 @@ namespace {
             EXPECT_EQ(testsgen::TestStatus::TEST_INTERRUPTED,
                       statusMap.begin()->second.begin()->second);
         } else {
-            testUtils::checkStatuses(statusMap, tests);
+            StatusCountMap expectedStatusCountMap{
+                {testsgen::TEST_PASSED, 3}};
+            testUtils::checkStatuses(statusMap, tests, expectedStatusCountMap);
         }
     }
 

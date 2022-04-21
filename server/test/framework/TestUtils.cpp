@@ -132,12 +132,15 @@ namespace testUtils {
     }
 
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
-                       const vector<UnitTest> &tests) {
+                       const vector<UnitTest> &tests,
+                       const StatusCountMap &expectedStatusCountMap) {
+        StatusCountMap actualStatusCountMap;
         for (auto const &[filename, suitename, testname] : tests) {
             const auto status = testStatusMap.at(filename).at(testname);
-            EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
-                        (testsgen::TestStatus::TEST_DEATH == status));
+            actualStatusCountMap[status]++;
         }
+        ASSERT_EQ(actualStatusCountMap, expectedStatusCountMap);
+
     }
 
     int getNumberOfTests(const tests::TestsMap &tests) {
