@@ -2075,7 +2075,7 @@ namespace {
         static auto coverageAndResultsWriter =
             std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
+        utbot::SettingsContext settingsContext{ true, false, 45, 0, false, false };
         coverageGenerator.generate(false, settingsContext);
 
         EXPECT_FALSE(coverageGenerator.hasExceptions());
@@ -2084,6 +2084,7 @@ namespace {
         auto statusMap = coverageGenerator.getTestStatusMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
+        // TODO: add checkStatusesCount after linkedlist fix
         testUtils::checkStatuses(statusMap, tests);
     }
 
@@ -2117,6 +2118,11 @@ namespace {
         auto tests = coverageGenerator.getTestsToLaunch();
 
         testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{
+            {testsgen::TEST_DEATH, 4},
+            {testsgen::TEST_PASSED, 6}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
     TEST_F(Syntax_Test, Simple_parameter_cpp) {

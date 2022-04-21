@@ -1342,6 +1342,9 @@ namespace {
         ASSERT_FALSE(statusMap.empty());
 
         testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 25}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
 
@@ -1476,7 +1479,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1486,7 +1489,11 @@ namespace {
 
         ASSERT_FALSE(statusMap.empty());
         EXPECT_GT(statusMap.getNumberOfTests(), 2);
+
         testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
     struct ProjectInfo {
@@ -1560,6 +1567,10 @@ namespace {
                       statusMap.begin()->second.begin()->second);
         } else {
             testUtils::checkStatuses(statusMap, tests);
+
+            StatusCountMap expectedStatusCountMap{
+                {testsgen::TEST_PASSED, 3}};
+            testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
         }
     }
 
