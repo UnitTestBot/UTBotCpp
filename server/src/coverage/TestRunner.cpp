@@ -182,7 +182,7 @@ bool TestRunner::buildTest(const MakefileUtils::MakefileCommand &command) {
 testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
     auto res = command.run(projectContext.buildDir, true, true, testTimeout);
     GTestLogger::log(res.output);
-    if (StringUtils::contains(res.output, "[  PASSED  ]")) {
+    if (StringUtils::contains(res.output, "[  PASSED  ] 1 test")) {
         return testsgen::TEST_PASSED;
     }
     if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {
