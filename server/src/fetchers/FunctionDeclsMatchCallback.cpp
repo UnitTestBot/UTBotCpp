@@ -69,7 +69,8 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
                                            std::nullopt };
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
-        methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);
+        methodDescription.hasPointerToIncompleteReturnType =
+            ClangUtils::isPointerToIncomplete(realReturnType);
         if (toResolveReturnTypes) {
             typesResolver.resolve(realReturnType);
         }
@@ -109,8 +110,9 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             addFunctionPointer(methodDescription.functionPointers, declParam->getFunctionType(),
                                declParam->getType(), name, sourceManager, paramType);
             auto alignment = AlignmentFetcher::fetch(defParam);
-            bool hasIncompleteType = ClangUtils::isIncomplete(defParam->getType());
-            methodDescription.params.emplace_back(paramType, name, alignment, hasIncompleteType);
+            bool isPointerToIncomplete = ClangUtils::isPointerToIncomplete(defParam->getType());
+            methodDescription.params.emplace_back(paramType, name, alignment,
+                                                  isPointerToIncomplete);
         }
         if (CollectionUtils::contains(methods[sourceFilePath], methodDescription)) {
             LOG_S(ERROR) << "Method " << methodDescription.name << " from " << sourceFilePath

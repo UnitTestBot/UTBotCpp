@@ -55,7 +55,7 @@ namespace visitor {
 
         void checkNotNullAfter();
 
-        void kleeAssumeWithNullCheck(const string& assumption, bool useBasicAssumeIfNotPointer = true);
+        void kleeAssumeWithNullCheck(const string& assumption);
 
         static types::Type getActualTmpVarType(const types::Type &type);
     };

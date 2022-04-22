@@ -305,14 +305,14 @@ namespace tests {
             string name;
             std::optional<uint64_t> alignment;
 
-            bool hasIncompleteType = false;
+            bool isPointerToIncomplete = false;
 
             MethodParam(types::Type type,
                         string name,
                         std::optional<uint64_t> alignment,
-                        bool hasIncompleteType = false)
+                        bool isPointerToIncomplete_ = false)
                 : type(std::move(type)), name(std::move(name)), alignment(std::move(alignment)),
-                  hasIncompleteType(hasIncompleteType) {
+                  isPointerToIncomplete(isPointerToIncomplete_) {
 
             }
 
@@ -412,7 +412,7 @@ namespace tests {
             std::string paramsString;
 
             types::Type returnType;
-            bool hasIncompleteReturnType = false;
+            bool hasPointerToIncompleteReturnType = false;
 
             std::optional<string> sourceBody;
             Modifiers modifiers;

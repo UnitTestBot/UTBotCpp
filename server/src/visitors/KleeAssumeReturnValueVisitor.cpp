@@ -74,7 +74,6 @@ namespace visitor {
                                                    const string &access,
                                                    int depth) {
         if (depth == 0) {
-            kleeAssumeWithNullCheck("", false);
             AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
                                                   depth);
         } else {
@@ -87,9 +86,6 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const string &access,
                                                   int depth) {
-        if (depth == 0) {
-            kleeAssumeWithNullCheck("", false);
-        }
         AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
     }
 
@@ -129,21 +125,9 @@ namespace visitor {
         printer->closeBrackets(sizes.size());
     }
 
-   void KleeAssumeReturnValueVisitor::kleeAssumeWithNullCheck(const string& assumption, bool useBasicAssumeIfNotPointer) {
-       if (!useBasicAssumeIfNotPointer && additionalPointersCount == 0) {
-           return;
-       }
-       if (additionalPointersCount > 0) {
-           auto notNullAssumptionCheck = KleeUtils::NOT_NULL_VARIABLE_NAME + " == 1";
-           if (assumption.empty()) {
-               kleeAssume(notNullAssumptionCheck);
-           } else {
-               kleeAssume(notNullAssumptionCheck + " & " + assumption);
-           }
-       } else {
-           kleeAssume(assumption);
-       }
-    }
+   void KleeAssumeReturnValueVisitor::kleeAssumeWithNullCheck(const string& assumption) {
+       kleeAssume(assumption);
+   }
 
    types::Type KleeAssumeReturnValueVisitor::getActualTmpVarType(const types::Type &type) {
        if (types::TypesHandler::isVoid(type.baseTypeObj())) {
@@ -160,6 +144,7 @@ namespace visitor {
        if (additionalPointersCount > 0) {
            printer->ss << printer->TAB_N() << "if (" << KleeUtils::TEMP_VARIABLE_NAME
                        << " != " << PrinterUtils::C_NULL << ")" << printer->LB();
+           kleeAssume(KleeUtils::NOT_NULL_VARIABLE_NAME + " == 1");
        }
    }
 

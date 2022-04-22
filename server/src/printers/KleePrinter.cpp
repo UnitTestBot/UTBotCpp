@@ -373,24 +373,29 @@ void KleePrinter::makeBracketsForStrPredicate(const std::optional<PredInfo> &inf
 }
 
 
-void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo) {
+void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod,
+                                       const std::optional<PredInfo> &predicateInfo) {
     // If return type is a pointer, we compare values that are stored at this pointers,
     // not the pointers themselves
-    Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
-                          ? Type::minimalScalarType()
-                          : testMethod.returnType;
-    bool maybeArray = returnType.maybeReturnArray();
-    bool isPointer = testMethod.returnType.isObjectPointer();
-    strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
-    makeBracketsForStrPredicate(predicateInfo);
-    if (maybeArray) {
-        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
-        ss << "[" << size << "]";
+    if (!testMethod.hasPointerToIncompleteReturnType) {
+        Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
+                              ? Type::minimalScalarType()
+                              : testMethod.returnType;
+        bool maybeArray = returnType.maybeReturnArray();
+        strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt,
+                      std::nullopt, false);
+        makeBracketsForStrPredicate(predicateInfo);
+        if (maybeArray) {
+            size_t size =
+                types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
+            ss << "[" << size << "]";
+        }
+        ss << SCNL;
+        strKleeMakeSymbolic(
+            KleeUtils::RESULT_VARIABLE_NAME,
+            !maybeArray && !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
     }
-    ss << SCNL;
-    strKleeMakeSymbolic(KleeUtils::RESULT_VARIABLE_NAME,
-                        !maybeArray && !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
-    if (isPointer) {
+    if (testMethod.returnType.isObjectPointer()) {
         strDeclareVar("int", KleeUtils::NOT_NULL_VARIABLE_NAME);
         strKleeMakeSymbolic(KleeUtils::NOT_NULL_VARIABLE_NAME, true);
     }

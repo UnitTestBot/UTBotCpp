@@ -14,7 +14,7 @@ namespace visitor {
     protected:
         types::TypesHandler const * const typesHandler;
         types::PointerUsage usage;
-        size_t additionalPointersCount;
+        size_t additionalPointersCount = 0;
         bool inUnion = false;
     public:
         explicit AbstractValueViewVisitor(types::TypesHandler const *typesHandler,

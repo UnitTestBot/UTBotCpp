@@ -8,7 +8,7 @@
 #include <clang/AST/Type.h>
 
 namespace ClangUtils {
-    bool isIncomplete(clang::QualType type);
+    bool isPointerToIncomplete(clang::QualType type);
 };
 
 

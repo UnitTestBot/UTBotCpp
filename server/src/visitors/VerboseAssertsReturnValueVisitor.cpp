@@ -18,7 +18,13 @@ namespace visitor {
                               : methodDescription.returnType.baseTypeObj();
         if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-            printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")", PrinterUtils::ACTUAL));
+            printer->writeCodeLine(StringUtils::stringFormat("EXPECT_EQ(%s, %s)", PrinterUtils::C_NULL, PrinterUtils::ACTUAL));
+            return;
+        }
+        if (methodDescription.hasPointerToIncompleteReturnType) {
+            printer->writeCodeLine(StringUtils::stringFormat(
+                "EXPECT_NE((%s) %s, %s)", methodDescription.returnType.typeName(),
+                PrinterUtils::C_NULL, PrinterUtils::ACTUAL));
             return;
         }
         additionalPointersCount = 0;

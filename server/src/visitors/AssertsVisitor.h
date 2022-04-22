@@ -30,8 +30,10 @@ namespace visitor {
 
         [[nodiscard]] std::string getDecorateActualVarName(const string& access);
 
-        FunctionSignature changeSignatureToNullCheck(const FunctionSignature& signature, const types::Type& type,
-                                                     const tests::AbstractValueView *view, const string &access);
+        FunctionSignature changeSignatureToNullCheck(const FunctionSignature &signature,
+                                                     const types::Type &type,
+                                                     const tests::AbstractValueView *view,
+                                                     const string &access);
 
     public:
         explicit AssertsVisitor(const types::TypesHandler *typesHandler,
