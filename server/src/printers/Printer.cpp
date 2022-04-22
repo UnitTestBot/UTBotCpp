@@ -569,7 +569,6 @@ namespace printer {
         for (const auto& [name, type]: symbolicNamesToTypesMap) {
             strDeclareVar("extern \"C\" " + type, name);
         }
-        ss << NL;
     }
 
     void printer::Printer::writeStubForParam(const types::TypesHandler *typesHandler,
@@ -645,7 +644,9 @@ namespace printer {
     }
 
     void Printer::writeStubsForStructureFields(const Tests &tests) {
-        ss << tests.stubs << NL;
+        if (!tests.stubs.empty()) {
+            ss << tests.stubs << NL;
+        }
     }
 
     void Printer::writeStubsForParameters(const Tests &tests) {
