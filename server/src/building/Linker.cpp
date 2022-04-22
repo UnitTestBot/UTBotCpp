@@ -249,10 +249,8 @@ void Linker::prepareArtifacts() {
 }
 
 void Linker::writeMakefiles() {
-    for (auto const &[sourcePath, makefile] : linkMakefiles) {
-        auto makefilePath =
-            Paths::getMakefilePathFromSourceFilePath(testGen.projectContext, sourcePath);
-        FileSystemUtils::writeToFile(makefilePath, makefile);
+    for (const printer::TestMakefilesContent &testMakefilesPrinter : linkMakefiles) {
+        testMakefilesPrinter.write();
     }
 }
 
@@ -369,7 +367,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     FileSystemUtils::writeToFile(stubsMakefile, "");
 
     printer::DefaultMakefilePrinter bitcodeLinkMakefilePrinter;
-    printer::NativeMakefilePrinter nativeLinkMakefilePrinter{ testGen, &stubSources };
+    printer::TestMakefilesPrinter testMakefilesPrinter{ testGen, &stubSources };
     bitcodeLinkMakefilePrinter.declareInclude(stubsMakefile);
     auto[targetBitcode, _] = addLinkTargetRecursively(target, bitcodeLinkMakefilePrinter, stubSources, bitcodeFiles,
                                                       suffixForParentOfStubs, false, testedFilePath);
@@ -398,7 +396,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         if (!linkResult.isSuccess()) {
             return linkResult.getError().value();
         }
-        nativeLinkMakefilePrinter.addStubs(stubsSet);
+        testMakefilesPrinter.addStubs(stubsSet);
     }
 
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
@@ -418,13 +416,13 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         }
     }
 
-    nativeLinkMakefilePrinter.addLinkTargetRecursively(target, suffixForParentOfStubs);
+    testMakefilesPrinter.addLinkTargetRecursively(target, suffixForParentOfStubs);
+
     for (auto const &[objectFile, _] : bitcodeFiles) {
         auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
         auto sourcePath = compilationUnitInfo->getSourcePath();
         if (CollectionUtils::containsKey(testGen.tests, sourcePath)) {
-            printer::NativeMakefilePrinter makefilePrinter{ nativeLinkMakefilePrinter, sourcePath };
-            linkMakefiles[sourcePath] = makefilePrinter.ss.str();
+            linkMakefiles.push_back(testMakefilesPrinter.GetMakefiles(sourcePath));
         }
     }
     return LinkResult{ targetBitcode, stubsSet, presentedFiles };
