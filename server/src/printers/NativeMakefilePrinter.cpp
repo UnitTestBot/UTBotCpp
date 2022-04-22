@@ -34,7 +34,6 @@ namespace printer {
     static const std::string RELOCATE_FLAG = "-r";
     static const std::string OPTIMIZATION_FLAG = "-O0";
 
-    static const std::string FORCE = ".FORCE";
 
 
     static void eraseIfWlOnly(string &argument) {
@@ -390,7 +389,7 @@ namespace printer {
                                               SanitizerUtils::ASAN_OPTIONS_VALUE);
 
         declareTarget("build", { testExecutablePath }, {});
-        declareTarget("run", { FORCE, "build" },
+        declareTarget("run", { "build" },
                       { testRunCommand.toStringWithChangingDirectory() });
 
         close();
@@ -399,7 +398,8 @@ namespace printer {
     BuildResult
     NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
                                                     const std::string &suffixForParentOfStubs,
-                                                    bool hasParent) {
+                                                    bool hasParent,
+                                                    bool transformExeToLib) {
         if (CollectionUtils::contains(buildResults, unitFile)) {
             return buildResults.at(unitFile);
         }
@@ -414,7 +414,7 @@ namespace printer {
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
             linkUnitInfo->files, [&](fs::path const &dependency) {
                 BuildResult buildResult =
-                    addLinkTargetRecursively(dependency, suffixForParentOfStubs, true);
+                    addLinkTargetRecursively(dependency, suffixForParentOfStubs, true, transformExeToLib);
                 unitType |= buildResult.type;
                 fileMapping[dependency] = buildResult.output;
                 return buildResult;
@@ -427,11 +427,11 @@ namespace printer {
 
         fs::path recompiledFile =
             Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
-        if (isExecutable) {
+        if (isExecutable && !transformExeToLib) {
             recompiledFile = Paths::isObjectFile(recompiledFile) ?
                              recompiledFile : Paths::addExtension(recompiledFile, ".o");
-        } else if (Paths::isSharedLibraryFile(unitFile)) {
-            recompiledFile = getSharedLibrary(linkUnitInfo->getOutput());
+        } else if (Paths::isSharedLibraryFile(unitFile) || isExecutable) {
+            recompiledFile = getSharedLibrary(recompiledFile);
         }
         recompiledFile = LinkerUtils::applySuffix(recompiledFile, unitType, suffixForParentOfStubs);
 
@@ -449,7 +449,7 @@ namespace printer {
                     }
                 }
                 if (!linkCommand.isArchiveCommand()) {
-                    if (isExecutable) {
+                    if (isExecutable && !transformExeToLib) {
                         linkCommand.setLinker(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
                             transformCompilerFlagsToLinkerFlags(argument);
@@ -475,7 +475,7 @@ namespace printer {
                         }
                     }
                     linkCommand.addFlagsToBegin(libraryDirectoriesFlags);
-                    if (!isExecutable) {
+                    if (!isExecutable || transformExeToLib) {
                         linkCommand.addFlagsToBegin({"-Wl,--allow-multiple-definition",
                                                      coverageLinkFlags, sanitizerLinkFlags, "-Wl,--whole-archive"});
                         if (linkCommand.isSharedLibraryCommand()) {
@@ -487,13 +487,15 @@ namespace printer {
                     }
                     linkCommand.addFlagToBegin("$(LDFLAGS)");
                     if (isExecutable) {
-                        linkCommand.addFlagToBegin(RELOCATE_FLAG);
+                        linkCommand.addFlagToBegin(transformExeToLib ? SHARED_FLAG : RELOCATE_FLAG);
                     }
                 }
-                return isExecutable ? stringFormat("%s && objcopy --redefine-sym main=old_main %s",
-                                                   linkCommand.toStringWithChangingDirectory(),
-                                                   linkCommand.getOutput().string()) :
-                                      linkCommand.toStringWithChangingDirectory();
+                if (isExecutable && !transformExeToLib) {
+                    return stringFormat("%s && objcopy --redefine-sym main=main__ %s",
+                                        linkCommand.toStringWithChangingDirectory(),
+                                        linkCommand.getOutput().string());
+                }
+                return linkCommand.toStringWithChangingDirectory();
             });
         std::string removeAction = stringFormat("rm -f %s", recompiledFile);
         std::vector<std::string> actions{ removeAction };
@@ -560,9 +562,9 @@ namespace printer {
         ss << "\n";
     }
 
-    BuildResult
-    NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
-                                                    const string &suffixForParentOfStubs) {
-        return addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false);
+    void NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
+                                                         const string &suffixForParentOfStubs,
+                                                         bool exeToLib) {
+        addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false, exeToLib);
     }
 }

@@ -347,7 +347,8 @@ namespace Paths {
 
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
-    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
+                                               const string& suffix = "");
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 

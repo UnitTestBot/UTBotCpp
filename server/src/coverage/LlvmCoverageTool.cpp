@@ -81,6 +81,10 @@ LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
             auto makefileCommand = MakefileUtils::makefileCommand(projectContext, makefile, "bin");
             auto res = makefileCommand.run();
             if (res.status == 0) {
+                if (res.output.empty()) {
+                    throw CoverageGenerationException(
+                            "Coverage result empty. See logs for more information.");
+                }
                 return StringUtils::split(res.output, '\n').back();
             }
             throw CoverageGenerationException(

@@ -309,21 +309,26 @@ namespace Paths {
         return replaceExtension(sourcePathToStubName(source), ".h");
     }
 
-
     fs::path sourcePathToStubPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &source) {
         return normalizedTrimmed((projectContext.testDirPath / "stubs" / getRelativeDirPath(projectContext, source) /
                sourcePathToStubName(source)));
     }
+
     fs::path testPathToSourcePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &testFilePath) {
         fs::path relative = fs::relative(testFilePath.parent_path(), projectContext.testDirPath);
         fs::path filename = testPathToSourceName(testFilePath);
         return projectContext.projectPath / relative / filename;
     }
+
     fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext,
-                                               const fs::path &sourceFilePath) {
+                                               const fs::path &sourceFilePath,
+                                               const string& suffix) {
         fs::path makefileDir = getMakefileDir(projectContext, sourceFilePath);
+        if (!suffix.empty()) {
+            addSuffix(makefileDir, suffix);
+        }
         string makefileName = replaceExtension(sourceFilePath, MAKEFILE_EXTENSION).filename();
         return makefileDir / makefileName;
     }

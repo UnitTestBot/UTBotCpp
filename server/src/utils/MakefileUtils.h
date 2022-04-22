@@ -45,6 +45,8 @@ namespace MakefileUtils {
                                     const std::string &gtestFlags = "",
                                     const std::vector <std::string> &env = {});
 
+    std::vector<std::string> getMakeCommand(std::string makefile, std::string target, bool nested);
+
     std::string threadFlag();
 }
 
