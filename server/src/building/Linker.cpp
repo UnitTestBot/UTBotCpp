@@ -579,13 +579,15 @@ static const std::vector<std::string> LD_GOLD_OPTIONS = {
     "-relocatable"
 };
 
-static std::vector<std::string> getLinkActionsForRootLibrary(
-    fs::path const &workingDir, std::vector<fs::path> const &dependencies, fs::path const &output) {
+static std::vector<std::string>
+getLinkActionsForRootLibrary(fs::path const &workingDir,
+                             std::vector<fs::path> const &dependencies,
+                             fs::path const &rootOutput) {
     std::vector<std::string> commandLine = LD_GOLD_OPTIONS;
     commandLine.emplace_back("--whole-archive");
     CollectionUtils::extend(
         commandLine,
-        std::vector<std::string>{ StringUtils::joinWith(dependencies, " "), "-o", output });
+        std::vector<std::string>{ StringUtils::joinWith(dependencies, " "), "-o", rootOutput });
     utbot::LinkCommand linkAction{ commandLine, workingDir };
     return { linkAction.toStringWithChangingDirectory() };
 };
@@ -699,31 +701,34 @@ Linker::getLinkActionsForExecutable(fs::path const &workingDir,
     return commands;
 }
 
-void Linker::declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
-                                      const fs::path &output,
-                                      const vector<fs::path> &bitcodeDependencies,
-                                      const fs::path &prefixPath,
-                                      const utbot::RunCommand &removeAction,
-                                      vector<utbot::LinkCommand> archiveActions) {
-    fs::path temporaryOutput = Paths::addSuffix(output, "_tmp");
-    utbot::RunCommand removeTemporaryAction =
-        utbot::RunCommand::forceRemoveFile(temporaryOutput, testGen.serverBuildDir);
-    std::vector<std::string> actions{ removeTemporaryAction.toStringWithChangingDirectory() };
+fs::path
+Linker::declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
+                                 const fs::path &output,
+                                 const vector<fs::path> &bitcodeDependencies,
+                                 const fs::path &prefixPath,
+                                 vector<utbot::LinkCommand> archiveActions) {
+    fs::path rootOutput = Paths::addSuffix(output, "_root");
+    utbot::RunCommand removeAction =
+        utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
+    std::vector<std::string> actions{ removeAction.toStringWithChangingDirectory() };
     for (auto &archiveAction : archiveActions) {
-        archiveAction.setOutput(temporaryOutput);
+        archiveAction.setOutput(output);
     }
     CollectionUtils::extend(
         actions, CollectionUtils::transform(
                      archiveActions, std::bind(&utbot::LinkCommand::toStringWithChangingDirectory,
                                                std::placeholders::_1)));
-    bitcodeLinkMakefilePrinter.declareTarget(temporaryOutput, bitcodeDependencies, actions);
+    bitcodeLinkMakefilePrinter.declareTarget(output, bitcodeDependencies, actions);
 
     auto linkActions =
-        getLinkActionsForRootLibrary(prefixPath, { temporaryOutput, STUB_BITCODE_FILES }, output);
-    linkActions.insert(linkActions.begin(), removeAction.toStringWithChangingDirectory());
-    bitcodeLinkMakefilePrinter.declareTarget(output, { temporaryOutput, STUB_BITCODE_FILES },
+        getLinkActionsForRootLibrary(prefixPath, { output, STUB_BITCODE_FILES }, rootOutput);
+    utbot::RunCommand removeRootAction =
+        utbot::RunCommand::forceRemoveFile(rootOutput, testGen.serverBuildDir);
+    linkActions.insert(linkActions.begin(), removeRootAction.toStringWithChangingDirectory());
+    bitcodeLinkMakefilePrinter.declareTarget(rootOutput, { output, STUB_BITCODE_FILES },
                                              linkActions);
-    bitcodeLinkMakefilePrinter.declareTarget("all", { output }, {});
+    bitcodeLinkMakefilePrinter.declareTarget("all", { rootOutput }, {});
+    return rootOutput;
 }
 
 
@@ -769,14 +774,15 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
         auto output = testGen.buildDatabase->getBitcodeFile(fileToBuild);
         output = LinkerUtils::applySuffix(output, unitType, suffixForParentOfStubs);
         if (Paths::isLibraryFile(fileToBuild)) {
-            utbot::RunCommand removeAction =
-                utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
             auto archiveActions = getArchiveCommands(prefixPath, dependencies, *linkUnit, output);
             if (!hasParent) {
-                declareRootLibraryTarget(bitcodeLinkMakefilePrinter, output, bitcodeDependencies,
-                                         prefixPath, removeAction, archiveActions);
-
+                fs::path rootBitcode =
+                    declareRootLibraryTarget(bitcodeLinkMakefilePrinter, output,
+                                             bitcodeDependencies, prefixPath, archiveActions);
+                return { rootBitcode, BuildResult::Type::NONE };
             } else {
+                utbot::RunCommand removeAction =
+                    utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
                 std::vector<std::string> actions = { removeAction.toStringWithChangingDirectory() };
                 CollectionUtils::extend(
                     actions,
