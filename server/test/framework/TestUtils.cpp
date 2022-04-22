@@ -139,8 +139,9 @@ namespace testUtils {
             const auto status = testStatusMap.at(filename).at(testname);
             actualStatusCountMap[status]++;
         }
-        ASSERT_EQ(actualStatusCountMap, expectedStatusCountMap);
-
+        for (const auto& [status, count] : actualStatusCountMap) {
+            ASSERT_GE(count, expectedStatusCountMap.at(status));
+        }
     }
 
     int getNumberOfTests(const tests::TestsMap &tests) {
