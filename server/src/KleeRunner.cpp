@@ -220,11 +220,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                 testMethod.methodName);
             tests.commentBlocks.emplace_back(std::move(message));
         }
-        char *is_release = getenv("UTBOT_RELEASE");
-        if (is_release == nullptr || strcmp(is_release, "false") == 0 ||
-            strcmp(is_release, "0") == 0) {
-            writeKleeStats(kleeOut);
-        }
+        writeKleeStats(kleeOut);
     }
 
     if (!CollectionUtils::containsKey(ktestChunk, testMethod) ||
@@ -363,11 +359,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                     method.methodName);
                 tests.commentBlocks.emplace_back(std::move(message));
             }
-            char *is_release = getenv("UTBOT_RELEASE");
-            if (is_release == nullptr || strcmp(is_release, "false") == 0 ||
-                strcmp(is_release, "0") == 0) {
-                writeKleeStats(newKleeOut);
-            }
+        }
+
+        if (fs::exists(kleeOut)) {
+            writeKleeStats(kleeOut);
         }
 
         if (!CollectionUtils::containsKey(ktestChunk, method) ||

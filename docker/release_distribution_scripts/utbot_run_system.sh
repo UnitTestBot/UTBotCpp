@@ -30,9 +30,6 @@ then
   exit 1
 fi
 
-#set UTBot release flag
-export UTBOT_RELEASE=true
-
 # Retrieving path to $UTBOT_ALL from absolute path to current script
 export UTBOT_ALL=$CURRENT_FOLDER
 
