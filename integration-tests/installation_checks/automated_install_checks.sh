@@ -77,17 +77,17 @@ kill_process(){
 check_if_server_process_started(){
    check_if_file_exists $EXPECTED_PID_FILE_LOCATION
    PID=$(cat $EXPECTED_PID_FILE_LOCATION)
-   process_count=$(ps uax | grep $PID | grep -v grep | wc -l)
+   process_count=$(ps -p "$PID" --no-header | wc -l)
 
    log "Number of processes found by PID [$PID] : $[process_count]"
 
-   if [ $process_count -ne "1" ]
+   if [ $process_count -ge 1 ]
    then
+      kill_process "$PID"
+   else
       log "ERROR: no processes found by PID [$PID]"
       exit 1
    fi
-
-   kill_process "$PID"
 }
 
 unarchive_distro(){
