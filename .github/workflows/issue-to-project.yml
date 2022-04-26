@@ -13,4 +13,4 @@ jobs:
       - uses: actions/add-to-project@main
         with:
           project-url: https://github.com/orgs/UnitTestBot/projects/1
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.COPY_ISSUE_TO_PROJECT }}
