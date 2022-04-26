@@ -86,8 +86,8 @@ namespace tests {
         ~AbstractValueView() = default;
     public:
         /**
-     * Returns string representation of the value.
-     */
+         * Returns string representation of the value.
+         */
         [[nodiscard]] virtual string getEntryValue() const = 0;
 
         virtual bool containsFPSpecialValue() {
