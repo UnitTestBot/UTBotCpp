@@ -1022,7 +1022,11 @@ shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
             unionInfo = typesHandler.getUnionInfo(paramType);
             return unionView(rawData, unionInfo, 0, usage);
         case TypeKind::ARRAY:
-            return arrayView(rawData, paramType.baseTypeObj(), rawData.size(), 0, usage);
+            if (paramType.kinds().size() > 2) {
+                return multiArrayView(rawData, paramType, rawData.size(), 0, usage);
+            } else {
+                return arrayView(rawData, paramType.baseTypeObj(), rawData.size(), 0, usage);
+            }
         case TypeKind::UNKNOWN:
             throw UnImplementedException("No such type");
         default:
