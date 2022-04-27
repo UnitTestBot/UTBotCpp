@@ -219,4 +219,19 @@ namespace {
                 } }),
             "libbpf_set_print");
     }
+
+    TEST_F(Regression_Test, Unused_Function_Pointer_Parameter) {
+        fs::path source = getTestFilePath("PR153.c");
+        auto [testGen, status] = createTestForFunction(source, 9);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return testCase.isError();
+                } }),
+            "unused");
+    }
 }

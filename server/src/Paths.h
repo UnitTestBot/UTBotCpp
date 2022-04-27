@@ -130,6 +130,11 @@ namespace Paths {
         return logPath / "logs";
     }
 
+    static inline fs::path getUtbotLogAllFilePath() {
+        const static std::string filename = "utbot-" + TimeUtils::getCurrentTimeStr() + ".log";
+        return logPath / Paths::getBaseLogDir() / filename;
+    }
+
     static inline fs::path getClientLogDir(const string &client) {
         return getBaseLogDir() / client;
     }
@@ -150,6 +155,10 @@ namespace Paths {
         auto logFilename = TimeUtils::getDate() + ".log";
         execLogPath /= logFilename;
         return execLogPath;
+    }
+
+    static inline fs::path getSymLinkPathToLogLatest() {
+        return Paths::getBaseLogDir() / "latest.log";
     }
 
     //endregion
@@ -338,7 +347,8 @@ namespace Paths {
 
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
-    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
+                                               const string& suffix = "");
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 

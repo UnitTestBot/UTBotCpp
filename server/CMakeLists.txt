@@ -178,7 +178,7 @@ if (ENABLE_UNIT_TESTS)
     target_link_libraries(
             UTBot_UnitTests
             PUBLIC
-            gtest_main
+            gtest
             UnitTestBotLib
     )
 

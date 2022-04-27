@@ -7,6 +7,7 @@
 #include "LogUtils.h"
 #include "Paths.h"
 #include "TimeExecStatistics.h"
+#include "commands/Commands.h"
 
 #include "loguru.h"
 
@@ -99,5 +100,11 @@ namespace KleeUtils {
 
     string postSymbolicVariable(const string &variableName) {
         return variableName + "_post";
+    }
+    std::string processNumberOption() {
+        if (Commands::kleeProcessNumber != 0) {
+            return "--process-number=" + std::to_string(Commands::kleeProcessNumber);
+        }
+        return "--process-number=5";
     }
 }

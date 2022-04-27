@@ -57,6 +57,9 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     }
     writeStubsForStructureFields(tests);
     ss << NL;
+    writeStubsForParameters(tests);
+    ss << NL;
+
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
@@ -95,6 +98,9 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
 
     writeStubsForFunctionParams(typesHandler, methodDescription, false);
     writeExternForSymbolicStubs(methodDescription);
+
+    methodDescription.stubsText = ss.str();
+    resetStream();
 
     genCodeBySuiteName(Tests::DEFAULT_SUITE_NAME,
                        methodDescription,
@@ -135,7 +141,7 @@ void TestsPrinter::genCodeBySuiteName(const string &targetSuiteName,
 
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
-                                      std::optional<LineInfo::PredicateInfo> predicateInfo) {
+                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
     if (!testCase.isError()) {
@@ -396,7 +402,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
 
 void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescription,
                                   const Tests::MethodTestCase &testCase,
-                                  std::optional<LineInfo::PredicateInfo> predicateInfo) {
+                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     strComment("Check results");
     if (types::TypesHandler::isVoid(methodDescription.returnType)) {
         strComment("No check results for void function");
@@ -498,7 +504,8 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
                 strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(), param.alignment);
             } else {
                 auto paramName = param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
-                strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER, value.view->getEntryValue(), true);
+                strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
+                                   value.view->getEntryValue(), param.alignment, true);
             }
         }
         if (param.type.isTwoDimensionalPointer()) {

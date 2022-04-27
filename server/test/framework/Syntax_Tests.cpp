@@ -1383,13 +1383,19 @@ namespace {
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
             vector<TestCasePredicate>(
                 {[](const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                  return stoi(testCase.returnValueView->getEntryValue()) == 1 &&
+                         testCase.paramValues.front().view->getEntryValue() ==
+                         testCase.paramPostValues.front().view->getEntryValue();
                 },
                  [](const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                   return stoi(testCase.returnValueView->getEntryValue()) == 0 &&
+                          testCase.paramValues.front().view->getEntryValue() ==
+                          testCase.paramPostValues.front().view->getEntryValue();
                  },
                  [](const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValueView->getEntryValue()) == -1; }
+                   return stoi(testCase.returnValueView->getEntryValue()) == -1 &&
+                          testCase.paramValues.front().view->getEntryValue() ==
+                          testCase.paramPostValues.front().view->getEntryValue(); }
                 })
         );
     }
@@ -2143,23 +2149,27 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Double_pointer_parameter_cpp) {
-        auto [testGen, status] = createTestForFunction(different_parameters_cpp, 23);
+        auto[testGen, status] = createTestForFunction(different_parameters_cpp, 23);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases, 2);
 
         checkTestCasePredicates(
-              testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
-                      {[] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramPostValues[0].view->getSubViews().front()->getEntryValue()) == stoi(testCase.returnValueView->getEntryValue());
-                      },
-                       [] (const tests::Tests::MethodTestCase& testCase) {
-                         return stoi(testCase.paramPostValues[0].view->getSubViews().front()->getEntryValue()) == stoi(testCase.returnValueView->getEntryValue());
-                       }
-                      }),
-              "Double_pointer_parameter_cpp");
+                testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
+                vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(
+                                    testCase.paramPostValues[0].view->getSubViews().front()->getSubViews().front()->getEntryValue()) ==
+                                   stoi(testCase.returnValueView->getEntryValue());
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(
+                                     testCase.paramPostValues[0].view->getSubViews().front()->getSubViews().front()->getEntryValue()) ==
+                                    stoi(testCase.returnValueView->getEntryValue());
+                         }
+                        }),
+                "Double_pointer_parameter_cpp");
     }
 
     TEST_F(Syntax_Test, Lvalue_parameter_cpp) {

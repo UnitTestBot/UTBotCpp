@@ -37,6 +37,8 @@ namespace TimeUtils {
     systemClockTimePoint convertFileToSystemClock(const fs::file_time_type& fTime);
 
     string getDate();
+
+    std::string getCurrentTimeStr();
 }
 
 #endif //UNITTESTBOT_TIMEUTIL_H

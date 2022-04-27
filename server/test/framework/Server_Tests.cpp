@@ -1573,7 +1573,7 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
     }
 
     TEST_P(Parameterized_Server_Test, Installed_Dependency_Test) {
@@ -1587,5 +1587,8 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests, 2);
+        auto const& cases = testGen.tests.begin().value().methods["display_version"].testCases;
+        ASSERT_EQ(1, cases.size());
+        ASSERT_FALSE(cases[0].isError());
     }
 }

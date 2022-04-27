@@ -404,12 +404,15 @@ namespace printer {
                                                  const types::TypesHandler &typesHandler,
                                                  const string &prefix,
                                                  const string &suffix,
+                                                 const string& methodName,
+                                                 const string& nameForStub,
                                                  bool makeStatic) {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        string stubSymbolicVarName = getStubSymbolicVarName(method.name);
+        string stubSymbolicVarName = getStubSymbolicVarName(nameForStub);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
+            stubSymbolicVarName = getStubSymbolicVarName(methodName + "_" + nameForStub);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -566,21 +569,20 @@ namespace printer {
         for (const auto& [name, type]: symbolicNamesToTypesMap) {
             strDeclareVar("extern \"C\" " + type, name);
         }
-        ss << NL;
     }
 
     void printer::Printer::writeStubForParam(const types::TypesHandler *typesHandler,
                                              const std::shared_ptr<types::FunctionInfo> &fInfo,
-                                             const string &name,
+                                             const string &methodName,
                                              const string &stubName,
                                              bool needToTypedef,
                                              bool makeStatic) {
         if (needToTypedef) {
-            auto typedefName = getTypedefFunctionPointer(name, fInfo->name, false);
+            auto typedefName = getTypedefFunctionPointer(methodName, fInfo->name, false);
             strTypedefFunctionPointer(*fInfo, typedefName);
         }
         strStubForMethod(tests::Tests::MethodDescription::fromFunctionInfo(*fInfo), *typesHandler,
-                         stubName, "stub", makeStatic);
+                         stubName, "stub", methodName, fInfo->name, makeStatic);
     }
 
     void Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {
@@ -642,7 +644,18 @@ namespace printer {
     }
 
     void Printer::writeStubsForStructureFields(const Tests &tests) {
-        ss << tests.stubs << NL;
+        if (!tests.stubs.empty()) {
+            ss << tests.stubs << NL;
+        }
+    }
+
+    void Printer::writeStubsForParameters(const Tests &tests) {
+        for (const auto &[methodName, methodDescription] : tests.methods) {
+            if (methodDescription.stubsText.empty()) {
+                continue;
+            }
+            ss << methodDescription.stubsText << NL;
+        }
     }
 
     utbot::Language Printer::getLanguage() const {

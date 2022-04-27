@@ -142,7 +142,7 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
     command.addFlagsToBegin(flags);
     command.addFlagsToBegin(extraFlags);
     command.addFlagToBegin(
-        StringUtils::stringFormat("-I%s", compilationUnitInfo->getSourcePath().parent_path()));
+        StringUtils::stringFormat("-iquote%s", compilationUnitInfo->getSourcePath().parent_path()));
     LOG_S(MAX) << "New compile command with klee required flags: " << command.toString();
     return command;
 }

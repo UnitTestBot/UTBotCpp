@@ -24,6 +24,11 @@ using namespace types;
 using printer::KleePrinter;
 
 static const std::string KLEE_GLOBAL_VAR_H = "klee_global_var.h";
+static const std::string CALLOC_DECLARATION = "extern\n"
+                                              "#ifdef __cplusplus\n"
+                                              "\"C\"\n"
+                                              "#endif\n"
+                                              "void* calloc(size_t num, size_t size);\n";
 
 printer::KleePrinter::KleePrinter(const types::TypesHandler *typesHandler,
                                   std::shared_ptr<BuildDatabase> buildDatabase,
@@ -76,9 +81,8 @@ fs::path KleePrinter::writeTmpKleeFile(
         strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG, "0");
     }
 
-    strInclude("klee/klee.h");
-    strInclude("stdlib.h", true);
-    ss << NL;
+    strInclude("klee/klee.h") << NL;
+    ss << CALLOC_DECLARATION << NL;
     writeStubsForStructureFields(tests);
 
     writeAccessPrivateMacros(typesHandler, tests, false);

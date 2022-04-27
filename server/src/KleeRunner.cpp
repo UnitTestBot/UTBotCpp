@@ -77,9 +77,9 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
             LOG_S(MAX) << logStream.str();
         }
         if (interactiveMode) {
-          if (!testMethods.empty()) {
-              processBatchWithInteractive(testMethods, tests, ktests);
-          }
+            if (!batch.empty()) {
+                processBatchWithInteractive(batch, tests, ktests);
+            }
         } else {
           for (auto const &testMethod : batch) {
               MethodKtests ktestChunk;
@@ -129,6 +129,14 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
     if (!tests.isFilePresentedInArtifact) {
         return;
     }
+    if (testMethod.sourceFilePath != tests.sourceFilePath) {
+        std::string message = StringUtils::stringFormat(
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n", 
+                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+        LOG_S(WARNING) << message;
+    }
+
     string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
     auto kleeOut = getKleeMethodOutFile(testMethod);
@@ -212,11 +220,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                 testMethod.methodName);
             tests.commentBlocks.emplace_back(std::move(message));
         }
-        char *is_release = getenv("UTBOT_RELEASE");
-        if (is_release == nullptr || strcmp(is_release, "false") == 0 ||
-            strcmp(is_release, "0") == 0) {
-            writeKleeStats(kleeOut);
-        }
+        writeKleeStats(kleeOut);
     }
 
     if (!CollectionUtils::containsKey(ktestChunk, testMethod) ||
@@ -233,6 +237,17 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     if (!tests.isFilePresentedInArtifact) {
         return;
     }
+
+    for (const auto &method : testMethods) {
+        if (method.sourceFilePath != tests.sourceFilePath) {
+            std::string message = StringUtils::stringFormat(
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n", 
+                tests.sourceFilePath, method.methodName, method.sourceFilePath);
+            LOG_S(WARNING) << message;
+        }
+    }
+
     TestMethod testMethod = testMethods[0];
     string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
@@ -264,9 +279,12 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                           "--check-overshift=false",
                                           "--skip-not-lazy-and-symbolic-pointers",
                                           "--interactive",
-                                          "--process-number=5",
+                                          KleeUtils::processNumberOption(),
                                           entrypointsArg,
                                           outputDir };
+    if (settingsContext.timeoutPerFunction.has_value()) {
+        argvData.push_back(StringUtils::stringFormat("--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
+    }
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");
     }
@@ -279,8 +297,13 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
 
     LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
     MEASURE_FUNCTION_EXECUTION_TIME
-    RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
-    ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    if (settingsContext.timeoutPerFunction.has_value()) {
+        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction.value() * testMethods.size());
+        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    } else {
+        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
+        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+    }
 
     ExecUtils::throwIfCancelled();
 
@@ -336,11 +359,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                     method.methodName);
                 tests.commentBlocks.emplace_back(std::move(message));
             }
-            char *is_release = getenv("UTBOT_RELEASE");
-            if (is_release == nullptr || strcmp(is_release, "false") == 0 ||
-                strcmp(is_release, "0") == 0) {
-                writeKleeStats(newKleeOut);
-            }
+        }
+
+        if (fs::exists(kleeOut)) {
+            writeKleeStats(kleeOut);
         }
 
         if (!CollectionUtils::containsKey(ktestChunk, method) ||

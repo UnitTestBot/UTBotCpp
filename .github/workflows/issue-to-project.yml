@@ -1,0 +1,16 @@
+name: Add issues to UTBot C/C++ project
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add-to-project:
+    name: Add issue to project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@main
+        with:
+          project-url: https://github.com/orgs/UnitTestBot/projects/1
+          github-token: ${{ secrets.COPY_ISSUE_TO_PROJECT }}

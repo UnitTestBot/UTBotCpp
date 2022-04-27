@@ -27,10 +27,10 @@ log(){
 #   - $5 - PID file to be created
 start_process(){
   log "INFO Starting new [$1] process right now"
-  nohup $2 $3 >> $4 2>&1 &
+  nohup $2 $3 > /dev/null 2>&1 &
   local PROCESS_PID=$!
   echo $PROCESS_PID > $5
-  log "INFO New [$1] instance with pid [$PROCESS_PID] has been started, process options are [$3], pid file created: [$5]; STDOUT and STDERR redirected to [$4]"
+  log "INFO New [$1] instance with pid [$PROCESS_PID] has been started, process options are [$3], pid file created: [$5]; logs write to [$4]"
 }
 
 # Function arguments:
