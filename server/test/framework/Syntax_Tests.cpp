@@ -2015,7 +2015,7 @@ namespace {
     TEST_F(Syntax_Test, Return_Incomplete) {
         auto [testGen, status] = createTestForFunction(types_3_c, 109);
 
-        ASSERT_TRUE(status.error_code() == grpc::FAILED_PRECONDITION) << status.error_message();
+        testUtils::checkMinNumberOfTests(testGen.tests.at(types_3_c).methods.begin().value().testCases, 1);
     }
 
     TEST_F(Syntax_Test, Pass_Forward_Decl) {

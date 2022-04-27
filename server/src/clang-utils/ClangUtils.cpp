@@ -16,7 +16,7 @@ namespace ClangUtils {
         return false;
     }
 
-    bool isIncomplete(clang::QualType type) {
+    bool isPointerToIncomplete(clang::QualType type) {
         clang::QualType canonicalType = type.getCanonicalType();
         if (auto const *pType = canonicalType.getTypePtrOrNull()) {
             auto pointeeType = pType->getPointeeType();

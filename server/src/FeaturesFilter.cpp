@@ -34,23 +34,24 @@ void FeaturesFilter::filter(utbot::SettingsContext const &settingsContext,
 
         size_t erased = CollectionUtils::erase_if(tests.methods,
                      [&](const tests::Tests::MethodDescription &method) {
-                         auto returnTypeSupport = typesHandler.isSupportedType(method.returnType, types::TypeUsage::RETURN);
-                         updateIfNotCompleteType(returnTypeSupport, method.hasIncompleteReturnType,
-                                                 "Method has incomplete return type");
-                         if (!returnTypeSupport.isSupported) {
-                             unsupportedStatistics[returnTypeSupport.info]++;
-                             std::stringstream message;
-                             message << "Function '" << method.name << "' was skipped, as return type '"
-                                     << method.returnType.typeName()
-                                     << "' is not fully supported: " << returnTypeSupport.info;
-                             LOG_S(WARNING) << message.str();
-                             tests.commentBlocks.push_back(message.str());
-                             return true;
+                         if (!method.hasPointerToIncompleteReturnType) {
+                             auto returnTypeSupport =
+                                 typesHandler.isSupportedType(method.returnType, types::TypeUsage::RETURN);
+                             if (!returnTypeSupport.isSupported) {
+                                 unsupportedStatistics[returnTypeSupport.info]++;
+                                 std::stringstream message;
+                                 message << "Function '" << method.name << "' was skipped, as return type '"
+                                         << method.returnType.typeName()
+                                         << "' is not fully supported: " << returnTypeSupport.info;
+                                 LOG_S(WARNING) << message.str();
+                                 tests.commentBlocks.push_back(message.str());
+                                 return true;
+                             }
                          }
 
                          for (const auto &param: method.params) {
                              auto paramTypeSupport = typesHandler.isSupportedType(param.type, types::TypeUsage::PARAMETER);
-                             updateIfNotCompleteType(paramTypeSupport, param.hasIncompleteType,
+                             updateIfNotCompleteType(paramTypeSupport, param.isPointerToIncomplete,
                                                      "Parameter has incomplete type");
                              if (!paramTypeSupport.isSupported) {
                                  unsupportedStatistics[paramTypeSupport.info]++;

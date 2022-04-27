@@ -858,7 +858,8 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
     //processSymbolicStdin(testCaseDescription, rawKleeParams);
 
     processStubParamValue(testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
-    if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
+    if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) &&
+        !methodDescription.hasPointerToIncompleteReturnType) {
         const auto kleeResParam = getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
         auto paramType = methodDescription.returnType.maybeReturnArray() ? methodDescription.returnType :
                                                                          methodDescription.returnType.baseTypeObj();

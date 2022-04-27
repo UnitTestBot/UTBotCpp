@@ -382,7 +382,10 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
 void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase) {
     std::string baseReturnType = types::TypesHandler::cBoolToCpp(methodDescription.returnType.baseType());
-    types::Type expectedType = typesHandler->getReturnTypeToCheck(methodDescription.returnType);
+    types::Type expectedType =
+        methodDescription.hasPointerToIncompleteReturnType
+            ? methodDescription.returnType
+            : typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     if (methodDescription.returnType.maybeReturnArray()) {
         expectedType = methodDescription.returnType.arrayClone(types::PointerUsage::RETURN);
     }
@@ -519,7 +522,9 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
-    globalParamsAsserts(methodDescription, testCase);
+    if (!testCase.isError()) {
+        globalParamsAsserts(methodDescription, testCase);
+    }
     classAsserts(methodDescription, testCase);
     changeableParamsAsserts(methodDescription, testCase);
 }
@@ -577,11 +582,12 @@ string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &m
     std::optional<types::Type> castType;
     if (types::TypesHandler::skipTypeInReturn(methodDescription.returnType.baseTypeObj()) &&
         methodDescription.returnType.isObjectPointer()) {
-        castType = types::Type::minimalScalarPointerType();
+        castType = types::Type::minimalScalarPointerType(methodDescription.returnType.getDimension());
     }
     auto classObjName = methodDescription.getClassName();
     size_t returnPointersCount = 0;
-    if (testCase.returnValueView && testCase.returnValueView->getEntryValue() != PrinterUtils::C_NULL) {
+    if (!methodDescription.hasPointerToIncompleteReturnType &&
+        testCase.returnValueView->getEntryValue() != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
     return constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,

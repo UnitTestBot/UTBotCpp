@@ -38,7 +38,7 @@ void GlobalVariableUsageMatchCallback::checkUsage(const MatchFinder::MatchResult
                 LOG_S(MAX) << "Variable \"" << name << "\" was skipped - it is being blacklisted.";
                 return;
             }
-            if (ClangUtils::isIncomplete(pVarDecl->getType())) {
+            if (ClangUtils::isPointerToIncomplete(pVarDecl->getType())) {
                 LOG_S(MAX) << "Variable \"" << name
                            << "\" was skipped - it's type has no definition in current "
                               "translation unit.";
