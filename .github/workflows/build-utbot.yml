@@ -92,3 +92,16 @@ jobs:
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
 
+      - name: Run CLion integration tests
+        run: |
+          chmod +x docker/action-scripts/runClionIntegrationTests.sh 
+          ./docker/action-scripts/runClionIntegrationTests.sh
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-report
+          path: |
+            /github/home/logs
+            clion-plugin/build/reports/tests/**/*
+

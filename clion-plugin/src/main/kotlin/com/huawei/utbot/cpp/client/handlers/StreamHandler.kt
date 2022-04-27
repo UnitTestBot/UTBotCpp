@@ -20,11 +20,9 @@ abstract class StreamHandler<T>(
         onStart()
         grpcStream
             .catch { exception ->
-                println("In onException")
                 onException(exception)
             }
             .collect { data: T ->
-                println("In ondata")
                 lastResponse = data
                 onData(data)
             }
