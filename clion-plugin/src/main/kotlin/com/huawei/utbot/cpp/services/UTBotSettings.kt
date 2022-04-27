@@ -47,8 +47,9 @@ data class UTBotSettings(
         var synchronizeCode: Boolean = false,
         var remotePath: String = "",
         var sourcePaths: List<String> = emptyList(),
-        var port: Int = 2121,
-        var serverName: String = "localhost"
+        var port: Int = DEFAULT_PORT,
+        var serverName: String = DEFAULT_HOST,
+        var cmakeOptions: List<String> = DEFAULT_CMAKE_OPTIONS
     )
 
     var targetPath: String
@@ -61,6 +62,12 @@ data class UTBotSettings(
         get() = state.buildDirPath
         set(value) {
             state.buildDirPath = value
+        }
+
+    var buildDirPathRelative: String
+        get() = state.buildDirPath.getRelativeToProjectPath(projectPath)
+        set(value) {
+            state.buildDirPath = Paths.get(projectPath).resolve(value).toString()
         }
 
     var testDirPath: String
@@ -97,6 +104,12 @@ data class UTBotSettings(
         get() = state.serverName
         set(value) {
             state.serverName = value
+        }
+
+    var cmakeOptions: String
+        get() = state.cmakeOptions.joinToString(" ")
+        set(value) {
+            state.cmakeOptions = value.split(" ")
         }
 
     val convertedSourcePaths: List<String>
@@ -216,5 +229,11 @@ data class UTBotSettings(
 
     override fun loadState(state: State) {
         myState = state
+    }
+
+    companion object {
+        const val DEFAULT_HOST = "localhost"
+        const val DEFAULT_PORT = 2121
+        val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")
     }
 }

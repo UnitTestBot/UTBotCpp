@@ -1,33 +1,28 @@
 package com.huawei.utbot.cpp.services
 
 import com.huawei.utbot.cpp.client.Client
-import com.huawei.utbot.cpp.ui.OutputType
-import com.huawei.utbot.cpp.ui.OutputWindowProvider
+import com.huawei.utbot.cpp.ui.wizard.UTBotWizard
+import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.utils.invokeOnEdt
+import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.swing.Swing
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
 
 class UTBotStartupActivity: StartupActivity {
     override fun runActivity(project: Project) {
-        setupDependencies(project)
+        // start plugin and connect to server on project opening
         project.service<Client>()
+        showWizardOnFirstProjectOpen(project)
     }
 
-    private fun setupDependencies(project: Project) {
-        val clientDependencies = module {
-            single { project.service<OutputWindowProvider>().outputs[OutputType.CLIENT_LOG]!! }
-            single { if (isTestMode) Dispatchers.Default else Dispatchers.Swing }
+    private fun showWizardOnFirstProjectOpen(project: Project) {
+        RunOnceUtil.runOnceForProject(project, "Show UTBot Wizard") {
+            if (!Client.IS_TEST_MODE) {
+                invokeOnEdt {
+                    UTBotWizard(project).showAndGet()
+                }
+            }
         }
-        startKoin {
-            modules(clientDependencies)
-        }
-    }
-
-    companion object {
-        var isTestMode = false
     }
 }

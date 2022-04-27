@@ -1,6 +1,6 @@
-package com.huawei.utbot.cpp.client
+package com.huawei.utbot.cpp.client.logger
 
-import com.huawei.utbot.cpp.ui.UTBotConsole
+import com.huawei.utbot.cpp.ui.userLog.UTBotConsole
 import com.intellij.execution.ui.ConsoleViewContentType
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

@@ -65,12 +65,18 @@ dependencies {
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
     implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
 
-    // tinylog for showing messages to the user
+    // tinylog for showing log messages to the user
     implementation("org.tinylog:tinylog-api-kotlin:2.5.0-M1.1")
     implementation("org.tinylog:tinylog-impl:2.5.0-M1.1")
+
+    // koin for dependency injection
     implementation("io.insert-koin:koin-core:3.1.5")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
+
+    // testing with JUnit 5
+    testImplementation(platform("org.junit:junit-bom:5.8.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 sourceSets {
@@ -81,11 +87,11 @@ sourceSets {
     }
 }
 
-kotlin {
-    jvmToolchain {
-        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
-    }
-}
+//kotlin {
+//    jvmToolchain {
+//        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
+//    }
+//}
 
 protobuf {
     protoc {
@@ -173,9 +179,16 @@ tasks {
     // include tests directly, in IntelliJ Platform from 2021.3 there is a bug:
     // https://youtrack.jetbrains.com/issue/IDEA-278926#focus=Comments-27-5561012.0-0
     val test by getting(Test::class) {
-        isScanForTestClasses = false
+        setScanForTestClasses(false)
         // Only run tests from classes that end with "Test"
         include("**/*Test.class")
+        exclude("**/*BaseGenerationTestCaseTest.class")
+
+        useJUnitPlatform()
+        testLogging {
+            showStandardStreams = true
+            events("passed", "skipped", "failed")
+        }
     }
 
     wrapper {

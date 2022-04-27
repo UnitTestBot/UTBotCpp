@@ -1,13 +1,17 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getFolderRequestMessage
-import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.client.Requests.FolderRequest
+import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
 class GenerateForFolderAction : GenerateTestsBaseAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        e.client.generateForFolder(getFolderRequestMessage(e))
+        FolderRequest(
+            getFolderRequestMessage(e),
+            e.project!!
+        ).execute(e)
     }
 
     override fun updateIfServerAvailable(e: AnActionEvent) {

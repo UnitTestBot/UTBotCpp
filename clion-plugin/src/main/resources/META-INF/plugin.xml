@@ -31,13 +31,14 @@
         <toolWindow id="UTBot targets"
                     secondary="false"
                     anchor="bottom"
-                    factoryClass="com.huawei.utbot.cpp.ui.UTBotTargetsToolWindowFactory"/>
-        <toolWindow factoryClass="com.huawei.utbot.cpp.ui.ConsoleToolWindowProvider"
+                    factoryClass="com.huawei.utbot.cpp.ui.targetsToolWindow.UTBotTargetsToolWindowFactory"/>
+        <toolWindow factoryClass="com.huawei.utbot.cpp.ui.userLog.ConsoleToolWindowProvider"
                     id="UTBot consoles"
                     anchor="bottom"
                     secondary="true"
         />
     </extensions>
+
 
     <actions>
         <group id="actions.UTBot.editor" text="UTBot Actions" popup="true">
@@ -92,5 +93,8 @@
         <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration"
                 class="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration" text="Try To Generate Json"
                 description="Ask server to generate missing json files"/>
+        <action id="com.huawei.utbot.cpp.actions.ShowWizardAction"
+                class="com.huawei.utbot.cpp.actions.ShowWizardAction" text="Show wizard"
+                description="Show wizard"/>
     </actions>
 </idea-plugin>

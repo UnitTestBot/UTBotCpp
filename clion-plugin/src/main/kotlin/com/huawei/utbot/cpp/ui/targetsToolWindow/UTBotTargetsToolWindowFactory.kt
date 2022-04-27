@@ -1,4 +1,4 @@
-package com.huawei.utbot.cpp.ui
+package com.huawei.utbot.cpp.ui.targetsToolWindow
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project

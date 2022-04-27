@@ -1,14 +1,15 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getFileRequestMessage
-import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.client.Requests.FileRequest
+import com.huawei.utbot.cpp.utils.execute
 import com.huawei.utbot.cpp.utils.isCPPorCFileName
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 
 class GenerateForFileAction : GenerateTestsBaseAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        e.client.generateForFile(getFileRequestMessage(e))
+        FileRequest(getFileRequestMessage(e), e.project!!).execute(e)
     }
 
     // action is available only if the selected file ends in .cpp, .hpp, .c or .h

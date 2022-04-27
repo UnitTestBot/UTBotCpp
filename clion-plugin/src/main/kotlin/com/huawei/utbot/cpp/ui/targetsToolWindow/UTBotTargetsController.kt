@@ -1,23 +1,28 @@
-package com.huawei.utbot.cpp.ui
+package com.huawei.utbot.cpp.ui.targetsToolWindow
 
 import com.huawei.utbot.cpp.actions.utils.getProjectTargetsRequest
 import com.huawei.utbot.cpp.client.Client
-import com.huawei.utbot.cpp.utils.relativize
+import com.huawei.utbot.cpp.client.Requests.ProjectTargetsRequest
+import com.huawei.utbot.cpp.messaging.ConnectionStatus
+import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
+import com.huawei.utbot.cpp.models.UTBotTarget
 import com.huawei.utbot.cpp.services.UTBotSettings
-import com.intellij.openapi.application.ApplicationManager
+import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.utils.invokeOnEdt
+import com.huawei.utbot.cpp.utils.relativize
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import com.huawei.utbot.cpp.messaging.ConnectionStatus
-import com.huawei.utbot.cpp.messaging.UTBotEventsListener
-import com.huawei.utbot.cpp.models.UTBotTarget
-
+import org.tinylog.kotlin.Logger
 
 class UTBotTargetsController(val project: Project) {
     private val utbotSettings = project.service<UTBotSettings>()
     private val listModel = CollectionListModel(mutableListOf<UTBotTarget>(UTBotTarget.autoTarget))
     private val client = project.service<Client>()
+
+    val targets: List<UTBotTarget>
+        get() = listModel.toList()
 
     init {
         requestTargetsFromServer()
@@ -25,20 +30,27 @@ class UTBotTargetsController(val project: Project) {
         connectToEvents()
     }
 
-    private fun requestTargetsFromServer() {
-        if (client.isServerAvailable()) {
-            client.requestProjectTargetsAndProcess(getProjectTargetsRequest(project)) { targetsResponse ->
-                ApplicationManager.getApplication().invokeLater {
-                    listModel.apply {
-                        val oldTargetList = toList()
-                        oldTargetList.addAll(
-                            targetsResponse.targetsList.map { projectTarget ->
-                                UTBotTarget(projectTarget, project)
-                            })
-                        listModel.replaceAll(oldTargetList.distinct())
-                    }
+    fun requestTargetsFromServer() {
+        if (!client.isServerAvailable()) {
+            Logger.error("Could not request targets from server: server is unavailable!")
+            return
+        }
+        Logger.trace("Requesting project targets from server!")
+        ProjectTargetsRequest(
+            getProjectTargetsRequest(project),
+        ) { targetsResponse ->
+            invokeOnEdt {
+                listModel.apply {
+                    val oldTargetList = toList()
+                    oldTargetList.addAll(
+                        targetsResponse.targetsList.map { projectTarget ->
+                            UTBotTarget(projectTarget, project)
+                        })
+                    listModel.replaceAll(oldTargetList.distinct())
                 }
             }
+        }.let {
+            project.client.execute(it)
         }
     }
 
@@ -58,11 +70,14 @@ class UTBotTargetsController(val project: Project) {
         return UTBotTargetsToolWindow(listModel, this)
     }
 
-    fun selectionChanged(index: Int) {
+    fun selectionChanged(selectedTarget: UTBotTarget) {
         // when user selects target update model
-        if (index in 0 until listModel.size) {
-            utbotSettings.targetPath = listModel.getElementAt(index).path
-        }
+        utbotSettings.targetPath = selectedTarget.path
+    }
+
+    fun setTargetByName(targetName: String) {
+        val target = targets.find { it.name == targetName } ?: error("No such target!")
+        utbotSettings.targetPath = target.path
     }
 
     private fun connectToEvents() {

@@ -11,11 +11,19 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.ToolbarDecorator
-import com.intellij.ui.layout.panel
+import com.intellij.ui.dsl.builder.BottomGap
+import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.TopGap
+import com.intellij.ui.dsl.builder.bindIntText
+import com.intellij.ui.dsl.builder.bindSelected
+import com.intellij.ui.dsl.builder.bindText
+import com.intellij.ui.dsl.builder.columns
+import com.intellij.ui.dsl.builder.panel
 import javax.swing.JList
+import kotlin.reflect.KMutableProperty0
 import java.awt.Dimension
 
 /**
@@ -29,8 +37,6 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val sourcePathListModel =
         CollectionListModel(*targetProject.getService(UTBotSettings::class.java).sourcePaths.toTypedArray())
-    private val onApplyCallBacks = mutableListOf<() -> Unit>()
-    private val onResetCallBacks = mutableListOf<() -> Unit>()
     private val panel = createMainPanel()
 
     init {
@@ -41,101 +47,102 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
 
     override fun createPanel() = panel
 
-    fun createMainPanel(): DialogPanel {
-        logger.info("createPanel was called")
-        fun TextFieldWithBrowseButton.setMaxSize() {
-            maximumSize = TEXT_FIELD_MAX_SIZE
+    fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String) {
+        row(name) {
+            textFieldWithBrowseButton(
+                chooserTitle,
+                targetProject,
+                FileChooserDescriptorFactory.createSingleFileDescriptor()
+            ).bindText(property).columns(COLUMNS_LARGE)
         }
+    }
+
+    fun createMainPanel(): DialogPanel {
+        logger.trace("createPanel was called")
         return panel {
-            row {
-                label(UTBot.message("settings.project.buildDir"))
-                textFieldWithBrowseButton(
-                    utbotSettings::buildDirPath,
-                    UTBot.message("settings.project.buildDir.browse.title"),
-                    targetProject, FileChooserDescriptorFactory.createSingleFileDescriptor()
-                ).component.apply {
-                    setMaxSize()
-                    onApplyCallBacks.add { utbotSettings.buildDirPath = this.text }
-                    onResetCallBacks.add { this.text = utbotSettings.buildDirPath }
-                }
-            }
-            row {
-                label(UTBot.message("settings.project.target"))
-                textFieldWithBrowseButton(
+            group("Paths") {
+                createPathChooser(
+                    utbotSettings::buildDirPathRelative,
+                    UTBot.message("settings.project.buildDir"),
+                    UTBot.message("settings.project.buildDir.browse.title")
+                )
+                createPathChooser(
                     utbotSettings::targetPath,
-                    UTBot.message("settings.project.target.browse.title"),
-                    project = targetProject,
-                    fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFileDescriptor()
-                ).component.apply {
-                    setMaxSize()
-                    onApplyCallBacks.add { utbotSettings.targetPath = this.text }
-                    onResetCallBacks.add { this.text = utbotSettings.targetPath }
-                }
-            }
-            row {
-                label(UTBot.message("settings.project.testsDir"))
-                textFieldWithBrowseButton(
+                    UTBot.message("settings.project.target"),
+                    UTBot.message("settings.project.target.browse.title")
+                )
+                createPathChooser(
                     utbotSettings::testDirPath,
-                    UTBot.message("settings.project.testsDir.browse.title"),
-                    project = targetProject,
-                    fileChooserDescriptor = FileChooserDescriptorFactory.createSingleFolderDescriptor()
-                ).component.apply {
-                    setMaxSize()
-                    onApplyCallBacks.add { utbotSettings.testDirPath = this.text }
-                    onResetCallBacks.add { this.text = utbotSettings.testDirPath }
+                    UTBot.message("settings.project.testsDir"),
+                    UTBot.message("settings.project.testsDir.browse.title")
+                )
+
+                row(UTBot.message("settings.project.sourcePaths")) {
+                    cell(createSourcesListComponent())
+                        .onApply {
+                            utbotSettings.sourcePaths = sourcePathListModel.toList()
+                        }
+                        .onReset {
+                            sourcePathListModel.also {
+                                it.removeAll()
+                                it.addAll(0, utbotSettings.sourcePaths)
+                            }
+                        }
+                        .onIsModified {
+                            (sourcePathListModel.toList() != utbotSettings.sourcePaths)
+                        }
+                    topGap(TopGap.SMALL)
+                    bottomGap(BottomGap.SMALL)
                 }
-            }
-            val checkBoxDs = mapOf(
-                UTBot.message("settings.generation.synchronize") to utbotSettings::synchronizeCode,
-                UTBot.message("settings.generation.stubs") to generatorSettings::useStubs,
-                UTBot.message("settings.generation.verbose") to generatorSettings::verbose,
-                UTBot.message("settings.generation.searcher") to generatorSettings::useDeterministicSearcher,
-                UTBot.message("settings.generation.static") to generatorSettings::generateForStaticFunctions
-            )
-            checkBoxDs.forEach { message, boolProperty ->
+
                 row {
-                    val cb = checkBox(message, boolProperty)
-                    cb.component.addItemListener {
-                        boolProperty.set(!boolProperty.get())
+                    label("Try to get paths from CMake model: ")
+                    button("Detect Paths") {
+                        utbotSettings.predictPaths()
+                        utbotSettings.fireUTBotSettingsChanged()
                     }
                 }
             }
-            val intFields = mapOf(
-                UTBot.message("settings.generation.timeoutFunction") to generatorSettings::timeoutPerFunction,
-                UTBot.message("settings.generation.timeoutTest") to generatorSettings::timeoutPerTest,
-                UTBot.message("settings.project.port") to utbotSettings::port
-            )
-            intFields.forEach { (message, intProperty) ->
-                row(message) {
-                    intTextField(intProperty).component.apply {
-                        this.maximumSize = INT_FIELD_MAX_SIZE
-                        onApplyCallBacks.add { intProperty.set(this.text.toInt()) }
-                        onResetCallBacks.add { this.text = intProperty.get().toString() }
+
+            group("CMake") {
+                row(UTBot.message("settings.project.cmakeOptions")) {
+                    textField().bindText(utbotSettings::cmakeOptions).columns(COLUMNS_LARGE)
+                }
+            }
+
+            group("Generator settings") {
+                val checkBoxDs = mapOf(
+                    UTBot.message("settings.generation.synchronize") to utbotSettings::synchronizeCode,
+                    UTBot.message("settings.generation.stubs") to generatorSettings::useStubs,
+                    UTBot.message("settings.generation.verbose") to generatorSettings::verbose,
+                    UTBot.message("settings.generation.searcher") to generatorSettings::useDeterministicSearcher,
+                    UTBot.message("settings.generation.static") to generatorSettings::generateForStaticFunctions
+                )
+                checkBoxDs.forEach { message, boolProperty ->
+                    row {
+                        checkBox(message).bindSelected(boolProperty)
+                    }
+                }
+                val intFields = mapOf(
+                    UTBot.message("settings.generation.timeoutFunction") to generatorSettings::timeoutPerFunction,
+                    UTBot.message("settings.generation.timeoutTest") to generatorSettings::timeoutPerTest,
+                    UTBot.message("settings.project.port") to utbotSettings::port
+                )
+                intFields.forEach { (message, intProperty) ->
+                    row(message) {
+                        intTextField().bindIntText(intProperty).applyToComponent {
+                            maximumSize = TEXT_FIELD_MAX_SIZE
+                        }
                     }
                 }
             }
-            row(UTBot.message("settings.project.serverName")) {
-                textField(utbotSettings::serverName).component.apply {
-                    this.maximumSize = TEXT_FIELD_MAX_SIZE
-                    onResetCallBacks.add { this.text = utbotSettings.serverName }
-                    onApplyCallBacks.add { utbotSettings.serverName = this.text }
+
+            group("Connection settings") {
+                row(UTBot.message("settings.project.serverName")) {
+                    textField().bindText(utbotSettings::serverName)
                 }
-            }
-            row(UTBot.message("settings.project.sourcePaths")) {
-                component(createSourcesListComponent())
-            }
-            row(UTBot.message("settings.project.remotePath")) {
-                textField(utbotSettings::remotePath).component.apply {
-                    this.maximumSize = TEXT_FIELD_MAX_SIZE
-                    onApplyCallBacks.add { utbotSettings.remotePath = this.text }
-                    onResetCallBacks.add { this.text = utbotSettings.remotePath }
-                }
-            }
-            row {
-                label("Try to get paths from CMake model: ")
-                button("detect paths") {
-                    utbotSettings.predictPaths()
-                    utbotSettings.fireUTBotSettingsChanged()
+                row(UTBot.message("settings.project.remotePath")) {
+                    textField().bindText(utbotSettings::remotePath)
                 }
             }
         }
@@ -155,26 +162,20 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
             .createPanel()
 
     override fun isModified(): Boolean {
-        return super.isModified() || (sourcePathListModel.toList() != utbotSettings.sourcePaths)
+        return panel.isModified()
     }
 
     override fun apply() {
-        onApplyCallBacks.forEach { it() }
-        utbotSettings.sourcePaths = sourcePathListModel.toList()
+        panel.apply()
         utbotSettings.fireUTBotSettingsChanged()
     }
 
     override fun reset() {
-        onResetCallBacks.forEach { it() }
-        sourcePathListModel.also {
-            it.removeAll()
-            it.addAll(0, utbotSettings.sourcePaths)
-        }
+        panel.reset()
     }
 
     companion object {
         val TEXT_FIELD_MAX_SIZE = Dimension(370, 100)
-        val INT_FIELD_MAX_SIZE = Dimension(100, 100)
         val SOURCES_LIST_SIZE = Dimension(500, 200)
     }
 }

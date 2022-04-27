@@ -2,14 +2,14 @@ package com.huawei.utbot.cpp.ui
 
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.actions.ConfigureProjectAction
+import com.huawei.utbot.cpp.actions.ShowWizardAction
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
-import com.huawei.utbot.cpp.client.Client
+import com.huawei.utbot.cpp.utils.client
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -73,7 +73,7 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
     }
 
     override fun getText(): String =
-        "UTBot: " + (statusBar?.project?.service<Client>()?.connectionStatus?.description
+        "UTBot: " + (statusBar?.project?.client?.connectionStatus?.description
             ?: ConnectionStatus.BROKEN.description)
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
@@ -98,6 +98,8 @@ object StatusBarActionsPopup {
         val actionGroup = DefaultActionGroup()
         actionGroup.isPopup = true
 
+        actionGroup.add(ShowWizardAction())
+        actionGroup.addSeparator()
         actionGroup.add(ConfigureProjectAction())
         actionGroup.addSeparator()
         actionGroup.add(AskServerToGenerateJsonForProjectConfiguration())

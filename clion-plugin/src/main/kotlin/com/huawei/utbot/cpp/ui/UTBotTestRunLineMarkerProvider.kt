@@ -39,6 +39,7 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
         if (element.firstChild != null || (element.text != "TEST" && element.text != "UTBot")) {
             return null
         }
+        if (element.containingFile.name.endsWith(".h")) return null
         val message = if (element.text == "TEST") "UTBot: Run with coverage" else "Run all tests with coverage"
         val icon = element.project.service<TestsResultsStorage>().getTestStatusIcon(element)
         return UTBotRunWithCoverageLineMarkerInfo(element, message, icon)

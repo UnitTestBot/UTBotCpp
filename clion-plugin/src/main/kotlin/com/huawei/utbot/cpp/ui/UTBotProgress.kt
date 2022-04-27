@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp.ui
 
+import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.progress.TaskInfo
 import com.intellij.openapi.progress.util.AbstractProgressIndicatorExBase
 import com.intellij.openapi.wm.ex.StatusBarEx
@@ -31,6 +32,7 @@ class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = nul
 
     override fun cancel() {
         requestJob?.cancel()
+        notifyInfo("Successfully canceled: $name")
         finish(task)
         super.cancel()
     }

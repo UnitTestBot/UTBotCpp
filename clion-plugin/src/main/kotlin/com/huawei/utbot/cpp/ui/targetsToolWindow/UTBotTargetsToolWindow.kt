@@ -1,16 +1,14 @@
-package com.huawei.utbot.cpp.ui
+package com.huawei.utbot.cpp.ui.targetsToolWindow
 
-
+import com.huawei.utbot.cpp.models.UTBotTarget
 import com.intellij.openapi.ui.SimpleToolWindowPanel
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.ColoredListCellRenderer
 import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
-
 import javax.swing.JList
-import com.huawei.utbot.cpp.models.UTBotTarget
-
+import javax.swing.ListSelectionModel
 
 class UTBotTargetsToolWindow(
     listModel: CollectionListModel<UTBotTarget>,
@@ -21,9 +19,9 @@ class UTBotTargetsToolWindow(
     init {
         val panel = JBScrollPane()
         uiList.cellRenderer = Renderer()
+        uiList.selectionMode = ListSelectionModel.SINGLE_SELECTION
         uiList.addListSelectionListener {
-            controller.selectionChanged(uiList.selectedIndex)
-            uiList.updateUI()
+            controller.selectionChanged(uiList.selectedValue)
         }
         panel.setViewportView(uiList)
         setContent(panel)
