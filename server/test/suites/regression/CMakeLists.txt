@@ -23,6 +23,12 @@ add_library(
         SAT-760/SAT-760_2.c
 )
 
+add_library(
+        PR-200
+        PR-200/pair.c
+        PR-200/PR-200.c
+)
+
 add_library(PR120 PR120.c)
 set_property(TARGET PR120 PROPERTY C_STANDARD 90)
 

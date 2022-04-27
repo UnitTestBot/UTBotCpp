@@ -680,72 +680,71 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
     int caseCounter = 0;
 
     for (const auto &case_ : cases) {
-        std::stringstream traceStream;
-        traceStream << "Test case #" << (++caseCounter) << ":\n";
-        string suiteName = getSuiteName(case_.status, lineInfo);
-        Tests::MethodTestCase testCase{ suiteName };
-        vector<Tests::TestCaseParamValue> paramValues;
-
-        Tests::TestCaseDescription testCaseDescription;
         try {
-            testCaseDescription = parseTestCaseParameters(case_, methodDescription,
-                                                          methodNameToReturnTypeMap, traceStream);
-        } catch (const UnImplementedException &e) {
-            LOG_S(WARNING) << "Skipping test case: " << e.what();
-            continue;
-        }
-        size_t size = case_.objects.size();
-        bool isVoidOrFPointer = types::TypesHandler::skipTypeInReturn(methodDescription.returnType);
-        if ((isVoidOrFPointer && size > 0) || (!isVoidOrFPointer && size > 1) ||
-            methodDescription.params.empty()) {
-            swap(testCase.paramValues, testCaseDescription.funcParamValues);
-        } else {
-            // if all of the data characters are not printable the case is skipped
-            continue;
-        }
-        swap(testCase.classPreValues, testCaseDescription.classPreValues);
-        swap(testCase.classPostValues, testCaseDescription.classPostValues);
-        swap(testCase.globalPreValues, testCaseDescription.globalPreValues);
-        swap(testCase.globalPostValues, testCaseDescription.globalPostValues);
-        swap(testCase.paramPostValues, testCaseDescription.paramPostValues);
-        swap(testCase.stubValuesTypes, testCaseDescription.stubValuesTypes);
-        swap(testCase.stubValues, testCaseDescription.stubValues);
-        swap(testCase.stdinValue, testCaseDescription.stdinValue);
-        swap(testCase.objects, testCaseDescription.objects);
-        swap(testCase.fromAddressToName, testCaseDescription.fromAddressToName);
-        swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
-        if (filterByLineFlag) {
-            auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
-            if (!view || view->getEntryValue() != "1") {
+            std::stringstream traceStream;
+            traceStream << "Test case #" << (++caseCounter) << ":\n";
+            string suiteName = getSuiteName(case_.status, lineInfo);
+            Tests::MethodTestCase testCase{suiteName};
+            vector<Tests::TestCaseParamValue> paramValues;
+
+            Tests::TestCaseDescription testCaseDescription = parseTestCaseParameters(case_, methodDescription,
+                                                                                     methodNameToReturnTypeMap,
+                                                                                     traceStream);
+            size_t size = case_.objects.size();
+            bool isVoidOrFPointer = types::TypesHandler::skipTypeInReturn(methodDescription.returnType);
+            if ((isVoidOrFPointer && size > 0) || (!isVoidOrFPointer && size > 1) ||
+                methodDescription.params.empty()) {
+                swap(testCase.paramValues, testCaseDescription.funcParamValues);
+            } else {
+                // if all of the data characters are not printable the case is skipped
                 continue;
             }
-        }
-        auto const& predicateInfo = lineInfo ? lineInfo->predicateInfo : std::nullopt;
-        if (predicateInfo.has_value() &&
-            !predicateMatch(testCaseDescription.returnValue.view->getEntryValue(), predicateInfo.value())) {
-            continue;
-        }
+            swap(testCase.classPreValues, testCaseDescription.classPreValues);
+            swap(testCase.classPostValues, testCaseDescription.classPostValues);
+            swap(testCase.globalPreValues, testCaseDescription.globalPreValues);
+            swap(testCase.globalPostValues, testCaseDescription.globalPostValues);
+            swap(testCase.paramPostValues, testCaseDescription.paramPostValues);
+            swap(testCase.stubValuesTypes, testCaseDescription.stubValuesTypes);
+            swap(testCase.stubValues, testCaseDescription.stubValues);
+            swap(testCase.stdinValue, testCaseDescription.stdinValue);
+            swap(testCase.objects, testCaseDescription.objects);
+            swap(testCase.fromAddressToName, testCaseDescription.fromAddressToName);
+            swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+            if (filterByLineFlag) {
+                auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
+                if (!view || view->getEntryValue() != "1") {
+                    continue;
+                }
+            }
+            auto const &predicateInfo = lineInfo ? lineInfo->predicateInfo : std::nullopt;
+            if (predicateInfo.has_value() &&
+                !predicateMatch(testCaseDescription.returnValue.view->getEntryValue(), predicateInfo.value())) {
+                continue;
+            }
 
-        if (predicateInfo.has_value() && predicateInfo->type != testsgen::STRING) {
-            testCase.returnValueView = std::make_shared<PrimitiveValueView>(
-                    PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
-        } else {
-            testCase.returnValueView = testCaseDescription.returnValue.view;
+            if (predicateInfo.has_value() && predicateInfo->type != testsgen::STRING) {
+                testCase.returnValueView = std::make_shared<PrimitiveValueView>(
+                        PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
+            } else {
+                testCase.returnValueView = testCaseDescription.returnValue.view;
+            }
+
+            if (methodDescription.returnType.isObjectPointer() && !methodDescription.returnType.maybeArray
+                && testCaseDescription.functionReturnNotNullValue.view &&
+                testCaseDescription.functionReturnNotNullValue.view->getEntryValue() == "0") {
+                testCase.returnValueView = std::make_shared<PrimitiveValueView>(PrinterUtils::C_NULL);
+            }
+            traceStream << "\treturn: " << testCase.returnValueView->getEntryValue();
+            LOG_S(MAX) << traceStream.str();
+
+            assignTypeUnnamedVar(testCase, methodDescription);
+            assignTypeStubVar(testCase, methodDescription);
+
+            methodDescription.testCases.push_back(testCase);
+            methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
+        } catch (const UnImplementedException &e) {
+            LOG_S(WARNING) << "Skipping test case: " << e.what();
         }
-
-        if (methodDescription.returnType.isObjectPointer() && !methodDescription.returnType.maybeArray
-            && testCaseDescription.functionReturnNotNullValue.view &&
-            testCaseDescription.functionReturnNotNullValue.view->getEntryValue() == "0") {
-            testCase.returnValueView = std::make_shared<PrimitiveValueView>(PrinterUtils::C_NULL);
-        }
-        traceStream << "\treturn: " << testCase.returnValueView->getEntryValue();
-        LOG_S(MAX) << traceStream.str();
-
-        assignTypeUnnamedVar(testCase, methodDescription);
-        assignTypeStubVar(testCase, methodDescription);
-
-        methodDescription.testCases.push_back(testCase);
-        methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
     }
 }
 
