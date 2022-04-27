@@ -4,8 +4,12 @@
 
 #include "ShellExecTask.h"
 
-#include <building/BaseCommand.h>
-#include <utils/ExecUtils.h>
+#include "building/BaseCommand.h"
+#include "utils/ExecUtils.h"
+
+#include "loguru.h"
+
+#include <fstream>
 
 namespace utbot {
     ShellExecTask::ExecutionParameters BaseCommand::toExecutionParameters() const {

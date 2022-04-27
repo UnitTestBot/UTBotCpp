@@ -7,7 +7,7 @@
 
 #include "BaseTestGen.h"
 
-class SnippetTestGen : public BaseTestGen {
+class SnippetTestGen final : public BaseTestGen {
 public:
     SnippetTestGen(const testsgen::SnippetRequest &request,
                    ProgressWriter *progressWriter,

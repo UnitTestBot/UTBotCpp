@@ -5,7 +5,8 @@
 #ifndef UNITTESTBOT_COPMILATIONUTILS_H
 #define UNITTESTBOT_COPMILATIONUTILS_H
 
-#include <clang/Tooling/CompilationDatabase.h>
+#include "building/CompilationDatabase.h"
+
 #include "json.hpp"
 
 #include "utils/path/FileSystemPath.h"
@@ -35,13 +36,10 @@ namespace CompilationUtils {
 
     std::string getBuildDirectoryName(CompilerName compilerName);
 
-    std::shared_ptr<clang::tooling::CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     getCompilationDatabase(const fs::path &buildCommandsJsonPath);
 
     CompilerName getCompilerName(fs::path const &compilerPath);
-
-    fs::path detectBuildCompilerPath(
-        const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase);
 
     fs::path substituteRemotePathToCompileCommandsJsonPath(const fs::path &projectPath,
                                                            const std::string &buildDirRelativePath);

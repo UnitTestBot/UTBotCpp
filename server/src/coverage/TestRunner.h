@@ -12,7 +12,7 @@
 #include "utils/path/FileSystemPath.h"
 #include "streams/IStreamWriter.h"
 #include "streams/coverage/CoverageAndResultsWriter.h"
-#include <streams/coverage/ServerCoverageAndResultsWriter.h>
+#include "streams/coverage/ServerCoverageAndResultsWriter.h"
 
 #include <string>
 #include <vector>

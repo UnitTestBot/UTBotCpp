@@ -15,7 +15,6 @@
 using namespace clang;
 using namespace llvm;
 using namespace clang::ast_matchers;
-using namespace clang::tooling;
 
 BordersFinder::BordersFinder(const fs::path &filePath,
                              unsigned line,
@@ -153,12 +152,14 @@ bool BordersFinder::containsLine(BordersFinder::Borders b) const {
 void BordersFinder::findFunction() {
     MatchFinder finder;
     finder.addMatcher(Matchers::functionDefinitionMatcher, this);
-    clangToolRunner.run(lineInfo.filePath, newFrontendActionFactory(&finder).get());
+    auto factory = clang::tooling::newFrontendActionFactory(&finder);
+    clangToolRunner.run(lineInfo.filePath, factory.get());
 }
 
 void BordersFinder::findClass() {
     MatchFinder finder;
     finder.addMatcher(Matchers::classJustDeclMatcher, this);
     finder.addMatcher(Matchers::structJustDeclMatcher, this);
-    clangToolRunner.run(lineInfo.filePath, newFrontendActionFactory(&finder).get(), false, std::nullopt, false);
+    auto factory = clang::tooling::newFrontendActionFactory(&finder);
+    clangToolRunner.run(lineInfo.filePath, factory.get(), false, std::nullopt, false);
 }

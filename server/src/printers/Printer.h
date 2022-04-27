@@ -6,19 +6,13 @@
 #define UNITTESTBOT_PRINTER_H
 
 #include "Language.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "stubs/Stubs.h"
+#include "utils/path/FileSystemPath.h"
 #include "types/Types.h"
 
-#include "loguru.h"
-
 #include <cstdio>
-#include "utils/path/FileSystemPath.h"
-#include <fstream>
-#include <iostream>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -144,8 +138,7 @@ namespace printer {
 
         Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
 
-        std::vector<string> printForLoopsAndReturnLoopIterators(SRef objectName,
-                                                                const std::vector<size_t> &bounds);
+        std::vector<string> printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds);
 
         static string constrIndex(SRef arrayName, SRef ind);
 

@@ -6,7 +6,6 @@
 #define UNITTESTBOT_KLEEASSUMEVISITOR_H
 
 #include "AbstractValueViewVisitor.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "printers/KleePrinter.h"
 

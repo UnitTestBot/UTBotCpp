@@ -4,6 +4,7 @@
 
 #include "Server.h"
 
+#include "BordersFinder.h"
 #include "FeaturesFilter.h"
 #include "GTestLogger.h"
 #include "KleeRunner.h"
@@ -35,6 +36,7 @@
 #include "utils/TypeUtils.h"
 
 #include <thread>
+#include <fstream>
 
 using TypeUtils::isSameType;
 
@@ -224,7 +226,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                           lineTestGen->compileCommandsJsonPath);
                 classFinder.findClass();
                 lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
-                lineInfo->filePath = lineTestGen->testingMethodsSourcePaths[0];
+                lineInfo->filePath = lineTestGen->getSourcePath();
                 CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
                                           [&lineInfo](const tests::Tests::MethodDescription &methodDescription) {
                                               return methodDescription.isClassMethod() &&
@@ -252,12 +254,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 fs::path flagFilePath =
                     printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath))
                         .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
-                pathSubstitution = { testGen.testingMethodsSourcePaths[0], flagFilePath };
+                pathSubstitution = { lineTestGen->filePath, flagFilePath };
             }
         }
         auto generator = std::make_shared<KleeGenerator>(
             testGen.projectContext, testGen.settingsContext,
-            testGen.serverBuildDir, testGen.sourcePaths, testGen.compilationDatabase, typesHandler,
+            testGen.serverBuildDir, testGen.compilationDatabase, typesHandler,
             pathSubstitution, testGen.buildDatabase, testGen.progressWriter);
 
         ReturnTypesFetcher returnTypesFetcher{ &testGen };
@@ -272,8 +274,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
+        bool interactiveMode = (dynamic_cast<FileTestGen *>(&testGen) != nullptr);
+        auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched());
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode);
+        auto finish_time = std::chrono::steady_clock::now();
+        LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
     } catch (const ExecutionProcessException &e) {
         string command = e.what();
         return Status(StatusCode::FAILED_PRECONDITION,
@@ -302,7 +308,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 }
 
 shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
-    BordersFinder stmtFinder(lineTestGen.testingMethodsSourcePaths[0], lineTestGen.line,
+    BordersFinder stmtFinder(lineTestGen.filePath, lineTestGen.line,
                              lineTestGen.compilationDatabase,
                              lineTestGen.compileCommandsJsonPath);
     stmtFinder.findFunction();
@@ -620,10 +626,17 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
         return UserProjectConfiguration::RunProjectConfigurationCommands(
                 buildDirPath, projectContext.projectname(), cmakeOptions, writer);
     }
+    case ConfigMode::ALL: {
+        std::vector<string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
+        return UserProjectConfiguration::RunProjectReConfigurationCommands(
+                buildDirPath, fs::path(projectContext.projectpath()),
+                projectContext.projectname(), cmakeOptions, writer);
+    }
     default:
-        return Status(StatusCode::CANCELLED, "Invalid request type.");
+        return {StatusCode::CANCELLED, "Invalid request type."};
     }
 }
+
 Status Server::TestsGenServiceImpl::GetProjectTargets(ServerContext *context,
                                                       const ProjectTargetsRequest *request,
                                                       ProjectTargetsResponse *response) {

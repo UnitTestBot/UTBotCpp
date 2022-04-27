@@ -59,7 +59,7 @@ namespace visitor {
         }
         std::vector<size_t> sizes = type.arraysSizes(usage);
 
-        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(name, sizes);
+        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto newAccess = printer::Printer::constrMultiIndex(access, iterators);
 
         auto p = processExpect(type.baseTypeObj(), PrinterUtils::EQ,

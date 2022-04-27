@@ -5,8 +5,6 @@
 #ifndef UNITTESTBOT_PATHS_H
 #define UNITTESTBOT_PATHS_H
 
-#include "loguru.h"
-
 #include "Language.h"
 #include "ProjectContext.h"
 #include "RequestEnvironment.h"
@@ -32,14 +30,15 @@ namespace Paths {
 
     /**
      * @brief Traverses all paths and removes all which parent directory is not any of `dirPaths`.
-     * @param path Vector of paths to files.
+     * @param path Set of paths to files.
      * @param dirPaths Vector of directory paths where files must be located.
      * @param allowedExt If file extension not present in `allowedExt`, skips it.
      * @return Vector of filtered paths.
      */
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &path,
-                                           const vector<fs::path> &dirNames,
-                                           const std::function<bool(const fs::path &path)> &filter);
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &path,
+                          const vector<fs::path> &dirNames,
+                          const std::function<bool(const fs::path &path)> &filter);
 
     static inline void setOptPath(fs::path &path, const string &value) {
         path = fs::path(value);
@@ -239,20 +238,7 @@ namespace Paths {
         return isCFile(path) || isCXXFile(path);
     }
 
-    static inline utbot::Language getSourceLanguage(const fs::path &path) {
-        if(isHFile(path)) {
-            LOG_S(WARNING) << "C language detected by .h file: " << path.string();
-            return utbot::Language::C;
-        }
-        if(isCFile(path)) {
-            return utbot::Language::C;
-        }
-        if(isCXXFile(path) || isHppFile(path)) {
-            return utbot::Language::CXX;
-        }
-        LOG_S(WARNING) << "Unknown source language of " << path.string();
-        return utbot::Language::UNKNOWN;
-    }
+    utbot::Language getSourceLanguage(const fs::path &path);
 
     static inline bool isObjectFile(const fs::path &path) {
         return path.extension() == ".o";

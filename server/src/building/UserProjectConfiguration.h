@@ -31,6 +31,12 @@ public:
                                                   vector<string> cmakeOptions,
                                                   ProjectConfigWriter const &writer);
 
+    static Status RunProjectReConfigurationCommands(const fs::path &buildDirPath,
+                                                    const fs::path &projectDirPath,
+                                                    const string &projectName,
+                                                    vector<string> cmakeOptions,
+                                                    ProjectConfigWriter const &writer);
+
 private:
     static void RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                const ShellExecTask::ExecutionParameters &params,
@@ -46,6 +52,8 @@ private:
     static fs::path getBearShScriptPath(const fs::path &buildDirPath);
 
     static fs::path createBearShScript(const fs::path &buildDirPath);
+
+    static bool createBuildDirectory(const fs::path &buildDirPath, ProjectConfigWriter const &writer);
 };
 
 

@@ -28,8 +28,6 @@ public:
 private:
     testsgen::ProjectRequest const *const request;
 
-    vector<fs::path> getSourcePathCandidates() const;
-
     vector<fs::path> getRequestSourcePaths() const;
 
     void autoDetectSourcePathsIfNotEmpty();

@@ -18,6 +18,7 @@
 #include "loguru.h"
 
 #include <unordered_set>
+#include <fstream>
 
 using namespace types;
 using printer::KleePrinter;

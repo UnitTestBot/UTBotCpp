@@ -5,11 +5,12 @@
 
 #include "CLICoverageAndResultsWriter.h"
 
+#include "utils/FileSystemUtils.h"
+#include "utils/TimeUtils.h"
+
 #include "loguru.h"
 
 #include <fstream>
-#include <utils/FileSystemUtils.h>
-#include <utils/TimeUtils.h>
 
 CLICoverageAndResultsWriter::CLICoverageAndResultsWriter(const fs::path &resultsDirectory)
     : resultsDirectory(resultsDirectory), CoverageAndResultsWriter(nullptr) {

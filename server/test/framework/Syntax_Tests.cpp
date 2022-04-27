@@ -7,11 +7,11 @@
 #include "BaseTest.h"
 #include "KleeGenerator.h"
 #include "Server.h"
+#include "streams/coverage/ServerCoverageAndResultsWriter.h"
+#include "coverage/CoverageAndResultsGenerator.h"
 
 #include "utils/path/FileSystemPath.h"
 #include <functional>
-#include <streams/coverage/ServerCoverageAndResultsWriter.h>
-#include <coverage/CoverageAndResultsGenerator.h>
 
 namespace {
     using grpc::Channel;
@@ -52,6 +52,7 @@ namespace {
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
         fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
         fs::path array_sort_c = getTestFilePath("array_sort.c");
+        fs::path stubs_c = getTestFilePath("stubs.c");
 
         void SetUp() override {
             clearEnv();
@@ -1914,7 +1915,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, find_maximum) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 170);
+        auto [testGen, status] = createTestForFunction(stubs_c, 7);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1922,11 +1923,22 @@ namespace {
     }
 
     TEST_F(Syntax_Test, vowel_consonant) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 179);
+        auto [testGen, status] = createTestForFunction(stubs_c, 16);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        EXPECT_TRUE(testUtils::getNumberOfTests(testGen.tests) >= 2);
+        checkTestCasePredicates(
+            testGen.tests.at(stubs_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    }
+                })
+        );
     }
 
     TEST_F(Syntax_Test, tree_deep) {

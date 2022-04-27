@@ -4,8 +4,10 @@
 
 #include "FetcherUtils.h"
 #include "environment/EnvironmentPaths.h"
+#include "exceptions/CompilationDatabaseException.h"
+#include "building/CompilationDatabase.h"
 
-#include <clang/Tooling/CompilationDatabase.h>
+#include "loguru.h"
 
 #include <memory>
 
@@ -42,11 +44,59 @@ ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
 }
 
 ClangToolRunner::ClangToolRunner(
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
+    std::shared_ptr<CompilationDatabase> compilationDatabase)
     : compilationDatabase(std::move(compilationDatabase)) {
-    fs::path buildCompilerPath =
-        CompilationUtils::detectBuildCompilerPath(this->compilationDatabase);
-    this->resourceDir = CompilationUtils::getResourceDirectory(buildCompilerPath);
+}
+
+void ClangToolRunner::run(const fs::path &file,
+                          clang::tooling::ToolAction *toolAction,
+                          bool ignoreDiagnostics,
+                          const std::optional<std::string> &virtualFileContent,
+                          bool onlySource) {
+    MEASURE_FUNCTION_EXECUTION_TIME
+    if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
+        return;
+    }
+    if (onlySource) {
+        if (!CollectionUtils::contains(compilationDatabase->getAllFiles(), file)) {
+            throw CompilationDatabaseException(
+                "compile_commands.json doesn't contain a command for source file " + file.string());
+        }
+    }
+    auto clangTool = std::make_unique<clang::tooling::ClangTool>(
+        compilationDatabase->getClangCompilationDatabase(), file.string());
+    if (ignoreDiagnostics) {
+        clangTool->setDiagnosticConsumer(&ignoringDiagConsumer);
+    }
+    if (virtualFileContent.has_value()) {
+        clangTool->mapVirtualFile(file.c_str(), virtualFileContent.value());
+    }
+    setResourceDirOption(clangTool.get());
+    int status = clangTool->run(toolAction);
+    if (!ignoreDiagnostics) {
+        checkStatus(status);
+    }
+}
+
+void ClangToolRunner::run(const tests::TestsMap *const tests,
+                          clang::tooling::ToolAction *toolAction,
+                          bool ignoreDiagnostics) {
+    auto files = CollectionUtils::getKeys(*tests);
+    for (fs::path const &file : files) {
+        run(file, toolAction, ignoreDiagnostics);
+    }
+}
+
+void ClangToolRunner::runWithProgress(const tests::TestsMap *tests,
+                                      clang::tooling::ToolAction *toolAction,
+                                      const ProgressWriter *progressWriter,
+                                      const string &message,
+                                      bool ignoreDiagnostics) {
+    MEASURE_FUNCTION_EXECUTION_TIME
+    auto files = CollectionUtils::getKeys(*tests);
+    ExecUtils::doWorkWithProgress(
+        files, progressWriter, message,
+        [&](fs::path const &file) { run(file, toolAction, ignoreDiagnostics); });
 }
 
 void ClangToolRunner::checkStatus(int status) const {
@@ -55,6 +105,7 @@ void ClangToolRunner::checkStatus(int status) const {
 }
 
 void ClangToolRunner::setResourceDirOption(clang::tooling::ClangTool *clangTool) {
+    auto const &resourceDir = compilationDatabase->getResourceDir();
     if (resourceDir.has_value()) {
         string resourceDirFlag =
             StringUtils::stringFormat("-resource-dir=%s", resourceDir.value());

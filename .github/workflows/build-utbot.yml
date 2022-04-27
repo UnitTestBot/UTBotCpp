@@ -12,14 +12,15 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Read config from matrix.json
+      - name: Checkout repository
         uses: actions/checkout@v2
       - id: set-matrix
+        name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
           echo "::set-output name=matrix::$TASKS"
 
-  build:
+  build-utbot-and-run-unit-tests:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
@@ -41,18 +42,53 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: build UTBot and run unit tests
+      - name: Build UTBot
         run: |
-          chmod +x docker/action-scripts/build-and-unit-tests.sh
-          ./docker/action-scripts/build-and-unit-tests.sh
-        shell: bash
+          chmod +x docker/action-scripts/build-utbot.sh
+          ./docker/action-scripts/build-utbot.sh
+
+      - name: Run Unit Tests
+        run: |
+          chmod +x docker/action-scripts/unit-tests.sh
+          ./docker/action-scripts/unit-tests.sh
       - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: UTBot unit tests logs
           path: server/build/logs
-      - name: build VSCode plugin
+
+  build-utbot-and-run-integration-tests:
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    container:
+      image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        UTBOT_ALL: /utbot_distr
+        UTBOT_INSTALL_DIR: /utbot_distr/install
+        GRPC_PATH: /utbot_distr/install
+        CLI_PATH: /utbot_distr/cli
+        DOCKER_TAG: ${{ matrix.DOCKER_TAG }}
+        ARTIFACT_DIR: utbot-artifact
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: build UTBot
+        run: |
+          chmod +x docker/action-scripts/build-utbot.sh
+          ./docker/action-scripts/build-utbot.sh
+
+      - name: Run Integration Tests
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
           ./docker/action-scripts/build-vsix.sh
+          chmod +x docker/action-scripts/integration-tests.sh
+          ./docker/action-scripts/integration-tests.sh
 

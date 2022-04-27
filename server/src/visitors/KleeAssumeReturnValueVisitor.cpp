@@ -121,7 +121,7 @@ namespace visitor {
             int pointerIndex = type.indexOfFirstPointerInTypeKinds();
             sizes = std::vector<size_t>(sizes.begin(), sizes.begin() + pointerIndex);
         }
-        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(name, sizes);
+        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 
         auto baseType = type.baseTypeObj(sizes.size());

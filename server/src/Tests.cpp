@@ -9,6 +9,8 @@
 #include "printers/TestsPrinter.h"
 #include "utils/KleeUtils.h"
 
+#include "loguru.h"
+
 using namespace tests;
 using namespace types;
 
@@ -850,7 +852,10 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
         processGlobalParamPostValue(testCaseDescription, globalParam, rawKleeParams);
     }
 
-    processSymbolicStdin(testCaseDescription, rawKleeParams);
+    //We should turn off symbolic stdin, because it doesn't work correct with interactive mode
+    //TODO: rewrite symbolic stdin, so that it can work with interactive mode
+    //processSymbolicStdin(testCaseDescription, rawKleeParams);
+
     processStubParamValue(testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
         const auto kleeResParam = getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);

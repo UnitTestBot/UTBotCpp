@@ -7,14 +7,12 @@
 #include "BaseTest.h"
 #include "KleeGenerator.h"
 #include "SettingsContext.h"
-#include "building/Linker.h"
 
 #include "utils/path/FileSystemPath.h"
 
 namespace {
     using namespace std;
     using testsgen::TestsResponse;
-    using namespace clang::tooling;
 
     class KleeGen_Test : public BaseTest {
     protected:
@@ -23,7 +21,7 @@ namespace {
         struct TestSuite {
             string name;
             fs::path buildPath;
-            vector<fs::path> sourcesFilePaths;
+            CollectionUtils::FileSet sourcesFilePaths;
         };
 
         fs::path tmpDirPath = baseSuitePath / buildDirRelativePath;
@@ -52,9 +50,9 @@ namespace {
         }
 
         KleeGenerator initKleeGenerator(const TestSuite &suite, string &errorMessage) {
-            std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase =
-                CompilationDatabase::autoDetectFromDirectory(suite.buildPath.string(),
-                                                             errorMessage);
+            std::shared_ptr<CompilationDatabase> compilationDatabase =
+                CompilationDatabase::autoDetectFromDirectory(
+                    suite.buildPath.string(), errorMessage);
             types::TypesHandler::SizeContext sizeContext;
             types::TypeMaps typeMaps;
             types::TypesHandler typesHandler(typeMaps, sizeContext);
@@ -65,7 +63,7 @@ namespace {
                 std::make_shared<BuildDatabase>(suite.buildPath, suite.buildPath, projectContext);
             utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
             KleeGenerator generator(std::move(projectContext),
-                                    std::move(settingsContext), tmpDirPath, suite.sourcesFilePaths,
+                                    std::move(settingsContext), tmpDirPath,
                                     compilationDatabase, typesHandler, {}, buildDatabase);
             return generator;
         }
@@ -88,7 +86,7 @@ namespace {
         string errorMessage;
         auto generator = initKleeGenerator(testSuite, errorMessage);
         ASSERT_TRUE(errorMessage.empty());
-        auto sourceFilePath = testSuite.sourcesFilePaths[0];
+        fs::path sourceFilePath = *testSuite.sourcesFilePaths.begin();
         auto actualFilePath = generator.defaultBuild(sourceFilePath);
         EXPECT_TRUE(fs::exists(actualFilePath.getOpt().value()));
     }

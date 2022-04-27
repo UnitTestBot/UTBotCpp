@@ -6,7 +6,6 @@
 #define UNITTESTBOT_TIMEEXECSTATISTICS_H
 
 #include <chrono>
-#include <iostream>
 #include <tuple>
 #include <unordered_map>
 #include <vector>

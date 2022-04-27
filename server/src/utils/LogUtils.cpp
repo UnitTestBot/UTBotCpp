@@ -11,7 +11,6 @@
 
 #include "loguru.h"
 
-#include <cstring>
 #include <thread>
 
 namespace LogUtils {

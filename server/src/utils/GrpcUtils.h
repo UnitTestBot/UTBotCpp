@@ -7,11 +7,11 @@
 
 #include "ProjectContext.h"
 #include "ProjectTarget.h"
+#include "utils/path/FileSystemPath.h"
 
 #include <protobuf/testgen.grpc.pb.h>
 
 #include <experimental/type_traits>
-#include "utils/path/FileSystemPath.h"
 #include <memory>
 #include <utility>
 

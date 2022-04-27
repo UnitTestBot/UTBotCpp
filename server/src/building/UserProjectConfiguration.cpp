@@ -32,13 +32,7 @@ Status UserProjectConfiguration::CheckProjectConfiguration(const fs::path &build
 
 Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &buildDirPath,
                                                            ProjectConfigWriter const &writer) {
-    try {
-        fs::create_directories(buildDirPath);
-        createBearShScript(buildDirPath);
-        writer.writeResponse(ProjectConfigStatus::IS_OK);
-    } catch (fs::filesystem_error const &e) {
-        writer.writeResponse(ProjectConfigStatus::BUILD_DIR_CREATION_FAILED, e.code().message());
-    }
+    createBuildDirectory(buildDirPath, writer);
     return Status::OK;
 }
 
@@ -52,7 +46,8 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
         fs::path bearShPath = createBearShScript(buildDirPath);
         cmakeOptions.emplace_back("..");
         ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptions);
-        ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(), {Paths::getMake(), MakefileUtils::threadFlag()});
+        ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(),
+                                                          {Paths::getMake(), MakefileUtils::threadFlag()});
 
 
         fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
@@ -78,11 +73,11 @@ void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &bu
                                                               const ShellExecTask::ExecutionParameters &params,
                                                               const string &projectName,
                                                               const ProjectConfigWriter &writer) {
-    auto [out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectName, true, true);
+    auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectName, true, true);
     if (status != 0) {
         auto logFilePath = LogUtils::writeLog(out, Paths::getTmpDir(projectName), "project-import");
         string message = StringUtils::stringFormat(
-            "Running command \"%s\" failed. See more info in logs.", params.toString());
+                "Running command \"%s\" failed. See more info in logs.", params.toString());
         throw std::runtime_error(message);
     }
 }
@@ -115,13 +110,51 @@ static string getBearShEnvironmentSetting() {
 fs::path UserProjectConfiguration::createBearShScript(const fs::path &buildDirPath) {
     fs::path bearShPath = getBearShScriptPath(buildDirPath);
     std::string script =
-        StringUtils::stringFormat("#!/bin/bash\n"
-                                  "%s\n"
-                                  "%s\n"
-                                  "%s %s \"$@\"",
-                                  Copyright::GENERATED_SH_HEADER, getBearShEnvironmentSetting(),
-                                  Paths::getPython(), Paths::getBear());
+            StringUtils::stringFormat("#!/bin/bash\n"
+                                      "%s\n"
+                                      "%s\n"
+                                      "%s %s \"$@\"",
+                                      Copyright::GENERATED_SH_HEADER, getBearShEnvironmentSetting(),
+                                      Paths::getPython(), Paths::getBear());
     FileSystemUtils::writeToFile(bearShPath, script);
     fs::permissions(bearShPath, fs::perms::all);
     return bearShPath;
+}
+
+Status UserProjectConfiguration::RunProjectReConfigurationCommands(const fs::path &buildDirPath,
+                                                                   const fs::path &projectDirPath,
+                                                                   const string &projectName,
+                                                                   vector<string> cmakeOptions,
+                                                                   ProjectConfigWriter const &writer) {
+    try {
+        fs::remove_all(Paths::getTmpDir(""));
+        if (Paths::isSubPathOf(projectDirPath, buildDirPath)) {
+            fs::remove_all(buildDirPath);
+        } else {
+            writer.writeResponse(ProjectConfigStatus::BUILD_DIR_SAME_AS_PROJECT,
+                                 "For remove build directory, it must be a subdirectory of the project");
+        }
+    } catch (const std::exception &e) {
+        writer.writeResponse(ProjectConfigStatus::BUILD_DIR_CREATION_FAILED, e.what());
+        return Status::OK;
+    }
+
+    if (!createBuildDirectory(buildDirPath, writer)) {
+        return Status::OK;
+    }
+    return UserProjectConfiguration::RunProjectConfigurationCommands(buildDirPath, projectName,
+                                                                     cmakeOptions, writer);
+}
+
+bool UserProjectConfiguration::createBuildDirectory(const fs::path &buildDirPath,
+                                                    ProjectConfigWriter const &writer) {
+    try {
+        fs::create_directories(buildDirPath);
+        createBearShScript(buildDirPath);
+        writer.writeResponse(ProjectConfigStatus::IS_OK);
+    } catch (fs::filesystem_error const &e) {
+        writer.writeResponse(ProjectConfigStatus::BUILD_DIR_CREATION_FAILED, e.code().message());
+        return false;
+    }
+    return true;
 }

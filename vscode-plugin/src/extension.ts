@@ -26,6 +26,7 @@ import * as pathUtils from './utils/pathUtils';
 import { executeCommand, getExtensionCommands, registerTextEditorCommand, registerCommand } from './utils/utils';
 import { UtbotWizardPanel } from './wizard/wizard';
 import { WizardEventsEmitter } from './wizard/wizardEventsEmitter';
+import {ConfigMode} from "./proto-ts/testgen_pb";
 const { logger } = ExtensionLogger;
 
 export async function activate(context: vs.ExtensionContext): Promise<any> {
@@ -168,6 +169,15 @@ export async function activate(context: vs.ExtensionContext): Promise<any> {
 			})
 		);
 
+		/**
+		 * Register commands for Project Configuration
+		 */
+		context.subscriptions.push(
+			registerCommand(Commands.ReConfigureProject, async (): Promise<void> => {
+				await reConfigureProject();
+			})
+		);
+
 
 		/**
 		 * Register commands for Tests Generation
@@ -292,7 +302,12 @@ export async function activate(context: vs.ExtensionContext): Promise<any> {
 
 	async function configureProject(): Promise<boolean> {
 		const projectConfig = new ProjectConfig(client);
-		return projectConfig.configure();	
+		return projectConfig.configure(ConfigMode.CHECK);
+	}
+
+	async function reConfigureProject(): Promise<boolean> {
+		const projectConfig = new ProjectConfig(client);
+		return projectConfig.configure(ConfigMode.ALL);
 	}
 
 	async function genSnippetCallback(editor?: vs.TextEditor): Promise<void> {
@@ -339,4 +354,3 @@ export async function activate(context: vs.ExtensionContext): Promise<any> {
 	}
 	return api;
 }
-

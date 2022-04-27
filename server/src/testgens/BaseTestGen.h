@@ -31,9 +31,10 @@ public:
     fs::path serverBuildDir;
 
     fs::path compileCommandsJsonPath;
-    shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
+    shared_ptr<CompilationDatabase> compilationDatabase;
     shared_ptr<BuildDatabase> buildDatabase;
-    vector<fs::path> sourcePaths, testingMethodsSourcePaths;
+
+    CollectionUtils::FileSet sourcePaths, testingMethodsSourcePaths;
     tests::TestsMap tests;
     std::unordered_map<string, types::Type> methodNameToReturnTypeMap;
     vector<Stubs> synchronizedStubs;

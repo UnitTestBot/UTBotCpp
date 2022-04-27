@@ -7,6 +7,8 @@
 #include "utils/PrinterUtils.h"
 #include "exceptions/UnImplementedException.h"
 
+#include "loguru.h"
+
 using namespace types;
 using printer::KleeConstraintsPrinter;
 
@@ -114,7 +116,7 @@ void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const Constrai
         int pointerIndex = state.curType.indexOfFirstPointerInTypeKinds();
         sizes = std::vector<size_t>(sizes.begin(), sizes.begin() + pointerIndex);
     }
-    const auto indexes = printForLoopsAndReturnLoopIterators(state.curElement, sizes);
+    const auto indexes = printForLoopsAndReturnLoopIterators(sizes);
     std::string element = constrMultiIndex(state.curElement, indexes);
 
     if (state.endString && types::TypesHandler::isCharacterType(baseType) &&

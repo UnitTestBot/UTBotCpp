@@ -9,7 +9,6 @@
 #include "ProjectContext.h"
 #include "Result.h"
 #include "SettingsContext.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "exceptions/CompilationDatabaseException.h"
@@ -20,8 +19,6 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
-
-#include <clang/Tooling/CommonOptionsParser.h>
 
 #include "utils/path/FileSystemPath.h"
 #include <optional>
@@ -59,8 +56,7 @@ public:
     KleeGenerator(utbot::ProjectContext projectContext,
                   utbot::SettingsContext settingsContext,
                   fs::path serverBuildDir,
-                  vector<fs::path> sourcesFilePaths,
-                  std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase,
+                  std::shared_ptr<CompilationDatabase> compilationDatabase,
                   types::TypesHandler &typesHandler,
                   PathSubstitution filePathsSubstitution,
                   std::shared_ptr<BuildDatabase> buildDatabase = nullptr,
@@ -138,7 +134,7 @@ public:
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false);
 
-    [[nodiscard]] shared_ptr<BuildDatabase> getBuildDatabase() const;
+    [[nodiscard]] std::shared_ptr<BuildDatabase> getBuildDatabase() const;
 
     void handleFailedFunctions(tests::TestsMap &testsMap);
 
@@ -166,8 +162,7 @@ private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
-    vector<fs::path> srcFiles;
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
+    std::shared_ptr<CompilationDatabase> compilationDatabase;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
     std::shared_ptr<BuildDatabase> buildDatabase;

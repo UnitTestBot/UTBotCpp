@@ -120,6 +120,15 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 find_package(run_klee REQUIRED)
 
+option(ENABLE_PRECOMPILED_HEADERS "Enable precompiled headers" ON)
+
+if (ENABLE_PRECOMPILED_HEADERS)
+    set_source_files_properties(${ALL_PROTO_GENERATED_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+endif ()
+
+################################################################################
+# Library
+################################################################################
 add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
 target_include_directories(UnitTestBotLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
@@ -133,6 +142,13 @@ target_link_libraries(UnitTestBotLib PUBLIC clangTooling clangBasic clangASTMatc
         loguru
         kleeRunner
         )
+if (ENABLE_PRECOMPILED_HEADERS)
+    target_precompile_headers(UnitTestBotLib PUBLIC pch.h)
+endif ()
+
+################################################################################
+# Executable
+################################################################################
 add_llvm_executable(utbot main.cpp)
 target_link_libraries(utbot PUBLIC
         UnitTestBotLib
@@ -165,6 +181,10 @@ if (ENABLE_UNIT_TESTS)
             gtest_main
             UnitTestBotLib
     )
+
+    if (ENABLE_PRECOMPILED_HEADERS)
+        target_precompile_headers(UTBot_UnitTests PRIVATE [["gtest/gtest.h"]])
+    endif ()
 
     add_test(NAME test COMMAND UTBot_UnitTests)
 else ()

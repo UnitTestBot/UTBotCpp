@@ -23,6 +23,7 @@
    "unittestbot.selectLoggingLevel.title": "UTBot: Select Logging Level",
    "unittestbot.updateVerboseTestFlag.title": "UTBot: Update Verbose Tests Flag",
    "unittestbot.configureProject.title": "UTBot: Configure project",
+   "unittestbot.reConfigureProject.title": "UTBot: Reset cache and configure project",
    "unittestbot.generateIsolatedFileTests.title": "UTBot: Generate Tests For Code Snippet",
    "unittestbot.generateProjectTests.title": "UTBot: Generate Tests For Project",
    "unittestbot.generateFolderTests.title": "UTBot: Generate Tests For Folder",

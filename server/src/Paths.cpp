@@ -7,6 +7,8 @@
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
 
+#include "loguru.h"
+
 #include <pwd.h>
 #include <unistd.h>
 
@@ -22,18 +24,16 @@ namespace Paths {
     fs::path logPath = getHomeDir();
     fs::path tmpPath = getHomeDir();
 
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &paths,
-                                           const vector<fs::path> &dirPaths,
-                                           const std::function<bool(const fs::path &path)> &filter) {
-        std::vector<fs::path> filtered;
-        std::copy_if(paths.begin(), paths.end(), std::back_inserter(filtered),
-                     [&dirPaths, &filter](const fs::path &path) {
-                         return std::any_of(
-                             dirPaths.begin(), dirPaths.end(), [&](const auto &dirPath) {
-                                 return path.parent_path() == dirPath && fs::exists(path) &&
-                                        filter(path);
-                             });
-                     });
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &paths,
+                          const vector<fs::path> &dirPaths,
+                          const std::function<bool(const fs::path &path)> &filter) {
+        CollectionUtils::FileSet filtered =
+            CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
+                return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
+                    return path.parent_path() == dirPath && fs::exists(path) && filter(path);
+                });
+            });
         return filtered;
     }
 
@@ -44,6 +44,7 @@ namespace Paths {
         }
         return pathSet;
     }
+
     bool isSubPathOf(const fs::path &base, const fs::path &sub) {
         auto s = sub.parent_path();
         auto m = std::mismatch(base.begin(), base.end(), s.begin(), s.end());
@@ -154,6 +155,25 @@ namespace Paths {
         };
         return std::any_of(internalErrorSuffixes.begin(), internalErrorSuffixes.end(),
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
+    }
+
+    //endregion
+
+    //region extensions
+
+    utbot::Language getSourceLanguage(const fs::path &path) {
+        if(isHFile(path)) {
+            LOG_S(WARNING) << "C language detected by .h file: " << path.string();
+            return utbot::Language::C;
+        }
+        if(isCFile(path)) {
+            return utbot::Language::C;
+        }
+        if(isCXXFile(path) || isHppFile(path)) {
+            return utbot::Language::CXX;
+        }
+        LOG_S(WARNING) << "Unknown source language of " << path.string();
+        return utbot::Language::UNKNOWN;
     }
 
     //endregion
@@ -354,5 +374,4 @@ namespace Paths {
     const std::vector<std::string> HPPFileExtensions({".hh", ".hpp", ".hxx"});
     const std::vector<std::string> CFileSourceExtensions({".c"});
     const std::vector<std::string> CFileHeaderExtensions({".h"});
-
 }

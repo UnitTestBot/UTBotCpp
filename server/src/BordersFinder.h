@@ -7,12 +7,10 @@
 
 #include "fetchers/FetcherUtils.h"
 #include "LineInfo.h"
+#include "building/CompilationDatabase.h"
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Rewrite/Frontend/Rewriters.h>
-#include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
 #include "utils/path/FileSystemPath.h"
@@ -27,7 +25,7 @@ class BordersFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
     BordersFinder(const fs::path &filePath,
                   unsigned line,
-                  const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+                  const shared_ptr<CompilationDatabase> &compilationDatabase,
                   const fs::path &compileCommandsJsonPath);
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;
@@ -61,7 +59,6 @@ private:
     ClangToolRunner clangToolRunner;
 
     // TODO: use rewriter for insertion
-    clang::Rewriter rewrt;
 
     Borders getStmtBordersLines(const clang::SourceManager &srcMng, const clang::Stmt *st);
 

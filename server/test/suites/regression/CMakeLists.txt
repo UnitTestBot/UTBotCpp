@@ -23,4 +23,11 @@ add_library(
         SAT-760/SAT-760_2.c
 )
 
+add_library(PR120 PR120.c)
+set_property(TARGET PR120 PROPERTY C_STANDARD 90)
+
+add_library(PR123 PR123.c)
+
+add_library(PR124 PR124.c)
+
 set_target_properties(regression PROPERTIES LINK_WHAT_YOU_USE TRUE)

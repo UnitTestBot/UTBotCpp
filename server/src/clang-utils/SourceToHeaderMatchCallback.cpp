@@ -10,6 +10,8 @@
 #include "printers/Printer.h"
 #include "utils/ExecUtils.h"
 
+#include "loguru.h"
+
 #include <utility>
 
 using namespace clang;
@@ -142,7 +144,7 @@ void SourceToHeaderMatchCallback::handleTypedef(const TypedefDecl *decl) {
     auto canonicalType = decl->getUnderlyingType().getCanonicalType();
     auto name = decl->getName().str();
     auto canonicalName = canonicalType.getAsString();
-    if (name == "wchar_t") {
+    if (name == "wchar_t" && !forStubHeader) {
         // wchar_t is builtin type in C++ but is typedef in C
         return;
     }
@@ -287,7 +289,10 @@ void SourceToHeaderMatchCallback::printReturn(const FunctionDecl *decl,
     printer::Printer printer;
     auto args = CollectionUtils::transformTo<std::vector<std::string>>(
         decl->parameters(), [](ParmVarDecl *param) { return param->getNameAsString(); });
-    printer.ss << "return ";
+    bool noReturn = decl->isNoReturn() || decl->getReturnType()->isVoidType();
+    if (!noReturn) {
+        printer.ss << "return ";
+    }
     printer.strFunctionCall(name, args);
 
     *stream << printer.ss.str();

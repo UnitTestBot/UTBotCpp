@@ -6,8 +6,12 @@
 #include "RequestEnvironment.h"
 #include "exceptions/BaseException.h"
 #include "utils/ExecUtils.h"
+#include "utils/StringFormat.h"
+
+#include "loguru.h"
 
 #include <grpc/impl/codegen/fork.h>
+
 #include <thread>
 #include <utility>
 
@@ -46,9 +50,15 @@ ExecUtils::ExecutionResult BaseForkTask::run() {
         }
         case 0: {
             grpc_postfork_child();
+            int pgidStatus = setpgid(pid, pid);
             // This is child process
             if (!redirectOutput()) {
                 exit(LOG_FAIL_CODE);
+            }
+            if (pgidStatus != 0) {
+                std::string message = StringUtils::stringFormat("Failed setpgid(pid = %d, pgid = %d)");
+                LOG_S(ERROR) << message << LogUtils::errnoMessage();
+                exit(SETPGID_FAIL_CODE);
             }
             int exitCode = childProcessJob();
             exit(exitCode);
@@ -171,8 +181,11 @@ int BaseForkTask::waitForFinishedOrCancelled() {
                 int signal = shutDownSignals[signalId];
                 throwIfNoSuchProcess();
                 LOG_S(DEBUG) << "Sending signal to " << processName << ": " << signal;
-                int killStatus = kill(pid, signal);
-                if (killStatus == -1) {
+
+                pid_t pgid = getpgid(pid);
+                std::string pkillCommand = StringUtils::stringFormat("pkill -g %d -%d", pgid, signal);
+                int killChildStatus = std::system(pkillCommand.c_str());
+                if (killChildStatus == -1 || !WIFEXITED(killChildStatus) || WEXITSTATUS(killChildStatus) > 1) {
                     LOG_S(DEBUG) << "Failed to send signal to " << processName << ": "
                                  << LogUtils::errnoMessage();
                     continue; // Trying next level of shutdown

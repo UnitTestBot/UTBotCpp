@@ -14,10 +14,8 @@
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/Frontend/FrontendActions.h>
-#include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 #include <grpcpp/grpcpp.h>
-#include <llvm/Support/CommandLine.h>
 
 #include <string>
 #include <unordered_map>
@@ -67,7 +65,7 @@ public:
     };
 
     explicit Fetcher(Options options,
-                     const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+                     const shared_ptr<CompilationDatabase> &compilationDatabase,
                      tests::TestsMap &tests,
                      types::TypeMaps *types,
                      uint64_t *pointerSize,

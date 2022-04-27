@@ -8,7 +8,7 @@
 #include "LineTestGen.h"
 #include "ProjectTestGen.h"
 
-class AssertionTestGen : public LineTestGen {
+class AssertionTestGen final : public LineTestGen {
 public:
     explicit AssertionTestGen(const testsgen::AssertionRequest &request,
                               ProgressWriter *progressWriter,

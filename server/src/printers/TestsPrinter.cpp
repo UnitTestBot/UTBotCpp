@@ -13,6 +13,8 @@
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
 
+#include "loguru.h"
+
 using printer::TestsPrinter;
 
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
@@ -69,12 +71,12 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const string &suiteN
     }
     ss << "#pragma region " << suiteName << NL;
     std::uint32_t count = 0;
-    for (const auto &[methodName, methodStub] : methods) {
-        if (methodStub.codeText.at(suiteName).empty()) {
+    for (const auto &[methodName, methodDescription] : methods) {
+        if (methodDescription.codeText.at(suiteName).empty()) {
             continue;
         }
-        ++count;
-        ss << methodStub.codeText.at(suiteName);
+        count += methodDescription.suiteTestCases.at(suiteName).size();
+        ss << methodDescription.codeText.at(suiteName);
     }
     ss << "#pragma endregion" << NL;
     return count;

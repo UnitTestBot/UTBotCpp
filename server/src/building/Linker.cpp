@@ -11,6 +11,7 @@
 #include "environment/EnvironmentPaths.h"
 #include "exceptions/ExecutionProcessException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
+#include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/NoTestGeneratedException.h"
 #include "printers/DefaultMakefilePrinter.h"
 #include "printers/NativeMakefilePrinter.h"
@@ -27,9 +28,10 @@
 #include "utils/TypeUtils.h"
 #include "utils/path/FileSystemPath.h"
 
+#include "loguru.h"
+
 #include <unordered_set>
 #include <utility>
-#include <exceptions/FileNotPresentedInArtifactException.h>
 
 using std::string;
 using std::vector;
@@ -43,15 +45,12 @@ bool Linker::isForOneFile() {
 }
 
 fs::path Linker::getSourceFilePath() {
-    auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen);
-    auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen);
-    fs::path sourcePath;
     if (lineInfo != nullptr) {
         return lineInfo->filePath;
-    } else if (fileTestGen != nullptr) {
+    } else if (auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen)) {
         return fileTestGen->filepath;
-    } else if (snippetTestGen != nullptr) {
-        return snippetTestGen->sourcePaths[0];
+    } else if (auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen)) {
+        return snippetTestGen->filePath;
     } else {
         throw BaseException(
             "Couldn't handle test generation of current type in function getSourcePath");
@@ -404,7 +403,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
 
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
     if (!success) {
-        string message = StringUtils::stringFormat("Couldn't parse module: ", targetBitcode);
+        string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
         throw CompilationDatabaseException(message);
     }
 

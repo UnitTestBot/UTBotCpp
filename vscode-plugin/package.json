@@ -132,6 +132,10 @@
 				"title": "%unittestbot.configureProject.title%"
 			},
 			{
+				"command": "unittestbot.reConfigureProject",
+				"title": "%unittestbot.reConfigureProject.title%"
+			},
+			{
 				"command": "unittestbot.generateIsolatedFileTests",
 				"title": "%unittestbot.generateIsolatedFileTests.title%"
 			},

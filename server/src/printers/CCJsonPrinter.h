@@ -16,7 +16,7 @@ namespace printer {
         static const string CLANG_COMPILER;
         static const string DEFAULT_BUILD_FLAGS;
 
-        static void createDummyBuildDB(const vector<fs::path> &filePaths,
+        static void createDummyBuildDB(const CollectionUtils::FileSet &filePaths,
                                        const fs::path &tmpDirPath);
 
         static void createCDb(const vector<utbot::CompileCommand> &compileCommands,

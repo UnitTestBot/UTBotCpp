@@ -118,6 +118,8 @@ namespace testUtils {
     string unexpectedFileMessage(const fs::path &filePath);
 
     std::vector<char*> createArgvVector(const std::vector<std::string> &args);
+
+    void setTargetForFirstSource(ProjectTestGen &testGen);
 }
 
 #endif // UNITTESTBOT_TESTUTILS_H

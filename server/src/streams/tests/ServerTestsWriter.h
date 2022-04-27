@@ -9,8 +9,6 @@
 #include "TestsWriter.h"
 #include "streams/IStreamWriter.h"
 
-#include "loguru.h"
-
 #include <utils/FileSystemUtils.h>
 
 class ServerTestsWriter : public TestsWriter {
