@@ -234,4 +234,12 @@ namespace {
                 } }),
             "unused");
     }
+
+    TEST_F(Regression_Test, No_Such_Type_Exception) {
+        fs::path folderPath = suitePath / "PR-200";
+        fs::path source = folderPath / "PR-200.c";
+        auto [testGen, status] = createTestForFunction(source, 14);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+    }
 }
