@@ -460,6 +460,12 @@ namespace types {
         static bool isVoid(const Type&);
 
         /**
+         * Returns true if given type is void, void*, void** etc, otherwise false.
+         * @return whether void is base type
+         */
+        static bool baseTypeIsVoid(const Type &type);
+
+        /**
          * Returns true if given type is a pointer to function, otherwise false.
          * @return whether given type is a pointer to function
          */

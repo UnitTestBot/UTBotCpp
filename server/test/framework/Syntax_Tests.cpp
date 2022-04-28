@@ -2472,6 +2472,28 @@ namespace {
                 }
                                           }));
     }
+
+    TEST_F(Syntax_Test, void_ptr) {
+        auto [testGen, status] = createTestForFunction(pointer_parameters_c, 49);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    }
+                })
+        );
+    }
 }
 
 

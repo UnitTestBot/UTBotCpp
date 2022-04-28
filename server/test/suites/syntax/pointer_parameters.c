@@ -45,3 +45,13 @@ int typedef_as_parameter_and_return(int_array* a) {
     }
     return (*a)[0];
 };
+
+int void_ptr(int a, int b, void *ptr) {
+    if (a + b > 0) {
+        return 1;
+    } else if (a + b < -5) {
+        return -1;
+    } else {
+        return 0;
+    }
+}

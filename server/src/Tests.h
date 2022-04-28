@@ -323,7 +323,7 @@ namespace tests {
             bool isChangeable() const {
                 if((type.isObjectPointer() || type.isLValueReference()) &&
                     !type.isTypeContainsFunctionPointer() &&
-                    !type.isConstQualifiedValue()) {
+                    !type.isConstQualifiedValue() && !types::TypesHandler::baseTypeIsVoid(type)) {
                     return true;
                 }
                 return false;

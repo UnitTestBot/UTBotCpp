@@ -491,6 +491,10 @@ bool types::TypesHandler::isVoid(const Type &type) {
     return type.isSimple() && isVoid(type.baseType());
 }
 
+bool types::TypesHandler::baseTypeIsVoid(const Type &type) {
+    return isVoid(type.baseType());
+}
+
 bool types::TypesHandler::isVoid(const TypeName &type) {
     return type == "void";
 }
