@@ -548,9 +548,10 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
 
     static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
     LOG_S(DEBUG) << logMessage;
-    Fetcher fetcher(Fetcher::Options::Value::ALL, testGen->compilationDatabase, testGen->tests,
-                        &testGen->types, &sizeContext.pointerSize, &sizeContext.maximumAlignment,
-                        testGen->compileCommandsJsonPath, false);
+    Fetcher fetcher(Fetcher::Options::Value::TYPE | Fetcher::Options::Value::FUNCTION,
+                    testGen->compilationDatabase, testGen->tests, &testGen->types,
+                    &sizeContext.pointerSize, &sizeContext.maximumAlignment,
+                    testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
     Synchronizer synchronizer(testGen, &stubGen, &sizeContext);
