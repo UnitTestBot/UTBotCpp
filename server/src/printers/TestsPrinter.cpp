@@ -519,9 +519,11 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
-    globalParamsAsserts(methodDescription, testCase);
-    classAsserts(methodDescription, testCase);
-    changeableParamsAsserts(methodDescription, testCase);
+    if (!testCase.isError()) {
+        globalParamsAsserts(methodDescription, testCase);
+        classAsserts(methodDescription, testCase);
+        changeableParamsAsserts(methodDescription, testCase);
+    }
 }
 
 std::vector<string> TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,
