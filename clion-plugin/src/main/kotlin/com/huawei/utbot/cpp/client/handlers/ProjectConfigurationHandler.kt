@@ -1,11 +1,13 @@
 package com.huawei.utbot.cpp.client.handlers
 
+import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.utils.client
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.huawei.utbot.cpp.utils.notifyUnknownResponse
+import com.huawei.utbot.cpp.utils.notifyWarning
 import com.huawei.utbot.cpp.utils.refreshAndFindIOFile
 import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.project.Project
@@ -15,15 +17,12 @@ import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.Util
 
-/**
- * Handles only the last returned response.
- */
-abstract class LastResponseHandler(
+abstract class ProjectConfigResponseHandler(
     project: Project,
     grpcStream: Flow<Testgen.ProjectConfigResponse>,
     progressName: String,
     cancellationJob: Job
-): StreamHandlerWithProgress<Testgen.ProjectConfigResponse>(project, grpcStream, progressName, cancellationJob) {
+) : StreamHandlerWithProgress<Testgen.ProjectConfigResponse>(project, grpcStream, progressName, cancellationJob) {
     override fun onLastResponse(response: Testgen.ProjectConfigResponse?) {
         if (response == null) {
             Logger.error("No responses from server!")
@@ -40,7 +39,7 @@ class CheckProjectConfigurationHandler(
     grpcStream: Flow<Testgen.ProjectConfigResponse>,
     progressName: String,
     cancellationJob: Job
-): LastResponseHandler(project, grpcStream, progressName, cancellationJob) {
+) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
     override fun Testgen.ProjectConfigResponse.getProgress(): Util.Progress {
         return progress
     }
@@ -65,6 +64,11 @@ class CheckProjectConfigurationHandler(
                     project, AskServerToGenerateJsonForProjectConfiguration()
                 )
             }
+            Testgen.ProjectConfigStatus.BUILD_DIR_SAME_AS_PROJECT -> {
+                val message = response.message
+                logger.warn(message)
+                notifyWarning("$message ${UTBot.message("uri.wiki")}", project)
+            }
             else -> notifyUnknownResponse(response, project)
         }
     }
@@ -75,8 +79,10 @@ class CreateBuildDirHandler(
     grpcStream: Flow<Testgen.ProjectConfigResponse>,
     progressName: String,
     cancellationJob: Job
-): LastResponseHandler(project, grpcStream, progressName, cancellationJob) {
-    override fun Testgen.ProjectConfigResponse.getProgress() = progress
+) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
+    override fun Testgen.ProjectConfigResponse.getProgress(): Util.Progress {
+        return progress
+    }
 
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
@@ -98,7 +104,7 @@ class GenerateJsonHandler(
     grpcStream: Flow<Testgen.ProjectConfigResponse>,
     progressName: String,
     cancellationJob: Job
-): LastResponseHandler(project, grpcStream, progressName, cancellationJob) {
+) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> notifyInfo("Successfully configured project!", project)

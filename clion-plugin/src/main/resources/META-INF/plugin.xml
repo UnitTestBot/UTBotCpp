@@ -94,7 +94,10 @@
                 class="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration" text="Try To Generate Json"
                 description="Ask server to generate missing json files"/>
         <action id="com.huawei.utbot.cpp.actions.ShowWizardAction"
-                class="com.huawei.utbot.cpp.actions.ShowWizardAction" text="Show wizard"
+                class="com.huawei.utbot.cpp.actions.ShowWizardAction" text="Show Wizard"
                 description="Show wizard"/>
+        <action id="com.huawei.utbot.cpp.actions.ReconfigureProjectAction"
+                class="com.huawei.utbot.cpp.actions.ReconfigureProjectAction" text="Reconfigure Project"
+                description="UTBot: Reset cache and configure project"/>
     </actions>
 </idea-plugin>

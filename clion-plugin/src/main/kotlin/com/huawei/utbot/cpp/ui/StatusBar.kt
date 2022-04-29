@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp.ui
 
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.actions.ConfigureProjectAction
+import com.huawei.utbot.cpp.actions.ReconfigureProjectAction
 import com.huawei.utbot.cpp.actions.ShowWizardAction
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
@@ -103,6 +104,8 @@ object StatusBarActionsPopup {
         actionGroup.add(ConfigureProjectAction())
         actionGroup.addSeparator()
         actionGroup.add(AskServerToGenerateJsonForProjectConfiguration())
+        actionGroup.addSeparator()
+        actionGroup.addAction(ReconfigureProjectAction())
         return actionGroup
     }
 }

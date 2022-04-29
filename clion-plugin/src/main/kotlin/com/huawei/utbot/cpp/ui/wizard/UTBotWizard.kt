@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp.ui.wizard
 
+import com.huawei.utbot.cpp.UTBot
 import com.intellij.ide.BrowserUtil
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.openapi.project.Project
@@ -17,7 +18,7 @@ class UTBotWizard(project: Project) : AbstractWizard<UTBotWizardStep>("UTBot: Qu
     }
 
     override fun helpAction() {
-        BrowserUtil.browse("https://github.com/UnitTestBot/UTBotCpp/wiki")
+        BrowserUtil.browse(UTBot.message("uri.wiki"))
     }
 
     override fun doHelpAction() {

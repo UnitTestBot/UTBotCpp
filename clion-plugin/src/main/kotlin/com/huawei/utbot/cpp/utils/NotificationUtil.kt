@@ -14,6 +14,10 @@ fun notifyInfo(content: String, project: Project? = null, action: AnAction? = nu
     notify(content, NotificationType.INFORMATION, project, action)
 }
 
+fun notifyWarning(content: String, project: Project? = null, action: AnAction? = null) {
+    notify(content, NotificationType.WARNING, project, action)
+}
+
 fun notify(content: String, type: NotificationType, project: Project? = null, action: AnAction? = null) {
     val notification = NotificationGroupManager.getInstance().getNotificationGroup("Custom Notification Group")
         .createNotification(content, type)
