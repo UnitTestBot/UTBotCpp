@@ -744,6 +744,8 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
         } catch (const UnImplementedException &e) {
             LOG_S(WARNING) << "Skipping test case: " << e.what();
+        } catch (const NoSuchTypeException &e) {
+            LOG_S(WARNING) << "Skipping test case: " << e.what();
         }
     }
 }
