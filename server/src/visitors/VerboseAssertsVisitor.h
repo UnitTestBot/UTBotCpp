@@ -23,6 +23,7 @@ namespace visitor {
                           const tests::AbstractValueView *view,
                           const string &access,
                           int depth) override;
+
         void visitArray(const types::Type &type,
                         const std::string &name,
                         const tests::AbstractValueView *view,
