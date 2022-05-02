@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.utils.removeIndices
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooser
@@ -157,7 +158,7 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
                     sourcePathListModel.add(files.map { it.path })
                 }
             }.setRemoveAction { actionBtn ->
-                sourcePathListModel.remove((actionBtn.contextComponent as JList<String>).selectedIndex)
+                sourcePathListModel.removeIndices((actionBtn.contextComponent as JList<String>).selectedIndices)
             }.setPreferredSize(SOURCES_LIST_SIZE)
             .createPanel()
 
