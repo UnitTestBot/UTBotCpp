@@ -299,6 +299,12 @@ std::string SourceToHeaderMatchCallback::decorate(std::string_view name) const {
     return forStubHeader ? std::string(name) : NameDecorator::decorate(name);
 }
 
+static bool beginsWithFloat(const std::string& str) {
+    if (str.length() >= 6 && str.substr(0, 6) == "_Float") {
+        return true;
+    }
+    return false;
+}
 
 void SourceToHeaderMatchCallback::print(const NamedDecl *decl, const PrintingPolicy &policy) const {
     if (externalStream == nullptr) {
@@ -311,6 +317,9 @@ void SourceToHeaderMatchCallback::print(const NamedDecl *decl, const PrintingPol
     }
     auto name = decl->getNameAsString();
     auto decoratedName = decorate(name);
+    if (beginsWithFloat(decoratedName)) {
+        decoratedName = decoratedName.substr(1, decoratedName.length() - 1);
+    }
     auto declaration = getRenamedDeclarationAsString(decl, policy, decoratedName);
     *externalStream << declaration << ";\n";
     if (pAlignmentAttr) {
