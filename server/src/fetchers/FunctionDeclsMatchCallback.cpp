@@ -25,7 +25,8 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     ExecUtils::throwIfCancelled();
-    if (const FunctionDecl * FS; (FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF)) || (FS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+    if (const FunctionDecl * FS; (FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF)) ||
+                                 (FS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
@@ -40,8 +41,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             return;
         }
         clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
-        const CXXConstructorDecl *CS;
-        if ((CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+        if (const auto *CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
             realReturnType = CS->getThisObjectType();
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);

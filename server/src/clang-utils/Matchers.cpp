@@ -93,8 +93,8 @@ namespace Matchers {
 
     static const auto functionDefinitionTraits = allOf(isDefinition(),
                                                        isExpansionInMainFile(),
-                                                       unless(cxxConstructorDecl()),
                                                        unless(cxxDestructorDecl()),
+                                                       unless(cxxConstructorDecl()),
                                                        unless(functionTemplateDecl()));
 
     const DeclarationMatcher functionDefinitionMatcher =
@@ -102,6 +102,7 @@ namespace Matchers {
             .bind(FUNCTION_DEF);
 
     const DeclarationMatcher constructorDefinitionMatcher = cxxConstructorDecl(isDefinition()).bind(CONSTRUCTOR_DEF);
+
     const DeclarationMatcher memberConstructorDefinitionMatcher = cxxRecordDecl(cxxConstructorDecl(isDefinition())).bind(CONSTRUCTOR_DEF);
 
     const DeclarationMatcher anyTypeDeclarationMatcher =

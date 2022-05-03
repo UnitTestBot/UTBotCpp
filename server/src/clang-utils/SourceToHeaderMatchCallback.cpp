@@ -85,8 +85,6 @@ void SourceToHeaderMatchCallback::checkTypedef(const MatchFinder::MatchResult &R
 void SourceToHeaderMatchCallback::checkFunctionDecl(
     const ast_matchers::MatchFinder::MatchResult &Result) {
     if (const FunctionDecl *decl; (decl = Result.Nodes.getNodeAs<FunctionDecl>(FUNCTION_DEF)) || (decl = Result.Nodes.getNodeAs<CXXConstructorDecl>(CONSTRUCTOR_DEF))) {
-        LOG_S(MAX) <<  "FUNCTION NAME: " << decl->getNameInfo().getAsString() << "\n";
-
         if (decl->isInlined() && decl->getStorageClass() == SC_None) {
             LOG_S(DEBUG)
                 << "inline function without static or extern modifier is not supported by now";

@@ -1,6 +1,6 @@
-//
-// Created by mWX1153800 on 4/22/2022.
-//
+/*
+* Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
+ */
 
 #ifndef UNITTESTBOT_CONSTRUCTOR_WITH_POINTER_PARAMETER_H
 #define UNITTESTBOT_CONSTRUCTOR_WITH_POINTER_PARAMETER_H

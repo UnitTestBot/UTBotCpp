@@ -378,22 +378,7 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
                           : testMethod.returnType;
     bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
-    std::optional<std::string> initValue = std::nullopt;
-//    if (isConstructor) {
-//        std::string initialize = testMethod.name + "(";
-//        for (auto param : testMethod.getParamNames()) {
-//            initialize += param;
-//            initialize += ",";
-//        }
-//        if (testMethod.getParamNames().size()) {
-//               initialize.pop_back();
-//        }
-//        initialize += ")";
-//        initValue = std::optional<std::string>{initialize};
-//    } else {
-//        initValue = std::nullopt;
-//    }
-        strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, initValue, std::nullopt, false);
+    strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);

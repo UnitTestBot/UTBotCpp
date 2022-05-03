@@ -94,8 +94,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         }
         lineInfo.methodName = FS->getNameAsString();
         clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
-        const CXXConstructorDecl *CS;
-        if ((CS =  Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+        if (const auto *CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
             realReturnType = CS->getThisObjectType();
         }
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
