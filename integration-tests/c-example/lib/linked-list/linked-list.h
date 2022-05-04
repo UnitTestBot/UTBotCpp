@@ -33,6 +33,16 @@ struct Kuku {
     int x;
 };
 
+struct EmptyNode {
+    void *data;
+    struct EmptyNode *next;
+};
+
+struct DataNode {
+    void *data;
+    int flag;
+};
+
 //Don't cover branch with NULL
 int length_of_linked_list3(struct Node *head);
 
@@ -41,7 +51,6 @@ int length_of_linked_list2(struct Node *head);
 
 int sum_list(struct Node *head);
 
-//Wait fix from Alexandr
 int hard_length2(struct HardNode *head);
 
 int middle_length2(struct Kuku *head);
@@ -53,5 +62,9 @@ int len_bound(struct Node *head, int bound);
 int sort_list(struct Node *head);
 
 int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int));
+
+int length_of_empty_list(struct EmptyNode *head);
+
+int content_of_void_ptr(struct DataNode *node);
 
 #endif
