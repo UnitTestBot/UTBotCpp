@@ -603,6 +603,10 @@ void KTestObjectParser::assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
         JsonNumAndType curVar = order.front();
         order.pop();
         if (testCase.objects[curVar.num].is_lazy) {
+            if (types::TypesHandler::baseTypeIsVoid(curVar.type)) {
+                throw UnImplementedException("Lazy variable has baseType=void");
+            }
+
             std::string name = testCase.objects[curVar.num].name;
             int ind = findObjectIndex(testCase.objects, name);
             if (ind == testCase.objects.size()) {

@@ -49,4 +49,18 @@ int sort_list(struct Node *head);
 
 int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int));
 
+struct EmptyNode {
+    void *data;
+    struct EmptyNode *next;
+};
+
+int length_of_empty_list(struct EmptyNode *head);
+
+struct DataNode {
+    void *data;
+    int flag;
+};
+
+int content_of_void_ptr(struct DataNode *node);
+
 #endif

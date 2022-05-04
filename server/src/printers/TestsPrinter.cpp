@@ -167,7 +167,7 @@ void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDesc
         const auto &param = testCase.lazyVariables[i];
         const auto &value = testCase.lazyValues[i];
         if (param.type.isObjectPointer()) {
-                strDeclareVar(param.type.baseType(), param.varName, value.view->getEntryValue());
+            strDeclareVar(param.type.baseType(), param.varName, value.view->getEntryValue());
         }
     }
 }

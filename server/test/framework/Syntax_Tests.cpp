@@ -2494,6 +2494,50 @@ namespace {
                 })
         );
     }
+
+    TEST_F(Syntax_Test, length_of_empty_list) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 170);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 2;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 3;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, content_of_void_ptr) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 186);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    }
+                })
+        );
+    }
 }
 
 
