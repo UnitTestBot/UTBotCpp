@@ -87,6 +87,12 @@ namespace {
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            size_t failed_build = TestRunner::buildTests(testGen.projectContext, testGen.tests);
+            if (status.ok() && failed_build != 0) {
+                std::string message = StringUtils::stringFormat("Build tests failed: %d", failed_build);
+                LOG_S(ERROR) << message;
+                return { testGen, Status(StatusCode::FAILED_PRECONDITION, message) };
+            }
             return { testGen, status };
         }
     };
