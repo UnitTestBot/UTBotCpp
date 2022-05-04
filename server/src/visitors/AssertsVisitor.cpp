@@ -47,6 +47,7 @@ namespace visitor {
         return AbstractValueViewVisitor::getDecoratedVarName(PrinterUtils::ACTUAL, additionalPointersCount,
                                                              access);
     }
+
     AssertsVisitor::FunctionSignature AssertsVisitor::changeSignatureToNullCheck(const FunctionSignature& signature,
                                                                                  const types::Type& type,
                                                                                  const tests::AbstractValueView *view,

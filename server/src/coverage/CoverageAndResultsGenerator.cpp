@@ -18,7 +18,7 @@ using std::vector;
 CoverageAndResultsGenerator::CoverageAndResultsGenerator(
     testsgen::CoverageAndResultsRequest const *coverageAndResultsRequest,
     CoverageAndResultsWriter *coverageAndResultsWriter)
-    : TestRunner(coverageAndResultsRequest->projectcontext(),
+    : TestRunner(utbot::ProjectContext(coverageAndResultsRequest->projectcontext()),
                  coverageAndResultsRequest->testfilter().testfilepath(),
                  coverageAndResultsRequest->testfilter().testsuite(),
                  coverageAndResultsRequest->testfilter().testname(),

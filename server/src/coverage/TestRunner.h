@@ -13,6 +13,7 @@
 #include "streams/IStreamWriter.h"
 #include "streams/coverage/CoverageAndResultsWriter.h"
 #include "streams/coverage/ServerCoverageAndResultsWriter.h"
+#include "Tests.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +36,7 @@ protected:
                           const std::optional<std::chrono::seconds> &testTimeout);
 
 public:
-    TestRunner(testsgen::ProjectContext projectContext,
+    TestRunner(utbot::ProjectContext projectContext,
                std::string testFilePath,
                std::string testSuite,
                std::string testName,
@@ -55,11 +56,21 @@ public:
 
     bool hasExceptions() const;
 
+
+    /**
+     * Try compile test for source file and return true if succeed, else false
+     */
+    static bool buildTest(const utbot::ProjectContext& projectContext, const fs::path& sourcePath);
+
+
+    /**
+     * Try compile tests for files in tests and return count of failed attempts
+     */
+    static size_t buildTests(const utbot::ProjectContext& projectContext, const tests::TestsMap& tests);
+
 private:
     std::vector<UnitTest> getTestsFromMakefile(const fs::path &makefile,
                                                const fs::path &testFilePath);
-
-    bool buildTest(const MakefileUtils::MakefileCommand &command);
 
     testsgen::TestStatus runTest(const MakefileUtils::MakefileCommand &command,
                                  const std::optional<std::chrono::seconds> &testTimeout);
