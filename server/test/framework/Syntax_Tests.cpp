@@ -2524,16 +2524,19 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases, 2);
+        testUtils::checkMinNumberOfTests(
+            testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases, 2);
 
         checkTestCasePredicates(
             testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases,
-            vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
-                                           return "false" == testCase.paramValues.front().view->getEntryValue();
-                                       }, [](const tests::Tests::MethodTestCase &testCase) {
-                                            return "true" == testCase.paramValues.front().view->getEntryValue();
-                                        }
-            }));
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                     return "false" == testCase.paramValues.front().view->getEntryValue();
+                 },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return "true" == testCase.paramValues.front().view->getEntryValue();
+                  } }));
+    }
 
     TEST_F(Syntax_Test, void_ptr) {
         auto [testGen, status] = createTestForFunction(pointer_parameters_c, 49);

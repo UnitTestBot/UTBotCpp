@@ -41,5 +41,5 @@ add_executable(syntax1
         struct_with_move_constructor.cpp
         struct_with_parametrized_constructor.cpp
         constructor_with_pointer_parameter.cpp
-        constructor_with_if_stmt.cpp)
+        constructor_with_if_stmt.cpp
         stubs.c)

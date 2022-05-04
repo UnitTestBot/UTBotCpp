@@ -80,7 +80,7 @@ namespace printer {
 
         Stream strDeclareVar(std::string_view type,
                              std::string_view name,
-                             std::optional<std::string> initValue = std::nullopt,
+                             std::optional<std::string_view> initValue = std::nullopt,
                              std::optional<uint64_t> alignment = std::nullopt,
                              bool complete = true,
                              size_t additionalPointersCount = 0);

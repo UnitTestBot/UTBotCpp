@@ -89,7 +89,7 @@ namespace printer {
 
     Printer::Stream &printer::Printer::strDeclareVar(std::string_view type,
                                                      std::string_view name,
-                                                     std::optional<std::string> initValue,
+                                                     std::optional<std::string_view> initValue,
                                                      std::optional<uint64_t> alignment,
                                                      bool complete,
                                                      size_t additionalPointersCount) {
