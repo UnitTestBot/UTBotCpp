@@ -45,7 +45,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         LOG_S(MAX) << "Class's borders: " << lineInfo.begin << ' ' << lineInfo.end;
     } else if (const FunctionDecl *FS; (FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF))  ||
                                         (FS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
-        if ((Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+        if (Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
             lineInfo.isConstructor = true;
         }
         SourceManager &sourceManager = Result.Context->getSourceManager();
