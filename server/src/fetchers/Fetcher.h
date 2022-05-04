@@ -65,7 +65,7 @@ public:
     };
 
     explicit Fetcher(Options options,
-                     const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+                     const shared_ptr<CompilationDatabase> &compilationDatabase,
                      tests::TestsMap &tests,
                      types::TypeMaps *types,
                      uint64_t *pointerSize,

@@ -11,6 +11,7 @@
 #include "RunCommand.h"
 #include "printers/DefaultMakefilePrinter.h"
 #include "printers/NativeMakefilePrinter.h"
+#include "printers/TestMakefilesPrinter.h"
 #include "testgens/BaseTestGen.h"
 #include "utils/CollectionUtils.h"
 #include "utils/MakefileUtils.h"
@@ -60,7 +61,7 @@ private:
     CollectionUtils::MapFileTo<fs::path> bitcodeFileName;
     CollectionUtils::FileSet brokenLinkFiles;
 
-    CollectionUtils::MapFileTo<std::string> linkMakefiles;
+    std::vector<printer::TestMakefilesContent> linkMakefiles;
 
     IRParser irParser;
 

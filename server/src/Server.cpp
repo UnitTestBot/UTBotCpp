@@ -45,7 +45,8 @@ const string Server::gtestLogPrefix = "gtestLogTo";
 
 void Server::run(uint16_t customPort) {
     LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_NUMBER;
-    LOG_S(INFO) << "Log path: " << Paths::logPath;
+    LOG_S(INFO) << "Logs directory: " << Paths::logPath;
+    LOG_S(INFO) << "Latest log path: " << Paths::getUtbotLogAllFilePath();
     LOG_S(INFO) << "Tmp directory path: " << Paths::tmpPath;
     LOG_S(INFO) << "Executable path: " << fs::current_path();
 
@@ -226,7 +227,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                           lineTestGen->compileCommandsJsonPath);
                 classFinder.findClass();
                 lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
-                lineInfo->filePath = lineTestGen->testingMethodsSourcePaths[0];
+                lineInfo->filePath = lineTestGen->getSourcePath();
                 CollectionUtils::erase_if(testGen.tests.at(lineInfo->filePath).methods,
                                           [&lineInfo](const tests::Tests::MethodDescription &methodDescription) {
                                               return methodDescription.isClassMethod() &&
@@ -254,12 +255,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 fs::path flagFilePath =
                     printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath))
                         .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
-                pathSubstitution = { testGen.testingMethodsSourcePaths[0], flagFilePath };
+                pathSubstitution = { lineTestGen->filePath, flagFilePath };
             }
         }
         auto generator = std::make_shared<KleeGenerator>(
             testGen.projectContext, testGen.settingsContext,
-            testGen.serverBuildDir, testGen.sourcePaths, testGen.compilationDatabase, typesHandler,
+            testGen.serverBuildDir, testGen.compilationDatabase, typesHandler,
             pathSubstitution, testGen.buildDatabase, testGen.progressWriter);
 
         ReturnTypesFetcher returnTypesFetcher{ &testGen };
@@ -274,8 +275,12 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
+        bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
+        auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched());
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode);
+        auto finish_time = std::chrono::steady_clock::now();
+        LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
     } catch (const ExecutionProcessException &e) {
         string command = e.what();
         return Status(StatusCode::FAILED_PRECONDITION,
@@ -304,7 +309,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 }
 
 shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
-    BordersFinder stmtFinder(lineTestGen.testingMethodsSourcePaths[0], lineTestGen.line,
+    BordersFinder stmtFinder(lineTestGen.filePath, lineTestGen.line,
                              lineTestGen.compilationDatabase,
                              lineTestGen.compileCommandsJsonPath);
     stmtFinder.findFunction();
@@ -543,9 +548,10 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
 
     static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
     LOG_S(DEBUG) << logMessage;
-    Fetcher fetcher(Fetcher::Options::Value::ALL, testGen->compilationDatabase, testGen->tests,
-                        &testGen->types, &sizeContext.pointerSize, &sizeContext.maximumAlignment,
-                        testGen->compileCommandsJsonPath, false);
+    Fetcher fetcher(Fetcher::Options::Value::TYPE | Fetcher::Options::Value::FUNCTION,
+                    testGen->compilationDatabase, testGen->tests, &testGen->types,
+                    &sizeContext.pointerSize, &sizeContext.maximumAlignment,
+                    testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
     Synchronizer synchronizer(testGen, &stubGen, &sizeContext);

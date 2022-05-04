@@ -18,8 +18,8 @@ CoverageTool::CoverageTool(ProgressWriter const *progressWriter) : progressWrite
 std::unique_ptr<CoverageTool> getCoverageTool(const std::string &compileCommandsJsonPath,
                                               utbot::ProjectContext projectContext,
                                               ProgressWriter const *progressWriter) {
-    fs::path compilerPath =
-        detectBuildCompilerPath(CompilationUtils::getCompilationDatabase(compileCommandsJsonPath));
+    auto compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
+    fs::path compilerPath = compilationDatabase->getBuildCompilerPath();
     CompilerName compilerName = CompilationUtils::getCompilerName(compilerPath);
     switch (compilerName) {
     case CompilerName::GCC:

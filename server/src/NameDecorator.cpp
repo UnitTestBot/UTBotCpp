@@ -17,6 +17,15 @@ std::string NameDecorator::decorate(std::string_view name) {
     return result;
 }
 
+std::string NameDecorator::defineWcharT(std::string_view canonicalName) {
+    return StringUtils::stringFormat("#define wchar_t %.*s", canonicalName.length(),
+                                     canonicalName.data());
+}
+
+const std::string NameDecorator::UNDEF_WCHAR_T = "#ifdef wchar_t\n"
+                                                 "#undef wchar_t\n"
+                                                 "#endif\n";
+
 // https://en.cppreference.com/w/c/keyword
 const std::unordered_set<std::string> NameDecorator::C_KEYWORDS = {
     "auto",    "break",  "case",     "char",   "const",    "continue", "default",

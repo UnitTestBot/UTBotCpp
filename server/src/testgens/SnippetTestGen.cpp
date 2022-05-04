@@ -14,7 +14,7 @@ SnippetTestGen::SnippetTestGen(const testsgen::SnippetRequest &request,
                   request.settingscontext(),
                   progressWriter,
                   testMode) {
-    filePath =  request.filepath() ;
+    filePath = fs::weakly_canonical(request.filepath());
     sourcePaths = { filePath };
     testingMethodsSourcePaths = sourcePaths;
     printer::CCJsonPrinter::createDummyBuildDB(sourcePaths, serverBuildDir);

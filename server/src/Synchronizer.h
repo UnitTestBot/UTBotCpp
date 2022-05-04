@@ -27,7 +27,6 @@ class Synchronizer {
     BaseTestGen *const testGen;
     StubGen const *const stubGen;
     types::TypesHandler::SizeContext *sizeContext;
-    CollectionUtils::FileSet allFiles;
 
     CollectionUtils::FileSet getOutdatedSourcePaths() const;
 
@@ -39,7 +38,7 @@ class Synchronizer {
                           const types::TypesHandler &typesHandler);
     void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const;
 
-    shared_ptr<clang::tooling::CompilationDatabase>
+    shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
         std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
         const fs::path &ccJsonStubDirPath) const;

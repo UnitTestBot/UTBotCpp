@@ -19,12 +19,12 @@ namespace CompilationUtils {
     using std::string;
     using std::shared_ptr;
 
-    shared_ptr<clang::tooling::CompilationDatabase>
+    shared_ptr<CompilationDatabase>
     getCompilationDatabase(const fs::path &buildCommandsJsonPath) {
         fs::path clangCompileCommandsJsonPath =
             getClangCompileCommandsJsonPath(buildCommandsJsonPath);
         string errorMessage;
-        auto compilationDatabase = clang::tooling::CompilationDatabase::autoDetectFromDirectory(
+        auto compilationDatabase = CompilationDatabase::autoDetectFromDirectory(
             clangCompileCommandsJsonPath.string(), errorMessage);
         if (!errorMessage.empty()) {
             throw CompilationDatabaseException(errorMessage);
@@ -47,17 +47,6 @@ namespace CompilationUtils {
             return CompilerName::GCC;
         }
         return CompilerName::UNKNOWN;
-    }
-
-    fs::path detectBuildCompilerPath(const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase) {
-        for (auto const &compileCommand : compilationDatabase->getAllCompileCommands()) {
-            fs::path compilerPath = fs::weakly_canonical(compileCommand.CommandLine[0]);
-            auto compilerName = getCompilerName(compilerPath);
-            if (compilerName != CompilerName::UNKNOWN) {
-                return compilerPath;
-            }
-        }
-        throw CompilationDatabaseException("Cannot detect compiler");
     }
 
     std::string getBuildDirectoryName(CompilerName compilerName) {

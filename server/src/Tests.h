@@ -29,7 +29,6 @@ namespace tests {
     using std::shared_ptr;
 
     const std::string LAZYNAME = "unnamed";
-    const std::string KLEERESULT = "utbot_result";
 
     using MapAddressName = std::unordered_map<size_t , std::string>;
 
@@ -42,7 +41,11 @@ namespace tests {
         size_t address;
         bool is_lazy = false;
 
-        UTBotKTestObject(std::string name, std::vector<char> bytes, std::vector<Offset> offsets, size_t address, bool is_lazy);
+        UTBotKTestObject(std::string name,
+                         std::vector<char> bytes,
+                         std::vector<Offset> offsets,
+                         size_t address,
+                         bool is_lazy);
 
         explicit UTBotKTestObject(const ConcretizedObject &kTestObject);
     };
@@ -54,7 +57,9 @@ namespace tests {
         vector<UTBotKTestObject> objects;
         Status status;
 
-        UTBotKTest(const std::vector<UTBotKTestObject> &objects, const Status &status) : objects(objects), status(status) {}
+        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
+            : objects(std::move(objects)), status(status) {
+        }
     };
     using UTBotKTestList = vector<UTBotKTest>;
 
@@ -81,8 +86,8 @@ namespace tests {
         ~AbstractValueView() = default;
     public:
         /**
-     * Returns string representation of the value.
-     */
+         * Returns string representation of the value.
+         */
         [[nodiscard]] virtual string getEntryValue() const = 0;
 
         virtual bool containsFPSpecialValue() {
@@ -204,8 +209,10 @@ namespace tests {
      * In order to get fields and subfields values (leaves in terms of trees) method fieldEntryValues().
      */
     struct StructValueView : AbstractValueView {
-        explicit StructValueView(vector<shared_ptr<AbstractValueView>> subViews, std::optional<std::string> entryValue)
-                    : AbstractValueView(std::move(subViews)), entryValue(entryValue) {}
+        explicit StructValueView(vector<shared_ptr<AbstractValueView>> subViews,
+                                 std::optional<std::string> entryValue)
+            : AbstractValueView(std::move(subViews)), entryValue(std::move(entryValue)) {
+        }
 
         [[nodiscard]] const vector<shared_ptr<AbstractValueView>> &getSubViews() const override {
             return this->subViews;
@@ -278,7 +285,9 @@ namespace tests {
     struct InitReference {
         std::string varName;
         std::string refName;
-        InitReference(const std::string &varName, const std::string &refName) : varName(varName), refName(refName) {}
+        InitReference(std::string varName, std::string refName)
+            : varName(std::move(varName)), refName(std::move(refName)) {
+        }
     };
 
     struct Tests {
@@ -287,7 +296,9 @@ namespace tests {
             types::Type type;
             string varName;
 
-            TypeAndVarName(const types::Type &type, const std::string &varName) : type(type), varName(varName) {}
+            TypeAndVarName(types::Type type, std::string varName)
+                : type(std::move(type)), varName(std::move(varName)) {
+            }
         };
         struct MethodParam {
             types::Type type;
@@ -312,7 +323,7 @@ namespace tests {
             bool isChangeable() const {
                 if((type.isObjectPointer() || type.isLValueReference()) &&
                     !type.isTypeContainsFunctionPointer() &&
-                    !type.isConstQualifiedValue()) {
+                    !type.isConstQualifiedValue() && !types::TypesHandler::baseTypeIsVoid(type)) {
                     return true;
                 }
                 return false;
@@ -331,9 +342,9 @@ namespace tests {
             shared_ptr<AbstractValueView> view;
             TestCaseParamValue() = default;
             TestCaseParamValue(string name,
-                               const std::optional<uint64_t> &alignment,
-                               const shared_ptr<AbstractValueView> &view)
-                : name(std::move(name)), alignment(alignment), view(view) {};
+                               std::optional<uint64_t> alignment,
+                               shared_ptr<AbstractValueView> view)
+                : name(std::move(name)), alignment(alignment), view(std::move(view)) {};
         };
 
         struct TestCaseDescription {
@@ -396,6 +407,7 @@ namespace tests {
             std::optional<MethodParam> classObj;
             std::string name;
             typedef std::unordered_map<string, string> SuiteNameToCodeTextMap;
+            std::string stubsText;
             SuiteNameToCodeTextMap codeText;
             std::string paramsString;
 
@@ -558,6 +570,10 @@ namespace tests {
             string paramName;
             vector<char> rawData;
 
+            RawKleeParam(string paramName, vector<char> rawData)
+                : paramName(std::move(paramName)), rawData(std::move(rawData)) {
+            }
+
             [[nodiscard]] [[maybe_unused]] bool hasPrefix(const string &prefix) const {
                 return StringUtils::startsWith(paramName, prefix);
             }
@@ -605,8 +621,8 @@ namespace tests {
 
         shared_ptr<ArrayValueView> multiArrayView(const vector<char> &byteArray,
                                                   const types::Type &type,
-                                                  int arraySize,
-                                                  unsigned int offset,
+                                                  size_t arraySize,
+                                                  size_t offset,
                                                   types::PointerUsage usage);
 
         shared_ptr<ArrayValueView> arrayView(const vector<char> &byteArray,
@@ -615,9 +631,10 @@ namespace tests {
                                              unsigned int offset,
                                              types::PointerUsage usage);
 
-        static shared_ptr<StringValueView> stringLiteralView(const vector<char> &byteArray, int length = 0);
+        static shared_ptr<StringValueView> stringLiteralView(const vector<char> &byteArray,
+                                                             size_t length = 0);
 
-        shared_ptr<FunctionPointerView> functionPointerView(std::optional<string> scopeName,
+        shared_ptr<FunctionPointerView> functionPointerView(const std::optional<string>& scopeName,
                                                             const string &methodName,
                                                             const string &paramName);
 
@@ -706,11 +723,11 @@ namespace tests {
         void workWithStructInBFS(std::queue<JsonNumAndType> &order, std::vector<bool> &visited,
                                  const Offset &off, std::vector<UTBotKTestObject> &objects, const types::StructInfo &structInfo);
 
-        int findFieldIndex(const types::StructInfo &structInfo, unsigned int offset);
+        int findFieldIndex(const types::StructInfo &structInfo, size_t offset);
 
         int findObjectIndex(const std::vector<UTBotKTestObject> &objects, const std::string &name);
 
-        types::Type traverseStruct(const types::StructInfo &structInfo, int field);
+        types::Type traverseStruct(const types::StructInfo &structInfo, size_t offset);
     };
     /**
      * @brief This function is used for converting primiive value of a specific type

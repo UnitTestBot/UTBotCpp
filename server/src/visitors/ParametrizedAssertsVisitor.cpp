@@ -50,24 +50,23 @@ namespace visitor {
                     printer->strDeclareVar(
                             printer::Printer::getConstQualifier(type) + type.usedType(), PrinterUtils::ACTUAL,
                             functionCall, std::nullopt, true, additionalPointersCount);
-                    printer->strDeclareArrayVar(type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                                                view->getEntryValue(), true);
+                    printer->strDeclareArrayVar(
+                        type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
+                        view->getEntryValue(), std::nullopt, true);
                 }
             } else {
                 return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
             }
         }
-        std::vector<size_t> sizes = type.arraysSizes(usage);
 
-        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(name, sizes);
-        const auto newAccess = printer::Printer::constrMultiIndex(access, iterators);
-
-        auto p = processExpect(type.baseTypeObj(), PrinterUtils::EQ,
-                               {PrinterUtils::fillVarName(newAccess, PrinterUtils::EXPECTED),
-                                PrinterUtils::fillVarName(newAccess, PrinterUtils::ACTUAL)});
-        printer->strFunctionCall(p.name, p.args, SCNL, std::nullopt, true, 0, std::nullopt,
-                                 inUnion);
-        printer->closeBrackets(sizes.size());
+        bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
+        if (!assignPointersToNull) {
+            std::vector<size_t> sizes = type.arraysSizes(usage);
+            const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
+            const auto indexing = printer::Printer::constrMultiIndex(iterators);
+            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
+            printer->closeBrackets(sizes.size());
+        }
     }
 
     void ParametrizedAssertsVisitor::visitStruct(const types::Type &type,

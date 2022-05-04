@@ -41,3 +41,13 @@ int void_pointer_char_usage(void *x) {
 static int accept_const_void_ptr_ptr(const void **p) {
     return 0;
 }
+
+int void_ptr(int a, int b, void *ptr) {
+    if (a + b > 0) {
+        return 1;
+    } else if (a + b < -5) {
+        return -1;
+    } else {
+        return 0;
+    }
+}

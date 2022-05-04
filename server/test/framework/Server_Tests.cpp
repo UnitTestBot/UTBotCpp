@@ -641,7 +641,7 @@ namespace {
         setSuite(suite);
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -665,7 +665,7 @@ namespace {
             auto request =
                 createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+            setTargetForFirstSource(testGen);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -724,7 +724,7 @@ namespace {
         setSuite(suite);
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -919,7 +919,7 @@ namespace {
         srcPaths = {suitePath, suitePath / "lib", suitePath / "src"};
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -940,7 +940,7 @@ namespace {
         srcPaths = {};
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -964,7 +964,7 @@ namespace {
         srcPaths = { suitePath / "lib"};
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1000,7 +1000,7 @@ namespace {
             createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), suitePath / "inner");
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1463,7 +1463,7 @@ namespace {
         createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1568,12 +1568,12 @@ namespace {
         setSuite(suite);
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
     }
 
     TEST_P(Parameterized_Server_Test, Installed_Dependency_Test) {
@@ -1581,11 +1581,14 @@ namespace {
         setSuite(suite);
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests, 2);
+        auto const& cases = testGen.tests.begin().value().methods["display_version"].testCases;
+        ASSERT_EQ(1, cases.size());
+        ASSERT_FALSE(cases[0].isError());
     }
 }

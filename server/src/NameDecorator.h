@@ -14,6 +14,10 @@ class NameDecorator {
 public:
     static std::string decorate(std::string_view name);
 
+    static std::string defineWcharT(std::string_view canonicalName);
+
+    static const std::string UNDEF_WCHAR_T;
+
     static const std::unordered_set<std::string> C_KEYWORDS;
 
     static const std::unordered_set<std::string> CPP_KEYWORDS;

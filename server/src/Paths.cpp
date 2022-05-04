@@ -6,6 +6,7 @@
 
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
+#include "utils/CLIUtils.h"
 
 #include "loguru.h"
 
@@ -24,18 +25,16 @@ namespace Paths {
     fs::path logPath = getHomeDir();
     fs::path tmpPath = getHomeDir();
 
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &paths,
-                                           const vector<fs::path> &dirPaths,
-                                           const std::function<bool(const fs::path &path)> &filter) {
-        std::vector<fs::path> filtered;
-        std::copy_if(paths.begin(), paths.end(), std::back_inserter(filtered),
-                     [&dirPaths, &filter](const fs::path &path) {
-                         return std::any_of(
-                             dirPaths.begin(), dirPaths.end(), [&](const auto &dirPath) {
-                                 return path.parent_path() == dirPath && fs::exists(path) &&
-                                        filter(path);
-                             });
-                     });
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &paths,
+                          const vector<fs::path> &dirPaths,
+                          const std::function<bool(const fs::path &path)> &filter) {
+        CollectionUtils::FileSet filtered =
+            CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
+                return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
+                    return path.parent_path() == dirPath && fs::exists(path) && filter(path);
+                });
+            });
         return filtered;
     }
 
@@ -310,21 +309,26 @@ namespace Paths {
         return replaceExtension(sourcePathToStubName(source), ".h");
     }
 
-
     fs::path sourcePathToStubPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &source) {
         return normalizedTrimmed((projectContext.testDirPath / "stubs" / getRelativeDirPath(projectContext, source) /
                sourcePathToStubName(source)));
     }
+
     fs::path testPathToSourcePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &testFilePath) {
         fs::path relative = fs::relative(testFilePath.parent_path(), projectContext.testDirPath);
         fs::path filename = testPathToSourceName(testFilePath);
         return projectContext.projectPath / relative / filename;
     }
+
     fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext,
-                                               const fs::path &sourceFilePath) {
+                                               const fs::path &sourceFilePath,
+                                               const string& suffix) {
         fs::path makefileDir = getMakefileDir(projectContext, sourceFilePath);
+        if (!suffix.empty()) {
+            addSuffix(makefileDir, suffix);
+        }
         string makefileName = replaceExtension(sourceFilePath, MAKEFILE_EXTENSION).filename();
         return makefileDir / makefileName;
     }

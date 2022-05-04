@@ -11,7 +11,7 @@
 #include <grpcpp/grpcpp.h>
 #include <protobuf/testgen.grpc.pb.h>
 
-class PredicateTestGen : public LineTestGen {
+class PredicateTestGen final : public LineTestGen {
 public:
     string predicate;
     string returnValue;

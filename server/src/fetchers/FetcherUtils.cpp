@@ -4,8 +4,8 @@
 
 #include "FetcherUtils.h"
 #include "environment/EnvironmentPaths.h"
-
-#include <clang/Tooling/CompilationDatabase.h>
+#include "exceptions/CompilationDatabaseException.h"
+#include "building/CompilationDatabase.h"
 
 #include "loguru.h"
 
@@ -44,11 +44,8 @@ ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
 }
 
 ClangToolRunner::ClangToolRunner(
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase)
+    std::shared_ptr<CompilationDatabase> compilationDatabase)
     : compilationDatabase(std::move(compilationDatabase)) {
-    fs::path buildCompilerPath =
-        CompilationUtils::detectBuildCompilerPath(this->compilationDatabase);
-    this->resourceDir = CompilationUtils::getResourceDirectory(buildCompilerPath);
 }
 
 void ClangToolRunner::run(const fs::path &file,
@@ -60,8 +57,14 @@ void ClangToolRunner::run(const fs::path &file,
     if (!Paths::isSourceFile(file) && (!Paths::isHeaderFile(file) || onlySource)) {
         return;
     }
-    auto clangTool =
-        std::make_unique<clang::tooling::ClangTool>(*compilationDatabase, file.string());
+    if (onlySource) {
+        if (!CollectionUtils::contains(compilationDatabase->getAllFiles(), file)) {
+            throw CompilationDatabaseException(
+                "compile_commands.json doesn't contain a command for source file " + file.string());
+        }
+    }
+    auto clangTool = std::make_unique<clang::tooling::ClangTool>(
+        compilationDatabase->getClangCompilationDatabase(), file.string());
     if (ignoreDiagnostics) {
         clangTool->setDiagnosticConsumer(&ignoringDiagConsumer);
     }
@@ -102,6 +105,7 @@ void ClangToolRunner::checkStatus(int status) const {
 }
 
 void ClangToolRunner::setResourceDirOption(clang::tooling::ClangTool *clangTool) {
+    auto const &resourceDir = compilationDatabase->getResourceDir();
     if (resourceDir.has_value()) {
         string resourceDirFlag =
             StringUtils::stringFormat("-resource-dir=%s", resourceDir.value());

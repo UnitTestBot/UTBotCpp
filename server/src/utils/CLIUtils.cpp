@@ -36,7 +36,14 @@ void CLIUtils::setupLogger(const std::string &logPath,
     if (!threadView) {
         loguru::g_preamble_thread = false;
     }
-    setOptPath(logPath, Paths::logPath);
+
+    CLIUtils::setOptPath(logPath, Paths::logPath);
+    const fs::path symLink = Paths::getSymLinkPathToLogLatest();
+    const std::string logfile_path_string = std::string(Paths::getUtbotLogAllFilePath());
+    loguru::add_file(logfile_path_string.data(), loguru::Append, loguru::Verbosity_MAX);
+    std::filesystem::remove(symLink.string());
+    std::filesystem::create_symlink(logfile_path_string, symLink.string());
+
     setStderrVerbosity(verbosity);
 }
 
@@ -241,7 +248,6 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
     } else {
         CLIUtils::setupLogger(serverCommandOptions.getLogPath(),
                               serverCommandOptions.getVerbosity());
-        CLIUtils::setOptPath(serverCommandOptions.getLogPath(), Paths::logPath);
         CLIUtils::setOptPath(serverCommandOptions.getTmpPath(), Paths::tmpPath);
         Server server;
         if (serverCommandOptions.getPort() != 0) {

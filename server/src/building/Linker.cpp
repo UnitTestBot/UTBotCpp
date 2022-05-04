@@ -45,15 +45,12 @@ bool Linker::isForOneFile() {
 }
 
 fs::path Linker::getSourceFilePath() {
-    auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen);
-    auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen);
-    fs::path sourcePath;
     if (lineInfo != nullptr) {
         return lineInfo->filePath;
-    } else if (fileTestGen != nullptr) {
+    } else if (auto fileTestGen = dynamic_cast<FileTestGen *>(&testGen)) {
         return fileTestGen->filepath;
-    } else if (snippetTestGen != nullptr) {
-        return snippetTestGen->sourcePaths[0];
+    } else if (auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen)) {
+        return snippetTestGen->filePath;
     } else {
         throw BaseException(
             "Couldn't handle test generation of current type in function getSourcePath");
@@ -252,10 +249,8 @@ void Linker::prepareArtifacts() {
 }
 
 void Linker::writeMakefiles() {
-    for (auto const &[sourcePath, makefile] : linkMakefiles) {
-        auto makefilePath =
-            Paths::getMakefilePathFromSourceFilePath(testGen.projectContext, sourcePath);
-        FileSystemUtils::writeToFile(makefilePath, makefile);
+    for (const printer::TestMakefilesContent &testMakefilesPrinter : linkMakefiles) {
+        testMakefilesPrinter.write();
     }
 }
 
@@ -372,7 +367,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     FileSystemUtils::writeToFile(stubsMakefile, "");
 
     printer::DefaultMakefilePrinter bitcodeLinkMakefilePrinter;
-    printer::NativeMakefilePrinter nativeLinkMakefilePrinter{ testGen, &stubSources };
+    printer::TestMakefilesPrinter testMakefilesPrinter{ testGen, &stubSources };
     bitcodeLinkMakefilePrinter.declareInclude(stubsMakefile);
     auto[targetBitcode, _] = addLinkTargetRecursively(target, bitcodeLinkMakefilePrinter, stubSources, bitcodeFiles,
                                                       suffixForParentOfStubs, false, testedFilePath);
@@ -401,12 +396,12 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         if (!linkResult.isSuccess()) {
             return linkResult.getError().value();
         }
-        nativeLinkMakefilePrinter.addStubs(stubsSet);
+        testMakefilesPrinter.addStubs(stubsSet);
     }
 
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
     if (!success) {
-        string message = StringUtils::stringFormat("Couldn't parse module: ", targetBitcode);
+        string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
         throw CompilationDatabaseException(message);
     }
 
@@ -421,13 +416,13 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         }
     }
 
-    nativeLinkMakefilePrinter.addLinkTargetRecursively(target, suffixForParentOfStubs);
+    testMakefilesPrinter.addLinkTargetRecursively(target, suffixForParentOfStubs);
+
     for (auto const &[objectFile, _] : bitcodeFiles) {
         auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
         auto sourcePath = compilationUnitInfo->getSourcePath();
         if (CollectionUtils::containsKey(testGen.tests, sourcePath)) {
-            printer::NativeMakefilePrinter makefilePrinter{ nativeLinkMakefilePrinter, sourcePath };
-            linkMakefiles[sourcePath] = makefilePrinter.ss.str();
+            linkMakefiles.push_back(testMakefilesPrinter.GetMakefiles(sourcePath));
         }
     }
     return LinkResult{ targetBitcode, stubsSet, presentedFiles };
@@ -516,6 +511,9 @@ std::string getArchiveArgument(std::string const &argument,
         fs::path bitcode = dependencies.at(argument);
         return fs::relative(bitcode, workingDir);
     }
+    if (CollectionUtils::contains(linkUnitInfo.installedFiles, argument)) {
+        return argument;
+    }
     if (argument == linkUnitInfo.getOutput()) {
         return output;
     }
@@ -534,11 +532,21 @@ static void moveKleeTemporaryFileArgumentToBegin(std::vector<std::string> &argum
       return StringUtils::endsWith(argument, "_klee.bc");
     });
     if (iteratorToCurrentFile == arguments.end()) {
-        LOG_S(ERROR) << "Don't find temporary klee file";
+        LOG_S(WARNING) << "Don't find temporary klee file";
         return;
     }
     auto iteratorToSwap = std::find(arguments.begin(), arguments.end(), "-o");
     std::iter_swap(iteratorToSwap + 2, iteratorToCurrentFile);
+}
+
+static void moveOutputOptionToBegin(vector<std::string> &arguments, fs::path const &output) {
+    auto it = std::find(arguments.begin(), arguments.end(), "-o");
+    if (it != arguments.end()) {
+        arguments.erase(it, it + 2);
+        arguments.insert(arguments.begin() + 1, { "-o", output });
+    } else {
+        LOG_S(ERROR) << "Output option is not found for: " << StringUtils::joinWith(arguments, " ");
+    }
 }
 
 static std::vector<utbot::LinkCommand>
@@ -555,13 +563,13 @@ getArchiveCommands(fs::path const &workingDir,
                                               output, linkCommand, hasArchiveOption);
                 });
             arguments.erase(arguments.begin());
+            if (!hasArchiveOption) {
+                arguments.insert(arguments.begin(), "r");
+            }
+            moveOutputOptionToBegin(arguments, output);
             moveKleeTemporaryFileArgumentToBegin(arguments);
 
-            if (hasArchiveOption) {
-                arguments.insert(arguments.begin(), { "ar" });
-            } else {
-                arguments.insert(arguments.begin(), { "ar", "r" });
-            }
+            arguments.insert(arguments.begin(), { Paths::getAr() });
             CollectionUtils::extend(arguments,
                                     std::vector<std::string>{ "--plugin", Paths::getLLVMgold() });
             utbot::LinkCommand result{ arguments, workingDir };

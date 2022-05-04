@@ -30,14 +30,15 @@ namespace Paths {
 
     /**
      * @brief Traverses all paths and removes all which parent directory is not any of `dirPaths`.
-     * @param path Vector of paths to files.
+     * @param path Set of paths to files.
      * @param dirPaths Vector of directory paths where files must be located.
      * @param allowedExt If file extension not present in `allowedExt`, skips it.
      * @return Vector of filtered paths.
      */
-    vector<fs::path> filterPathsByDirNames(const vector<fs::path> &path,
-                                           const vector<fs::path> &dirNames,
-                                           const std::function<bool(const fs::path &path)> &filter);
+    CollectionUtils::FileSet
+    filterPathsByDirNames(const CollectionUtils::FileSet &path,
+                          const vector<fs::path> &dirNames,
+                          const std::function<bool(const fs::path &path)> &filter);
 
     static inline void setOptPath(fs::path &path, const string &value) {
         path = fs::path(value);
@@ -129,6 +130,11 @@ namespace Paths {
         return logPath / "logs";
     }
 
+    static inline fs::path getUtbotLogAllFilePath() {
+        const static std::string filename = "utbot-" + TimeUtils::getCurrentTimeStr() + ".log";
+        return logPath / Paths::getBaseLogDir() / filename;
+    }
+
     static inline fs::path getClientLogDir(const string &client) {
         return getBaseLogDir() / client;
     }
@@ -149,6 +155,10 @@ namespace Paths {
         auto logFilename = TimeUtils::getDate() + ".log";
         execLogPath /= logFilename;
         return execLogPath;
+    }
+
+    static inline fs::path getSymLinkPathToLogLatest() {
+        return Paths::getBaseLogDir() / "latest.log";
     }
 
     //endregion
@@ -337,7 +347,8 @@ namespace Paths {
 
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
-    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
+                                               const string& suffix = "");
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 

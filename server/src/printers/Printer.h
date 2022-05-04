@@ -138,8 +138,7 @@ namespace printer {
 
         Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
 
-        std::vector<string> printForLoopsAndReturnLoopIterators(SRef objectName,
-                                                                const std::vector<size_t> &bounds);
+        std::vector<string> printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds);
 
         static string constrIndex(SRef arrayName, SRef ind);
 
@@ -183,6 +182,8 @@ namespace printer {
                                 const types::TypesHandler&typesHandler,
                                 const string& prefix,
                                 const string& suffix,
+                                const string& methodName,
+                                const string& nameForStub,
                                 bool makeStatic = false);
 
         static string getStubSymbolicVarName(const string& methodName);
@@ -216,9 +217,11 @@ namespace printer {
 
         void writeStubsForStructureFields(const Tests &tests);
 
+        void writeStubsForParameters(const Tests &tests);
+
         void writeStubForParam(const types::TypesHandler* typesHandler,
                                const std::shared_ptr<types::FunctionInfo> &fInfo,
-                               const string& name,
+                               const string& methodName,
                                const string& stubName, bool needToTypedef, bool makeStatic);
 
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);

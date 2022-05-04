@@ -56,8 +56,7 @@ public:
     KleeGenerator(utbot::ProjectContext projectContext,
                   utbot::SettingsContext settingsContext,
                   fs::path serverBuildDir,
-                  vector<fs::path> sourcesFilePaths,
-                  std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase,
+                  std::shared_ptr<CompilationDatabase> compilationDatabase,
                   types::TypesHandler &typesHandler,
                   PathSubstitution filePathsSubstitution,
                   std::shared_ptr<BuildDatabase> buildDatabase = nullptr,
@@ -163,8 +162,7 @@ private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
-    vector<fs::path> srcFiles;
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
+    std::shared_ptr<CompilationDatabase> compilationDatabase;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
     std::shared_ptr<BuildDatabase> buildDatabase;

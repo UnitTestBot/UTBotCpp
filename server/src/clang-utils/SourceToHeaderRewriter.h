@@ -17,7 +17,6 @@
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Tooling/CompilationDatabase.h>
 #include <grpcpp/grpcpp.h>
 
 #include <utility>
@@ -50,7 +49,7 @@ public:
 
     SourceToHeaderRewriter(
         utbot::ProjectContext projectContext,
-        const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+        const std::shared_ptr<CompilationDatabase> &compilationDatabase,
         std::shared_ptr<Fetcher::FileToStringSet> structsToDeclare,
         fs::path serverBuildDir);
 

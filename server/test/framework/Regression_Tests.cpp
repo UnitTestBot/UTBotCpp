@@ -84,7 +84,7 @@ namespace {
             projectName, suitePath, buildDirRelativePath, { suitePath, folderPath });
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
+        testUtils::setTargetForFirstSource(testGen);
 
         fs::path source1 = folderPath / "SAT-760_1.c";
         fs::path source2 = folderPath / "SAT-760_2.c";
@@ -173,5 +173,73 @@ namespace {
                   return !testCase.isError();
                 } }),
             "set_file_list");
+    }
+
+    TEST_F(Regression_Test, Return_Pointer_Argument_GNU_90) {
+        fs::path source = getTestFilePath("PR120.c");
+        auto [testGen, status] = createTestForFunction(source, 6);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "ret");
+    }
+
+    TEST_F(Regression_Test, Unnamed_Bit_Field) {
+        fs::path source = getTestFilePath("PR124.c");
+        auto [testGen, status] = createTestForFunction(source, 12);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "bpf_xdp_attach");
+    }
+
+    TEST_F(Regression_Test, VaList_In_Function_Pointer_Type) {
+        fs::path source = getTestFilePath("PR123.c");
+        auto [testGen, status] = createTestForFunction(source, 11);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return !testCase.isError();
+                } }),
+            "libbpf_set_print");
+    }
+
+    TEST_F(Regression_Test, Unused_Function_Pointer_Parameter) {
+        fs::path source = getTestFilePath("PR153.c");
+        auto [testGen, status] = createTestForFunction(source, 9);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                    return testCase.isError();
+                } }),
+            "unused");
+    }
+
+    TEST_F(Regression_Test, No_Such_Type_Exception) {
+        fs::path folderPath = suitePath / "PR-200";
+        fs::path source = folderPath / "PR-200.c";
+        auto [testGen, status] = createTestForFunction(source, 14);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
     }
 }

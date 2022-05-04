@@ -7,6 +7,7 @@
 
 #include "fetchers/FetcherUtils.h"
 #include "LineInfo.h"
+#include "building/CompilationDatabase.h"
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
@@ -24,7 +25,7 @@ class BordersFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
     BordersFinder(const fs::path &filePath,
                   unsigned line,
-                  const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+                  const shared_ptr<CompilationDatabase> &compilationDatabase,
                   const fs::path &compileCommandsJsonPath);
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;

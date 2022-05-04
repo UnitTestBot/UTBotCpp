@@ -90,6 +90,9 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     std::vector<types::Field> fields;
     fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         types::Field field;
         field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
@@ -239,6 +242,9 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     std::vector<types::Field> fields;
     unionInfo.hasUnnamedFields = false;
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         types::Field field;
         string fieldName = F->getNameAsString();
         field.name = fieldName;
