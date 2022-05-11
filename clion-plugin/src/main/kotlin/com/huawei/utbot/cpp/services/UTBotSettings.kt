@@ -89,10 +89,12 @@ data class UTBotSettings(
             state.remotePath = value
         }
 
-    var sourcePaths: MutableSet<String>
-        get() = state.sourcePaths
+    var sourcePaths: Set<String>
+        get() {
+            return state.sourcePaths
+        }
         set(value) {
-            state.sourcePaths = value
+            state.sourcePaths = value.toMutableSet()
             project?.messageBus?.syncPublisher(SourceFoldersListener.TOPIC)?.sourceFoldersChanged(value)
         }
 

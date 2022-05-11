@@ -12,8 +12,8 @@
 
 
     <extensions defaultExtensionNs="com.intellij">
-         <codeInsight.lineMarkerProvider language="ObjectiveC"
-                                            implementationClass="com.huawei.utbot.cpp.ui.UTBotTestRunLineMarkerProvider"/>
+        <codeInsight.lineMarkerProvider language="ObjectiveC"
+                                        implementationClass="com.huawei.utbot.cpp.ui.UTBotTestRunLineMarkerProvider"/>
         <projectService serviceImplementation="com.huawei.utbot.cpp.services.GeneratorSettings"/>
         <projectService serviceImplementation="com.huawei.utbot.cpp.services.UTBotSettings"/>
         <coverageEngine implementation="com.huawei.utbot.cpp.coverage.UTBotCoverageEngine"/>
@@ -45,7 +45,8 @@
     <actions>
         <group id="actions.UTBot.editor" text="UTBot Actions" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            <action id="com.huawei.utbot.cpp.actions.GenerateForProjectAction" class="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
+            <action id="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
+                    class="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
                     text="Generate for Project" description="Generate tests for whole project"/>
             <action id="com.huawei.utbot.cpp.actions.GenerateForFileActionInEditor"
                     class="com.huawei.utbot.cpp.actions.GenerateForFileAction" text="Generate Tests for File"
@@ -77,6 +78,7 @@
             <action id="com.huawei.utbot.cpp.actions.DevAction"
                     class="com.huawei.utbot.cpp.actions.DevAction" text="Development: Send HandShake"/>
         </group>
+
         <group id="actions.UTBot.projectTree" text="UTBot Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="last"/>
             <action id="com.huawei.utbot.cpp.actions.GenerateForFileAction"
@@ -86,6 +88,18 @@
                     class="com.huawei.utbot.cpp.actions.GenerateForFolderAction" text="Generate For Folder"
                     description="Generate unit tests for this folder"/>
         </group>
+
+        <action id="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
+                class="com.huawei.utbot.cpp.actions.MarkSourceFolderAction" text="Mark As UTBot Folders"
+                description="Marks selected folders as UTBot folders">
+            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
+        </action>
+        <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
+                class="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction" text="Unmark UTBot Folders"
+                description="Unmarks selected folders as UTBot folders">
+            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
+        </action>
+
         <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir"
                 class="com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir"
                 text="Generate Build Directory" description="Ask server to generate build dir"/>
@@ -93,7 +107,8 @@
                 class="com.huawei.utbot.cpp.actions.ConfigureProjectAction" text="Configure Project"
                 description="Configure project so that server can generate tests"/>
         <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration"
-                class="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration" text="Try To Generate Json"
+                class="com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration"
+                text="Try To Generate Json"
                 description="Ask server to generate missing json files"/>
         <action id="com.huawei.utbot.cpp.actions.ShowWizardAction"
                 class="com.huawei.utbot.cpp.actions.ShowWizardAction" text="Show Wizard"

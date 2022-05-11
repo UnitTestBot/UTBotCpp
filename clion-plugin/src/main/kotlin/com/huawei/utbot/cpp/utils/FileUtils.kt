@@ -2,7 +2,10 @@ package com.huawei.utbot.cpp.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.util.io.isDirectory
+import com.intellij.util.io.isFile
 import java.io.File
+import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -37,9 +40,18 @@ fun isCPPorCFileName(fileName: String) = """.*\.(cpp|hpp|c|h)""".toRegex().match
 fun Path.visitAllFiles(action: (Path) -> Unit) {
     object : SimpleFileVisitor<Path>() {
         override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-            if (attrs.isRegularFile) {
-                action(file)
-            }
+            action(file)
+            return FileVisitResult.CONTINUE
+        }
+    }.let { visitor ->
+        Files.walkFileTree(this, visitor)
+    }
+}
+
+fun Path.visitAllDirectories(action: (Path) -> Unit) {
+    object : SimpleFileVisitor<Path>() {
+        override fun preVisitDirectory(dir: Path, attrs: BasicFileAttributes?): FileVisitResult {
+            action(dir)
             return FileVisitResult.CONTINUE
         }
     }.let { visitor ->
