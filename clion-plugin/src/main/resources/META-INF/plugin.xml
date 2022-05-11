@@ -37,6 +37,8 @@
                     anchor="bottom"
                     secondary="true"
         />
+        <projectViewNodeDecorator implementation="com.huawei.utbot.cpp.ui.sourceFoldersView.FolderDecorator"/>
+        <treeStructureProvider implementation="com.huawei.utbot.cpp.ui.sourceFoldersView.FolderStructureProvider"/>
     </extensions>
 
 

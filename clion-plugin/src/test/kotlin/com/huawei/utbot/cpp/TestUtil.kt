@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp
 
+import com.huawei.utbot.cpp.utils.visitAllFiles
 import com.intellij.util.io.exists
 import com.intellij.util.io.readText
 import kotlin.io.path.name
@@ -48,18 +49,6 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
     assert(checked) { "Some test files don't exist!" }
 }
 
-fun Path.visitAllFiles(action: (Path) -> Unit) {
-    object : SimpleFileVisitor<Path>() {
-        override fun visitFile(file: Path, attrs: BasicFileAttributes): FileVisitResult {
-            if (attrs.isRegularFile) {
-                action(file)
-            }
-            return FileVisitResult.CONTINUE
-        }
-    }.let { visitor ->
-        Files.walkFileTree(this, visitor)
-    }
-}
 
 fun Path.isStubFile() = name.contains("""_stub\.(c|cpp|h)$""".toRegex())
 

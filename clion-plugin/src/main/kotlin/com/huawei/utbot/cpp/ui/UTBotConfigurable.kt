@@ -81,12 +81,12 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
                 row(UTBot.message("settings.project.sourcePaths")) {
                     cell(createSourcesListComponent())
                         .onApply {
-                            utbotSettings.sourcePaths = sourcePathListModel.toList()
+                            utbotSettings.sourcePaths = sourcePathListModel.toList().toMutableSet()
                         }
                         .onReset {
                             sourcePathListModel.also {
                                 it.removeAll()
-                                it.addAll(0, utbotSettings.sourcePaths)
+                                it.addAll(0, utbotSettings.sourcePaths.toList())
                             }
                         }
                         .onIsModified {

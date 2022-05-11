@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp.services
 
+import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.utils.relativize
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
@@ -46,7 +47,7 @@ data class UTBotSettings(
         var testDirPath: String = "/",
         var synchronizeCode: Boolean = false,
         var remotePath: String = "",
-        var sourcePaths: List<String> = emptyList(),
+        var sourcePaths: MutableSet<String> = mutableSetOf(),
         var port: Int = DEFAULT_PORT,
         var serverName: String = DEFAULT_HOST,
         var cmakeOptions: List<String> = DEFAULT_CMAKE_OPTIONS
@@ -88,10 +89,11 @@ data class UTBotSettings(
             state.remotePath = value
         }
 
-    var sourcePaths: List<String>
+    var sourcePaths: MutableSet<String>
         get() = state.sourcePaths
         set(value) {
             state.sourcePaths = value
+            project?.messageBus?.syncPublisher(SourceFoldersListener.TOPIC)?.sourceFoldersChanged(value)
         }
 
     var port: Int
@@ -205,7 +207,7 @@ data class UTBotSettings(
 
         fun getSourceFoldersFromSources(sources: Collection<File>) = sources.map {
             it.parent
-        }.distinct()
+        }.toMutableSet()
 
         val projectPath = project?.basePath ?: return notifyError("Path to project unavailable", project)
 
