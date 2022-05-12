@@ -1,12 +1,10 @@
 package com.huawei.utbot.cpp.ui
 
 import com.huawei.utbot.cpp.UTBot
-import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.utils.removeIndices
-import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooser
@@ -130,7 +128,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 val intFields = mapOf(
                     UTBot.message("settings.generation.timeoutFunction") to generatorSettings::timeoutPerFunction,
                     UTBot.message("settings.generation.timeoutTest") to generatorSettings::timeoutPerTest,
-                    UTBot.message("settings.project.port") to utbotSettings::port
                 )
                 intFields.forEach { (message, intProperty) ->
                     row(message) {
@@ -142,6 +139,11 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             }
 
             group("Connection settings") {
+                row(UTBot.message("settings.project.port")) {
+                    intTextField().bindIntText(utbotSettings::port).applyToComponent {
+                        maximumSize = TEXT_FIELD_MAX_SIZE
+                    }
+                }
                 row(UTBot.message("settings.project.serverName")) {
                     textField().bindText(utbotSettings::serverName)
                 }
@@ -154,7 +156,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     private fun createSourcesListComponent() =
         ToolbarDecorator.createDecorator(JList(sourcePathListModel))
-            .setAddAction { actionBtn ->
+            .setAddAction { _ ->
                 FileChooser.chooseFiles(
                     FileChooserDescriptorFactory.createMultipleFoldersDescriptor(), myProject, null
                 ) { files ->
