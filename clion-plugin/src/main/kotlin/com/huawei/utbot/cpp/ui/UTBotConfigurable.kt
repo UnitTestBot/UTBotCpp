@@ -1,10 +1,12 @@
 package com.huawei.utbot.cpp.ui
 
 import com.huawei.utbot.cpp.UTBot
+import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.utils.removeIndices
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooser
@@ -30,20 +32,21 @@ import java.awt.Dimension
 /**
  * Get UTBot project settings and generation settings from settings menu.
  */
-class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
+class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings for Generating Tests"
 ) {
-    private val utbotSettings: UTBotSettings get() = targetProject.service()
-    private val generatorSettings: GeneratorSettings get() = targetProject.service()
+    private val utbotSettings: UTBotSettings get() = myProject.service()
+    private val generatorSettings: GeneratorSettings get() = myProject.service()
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val sourcePathListModel =
-        CollectionListModel(*targetProject.getService(UTBotSettings::class.java).sourcePaths.toTypedArray())
-    private val panel = createMainPanel()
+        CollectionListModel(*myProject.getService(UTBotSettings::class.java).sourcePaths.toTypedArray())
+    private val panel by lazy { createMainPanel() }
 
     init {
-        targetProject.messageBus.connect().subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
-            reset()
-        })
+        myProject.messageBus.connect()
+            .subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
+                reset()
+            })
     }
 
     override fun createPanel() = panel
@@ -52,7 +55,7 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
         row(name) {
             textFieldWithBrowseButton(
                 chooserTitle,
-                targetProject,
+                myProject,
                 FileChooserDescriptorFactory.createSingleFileDescriptor()
             ).bindText(property).columns(COLUMNS_LARGE)
         }
@@ -153,7 +156,7 @@ class UTBotConfigurable(private val targetProject: Project) : BoundConfigurable(
         ToolbarDecorator.createDecorator(JList(sourcePathListModel))
             .setAddAction { actionBtn ->
                 FileChooser.chooseFiles(
-                    FileChooserDescriptorFactory.createMultipleFoldersDescriptor(), targetProject, null
+                    FileChooserDescriptorFactory.createMultipleFoldersDescriptor(), myProject, null
                 ) { files ->
                     sourcePathListModel.add(files.map { it.path })
                 }

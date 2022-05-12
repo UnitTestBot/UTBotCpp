@@ -5,6 +5,7 @@ import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
 import com.huawei.utbot.cpp.client.Requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.client.logger.DynamicLevelLoggingProvider
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
+import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.ui.userLog.UTBotConsole
 import com.intellij.openapi.Disposable
@@ -28,6 +29,7 @@ import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.userLog.OutputWindowProvider
 import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
+import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -72,10 +74,12 @@ class Client(val project: Project) : Disposable, KoinComponent {
     }
 
     val dispatcher by inject<CoroutineDispatcher>()
+
     // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
     // this division is needed for testing: when in test we send a generate request to server, we need to wait
     // until it completes, the indicator that all such requests have completed is that this scope has no children
     val shortLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
+
     // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
     val longLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
     private val grpcClient: GrpcClient = GrpcClient(settings.port, settings.serverName)
@@ -107,8 +111,8 @@ class Client(val project: Project) : Disposable, KoinComponent {
     }
 
     private fun subscribeToEvents() {
-        project.messageBus.connect(this)
-            .subscribe(UTBotEventsListener.CONNECTION_CHANGED_TOPIC, object : UTBotEventsListener {
+        with(project.messageBus.connect(this)) {
+            subscribe(UTBotEventsListener.CONNECTION_CHANGED_TOPIC, object : UTBotEventsListener {
                 override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
                     if (oldStatus != newStatus && newStatus == ConnectionStatus.CONNECTED) {
                         Logger.info("Successfully connected to server!")
@@ -123,12 +127,20 @@ class Client(val project: Project) : Disposable, KoinComponent {
                             provideLogChannel()
                         }
                         longLivingRequestsCS.launch(CoroutineName("gtest log channel")) {
-                                provideGTestChannel()
+                            provideGTestChannel()
                         }
                         newClient = false
                     }
                 }
             })
+
+            subscribe(
+                SourceFoldersListener.TOPIC,
+                // when source folder are changed, the ProjectViewNodeDecorator.decorate should be invoked again for this we force refresh on change
+                SourceFoldersListener {
+                    ProjectView.getInstance(project).refresh()
+                })
+        }
     }
 
     fun setLoggingLevel(logLevel: Level) {
@@ -152,7 +164,8 @@ class Client(val project: Project) : Disposable, KoinComponent {
             }
             .collect {
                 ApplicationManager.getApplication().invokeLater {
-                    val gTestConsole: UTBotConsole = project.service<OutputWindowProvider>().gtestOutputChannel.outputConsole
+                    val gTestConsole: UTBotConsole =
+                        project.service<OutputWindowProvider>().gtestOutputChannel.outputConsole
                     gTestConsole.info(it.message)
                 }
             }
@@ -173,7 +186,8 @@ class Client(val project: Project) : Disposable, KoinComponent {
             }
             .collect {
                 ApplicationManager.getApplication().invokeLater {
-                    val serverConsole: UTBotConsole = project.service<OutputWindowProvider>().serverOutputChannel.outputConsole
+                    val serverConsole: UTBotConsole =
+                        project.service<OutputWindowProvider>().serverOutputChannel.outputConsole
                     serverConsole.info(it.message)
                 }
             }

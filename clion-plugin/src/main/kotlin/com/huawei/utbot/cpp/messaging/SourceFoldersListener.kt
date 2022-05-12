@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.messaging
 
 import com.intellij.util.messages.Topic
 
-interface SourceFoldersListener {
+fun interface SourceFoldersListener {
     companion object {
         val TOPIC = Topic.create(
             "UTBot source folders changed",
