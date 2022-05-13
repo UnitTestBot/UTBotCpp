@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.huawei.utbot.cpp.utils.notifyUnknownResponse
@@ -88,7 +89,7 @@ class CreateBuildDirHandler(
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
                 notifyInfo("Build dir was created!", project)
-                project.client.configureProject()
+                project.getClient().configureProject()
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
                 notifyInfo("Failed to create build dir! ${response.message}", project)

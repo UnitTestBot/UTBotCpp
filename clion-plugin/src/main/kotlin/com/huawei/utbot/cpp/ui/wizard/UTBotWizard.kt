@@ -1,20 +1,33 @@
 package com.huawei.utbot.cpp.ui.wizard
 
 import com.huawei.utbot.cpp.UTBot
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.ide.BrowserUtil
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.openapi.project.Project
 
-class UTBotWizard(project: Project) : AbstractWizard<UTBotWizardStep>("UTBot: Quickstart", project) {
+class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep>("UTBot: Quickstart", project) {
+    // copy of settings to make changes during wizard steps
+    private val mySettingsModel = project.utbotSettings.state.copy()
+
     init {
         addStep(IntroStrep())
-        addStep(ConnectionStep(project))
-        addStep(RemotePathStep(project))
-        addStep(BuildOptionsStep(project))
+        addStep(ConnectionStep(project, mySettingsModel, disposable))
+        addStep(RemotePathStep(project, mySettingsModel))
+        addStep(BuildOptionsStep(project, mySettingsModel))
         addStep(SuccessStep())
         super.init()
         isResizable = true
         setSize(400, 400)
+    }
+
+    override fun doOKAction() {
+        super.doOKAction()
+        // commit changes made during wizard and notify
+        with(project.utbotSettings) {
+            loadState(mySettingsModel)
+            fireUTBotSettingsChanged()
+        }
     }
 
     override fun helpAction() {

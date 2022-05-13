@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.client.Client
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.targetsToolWindow.UTBotTargetsController
+import com.huawei.utbot.cpp.utils.getClient
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
@@ -64,7 +65,7 @@ abstract class BaseGenerationTestCase {
     val generatorSettings: GeneratorSettings
         get() = project.service()
     val client: Client
-        get() = project.service()
+        get() = project.getClient()
     val targetsController = UTBotTargetsController(project)
 
     init {

@@ -1,12 +1,13 @@
 package com.huawei.utbot.cpp.ui.wizard
 
 import com.huawei.utbot.cpp.actions.utils.getDummyRequest
-import com.huawei.utbot.cpp.client.Client
 import com.huawei.utbot.cpp.client.GrpcClient
+import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.utils.utbotSettings
 import com.huawei.utbot.cpp.utils.validateOnInput
 import com.intellij.ide.wizard.Step
-import com.intellij.openapi.components.service
+import com.intellij.openapi.Disposable
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
@@ -35,7 +36,7 @@ import java.awt.Dimension
 abstract class UTBotWizardStep : Step {
     protected val panel by lazy { JPanel() }
     private var isInitialized = false
-    private val onApplyCallbacks = mutableListOf<()->Unit>()
+    private val onApplyCallbacks = mutableListOf<() -> Unit>()
 
     abstract fun createUI()
 
@@ -73,7 +74,7 @@ abstract class UTBotWizardStep : Step {
         return panel
     }
 
-    fun getTextResource(resource: String): String {
+    private fun getTextResource(resource: String): String {
         return this.javaClass.classLoader.getResource(resource)?.readText()
             ?: error("Unable to get resource: $resource")
     }
@@ -89,6 +90,7 @@ abstract class UTBotWizardStep : Step {
                 alignmentX = Component.LEFT_ALIGNMENT
                 adjustHeightToTextHeight()
             }
+
             override fun getBody() = html
 
             fun adjustHeightToTextHeight() {
@@ -110,20 +112,24 @@ class IntroStrep : UTBotWizardStep() {
 }
 
 class ObservableValue<T>(initialValue: T) {
-    private val changeListeners: MutableList<(T)->Unit> = mutableListOf()
+    private val changeListeners: MutableList<(T) -> Unit> = mutableListOf()
     var value: T by Delegates.observable(initialValue) { _, _, newVal ->
         changeListeners.forEach {
             it(newVal)
         }
     }
 
-    fun addListener(listener: (T)->Unit) {
+    fun addListener(listener: (T) -> Unit) {
         changeListeners.add(listener)
     }
 }
 
 
-class ConnectionStep(val project: Project) : UTBotWizardStep() {
+class ConnectionStep(
+    val project: Project,
+    private val settingsModel: UTBotSettings.State,
+    private val parentDisposable: Disposable
+) : UTBotWizardStep() {
     private lateinit var hostTextField: JBTextField
     private lateinit var portTextField: JBTextField
 
@@ -141,29 +147,32 @@ class ConnectionStep(val project: Project) : UTBotWizardStep() {
         }
     }
 
+    private fun setupValidation() {
+        portTextField.validateOnInput(parentDisposable) {
+            if (portTextField.text.toIntOrNull() == null) {
+                isValidInput.value = false
+                ValidationInfo("Integer number expected!", portTextField)
+            } else {
+                isValidInput.value = true
+                null
+            }
+        }
+    }
+
     override fun createUI() {
         addHtml("media/connection.html")
         panel {
             row("Host") {
                 textField().also {
-                    it.bindText(project.utbotSettings::serverName)
+                    it.bindText(settingsModel::serverName)
                     hostTextField = it.component
                 }.columns(COLUMNS_MEDIUM)
             }
             row("Port") {
                 intTextField().also {
-                    it.bindIntText(project.utbotSettings::port)
+                    it.bindIntText(settingsModel::port)
                 }.columns(COLUMNS_MEDIUM).applyToComponent {
                     portTextField = this
-                    validateOnInput(project.service<Client>()) {
-                        if (portTextField.text.toIntOrNull() == null) {
-                            isValidInput.value = false
-                            ValidationInfo("Integer number expected!", portTextField)
-                        } else {
-                            isValidInput.value = true
-                            null
-                        }
-                    }
                 }
             }
             row {
@@ -209,29 +218,37 @@ class ConnectionStep(val project: Project) : UTBotWizardStep() {
                 })
             }
         }.addToUI()
+
+        setupValidation()
     }
 }
 
-class RemotePathStep(private val project: Project) : UTBotWizardStep() {
+class RemotePathStep(private val project: Project, private val settingsModel: UTBotSettings.State) :
+    UTBotWizardStep() {
     override fun createUI() {
         addHtml("media/remote_path.html")
         panel {
             row {
                 textField()
-                    .bindText(project.utbotSettings::remotePath)
+                    .bindText(settingsModel::remotePath)
                     .columns(COLUMNS_LARGE)
             }
         }.addToUI()
     }
 }
 
-class BuildOptionsStep(private val project: Project) : UTBotWizardStep() {
+class BuildOptionsStep(private val project: Project, private val settingsModel: UTBotSettings.State) :
+    UTBotWizardStep() {
     override fun createUI() {
         addHtml("media/build_dir.html")
         panel {
             row {
-                textField()
-                    .bindText(project.utbotSettings::buildDirPathRelative)
+                textFieldWithBrowseButton(
+                    "Choose Build Folder",
+                    project,
+                    FileChooserDescriptorFactory.createSingleFileDescriptor()
+                )
+                    .bindText(settingsModel::buildDirPath)
                     .columns(COLUMNS_LARGE)
             }
         }.addToUI()

@@ -40,7 +40,7 @@ data class UTBotSettings(
         }
     }
 
-    // used for serializing by the ide
+    // serialized by the ide, the settings of plugin
     data class State(
         var targetPath: String = UTBotTarget.autoTarget.path,
         var buildDirPath: String = "/",

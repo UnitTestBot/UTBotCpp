@@ -1,6 +1,6 @@
 package com.huawei.utbot.cpp.ui.userLog
 
-import com.huawei.utbot.cpp.client.Client
+import com.huawei.utbot.cpp.utils.getClient
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
@@ -69,7 +69,7 @@ class OutputWindowProvider(val project: Project) : Disposable {
                     ComboBox(Level.values().map { it.name }.toTypedArray()).apply {
                         addItemListener { itemEvent ->
                             if (itemEvent.stateChange == ItemEvent.SELECTED) {
-                                project.service<Client>().setLoggingLevel(
+                                project.getClient().setLoggingLevel(
                                     Level.values().find { it.name == (itemEvent.item as String) }!!
                                 )
                             }

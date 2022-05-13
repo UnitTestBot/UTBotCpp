@@ -3,13 +3,15 @@ package com.huawei.utbot.cpp.utils
 import com.intellij.ui.CollectionListModel
 
 fun <T> CollectionListModel<T>.removeIndices(indices: IntArray) {
-    val sortedIndices = indices.sorted()
-    with(toList()) {
-        removeAll(
-            filterIndexed { idx, _ ->
-                sortedIndices.binarySearch(idx) >= 0
-            }
-        )
-        this@removeIndices.replaceAll(this)
+    val newList = mutableListOf<T>()
+    val oldList = toList()
+    var i = 0
+    for (j in oldList.indices) {
+        if (indices[i] == j) {
+            i++
+            continue
+        }
+        newList.add(oldList[j])
     }
+    replaceAll(newList)
 }

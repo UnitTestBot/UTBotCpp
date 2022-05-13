@@ -8,7 +8,7 @@ import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.models.UTBotTarget
 import com.huawei.utbot.cpp.services.UTBotSettings
-import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.invokeOnEdt
 import com.huawei.utbot.cpp.utils.relativize
 import com.intellij.openapi.components.service
@@ -19,7 +19,8 @@ import org.tinylog.kotlin.Logger
 class UTBotTargetsController(val project: Project) {
     private val utbotSettings = project.service<UTBotSettings>()
     private val listModel = CollectionListModel(mutableListOf<UTBotTarget>(UTBotTarget.autoTarget))
-    private val client = project.service<Client>()
+    private val client: Client
+     get() = project.getClient()
 
     val targets: List<UTBotTarget>
         get() = listModel.toList()
@@ -50,7 +51,7 @@ class UTBotTargetsController(val project: Project) {
                 }
             }
         }.let {
-            project.client.execute(it)
+            client.execute(it)
         }
     }
 

@@ -6,7 +6,7 @@ import com.huawei.utbot.cpp.actions.ReconfigureProjectAction
 import com.huawei.utbot.cpp.actions.ShowWizardAction
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
-import com.huawei.utbot.cpp.utils.client
+import com.huawei.utbot.cpp.utils.getClient
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataContext
@@ -74,7 +74,7 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
     }
 
     override fun getText(): String =
-        "UTBot: " + (statusBar?.project?.client?.connectionStatus?.description
+        "UTBot: " + (statusBar?.project?.getClient()?.connectionStatus?.description
             ?: ConnectionStatus.BROKEN.description)
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT

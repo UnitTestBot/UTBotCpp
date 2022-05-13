@@ -1,6 +1,7 @@
 package com.huawei.utbot.cpp.utils
 
 import com.huawei.utbot.cpp.client.Client
+import com.huawei.utbot.cpp.client.ClientManager
 import com.huawei.utbot.cpp.client.Request
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
@@ -13,7 +14,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.job
 
 val AnActionEvent.client: Client
-    get() = this.getRequiredData(CommonDataKeys.PROJECT).service()
+    get() = this.getRequiredData(CommonDataKeys.PROJECT).getClient()
+
+fun Project.getClient(): Client = this.service<ClientManager>().client
 
 val Project.utbotSettings: UTBotSettings
     get() = this.service()
@@ -24,9 +27,6 @@ val Project.generatorSettings: GeneratorSettings
 fun Request.execute(e: AnActionEvent) {
     e.client.execute(this)
 }
-
-val Project.client: Client
-    get() = this.service()
 
 fun String.convertFromRemotePathIfNeeded(project: Project): String {
     return project.service<UTBotSettings>().convertFromRemotePathIfNeeded(this)

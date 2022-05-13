@@ -25,45 +25,33 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import testsgen.TestsGenServiceGrpcKt
 
-import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.userLog.OutputWindowProvider
 import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import io.grpc.Status
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withTimeout
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.core.context.startKoin
-import org.koin.dsl.module
 import org.tinylog.Level
 
 import org.tinylog.kotlin.Logger
 import org.tinylog.provider.ProviderRegistry
 import kotlinx.coroutines.Job
 
-@Service
-class Client(val project: Project) : Disposable, KoinComponent {
+class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(project.utbotSettings.port, project.utbotSettings.serverName) {
     var connectionStatus = ConnectionStatus.INIT
         private set
     private val messageBus = project.messageBus
     private var newClient = true
-    private val settings = project.service<UTBotSettings>()
+    private val settings = project.utbotSettings
     private val clientID = generateClientID()
-
-    init {
-        setupDependencies(project)
-    }
-
     /*
      * need to provide handler explicitly, otherwise the exception is thrown:
      * java.lang.NoClassDefFoundError: Could not initialize class kotlinx.coroutines.CoroutineExceptionHandlerImplKt
@@ -73,7 +61,8 @@ class Client(val project: Project) : Disposable, KoinComponent {
         exception.printStackTrace()
     }
 
-    val dispatcher by inject<CoroutineDispatcher>()
+    // val dispatcher by inject<CoroutineDispatcher>()
+    val dispatcher = Dispatchers.IO
 
     // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
     // this division is needed for testing: when in test we send a generate request to server, we need to wait
@@ -82,9 +71,8 @@ class Client(val project: Project) : Disposable, KoinComponent {
 
     // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
     val longLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
-    private val grpcClient: GrpcClient = GrpcClient(settings.port, settings.serverName)
 
-    private val grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
+    private var grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
 
     init {
         Logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
@@ -92,20 +80,9 @@ class Client(val project: Project) : Disposable, KoinComponent {
         startPeriodicHeartBeat()
     }
 
-    private fun setupDependencies(project: Project) {
-        val console = project.service<OutputWindowProvider>().clientOutputChannel.outputConsole
-        val clientDependencies = module {
-            single { console }
-            single { if (IS_TEST_MODE) Dispatchers.Default else Dispatchers.Swing }
-        }
-        startKoin {
-            modules(clientDependencies)
-        }
-    }
 
     private fun setupGrpcStub(): TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub {
         val metadata: io.grpc.Metadata = io.grpc.Metadata()
-        val stub = grpcClient.stub
         metadata.put(io.grpc.Metadata.Key.of("clientId", io.grpc.Metadata.ASCII_STRING_MARSHALLER), clientID)
         return io.grpc.stub.MetadataUtils.attachHeaders(stub, metadata)
     }
@@ -294,9 +271,11 @@ class Client(val project: Project) : Disposable, KoinComponent {
     override fun dispose() {
         Logger.trace("Disposing client!")
         // when project is closed, cancel all running coroutines
-        cancelAllRequestsAndWaitForCancellation()
+        // cancelAllRequestsAndWaitForCancellation()
         // release resources associated with grpc
-        grpcClient.close()
+        shortLivingRequestsCS.cancel()
+        longLivingRequestsCS.cancel()
+        close()
         Logger.trace("Finished disposing client!")
     }
 
