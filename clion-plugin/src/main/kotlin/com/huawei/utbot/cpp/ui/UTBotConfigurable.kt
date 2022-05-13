@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.utils.commandLineEditor
 import com.huawei.utbot.cpp.utils.removeIndices
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -108,7 +109,10 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
             group("CMake") {
                 row(UTBot.message("settings.project.cmakeOptions")) {
-                    textField().bindText(utbotSettings::cmakeOptions).columns(COLUMNS_LARGE)
+                    commandLineEditor(
+                        { utbotSettings.cmakeOptions },
+                        { utbotSettings.cmakeOptions = it }
+                    )
                 }
             }
 
@@ -138,7 +142,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 }
             }
 
-            group("Connection settings") {
+            group("Connection Settings") {
                 row(UTBot.message("settings.project.port")) {
                     intTextField().bindIntText(utbotSettings::port).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
