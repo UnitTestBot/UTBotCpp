@@ -73,7 +73,7 @@ LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
 
     auto testFilenames = CollectionUtils::transformTo<CollectionUtils::FileSet>(
         testsToLaunch, [](UnitTest const &test) { return test.testFilePath; });
-    auto objectFiles = CollectionUtils::transformTo<std::vector<fs::path>>(
+    auto objectFiles = CollectionUtils::transformTo<std::unordered_set<std::string>>(
         testFilenames, [this](fs::path const &testFilePath) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
             fs::path makefile =
@@ -102,11 +102,44 @@ LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = { "export" };
-    for (const fs::path &objectFile : objectFiles) {
-        exportArguments.emplace_back("-object");
-        exportArguments.emplace_back(objectFile.string());
+
+    // From documentation:
+    //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
+    bool firstBIN = true; // the first BIN need to be mentioned without `-object`
+    for (const std::string &objectFile : objectFiles) {
+        if (firstBIN) {
+            firstBIN = false;
+        }
+        else {
+            exportArguments.emplace_back("-object");
+        }
+        exportArguments.emplace_back(objectFile);
     }
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+
+    try {
+        auto sourcePaths = CollectionUtils::transformTo<
+            std::unordered_set<std::string>>(testFilenames, [this](fs::path const &testFilePath) {
+            fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+            if (!fs::exists(sourcePath)) {
+                throw CoverageGenerationException(
+                    "Coverage generation: Source file `"
+                    + sourcePath.string()
+                    + "` does not exist. Wrongly restored from test file `"
+                    + testFilePath.string()
+                    + "`.");
+            }
+            return sourcePath.string();
+        });
+        for (const std::string &sourcePath : sourcePaths) {
+            exportArguments.emplace_back(sourcePath);
+        }
+    }
+    catch (const CoverageGenerationException &ce) {
+        LOG_S(WARNING) << "Skip Coverage filtering for tested source files: "
+                       << ce.what();
+    }
+
     auto exportTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), exportArguments);
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
