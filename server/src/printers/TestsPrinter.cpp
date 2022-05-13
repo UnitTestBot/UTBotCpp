@@ -93,8 +93,9 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
                     tests.testSourceFilePath;
             location.at("location").at("physicalLocation").at("region").at("startLine") = line_count;
             json sarifResultFromFile = JsonUtils::getJsonFromFile(json_path);
-            sarifResultFromFile.at("codeFlows").at(0).at("threadFlows").at(0).
-                at("locations").push_back(location);
+            auto &arr = sarifResultFromFile.at("codeFlows").at(0).at("threadFlows").at(0).
+                at("locations");
+            arr.insert(arr.begin(), location);
             JsonUtils::writeJsonToFile(json_path, sarifResultFromFile);
         } else {
             tests.code.append(line);
