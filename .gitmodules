@@ -1,6 +1,6 @@
 [submodule "klee"]
 	path = submodules/klee
-	url = https://github.com/UnitTestBot/klee.git
+	url = https://github.com/olezhabobrov/klee.git
 	branch = sarif
 [submodule "Bear"]
 	path = submodules/Bear
