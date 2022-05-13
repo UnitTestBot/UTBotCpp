@@ -711,6 +711,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
         swap(testCase.objects, testCaseDescription.objects);
         swap(testCase.fromAddressToName, testCaseDescription.fromAddressToName);
         swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+        testCase.errorDescriptionInJson = case_.errorDescriptionInJson;
         if (filterByLineFlag) {
             auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
             if (!view || view->getEntryValue() != "1") {

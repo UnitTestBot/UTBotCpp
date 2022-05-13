@@ -81,6 +81,7 @@ file(GLOB ALL_SOURCES
         "${PROJECT_SOURCE_DIR}/src/fetchers/*"
         "${PROJECT_SOURCE_DIR}/src/printers/*"
         "${PROJECT_SOURCE_DIR}/src/streams/*"
+        "${PROJECT_SOURCE_DIR}/src/sarif/*"
         "${PROJECT_SOURCE_DIR}/src/streams/coverage/*"
         "${PROJECT_SOURCE_DIR}/src/streams/stubs/*"
         "${PROJECT_SOURCE_DIR}/src/streams/tests/*"

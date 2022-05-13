@@ -5,6 +5,7 @@
 #include "KleeRunner.h"
 
 #include "Paths.h"
+#include "sarif/Sarif.h"
 #include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
 #include "tasks/RunKleeTask.h"
@@ -186,8 +187,14 @@ void KleeRunner::processBatch(MethodKtests &ktestChunk,
                             kTestObjects, [](const ConcretizedObject &kTestObject) {
                                 return UTBotKTestObject{kTestObject};
                             });
-
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                    fs::path tmp = path.filename();
+                    if (status == tests::UTBotKTest::Status::FAILED) {
+                        fs::path sarifOutput = path.parent_path() / fs::path(sarif::Sarif::sarif_klee_prefix +
+                                path.filename_without_extension() + sarif::Sarif::sarif_klee_extension);
+                        ktestChunk[testMethod].emplace_back(objects, status, sarifOutput);
+                    } else {
+                        ktestChunk[testMethod].emplace_back(objects, status);
+                    }
                 }
             }
         }

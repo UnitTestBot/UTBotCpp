@@ -37,6 +37,11 @@ namespace fs {
             return path_.has_extension();
         }
 
+        std::string filename_without_extension() const {
+            std::string result = this->filename().string();
+            return result.substr(0,result.size() - this->extension().string().size());
+        }
+
         path filename() const {
             return path(path_.filename());
         }
