@@ -5,7 +5,7 @@ import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
 import com.huawei.utbot.cpp.client.Requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
-import com.huawei.utbot.cpp.ui.userLog.UTBotConsole
+import com.huawei.utbot.cpp.models.LoggingChannel
 import com.intellij.openapi.Disposable
 
 import testsgen.Testgen
@@ -16,17 +16,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
-import com.huawei.utbot.cpp.utils.invokeOnEdt
 import com.huawei.utbot.cpp.utils.utbotSettings
-import com.intellij.openapi.components.service
 import io.grpc.Status
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
@@ -40,7 +35,11 @@ import kotlinx.coroutines.Job
 /**
  * Sends requests to grpc server via stub
  */
-class Client(val project: Project, clientId: String) : Disposable,
+class Client(
+    val project: Project,
+    clientId: String,
+    private val loggingChannels: List<LoggingChannel>
+) : Disposable,
     GrpcClient(project.utbotSettings.port, project.utbotSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT
         private set
@@ -73,95 +72,6 @@ class Client(val project: Project, clientId: String) : Disposable,
         startPeriodicHeartBeat()
     }
 
-    private fun setupLogChannels() {
-        servicesCS.launch(CoroutineName("server log channel")) {
-            provideLogChannel()
-        }
-        servicesCS.launch(CoroutineName("gtest log channel")) {
-            provideGTestChannel()
-        }
-    }
-
-    private suspend fun provideGTestChannel() {
-        val request = Testgen.LogChannelRequest.newBuilder().setLogLevel("TestLogLevel").build()
-        try {
-            stub.closeGTestChannel(getDummyRequest())
-        } catch (e: io.grpc.StatusException) {
-            handleGRPCStatusException(e, "Exception when closing gtest channel")
-        }
-
-        stub.openGTestChannel(request)
-            .catch { exception ->
-                Logger.error("Exception when opening gtest channel")
-                Logger.error(exception.message)
-            }
-            .collect {
-                invokeOnEdt {
-                    val gTestConsole: UTBotConsole =
-                        project.service<OutputProvider>().gtestOutputChannel.outputConsole
-                    gTestConsole.info(it.message)
-                }
-            }
-    }
-
-    private suspend fun provideLogChannel() {
-        val request = Testgen.LogChannelRequest.newBuilder().setLogLevel("ServerLogLevel").build()
-        try {
-            stub.closeLogChannel(getDummyRequest())
-        } catch (e: io.grpc.StatusException) {
-            handleGRPCStatusException(e, "Exception when closing log channel")
-        }
-
-        stub.openLogChannel(request)
-            .catch { exception ->
-                Logger.error("Exception when opening log channel")
-                Logger.error(exception.message)
-            }
-            .collect {
-                invokeOnEdt {
-                    val serverConsole: UTBotConsole =
-                        project.service<OutputProvider>().serverOutputChannel.outputConsole
-                    serverConsole.info(it.message)
-                }
-            }
-    }
-
-    private fun registerClient(clientID: String) {
-        requestsCS.launch {
-            try {
-                Logger.info("sending REGISTER CLIENT request, clientID == $clientID")
-                stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientID).build())
-            } catch (e: io.grpc.StatusException) {
-                handleGRPCStatusException(e, "Register client request failed with grpc exception!")
-            }
-        }
-    }
-
-    fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
-
-    fun doHandShake() {
-        requestsCS.launch {
-            Logger.info("sending HandShake request!")
-            try {
-                stub.handshake(Testgen.DummyRequest.newBuilder().build())
-                Logger.info("Handshake successful!")
-            } catch (e: Exception) {
-                Logger.warn("HandShake failed with the following error: ${e.message}")
-            }
-        }
-    }
-
-    private fun startPeriodicHeartBeat() {
-        Logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
-        servicesCS.launch(CoroutineName("periodicHeartBeat")) {
-            while (isActive) {
-                heartBeatOnce()
-                delay(HEARTBEAT_INTERVAL)
-            }
-            Logger.info("Stopped heartBeating the server!")
-        }
-    }
-
     fun executeRequest(request: Request) {
         requestsCS.launch {
             try {
@@ -181,6 +91,50 @@ class Client(val project: Project, clientId: String) : Disposable,
         }
     }
 
+    fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
+
+    fun doHandShake() {
+        requestsCS.launch {
+            Logger.info("sending HandShake request!")
+            try {
+                stub.handshake(getDummyRequest())
+                Logger.info("Handshake successful!")
+            } catch (e: Exception) {
+                Logger.warn("HandShake failed with the following error: ${e.message}")
+            }
+        }
+    }
+
+    private fun provideLoggingChannels() {
+        for (channel in loggingChannels) {
+            servicesCS.launch(CoroutineName(channel.toString())) {
+                channel.provide(stub)
+            }
+        }
+    }
+
+    private fun registerClient() {
+        requestsCS.launch {
+            try {
+                Logger.info("sending REGISTER CLIENT request, clientID == $clientId")
+                stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientId).build())
+            } catch (e: io.grpc.StatusException) {
+                handleGRPCStatusException(e, "Register client request failed with grpc exception!")
+            }
+        }
+    }
+
+    private fun startPeriodicHeartBeat() {
+        Logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
+        servicesCS.launch(CoroutineName("periodicHeartBeat")) {
+            while (isActive) {
+                heartBeatOnce()
+                delay(HEARTBEAT_INTERVAL)
+            }
+            Logger.info("Stopped heartBeating the server!")
+        }
+    }
+
     private suspend fun heartBeatOnce() {
         val oldStatus = connectionStatus
         try {
@@ -189,13 +143,13 @@ class Client(val project: Project, clientId: String) : Disposable,
             connectionStatus = ConnectionStatus.CONNECTED
 
             if (newClient || !response.linked) {
-                setupLogChannels()
+                provideLoggingChannels()
                 newClient = false
             }
 
             if (oldStatus != ConnectionStatus.CONNECTED) {
                 Logger.info("Successfully connected to server!")
-                registerClient(clientId)
+                registerClient()
                 configureProject()
             }
 
@@ -234,9 +188,9 @@ class Client(val project: Project, clientId: String) : Disposable,
         Logger.trace("Disposing client!")
         // when project is closed, cancel all running coroutines
         // cancelAllRequestsAndWaitForCancellation()
-        // release resources associated with grpc
         requestsCS.cancel()
         servicesCS.cancel()
+        // release resources associated with grpc
         close()
         Logger.trace("Finished disposing client!")
     }

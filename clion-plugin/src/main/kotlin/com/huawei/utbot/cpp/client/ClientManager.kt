@@ -2,6 +2,9 @@ package com.huawei.utbot.cpp.client
 
 import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
+import com.huawei.utbot.cpp.models.GTestChannel
+import com.huawei.utbot.cpp.models.LoggingChannel
+import com.huawei.utbot.cpp.models.ServerLogChannel
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -11,7 +14,8 @@ import org.tinylog.kotlin.Logger
 @Service
 class ClientManager(val project: Project) {
     private val clientId = generateClientID()
-    var client: Client = Client(project, clientId)
+    private val loggingChannels = listOf<LoggingChannel>(GTestChannel(project), ServerLogChannel(project))
+    var client: Client = Client(project, clientId, loggingChannels)
         private set
 
     init {
@@ -24,9 +28,10 @@ class ClientManager(val project: Project) {
                 if (newSettings.port != client.port || newSettings.serverName != client.serverName) {
                     Logger.trace("Connection settings changed. Setting up new client.")
                     client.dispose()
-                    client = Client(project, clientId)
+                    client = Client(project, clientId, loggingChannels)
                 }
             })
+
             subscribe(
                 SourceFoldersListener.TOPIC,
                 // when source folder are changed, the ProjectViewNodeDecorator.decorate should be invoked again for this we force refresh on change
