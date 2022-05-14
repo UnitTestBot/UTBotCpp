@@ -11,7 +11,7 @@ class FolderRequest(
     request: Testgen.FolderRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.FolderRequest>(request, project, UTBot.message("requests.folder.description.progress")) {
-    override val logMessage: String = "Sending request to generate tests for CLASS."
+    override val logMessage: String = "Sending request to generate tests for FOLDER."
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateFolderTests(request)
 }

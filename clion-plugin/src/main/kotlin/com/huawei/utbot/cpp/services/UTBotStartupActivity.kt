@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.services
 
 import com.huawei.utbot.cpp.client.Client
 import com.huawei.utbot.cpp.client.Client.Companion.IS_TEST_MODE
-import com.huawei.utbot.cpp.ui.userLog.OutputWindowProvider
+import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.huawei.utbot.cpp.ui.wizard.UTBotWizard
 import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.invokeOnEdt
@@ -34,7 +34,7 @@ class UTBotStartupActivity: StartupActivity {
     }
 
     private fun setupDependencies(project: Project) {
-        val console = project.service<OutputWindowProvider>().clientOutputChannel.outputConsole
+        val console = project.service<OutputProvider>().clientOutputChannel.outputConsole
         val clientDependencies = module {
             single { console }
             single { if (IS_TEST_MODE) Dispatchers.Default else Dispatchers.Swing }

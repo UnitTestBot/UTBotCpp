@@ -25,7 +25,7 @@ val Project.generatorSettings: GeneratorSettings
     get() = this.service()
 
 fun Request.execute(e: AnActionEvent) {
-    e.client.execute(this)
+    e.client.executeRequest(this)
 }
 
 fun String.convertFromRemotePathIfNeeded(project: Project): String {

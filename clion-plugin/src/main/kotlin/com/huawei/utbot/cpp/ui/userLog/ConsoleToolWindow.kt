@@ -1,6 +1,6 @@
 package com.huawei.utbot.cpp.ui.userLog
 
-import com.huawei.utbot.cpp.utils.getClient
+import com.huawei.utbot.cpp.client.logger.setLoggingLevel
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
@@ -47,7 +47,7 @@ enum class OutputType(val title: String) {
 }
 
 @Service
-class OutputWindowProvider(val project: Project) : Disposable {
+class OutputProvider(val project: Project) : Disposable {
     val clientOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.CLIENT_LOG) }
     val gtestOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.GTEST) }
     val serverOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.SERVER_LOG) }
@@ -69,7 +69,7 @@ class OutputWindowProvider(val project: Project) : Disposable {
                     ComboBox(Level.values().map { it.name }.toTypedArray()).apply {
                         addItemListener { itemEvent ->
                             if (itemEvent.stateChange == ItemEvent.SELECTED) {
-                                project.getClient().setLoggingLevel(
+                                setLoggingLevel(
                                     Level.values().find { it.name == (itemEvent.item as String) }!!
                                 )
                             }
@@ -89,7 +89,7 @@ class OutputWindowProvider(val project: Project) : Disposable {
             OutputType.CLIENT_LOG -> createClientLogOutputWindow()
             else -> {
                 UTBotConsole(project).let {
-                    Disposer.register(this@OutputWindowProvider, it)
+                    Disposer.register(this@OutputProvider, it)
                     OutputChannel(it.component, it, type)
                 }
             }
@@ -103,7 +103,7 @@ class ConsoleToolWindow(val project: Project) : SimpleToolWindowPanel(true, true
     init {
         mainUI.tabComponentInsets = Insets(0, 0, 0, 0)
 
-        val provider = project.service<OutputWindowProvider>()
+        val provider = project.service<OutputProvider>()
         for (channel in listOf(
             provider.clientOutputChannel,
             provider.gtestOutputChannel,

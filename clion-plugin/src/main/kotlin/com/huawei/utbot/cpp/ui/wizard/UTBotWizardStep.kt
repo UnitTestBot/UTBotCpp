@@ -11,7 +11,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
@@ -21,7 +20,6 @@ import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.ComponentPredicate
-import com.intellij.ui.layout.PropertyBinding
 import com.intellij.util.ui.HtmlPanel
 import javax.swing.BoxLayout
 import javax.swing.Icon
@@ -142,7 +140,7 @@ class ConnectionStep(
     private val isValidInput = ObservableValue<Boolean>(true)
 
     private suspend fun pingServer(port: Int, host: String) {
-        GrpcClient(port, host).apply {
+        GrpcClient(port, host, "DummyId").apply {
             use {
                 stub.handshake(getDummyRequest())
             }

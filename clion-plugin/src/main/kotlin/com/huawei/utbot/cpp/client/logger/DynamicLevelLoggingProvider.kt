@@ -1,8 +1,16 @@
 package com.huawei.utbot.cpp.client.logger
 
 import org.tinylog.Level
+import org.tinylog.kotlin.Logger
 import org.tinylog.core.TinylogLoggingProvider
 import org.tinylog.format.MessageFormatter
+import org.tinylog.provider.ProviderRegistry
+
+fun setLoggingLevel(logLevel: Level) {
+    Logger.info("Setting new log level: ${logLevel.name}")
+    val loggingProvider = ProviderRegistry.getLoggingProvider() as DynamicLevelLoggingProvider
+    loggingProvider.activeLevel = logLevel
+}
 
 // Tinylog2 does not directly support changing log level in runtime, need to do it manually through this class
 class DynamicLevelLoggingProvider : TinylogLoggingProvider() {

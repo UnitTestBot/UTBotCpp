@@ -51,7 +51,7 @@ class UTBotTargetsController(val project: Project) {
                 }
             }
         }.let {
-            client.execute(it)
+            client.executeRequest(it)
         }
     }
 

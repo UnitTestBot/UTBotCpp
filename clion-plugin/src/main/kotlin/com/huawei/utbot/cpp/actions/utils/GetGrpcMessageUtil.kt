@@ -187,6 +187,8 @@ fun getCmakeOptions(project: Project): String? {
 
 fun getDummyRequest() = Testgen.DummyRequest.newBuilder().build()
 
+fun getLogChannelRequest(logLevel: String) = Testgen.LogChannelRequest.newBuilder().setLogLevel(logLevel).build()
+
 fun getTestFilter(e: AnActionEvent): Testgen.TestFilter {
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     val testName = ""

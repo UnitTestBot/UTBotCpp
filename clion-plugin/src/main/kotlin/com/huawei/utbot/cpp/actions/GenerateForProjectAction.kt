@@ -15,7 +15,7 @@ class GenerateForProjectAction : GenerateTestsBaseAction() {
             getProjectRequestMessage(e),
             e.project!!
         ).apply {
-            e.client.execute(this)
+            e.client.executeRequest(this)
         }
     }
 }

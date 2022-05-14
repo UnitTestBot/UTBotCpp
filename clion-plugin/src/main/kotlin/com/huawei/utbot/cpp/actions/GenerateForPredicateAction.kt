@@ -95,7 +95,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
                 predicateRequest,
                 e.project!!
             ).apply {
-                e.client.execute(this)
+                e.client.executeRequest(this)
             }
         }
 
@@ -132,7 +132,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
                 }
             }
         }.apply {
-            e.client.execute(this)
+            e.client.executeRequest(this)
         }
     }
 

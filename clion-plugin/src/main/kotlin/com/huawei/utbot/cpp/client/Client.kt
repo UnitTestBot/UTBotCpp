@@ -3,9 +3,7 @@ package com.huawei.utbot.cpp.client
 import com.huawei.utbot.cpp.actions.utils.getDummyRequest
 import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
 import com.huawei.utbot.cpp.client.Requests.CheckProjectConfigurationRequest
-import com.huawei.utbot.cpp.client.logger.DynamicLevelLoggingProvider
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
-import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.ui.userLog.UTBotConsole
 import com.intellij.openapi.Disposable
@@ -13,7 +11,6 @@ import com.intellij.openapi.Disposable
 import testsgen.Testgen
 
 import com.intellij.openapi.project.Project
-import kotlin.random.Random
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,14 +20,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import testsgen.TestsGenServiceGrpcKt
 
-import com.huawei.utbot.cpp.ui.userLog.OutputWindowProvider
+import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
+import com.huawei.utbot.cpp.utils.invokeOnEdt
 import com.huawei.utbot.cpp.utils.utbotSettings
-import com.intellij.ide.projectView.ProjectView
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import io.grpc.Status
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -38,20 +33,22 @@ import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-import org.koin.core.component.KoinComponent
-import org.tinylog.Level
 
 import org.tinylog.kotlin.Logger
-import org.tinylog.provider.ProviderRegistry
 import kotlinx.coroutines.Job
 
-class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(project.utbotSettings.port, project.utbotSettings.serverName) {
+/**
+ * Sends requests to grpc server via stub
+ */
+class Client(val project: Project, clientId: String) : Disposable,
+    GrpcClient(project.utbotSettings.port, project.utbotSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT
         private set
+
     private val messageBus = project.messageBus
     private var newClient = true
     private val settings = project.utbotSettings
-    private val clientID = generateClientID()
+
     /*
      * need to provide handler explicitly, otherwise the exception is thrown:
      * java.lang.NoClassDefFoundError: Could not initialize class kotlinx.coroutines.CoroutineExceptionHandlerImplKt
@@ -61,88 +58,47 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
         exception.printStackTrace()
     }
 
-    // val dispatcher by inject<CoroutineDispatcher>()
     val dispatcher = Dispatchers.IO
 
     // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
     // this division is needed for testing: when in test we send a generate request to server, we need to wait
     // until it completes, the indicator that all such requests have completed is that this scope has no children
-    val shortLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
+    val requestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
-    val longLivingRequestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
-
-    private var grpcStub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub = setupGrpcStub()
+    val servicesCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     init {
         Logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
-        subscribeToEvents()
         startPeriodicHeartBeat()
     }
 
-
-    private fun setupGrpcStub(): TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub {
-        val metadata: io.grpc.Metadata = io.grpc.Metadata()
-        metadata.put(io.grpc.Metadata.Key.of("clientId", io.grpc.Metadata.ASCII_STRING_MARSHALLER), clientID)
-        return io.grpc.stub.MetadataUtils.attachHeaders(stub, metadata)
-    }
-
-    private fun subscribeToEvents() {
-        with(project.messageBus.connect(this)) {
-            subscribe(UTBotEventsListener.CONNECTION_CHANGED_TOPIC, object : UTBotEventsListener {
-                override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                    if (oldStatus != newStatus && newStatus == ConnectionStatus.CONNECTED) {
-                        Logger.info("Successfully connected to server!")
-                        registerClient(clientID)
-                        configureProject()
-                    }
-                }
-
-                override fun onHeartbeatSuccess(response: Testgen.HeartbeatResponse) {
-                    if (newClient || !response.linked) {
-                        longLivingRequestsCS.launch(CoroutineName("server log channel")) {
-                            provideLogChannel()
-                        }
-                        longLivingRequestsCS.launch(CoroutineName("gtest log channel")) {
-                            provideGTestChannel()
-                        }
-                        newClient = false
-                    }
-                }
-            })
-
-            subscribe(
-                SourceFoldersListener.TOPIC,
-                // when source folder are changed, the ProjectViewNodeDecorator.decorate should be invoked again for this we force refresh on change
-                SourceFoldersListener {
-                    ProjectView.getInstance(project).refresh()
-                })
+    private fun setupLogChannels() {
+        servicesCS.launch(CoroutineName("server log channel")) {
+            provideLogChannel()
         }
-    }
-
-    fun setLoggingLevel(logLevel: Level) {
-        Logger.info("Setting new log level: ${logLevel.name}")
-        val loggingProvider = ProviderRegistry.getLoggingProvider() as DynamicLevelLoggingProvider
-        loggingProvider.activeLevel = logLevel
+        servicesCS.launch(CoroutineName("gtest log channel")) {
+            provideGTestChannel()
+        }
     }
 
     private suspend fun provideGTestChannel() {
         val request = Testgen.LogChannelRequest.newBuilder().setLogLevel("TestLogLevel").build()
         try {
-            grpcStub.closeGTestChannel(getDummyRequest())
+            stub.closeGTestChannel(getDummyRequest())
         } catch (e: io.grpc.StatusException) {
             handleGRPCStatusException(e, "Exception when closing gtest channel")
         }
 
-        grpcStub.openGTestChannel(request)
+        stub.openGTestChannel(request)
             .catch { exception ->
                 Logger.error("Exception when opening gtest channel")
                 Logger.error(exception.message)
             }
             .collect {
-                ApplicationManager.getApplication().invokeLater {
+                invokeOnEdt {
                     val gTestConsole: UTBotConsole =
-                        project.service<OutputWindowProvider>().gtestOutputChannel.outputConsole
+                        project.service<OutputProvider>().gtestOutputChannel.outputConsole
                     gTestConsole.info(it.message)
                 }
             }
@@ -151,37 +107,30 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
     private suspend fun provideLogChannel() {
         val request = Testgen.LogChannelRequest.newBuilder().setLogLevel("ServerLogLevel").build()
         try {
-            grpcStub.closeLogChannel(getDummyRequest())
+            stub.closeLogChannel(getDummyRequest())
         } catch (e: io.grpc.StatusException) {
             handleGRPCStatusException(e, "Exception when closing log channel")
         }
 
-        grpcStub.openLogChannel(request)
+        stub.openLogChannel(request)
             .catch { exception ->
                 Logger.error("Exception when opening log channel")
                 Logger.error(exception.message)
             }
             .collect {
-                ApplicationManager.getApplication().invokeLater {
+                invokeOnEdt {
                     val serverConsole: UTBotConsole =
-                        project.service<OutputWindowProvider>().serverOutputChannel.outputConsole
+                        project.service<OutputProvider>().serverOutputChannel.outputConsole
                     serverConsole.info(it.message)
                 }
             }
     }
 
-    private fun generateClientID(): String {
-        fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)
-            .joinToString("") { Random.nextInt(0, RANDOM_SEQUENCE_MAX_VALUE).toString() }
-
-        return "${(System.getenv("USER") ?: "unknownUser")}-${createRandomSequence()}"
-    }
-
     private fun registerClient(clientID: String) {
-        shortLivingRequestsCS.launch {
+        requestsCS.launch {
             try {
                 Logger.info("sending REGISTER CLIENT request, clientID == $clientID")
-                grpcStub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientID).build())
+                stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientID).build())
             } catch (e: io.grpc.StatusException) {
                 handleGRPCStatusException(e, "Register client request failed with grpc exception!")
             }
@@ -191,10 +140,10 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
     fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
 
     fun doHandShake() {
-        shortLivingRequestsCS.launch {
+        requestsCS.launch {
             Logger.info("sending HandShake request!")
             try {
-                grpcStub.handshake(Testgen.DummyRequest.newBuilder().build())
+                stub.handshake(Testgen.DummyRequest.newBuilder().build())
                 Logger.info("Handshake successful!")
             } catch (e: Exception) {
                 Logger.warn("HandShake failed with the following error: ${e.message}")
@@ -204,7 +153,7 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
 
     private fun startPeriodicHeartBeat() {
         Logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
-        longLivingRequestsCS.launch(CoroutineName("periodicHeartBeat")) {
+        servicesCS.launch(CoroutineName("periodicHeartBeat")) {
             while (isActive) {
                 heartBeatOnce()
                 delay(HEARTBEAT_INTERVAL)
@@ -213,19 +162,14 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
         }
     }
 
-    fun execute(request: Request) {
-        shortLivingRequestsCS.launch {
+    fun executeRequest(request: Request) {
+        requestsCS.launch {
             try {
-                request.execute(grpcStub, coroutineContext[Job])
+                request.execute(stub, coroutineContext[Job])
             } catch (e: io.grpc.StatusException) {
                 handleGRPCStatusException(e, "Exception when executing server request")
             }
         }
-    }
-
-    suspend fun handShake(): Testgen.DummyResponse {
-        Logger.info("Sending HANDSHAKE request")
-        return grpcStub.handshake(Testgen.DummyRequest.newBuilder().build())
     }
 
     fun configureProject() {
@@ -233,26 +177,44 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
             project,
             getProjectConfigRequestMessage(project, Testgen.ConfigMode.CHECK)
         ).also {
-            execute(it)
+            executeRequest(it)
         }
     }
 
     private suspend fun heartBeatOnce() {
+        val oldStatus = connectionStatus
         try {
-            val response = grpcStub.heartbeat(Testgen.DummyRequest.newBuilder().build())
+            val response = stub.heartbeat(Testgen.DummyRequest.newBuilder().build())
+
+            connectionStatus = ConnectionStatus.CONNECTED
+
+            if (newClient || !response.linked) {
+                setupLogChannels()
+                newClient = false
+            }
+
+            if (oldStatus != ConnectionStatus.CONNECTED) {
+                Logger.info("Successfully connected to server!")
+                registerClient(clientId)
+                configureProject()
+            }
+
             if (!messageBus.isDisposed) {
-                val oldStatus = connectionStatus
-                connectionStatus = ConnectionStatus.CONNECTED
                 val connectionChangedPublisher = messageBus.syncPublisher(UTBotEventsListener.CONNECTION_CHANGED_TOPIC)
+
                 connectionChangedPublisher.onHeartbeatSuccess(response)
-                connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.CONNECTED)
+
+                if (oldStatus != ConnectionStatus.CONNECTED) {
+                    connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.CONNECTED)
+                }
             }
         } catch (e: io.grpc.StatusException) {
-            val oldStatus = connectionStatus
             connectionStatus = ConnectionStatus.BROKEN
+
             if (!messageBus.isDisposed) {
                 val connectionChangedPublisher = messageBus.syncPublisher(UTBotEventsListener.CONNECTION_CHANGED_TOPIC)
-                connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.BROKEN)
+                if (oldStatus != ConnectionStatus.BROKEN)
+                    connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.BROKEN)
             }
 
             handleGRPCStatusException(e, "Heartbeat failed with grpc io exception")
@@ -273,8 +235,8 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
         // when project is closed, cancel all running coroutines
         // cancelAllRequestsAndWaitForCancellation()
         // release resources associated with grpc
-        shortLivingRequestsCS.cancel()
-        longLivingRequestsCS.cancel()
+        requestsCS.cancel()
+        servicesCS.cancel()
         close()
         Logger.trace("Finished disposing client!")
     }
@@ -282,7 +244,7 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
     fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
         runBlocking {
             withTimeout(timeout) {
-                while (shortLivingRequestsCS.hasChildren()) {
+                while (requestsCS.hasChildren()) {
                     delay(DELAY_TIME)
                 }
             }
@@ -292,10 +254,10 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
     private fun cancelAllRequestsAndWaitForCancellation(timeoutMillis: Long = SERVER_TIMEOUT) {
         runBlocking {
             withTimeout(timeoutMillis) {
-                while (shortLivingRequestsCS.hasChildren() || longLivingRequestsCS.hasChildren()) {
-                    shortLivingRequestsCS.cancel()
-                    longLivingRequestsCS.cancel()
-                    Logger.trace { "There are unfinished requests:\n${shortLivingRequestsCS.children}\n${longLivingRequestsCS.children}" }
+                while (requestsCS.hasChildren() || servicesCS.hasChildren()) {
+                    requestsCS.cancel()
+                    servicesCS.cancel()
+                    Logger.trace { "There are unfinished requests:\n${requestsCS.children}\n${servicesCS.children}" }
                     Logger.trace("Waiting $DELAY_TIME ms for them to cancel!")
                     delay(DELAY_TIME)
                 }
@@ -305,8 +267,6 @@ class Client(val project: Project) : Disposable, KoinComponent, GrpcClient(proje
 
     companion object {
         var IS_TEST_MODE = false
-        const val RANDOM_SEQUENCE_MAX_VALUE = 10
-        const val RANDOM_SEQUENCE_LENGTH = 5
         const val HEARTBEAT_INTERVAL: Long = 500L
         const val SERVER_TIMEOUT: Long = 300000L
         const val DELAY_TIME: Long = 500L

@@ -11,7 +11,7 @@ class PredicateRequest(
     request: Testgen.PredicateRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.PredicateRequest>(request, project, UTBot.message("requests.predicate.description.progress")) {
-    override val logMessage: String = "Sending request to generate for LINE."
+    override val logMessage: String = "Sending request to generate for PREDICATE."
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generatePredicateTests(request)
 }

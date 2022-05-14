@@ -3,7 +3,6 @@ package com.huawei.utbot.cpp.client.handlers
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
-import com.huawei.utbot.cpp.utils.client
 import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.utils.notifyInfo
