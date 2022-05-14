@@ -62,7 +62,8 @@ namespace visitor {
                                                       const string &name,
                                                       const tests::AbstractValueView *view,
                                                       const string &access,
-                                                      int depth) {
+                                                      int depth,
+                                                      bool isConstructor) {
         string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
                                              PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
         kleeAssumeWithNullCheck(assumption);
@@ -72,7 +73,8 @@ namespace visitor {
                                                    const string &name,
                                                    const tests::AbstractValueView *view,
                                                    const string &access,
-                                                   int depth) {
+                                                   int depth,
+                                                   bool isConstructor) {
         if (depth == 0) {
             kleeAssumeWithNullCheck("", false);
             AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
@@ -86,7 +88,8 @@ namespace visitor {
                                                   const string &name,
                                                   const tests::AbstractValueView *view,
                                                   const string &access,
-                                                  int depth) {
+                                                  int depth,
+                                                  bool isConstructor) {
         if (depth == 0) {
             kleeAssumeWithNullCheck("", false);
         }
@@ -110,7 +113,8 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   size_t size,
-                                                  int depth) {
+                                                  int depth,
+                                                  bool isConstructor) {
         if (depth == 0 && additionalPointersCount > 0) {
             returnTypeIsArray = true;
             additionalPointersCount--;

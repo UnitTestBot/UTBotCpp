@@ -425,6 +425,7 @@ namespace tests {
             vector<MethodTestCase> testCases;
             typedef std::unordered_map<string, vector<MethodTestCase>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
+            bool isConstructor = false;
 
             bool operator==(const MethodDescription &other) const;
 

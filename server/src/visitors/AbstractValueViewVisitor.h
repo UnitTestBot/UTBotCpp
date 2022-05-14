@@ -26,7 +26,8 @@ namespace visitor {
                               const std::string &name,
                               const tests::AbstractValueView *view,
                               const std::string &access,
-                              int depth);
+                              int depth,
+                              bool isConstructor = false);
 
     protected:
         virtual void visitArrayElementAfter(const types::Type &type,
@@ -46,7 +47,8 @@ namespace visitor {
                                 const tests::AbstractValueView *view,
                                 const std::string &access,
                                 size_t size,
-                                int depth);
+                                int depth,
+                                bool isConstructor = false);
 
         virtual void visitCString(const types::Type &type,
                                   const std::string &name,
@@ -58,25 +60,29 @@ namespace visitor {
                                  const std::string &name,
                                  const tests::AbstractValueView *view,
                                  const std::string &access,
-                                 int depth);
+                                 int depth,
+                                 bool isConstructor = false);
 
         virtual void visitUnion(const types::Type &type,
                                 const std::string &name,
                                 const tests::AbstractValueView *view,
                                 const std::string &access,
-                                int depth);
+                                int depth,
+                                bool isConstructor = false);
 
         virtual void visitEnum(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,
                                     const std::string &access,
-                                    int depth);
+                                    int depth,
+                                    bool isConstructor = false);
 
         virtual void visitPrimitive(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,
                                     const std::string &access,
-                                    int depth) = 0;
+                                    int depth,
+                                    bool isConstructor = false) = 0;
 
         virtual void visitPointerToFunction(const types::Type &type,
                                             const std::string &name,

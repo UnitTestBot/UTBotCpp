@@ -22,7 +22,8 @@ namespace visitor {
                          const string &name,
                          const tests::AbstractValueView *view,
                          const string &access,
-                         int depth) override;
+                         int depth,
+                         bool isConstructor = false) override;
 
         void visitPointer(const types::Type &type,
                           const string &name,
@@ -35,13 +36,15 @@ namespace visitor {
                         const tests::AbstractValueView *view,
                         const string &access,
                         size_t size,
-                        int depth) override;
+                        int depth,
+                        bool isConstructor = false) override;
 
         void visitPrimitive(const types::Type &type,
                             const string &name,
                             const tests::AbstractValueView *view,
                             const string &access,
-                            int depth) override;
+                            int depth,
+                            bool isConstructor = false) override;
     };
 }
 

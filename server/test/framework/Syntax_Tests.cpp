@@ -52,12 +52,7 @@ namespace {
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
         fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
         fs::path array_sort_c = getTestFilePath("array_sort.c");
-        fs::path default_constructor_cpp = getTestFilePath("struct_with_default_constructor.cpp");
-        fs::path copy_constructor_cpp = getTestFilePath("struct_with_copy_constructor.cpp");
-        fs::path move_constructor_cpp = getTestFilePath("struct_with_move_constructor.cpp");
-        fs::path parametrized_constructor_cpp = getTestFilePath("struct_with_parametrized_constructor.cpp");
-        fs::path constructor_with_pointers_cpp = getTestFilePath("constructor_with_pointer_parameter.cpp");
-        fs::path constructor_with_if_stmt = getTestFilePath("constructor_with_if_stmt.cpp");
+        fs::path constructors = getTestFilePath("constructors.cpp");
         fs::path stubs_c = getTestFilePath("stubs.c");
 
         void SetUp() override {

@@ -36,6 +36,9 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
+        if (const auto *CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
+            methodDescription.isConstructor = true;
+        }
         if (onlyNames) {
             addMethod(sourceFilePath, methodDescription);
             return;

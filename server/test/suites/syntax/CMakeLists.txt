@@ -36,10 +36,5 @@ add_executable(syntax1
         simple_class.cpp
         inner_unnamed.c
         array_sort.c
-        struct_with_default_constructor.cpp
-        struct_with_copy_constructor.cpp
-        struct_with_move_constructor.cpp
-        struct_with_parametrized_constructor.cpp
-        constructor_with_pointer_parameter.cpp
-        constructor_with_if_stmt.cpp
+        constructors.cpp
         stubs.c)
