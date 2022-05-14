@@ -207,10 +207,10 @@ fs::path KleeGenerator::writeKleeFile(
     if (lineInfo) {
         return kleePrinter.writeTmpKleeFile(
             tests, projectTmpPath, pathSubstitution, lineInfo->predicateInfo, lineInfo->methodName,
-            lineInfo->scopeName, lineInfo->forMethod, lineInfo->forClass, lineInfo->isConstructor, methodFilter);
+            lineInfo->scopeName, lineInfo->forMethod, lineInfo->forClass, methodFilter);
     } else {
         return kleePrinter.writeTmpKleeFile(tests, projectTmpPath, pathSubstitution, std::nullopt,
-                                            "", "", false, false, false, methodFilter);
+                                            "", "", false, false, methodFilter);
     }
 }
 

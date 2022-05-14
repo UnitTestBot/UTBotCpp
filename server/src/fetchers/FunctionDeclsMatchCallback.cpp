@@ -10,6 +10,7 @@
 #include "clang-utils/AlignmentFetcher.h"
 #include "clang-utils/ClangUtils.h"
 #include "utils/LogUtils.h"
+#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -25,8 +26,7 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     ExecUtils::throwIfCancelled();
-    if (const FunctionDecl * FS; (FS = Result.Nodes.getNodeAs<FunctionDecl>(Matchers::FUNCTION_DEF)) ||
-                                 (FS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF))) {
+    if (const FunctionDecl * FS = ClangUtils::isFunctionOrConstructor(Result)) {
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
@@ -36,17 +36,14 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
-        if (const auto *CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
+        if (ClangUtils::isConstructor(Result)) {
             methodDescription.isConstructor = true;
         }
         if (onlyNames) {
             addMethod(sourceFilePath, methodDescription);
             return;
         }
-        clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
-        if (const auto *CS = Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
-            realReturnType = CS->getThisObjectType();
-        }
+        clang::QualType realReturnType = ClangUtils::getReturnType(FS, Result);
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         if (onlyReturnTypes) {
             addMethod(sourceFilePath, methodDescription);
@@ -66,7 +63,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
 
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
-        if (FS->isCXXClassMember() && !Result.Nodes.getNodeAs<CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF)) {
+        if (FS->isCXXClassMember() && !methodDescription.isConstructor) {
             string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
             auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);

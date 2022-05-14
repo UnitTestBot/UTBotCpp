@@ -19,11 +19,11 @@
 #include <unordered_map>
 #include <vector>
 
-using std::string;
-using std::vector;
-using std::unordered_map;
 using std::cout;
 using std::endl;
+using std::string;
+using std::unordered_map;
+using std::vector;
 
 using tests::Tests;
 
@@ -35,7 +35,7 @@ namespace printer {
         utbot::Language getLanguage() const override;
 
         void genCode(Tests::MethodDescription &methodDescription,
-                     const std::optional<LineInfo::PredicateInfo>& predicateInfo = {},
+                     const std::optional<LineInfo::PredicateInfo> &predicateInfo = {},
                      bool verbose = false);
 
         void joinToFinalCode(Tests &tests, const fs::path &generatedHeaderPath);
@@ -46,7 +46,7 @@ namespace printer {
 
         void genParametrizedTestCase(const tests::Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
-                                     const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                                     const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void genVerboseTestCase(const tests::Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase,
@@ -83,27 +83,27 @@ namespace printer {
 
         void verboseAsserts(const tests::Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase,
-                            const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                            const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void classAsserts(const Tests::MethodDescription &methodDescription,
-                                        const Tests::MethodTestCase &testCase);
+                          const Tests::MethodTestCase &testCase);
 
         void changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
-                            const Tests::MethodTestCase &testCase);
+                                     const Tests::MethodTestCase &testCase);
 
         void globalParamsAsserts(const Tests::MethodDescription &methodDescription,
-                            const Tests::MethodTestCase &testCase);
+                                 const Tests::MethodTestCase &testCase);
 
         void parametrizedArrayParameters(const tests::Tests::MethodDescription &methodDescription,
                                          const Tests::MethodTestCase &testCase);
 
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
-                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         static std::vector<string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
-                             const Tests::MethodTestCase &testCase);
+                                         const Tests::MethodTestCase &testCase);
 
         static std::vector<string>
         methodParametersListVerbose(const tests::Tests::MethodDescription &methodDescription,
@@ -126,9 +126,8 @@ namespace printer {
         parametrizedInitializeGlobalVariables(const Tests::MethodDescription &methodDescription,
                                               const Tests::MethodTestCase &testCase);
 
-        void
-        parametrizedInitializeSymbolicStubs(const Tests::MethodDescription &methodDescription,
-                                            const Tests::MethodTestCase &testCase);
+        void parametrizedInitializeSymbolicStubs(const Tests::MethodDescription &methodDescription,
+                                                 const Tests::MethodTestCase &testCase);
 
         void printLazyVariables(const Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase);
@@ -143,11 +142,12 @@ namespace printer {
 
         void genCodeBySuiteName(const string &targetSuiteName,
                                 Tests::MethodDescription &methodDescription,
-                                const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                 bool verbose,
-                                int& testNum);
+                                int &testNum);
 
-        std::uint32_t printSuiteAndReturnMethodsCount(const string &suiteName, const Tests::MethodsMap &methods);
+        std::uint32_t printSuiteAndReturnMethodsCount(const string &suiteName,
+                                                      const Tests::MethodsMap &methods);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

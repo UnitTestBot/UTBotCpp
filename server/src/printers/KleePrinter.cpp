@@ -45,7 +45,6 @@ fs::path KleePrinter::writeTmpKleeFile(
     const std::optional<string> &testedClass,
     bool onlyForOneFunction,
     bool onlyForOneClass,
-    bool isConstructor,
     const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter) {
 
     resetStream();
@@ -107,7 +106,7 @@ fs::path KleePrinter::writeTmpKleeFile(
                 genVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
             } else {
                 genNonVoidFunctionAssumes(testMethod, predicateInfo, testedMethod,
-                                          onlyForOneEntity, isConstructor);
+                                          onlyForOneEntity);
             }
             genGlobalsKleeAssumes(testMethod);
             genPostParamsKleeAssumes(testMethod);
@@ -270,9 +269,9 @@ void KleePrinter::genVoidFunctionAssumes(const Tests::MethodDescription &testMet
 void KleePrinter::genNonVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
                                      const std::optional<PredInfo> &predicateInfo,
                                      const string &testedMethod,
-                                     bool onlyForOneEntity, bool isConstructor) {
+                                     bool onlyForOneEntity) {
     genKleePathSymbolicIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
-    genReturnDeclaration(testMethod, predicateInfo, isConstructor);
+    genReturnDeclaration(testMethod, predicateInfo);
     genParamsKleeAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
 }
 
@@ -374,7 +373,7 @@ void KleePrinter::makeBracketsForStrPredicate(const std::optional<PredInfo> &inf
 }
 
 
-void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo, bool isConstructor = false) {
+void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo) {
     // If return type is a pointer, we compare values that are stored at this pointers,
     // not the pointers themselves
     Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())

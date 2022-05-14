@@ -52,7 +52,7 @@ namespace {
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
         fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
         fs::path array_sort_c = getTestFilePath("array_sort.c");
-        fs::path constructors = getTestFilePath("constructors.cpp");
+        fs::path constructors_cpp = getTestFilePath("constructors.cpp");
         fs::path stubs_c = getTestFilePath("stubs.c");
 
         void SetUp() override {
@@ -2475,55 +2475,55 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Default_constructor) {
-        auto [testGen, status] = createTestForFunction(default_constructor_cpp, 8);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 53);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(default_constructor_cpp).methods.begin().value().testCases, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
     TEST_F(Syntax_Test, Constructor_with_parameters) {
-        auto [testGen, status] = createTestForFunction(parametrized_constructor_cpp, 8);
+        auto [testGen, status] = createTestForFunction(contsructors_cpp, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(parametrized_constructor_cpp).methods.begin().value().testCases, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
     TEST_F(Syntax_Test, Copy_constructor) {
-        auto [testGen, status] = createTestForFunction(copy_constructor_cpp, 8);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 37);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(copy_constructor_cpp).methods.begin().value().testCases, 2);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
     }
 
     TEST_F(Syntax_Test, Move_constructor) {
-        auto [testGen, status] = createTestForFunction(move_constructor_cpp, 8);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 60);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(move_constructor_cpp).methods.begin().value().testCases, 2);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
     }
 
     TEST_F(Syntax_Test, Constructor_with_pointers) {
-        auto [testGen, status] = createTestForFunction(constructor_with_pointers_cpp, 8);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 21);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(constructor_with_pointers_cpp).methods.begin().value().testCases, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
     TEST_F(Syntax_Test, Constructor_with_if_stmt) {
-        auto [testGen, status] = createTestForFunction(constructor_with_if_stmt, 8);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 9);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(
-            testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases, 2);
+            testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
 
         checkTestCasePredicates(
-            testGen.tests.at(constructor_with_if_stmt).methods.begin().value().testCases,
+            testGen.tests.at(constructors_cpp).methods.begin().value().testCases,
             vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                      return "false" == testCase.paramValues.front().view->getEntryValue();
@@ -2555,5 +2555,3 @@ namespace {
         );
     }
 }
-
-

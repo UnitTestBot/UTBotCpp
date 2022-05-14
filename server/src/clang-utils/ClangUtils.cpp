@@ -27,4 +27,25 @@ namespace ClangUtils {
         }
         return false;
     }
+
+    const clang::CXXConstructorDecl *isConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+        return Result.Nodes.getNodeAs<clang::CXXConstructorDecl>(Matchers::CONSTRUCTOR_DEF);
+    }
+
+    const clang::FunctionDecl *isFunctionOrConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+        const auto *FS = Result.Nodes.getNodeAs<clang::FunctionDecl>(Matchers::FUNCTION_DEF);
+        if (!FS) {
+            FS = isConstructor(Result);
+        }
+        return FS;
+    }
+
+
+    clang::QualType getReturnType(const clang::FunctionDecl *FS, const clang::ast_matchers::MatchFinder::MatchResult &Result) {
+        clang::QualType realReturnType = FS->getReturnType().getCanonicalType();
+        if (const auto *CS = isConstructor(Result)) {
+            realReturnType = CS->getThisObjectType();
+        }
+        return realReturnType;
+    }
 }

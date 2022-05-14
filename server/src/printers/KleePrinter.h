@@ -45,7 +45,6 @@ namespace printer {
             const std::optional<string> &testedClass = "",
             bool onlyForOneFunction = false,
             bool onlyForOneClass = false,
-            bool isConstructor = false,
             const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter = [](tests::Tests::MethodDescription const &) { return true; });
 
         std::string addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
@@ -77,7 +76,7 @@ namespace printer {
 
         bool genPointerParamDeclaration(const Tests::MethodParam &param);
 
-        void genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo, bool isConstructor);
+        void genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo);
 
         void genParamsKleeAssumes(const Tests::MethodDescription &testMethod,
                                   const std::optional<PredInfo> &predicateInfo,
@@ -103,7 +102,7 @@ namespace printer {
         void genNonVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
                                 const std::optional<PredInfo> &predicateInfo,
                                 const string &testedMethod,
-                                bool onlyForOneEntity, bool isConstructor);
+                                bool onlyForOneEntity);
 
         void genKleePathSymbolicIfNeeded(const std::optional<PredInfo> &predicateInfo,
                                          const string &testedMethod,
