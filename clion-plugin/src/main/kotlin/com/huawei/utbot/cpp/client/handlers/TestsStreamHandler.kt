@@ -15,6 +15,8 @@ class TestsStreamHandler(
     grpcStream: Flow<Testgen.TestsResponse>,
     progressName: String,
     cancellationJob: Job,
+    val onSuccess: ()->Unit = {},
+    val onError: (Throwable)->Unit = {}
 ): StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
     override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
@@ -50,4 +52,15 @@ class TestsStreamHandler(
     }
 
     private fun isGeneratedFileTestSourceFile(fileName: String) = fileName.endsWith("_test.cpp")
+
+    override fun onCompletion(exception: Throwable?) {
+        super.onCompletion(exception)
+        if (exception == null)
+            onSuccess()
+    }
+
+    override fun onException(exception: Throwable) {
+        super.onException(exception)
+        onError(exception)
+    }
 }

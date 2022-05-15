@@ -11,6 +11,7 @@ class FileRequest(
     request: Testgen.FileRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.FileRequest>(request, project, UTBot.message("requests.file.description.progress")) {
+    override val target: String = "File"
     override val logMessage: String = "Sending request to generate for FILE."
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateFileTests(request)

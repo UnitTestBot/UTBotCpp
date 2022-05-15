@@ -11,6 +11,7 @@ class SnippetRequest(
     request: Testgen.SnippetRequest,
     project: Project
 ) : BaseTestsRequest<Testgen.SnippetRequest>(request, project, UTBot.message("requests.snippet.description.progress")) {
+    override val target: String = "Snippet"
     override val logMessage: String = "Sending request to generate for SNIPPET."
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateSnippetTests(request)

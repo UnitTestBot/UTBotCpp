@@ -8,8 +8,10 @@ import com.huawei.utbot.cpp.utils.invokeOnEdt
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.onEach
 import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt

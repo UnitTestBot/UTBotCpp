@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp.client.Requests
 
 import com.huawei.utbot.cpp.client.Request
 import com.huawei.utbot.cpp.client.handlers.TestsStreamHandler
+import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -36,6 +37,7 @@ abstract class BaseRequest<X, Y>(val request: X) : Request {
  */
 abstract class BaseTestsRequest<R>(request: R, val project: Project, val progressName: String) :
     BaseRequest<R, Flow<Testgen.TestsResponse>>(request) {
+    protected open val target: String = ""
 
     override suspend fun Flow<Testgen.TestsResponse>.handle(cancellationJob: Job?) {
         if (cancellationJob?.isActive == true) {
@@ -43,8 +45,15 @@ abstract class BaseTestsRequest<R>(request: R, val project: Project, val progres
                 project,
                 this,
                 progressName,
-                cancellationJob
+                cancellationJob,
+                ::notifySuccess,
+                ::notifyError
             ).handle()
         }
     }
+
+    open fun notifySuccess() {
+        notifyInfo("$target tests generated!", project)
+    }
+    open fun notifyError(cause: Throwable) {}
 }

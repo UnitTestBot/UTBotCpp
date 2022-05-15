@@ -11,6 +11,7 @@ class LineRequest(
     request: Testgen.LineRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.LineRequest>(request, project, UTBot.message("requests.line.description.progress")) {
+    override val target: String = "Line"
     override val logMessage: String = "Sending request to generate for LINE."
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateLineTests(request)
