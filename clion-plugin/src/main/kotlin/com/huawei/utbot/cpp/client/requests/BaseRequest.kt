@@ -1,7 +1,10 @@
-package com.huawei.utbot.cpp.client.Requests
+package com.huawei.utbot.cpp.client.requests
 
+import com.huawei.utbot.cpp.actions.FocusAction
 import com.huawei.utbot.cpp.client.Request
 import com.huawei.utbot.cpp.client.handlers.TestsStreamHandler
+import com.huawei.utbot.cpp.utils.getLongestCommonPathFromRoot
+import com.huawei.utbot.cpp.utils.isHeader
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
@@ -9,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
+import java.nio.file.Path
 
 /**
  * Base class for requests.
@@ -52,8 +56,15 @@ abstract class BaseTestsRequest<R>(request: R, val project: Project, val progres
         }
     }
 
-    open fun notifySuccess() {
-        notifyInfo("$target tests generated!", project)
+    open fun getFocusTarget(generatedTestFiles: List<Path>): Path? {
+        return generatedTestFiles.filter { !isHeader(it.fileName.toString()) }.getLongestCommonPathFromRoot()
     }
+
+    open fun notifySuccess(generatedTestFiles: List<Path>) {
+        notifyInfo("$target tests generated!", project, getFocusTarget(generatedTestFiles)?.let {
+          FocusAction(it)
+        })
+    }
+
     open fun notifyError(cause: Throwable) {}
 }

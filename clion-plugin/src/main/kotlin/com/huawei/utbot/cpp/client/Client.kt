@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.client
 
 import com.huawei.utbot.cpp.actions.utils.getDummyRequest
 import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
-import com.huawei.utbot.cpp.client.Requests.CheckProjectConfigurationRequest
+import com.huawei.utbot.cpp.client.requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.models.LoggingChannel

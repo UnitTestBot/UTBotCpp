@@ -9,15 +9,19 @@ import kotlinx.coroutines.flow.Flow
 import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.Util
+import java.nio.file.Path
+import java.nio.file.Paths
 
 class TestsStreamHandler(
     project: Project,
     grpcStream: Flow<Testgen.TestsResponse>,
     progressName: String,
     cancellationJob: Job,
-    val onSuccess: ()->Unit = {},
+    val onSuccess: (List<Path>)->Unit = {},
     val onError: (Throwable)->Unit = {}
 ): StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
+    private val myGeneratedTestFiles: MutableList<Path> = mutableListOf()
+
     override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
         handleSourceCode(data.testSourcesList)
@@ -33,6 +37,9 @@ class TestsStreamHandler(
     private fun handleSourceCode(sources: List<Util.SourceCode>, isStubs: Boolean = false) {
         sources.forEach { sourceCode ->
             val filePath: String = project.utbotSettings.convertFromRemotePathIfNeeded(sourceCode.filePath)
+
+            if (!isStubs)
+                myGeneratedTestFiles.add(Paths.get(filePath))
 
             if (sourceCode.code.isNotEmpty()) {
                 createFileAndMakeDirs(
@@ -56,7 +63,7 @@ class TestsStreamHandler(
     override fun onCompletion(exception: Throwable?) {
         super.onCompletion(exception)
         if (exception == null)
-            onSuccess()
+            onSuccess(myGeneratedTestFiles)
     }
 
     override fun onException(exception: Throwable) {

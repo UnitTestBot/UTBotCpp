@@ -1,7 +1,7 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getSnippetRequestMessage
-import com.huawei.utbot.cpp.client.Requests.SnippetRequest
+import com.huawei.utbot.cpp.client.requests.SnippetRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys

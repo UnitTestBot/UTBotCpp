@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getClassRequestMessage
 import com.huawei.utbot.cpp.actions.utils.getContainingClass
-import com.huawei.utbot.cpp.client.Requests.ClassRequest
+import com.huawei.utbot.cpp.client.requests.ClassRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent
 

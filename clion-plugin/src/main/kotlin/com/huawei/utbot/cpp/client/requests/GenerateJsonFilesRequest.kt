@@ -1,4 +1,4 @@
-package com.huawei.utbot.cpp.client.Requests
+package com.huawei.utbot.cpp.client.requests
 
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.client.handlers.GenerateJsonHandler

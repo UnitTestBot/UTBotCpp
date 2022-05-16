@@ -1,7 +1,7 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getLineRequestMessage
-import com.huawei.utbot.cpp.client.Requests.LineRequest
+import com.huawei.utbot.cpp.client.requests.LineRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys

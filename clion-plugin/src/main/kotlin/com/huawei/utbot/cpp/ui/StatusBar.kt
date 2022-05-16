@@ -6,7 +6,6 @@ import com.huawei.utbot.cpp.actions.ReconfigureProjectAction
 import com.huawei.utbot.cpp.actions.ShowWizardAction
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
-import com.huawei.utbot.cpp.utils.getClient
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataContext
@@ -47,6 +46,7 @@ class StatusBar : StatusBarWidgetFactory {
 
 class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
     private var statusBar: StatusBar? = null
+    private var myConnectionStatusText: String = ConnectionStatus.BROKEN.description
 
     override fun ID(): String = ID
 
@@ -55,6 +55,7 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
         statusbar.project?.messageBus?.connect()?.subscribe(UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
             object : UTBotEventsListener {
                 override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
+                    myConnectionStatusText = newStatus.description
                     statusBar?.updateWidget(ID())
                 }
             })
@@ -73,9 +74,9 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
         popup.show(RelativePoint(component, at))
     }
 
-    override fun getText(): String =
-        "UTBot: " + (statusBar?.project?.getClient()?.connectionStatus?.description
-            ?: ConnectionStatus.BROKEN.description)
+    override fun getText(): String {
+        return "UTBot: $myConnectionStatusText"
+    }
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
 

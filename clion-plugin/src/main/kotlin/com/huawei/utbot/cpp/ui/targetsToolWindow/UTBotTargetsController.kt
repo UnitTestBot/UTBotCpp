@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.ui.targetsToolWindow
 
 import com.huawei.utbot.cpp.actions.utils.getProjectTargetsRequest
 import com.huawei.utbot.cpp.client.Client
-import com.huawei.utbot.cpp.client.Requests.ProjectTargetsRequest
+import com.huawei.utbot.cpp.client.requests.ProjectTargetsRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener

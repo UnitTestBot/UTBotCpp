@@ -1,8 +1,7 @@
-package com.huawei.utbot.cpp.client.Requests
+package com.huawei.utbot.cpp.client.requests
 
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.client.handlers.CoverageAndResultsHandler
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow

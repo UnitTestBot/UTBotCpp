@@ -1,7 +1,7 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getCoverageAndResultsRequest
-import com.huawei.utbot.cpp.client.Requests.RunWithCoverageRequest
+import com.huawei.utbot.cpp.client.requests.RunWithCoverageRequest
 import com.huawei.utbot.cpp.models.TestNameAndTestSuite
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent

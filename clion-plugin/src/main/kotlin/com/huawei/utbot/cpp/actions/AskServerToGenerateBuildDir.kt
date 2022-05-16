@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
-import com.huawei.utbot.cpp.client.Requests.CreateBuildDirRequest
+import com.huawei.utbot.cpp.client.requests.CreateBuildDirRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction

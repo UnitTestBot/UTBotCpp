@@ -1,14 +1,14 @@
-package com.huawei.utbot.cpp.client.Requests
+package com.huawei.utbot.cpp.client.requests
 
 import com.huawei.utbot.cpp.UTBot
-import com.huawei.utbot.cpp.client.handlers.CreateBuildDirHandler
+import com.huawei.utbot.cpp.client.handlers.CheckProjectConfigurationHandler
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
-class CreateBuildDirRequest(
+class CheckProjectConfigurationRequest(
     val project: Project,
     request: Testgen.ProjectConfigRequest,
 ): BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request) {
@@ -20,10 +20,10 @@ class CreateBuildDirRequest(
 
     override suspend fun Flow<Testgen.ProjectConfigResponse>.handle(cancellationJob: Job?) {
         if (cancellationJob?.isActive == true) {
-            CreateBuildDirHandler(
+            CheckProjectConfigurationHandler(
                 project,
                 this,
-                UTBot.message("requests.buildDir.description.progress"),
+                UTBot.message("requests.check.description.progress"),
                 cancellationJob
             ).handle()
         }

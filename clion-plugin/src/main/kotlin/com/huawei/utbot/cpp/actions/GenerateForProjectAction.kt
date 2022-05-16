@@ -1,7 +1,7 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getProjectRequestMessage
-import com.huawei.utbot.cpp.client.Requests.ProjectRequest
+import com.huawei.utbot.cpp.client.requests.ProjectRequest
 import com.huawei.utbot.cpp.utils.client
 import com.intellij.openapi.actionSystem.AnActionEvent
 

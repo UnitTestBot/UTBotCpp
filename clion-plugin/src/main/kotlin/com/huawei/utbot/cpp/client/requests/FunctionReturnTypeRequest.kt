@@ -1,4 +1,4 @@
-package com.huawei.utbot.cpp.client.Requests
+package com.huawei.utbot.cpp.client.requests
 
 import kotlinx.coroutines.Job
 import testsgen.Testgen

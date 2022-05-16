@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getFunctionRequestMessage
 import com.huawei.utbot.cpp.actions.utils.getContainingFunction
-import com.huawei.utbot.cpp.client.Requests.FunctionRequest
+import com.huawei.utbot.cpp.client.requests.FunctionRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.intellij.openapi.actionSystem.AnActionEvent
 

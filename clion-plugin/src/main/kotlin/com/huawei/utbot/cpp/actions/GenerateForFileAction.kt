@@ -1,7 +1,7 @@
 package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.actions.utils.getFileRequestMessage
-import com.huawei.utbot.cpp.client.Requests.FileRequest
+import com.huawei.utbot.cpp.client.requests.FileRequest
 import com.huawei.utbot.cpp.utils.execute
 import com.huawei.utbot.cpp.utils.isCPPorCFileName
 import com.intellij.openapi.actionSystem.AnActionEvent

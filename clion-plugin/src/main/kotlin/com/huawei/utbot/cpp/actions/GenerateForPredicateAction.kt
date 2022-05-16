@@ -4,8 +4,8 @@ import com.huawei.utbot.cpp.actions.utils.getFunctionRequestMessage
 import com.huawei.utbot.cpp.actions.utils.getPredicateRequestMessage
 import com.huawei.utbot.cpp.utils.client
 import com.huawei.utbot.cpp.actions.utils.getContainingFunction
-import com.huawei.utbot.cpp.client.Requests.FunctionReturnTypeRequest
-import com.huawei.utbot.cpp.client.Requests.PredicateRequest
+import com.huawei.utbot.cpp.client.requests.FunctionReturnTypeRequest
+import com.huawei.utbot.cpp.client.requests.PredicateRequest
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.ComponentValidator
 import com.intellij.openapi.ui.ValidationInfo

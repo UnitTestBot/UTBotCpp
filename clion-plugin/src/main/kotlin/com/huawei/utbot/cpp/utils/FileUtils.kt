@@ -2,10 +2,7 @@ package com.huawei.utbot.cpp.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.util.io.isDirectory
-import com.intellij.util.io.isFile
 import java.io.File
-import java.io.IOException
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.Path
@@ -25,6 +22,21 @@ fun refreshAndFindIOFile(file: File) {
     }
 }
 
+fun List<Path>.getLongestCommonPathFromRoot(): Path? {
+    if (this.isEmpty())
+        return null
+
+    fun getCommon(p1: Path, p2: Path): Path {
+        var relativePath = p1.relativize(p2).normalize()
+        while (!relativePath.endsWith("..")) {
+            relativePath = relativePath.parent
+        }
+        return p1.resolve(relativePath).normalize()
+    }
+
+    return this.reduce(::getCommon)
+}
+
 fun refreshAndFindIOFile(filePath: String) = refreshAndFindIOFile(File(filePath))
 
 fun createFileAndMakeDirs(filePath: String, text: String) {
@@ -36,6 +48,8 @@ fun createFileAndMakeDirs(filePath: String, text: String) {
 }
 
 fun isCPPorCFileName(fileName: String) = """.*\.(cpp|hpp|c|h)""".toRegex().matches(fileName)
+
+fun isHeader(fileName: String) = """.*\.([ch])""".toRegex().matches(fileName)
 
 fun Path.visitAllFiles(action: (Path) -> Unit) {
     object : SimpleFileVisitor<Path>() {
