@@ -248,12 +248,6 @@ void Linker::prepareArtifacts() {
     }
 }
 
-void Linker::writeMakefiles() {
-    for (const printer::TestMakefilesContent &testMakefilesPrinter : linkMakefiles) {
-        testMakefilesPrinter.write();
-    }
-}
-
 vector<tests::TestMethod> Linker::getTestMethods() {
     LOG_S(DEBUG) << StringUtils::stringFormat(
         "Linkage statistics:\nAll files: %d\nNumber of files with broken linkage: %d",
@@ -422,7 +416,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
         auto sourcePath = compilationUnitInfo->getSourcePath();
         if (CollectionUtils::containsKey(testGen.tests, sourcePath)) {
-            linkMakefiles.push_back(testMakefilesPrinter.GetMakefiles(sourcePath));
+            testMakefilesPrinter.GetMakefiles(sourcePath).write();
         }
     }
     return LinkResult{ targetBitcode, stubsSet, presentedFiles };
