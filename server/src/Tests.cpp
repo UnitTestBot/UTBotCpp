@@ -310,18 +310,15 @@ shared_ptr<StructValueView> KTestObjectParser::structView(const vector<char> &by
                 break;
             case TypeKind::STRUCT:
                 innerStruct = typesHandler.getStructInfo(field.type);
-                innerStruct.name = curStruct.name + "::" + innerStruct.name;
                 subViews.push_back(structView(byteArray, innerStruct, curPos + offsetField, usage, testingMethod,
                                               PrinterUtils::getFieldAccess(name, field.name), fromAddressToName, initReferences));
                 break;
             case TypeKind::ENUM:
                 innerEnum = typesHandler.getEnumInfo(field.type);
-                innerEnum.name = curStruct.name + "::" + innerEnum.name;
                 subViews.push_back(enumView(byteArray, innerEnum, curPos + offsetField, len));
                 break;
             case TypeKind::UNION:
                 innerUnion = typesHandler.getUnionInfo(field.type);
-                innerUnion.name = curStruct.name + "::" + innerUnion.name;
                 subViews.push_back(unionView(byteArray, innerUnion, curPos + offsetField, usage));
                 break;
             case TypeKind::ARRAY:
