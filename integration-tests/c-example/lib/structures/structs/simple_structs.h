@@ -51,7 +51,7 @@ struct StructWithUnion {
             int x;
         } un2;
     } is;
-    
+
     int x;
 };
 
