@@ -239,7 +239,6 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printStubVariables(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, true);
     parametrizedAsserts(methodDescription, testCase, predicateInfo);
-    printJsonPathFromKlee(testCase);
     ss << RB() << NL;
 }
 
@@ -555,9 +554,12 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
-    globalParamsAsserts(methodDescription, testCase);
-    classAsserts(methodDescription, testCase);
-    changeableParamsAsserts(methodDescription, testCase);
+    printJsonPathFromKlee(testCase);
+    if (!testCase.isError()) {
+        globalParamsAsserts(methodDescription, testCase);
+        classAsserts(methodDescription, testCase);
+        changeableParamsAsserts(methodDescription, testCase);
+    }
 }
 
 void TestsPrinter::printJsonPathFromKlee(const Tests::MethodTestCase &testCase) {
