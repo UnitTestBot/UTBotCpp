@@ -2,46 +2,38 @@
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
  */
 
-#include "dependent_functions_test.h"
+#include "simple_loop_uncovered_dot_c_test.h"
 
 #include "gtest/gtest.h"
+
 namespace UTBot {
-    static const float utbot_abs_error = 1e-6;
+    TEST(regression, simple_loop_uncovered_test_1) {
 
-
-
-    TEST(regression, double_max_test_1)
-    {
         // Construct input
-        int a = 0;
-        int b = 0;
+        unsigned int n = 0;
 
         // Expected output
         int expected = 0;
 
         // Trigger the function
-        int actual = double_max(a, b);
+        int actual = simple_loop_uncovered(n);
 
         // Check results
         EXPECT_EQ(expected, actual);
-
     }
+    TEST(regression, simple_loop_uncovered_test_2) {
 
-    TEST(regression, double_max_test_2)
-    {
         // Construct input
-        int a = 0;
-        int b = -1;
+        unsigned int n = 255;
 
         // Expected output
-        int expected = 0;
+        int expected = 1;
 
         // Trigger the function
-        int actual = double_max(a, b);
+        int actual = simple_loop_uncovered(n);
 
         // Check results
         EXPECT_EQ(expected, actual);
-
     }
-
 }
+
