@@ -17,6 +17,10 @@ namespace sarif {
         for (const auto &testCase : methodDescription.testCases) {
             if (testCase.isError()) {
                 errorTestCases++;
+                if (!testCase.errorDescriptionInJson.has_value()) {
+                    LOG_S(ERROR) << "Test Case is error but doesn't have json from klee";
+                    continue;
+                }
                 fs::path jsonPath = testCase.errorDescriptionInJson.value();
                 json testCaseJson = JsonUtils::getJsonFromFile(jsonPath);
                 deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
