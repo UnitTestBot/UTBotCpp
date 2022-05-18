@@ -15,7 +15,7 @@
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/SanitizerUtils.h"
-#include "sarif/Sarif.h"
+#include "sarif/FileSarif.h"
 
 #include "loguru.h"
 
@@ -305,7 +305,7 @@ void KleeGenerator::parseKTestsToFinalCode(
         KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag,
                                      lineInfo);
     }
-    sarif::Sarif fileSarif(tests);
+    sarif::FileSarif fileSarif(tests);
     printer::TestsPrinter testsPrinter(&typesHandler, Paths::getSourceLanguage(tests.sourceFilePath));
     for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
         const string &methodName = it.key();

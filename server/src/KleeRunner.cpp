@@ -12,7 +12,7 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
-#include "sarif/Sarif.h"
+#include "sarif/FileSarif.h"
 
 #include "loguru.h"
 
@@ -90,6 +90,9 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
                                         std::move(writeFunctor));
+    sarif::ProjectSarif projectSarif;
+    projectSarif.joinSarifFiles(projectContext.projectPath);
+    projectSarif.writeSarifFile(projectContext.projectPath);
 }
 
 fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {
@@ -189,8 +192,8 @@ void KleeRunner::processBatch(MethodKtests &ktestChunk,
                             });
                     fs::path tmp = path.filename();
                     if (status == tests::UTBotKTest::Status::FAILED) {
-                        fs::path sarifOutput = path.parent_path() / fs::path(sarif::Sarif::sarif_klee_prefix +
-                                path.filename_without_extension() + sarif::Sarif::sarif_klee_extension);
+                        fs::path sarifOutput = path.parent_path() / fs::path(sarif::FileSarif::sarif_klee_prefix +
+                                                                             path.filename_without_extension() + sarif::FileSarif::sarif_klee_extension);
                         ktestChunk[testMethod].emplace_back(objects, status, sarifOutput);
                     } else {
                         ktestChunk[testMethod].emplace_back(objects, status);

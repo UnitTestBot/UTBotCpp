@@ -5,7 +5,7 @@
 #include "TestsPrinter.h"
 
 #include "Paths.h"
-#include "sarif/Sarif.h"
+#include "sarif/FileSarif.h"
 #include "utils/ArgumentsUtils.h"
 #include "utils/Copyright.h"
 #include "utils/JsonUtils.h"
@@ -69,8 +69,8 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
     int line_count = 0;
     string line;
     while (getline(ss, line)) {
-        if (line.rfind(sarif::Sarif::prefix_for_json_path, 0) == 0) {
-            fs::path json_path = line.substr(sarif::Sarif::prefix_for_json_path.size());
+        if (line.rfind(sarif::FileSarif::prefix_for_json_path, 0) == 0) {
+            fs::path json_path = line.substr(sarif::FileSarif::prefix_for_json_path.size());
             if (!exists(json_path)) {
                 LOG_S(ERROR) << "Json from klee not found";
                 continue;
@@ -566,7 +566,7 @@ void TestsPrinter::printJsonPathFromKlee(const Tests::MethodTestCase &testCase) 
     if (!testCase.errorDescriptionInJson) {
         return;
     }
-    ss << sarif::Sarif::prefix_for_json_path << testCase.errorDescriptionInJson.value().string() << NL;
+    ss << sarif::FileSarif::prefix_for_json_path << testCase.errorDescriptionInJson.value().string() << NL;
 }
 
 std::vector<string> TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,
