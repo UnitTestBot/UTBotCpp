@@ -555,11 +555,9 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
     printJsonPathFromKlee(testCase);
-    if (!testCase.isError()) {
-        globalParamsAsserts(methodDescription, testCase);
-        classAsserts(methodDescription, testCase);
-        changeableParamsAsserts(methodDescription, testCase);
-    }
+    globalParamsAsserts(methodDescription, testCase);
+    classAsserts(methodDescription, testCase);
+    changeableParamsAsserts(methodDescription, testCase);
 }
 
 void TestsPrinter::printJsonPathFromKlee(const Tests::MethodTestCase &testCase) {
