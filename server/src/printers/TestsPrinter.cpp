@@ -714,10 +714,12 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
             std::string qualifier = Printer::getConstQualifier(param.type);
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
+        } else if (param.type.isRValueReference()) {
+            args.push_back("std::move(" + param.name + ")");
+        } else if (param.type.maybeJustPointer() && !param.type.isFilePointer() ) {
+            args.push_back("&" + param.name);
         } else {
-            std::string maybeAmpersand =
-                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
-            args.push_back(maybeAmpersand + param.name);
+            args.push_back(param.name);
         }
     }
     return args;

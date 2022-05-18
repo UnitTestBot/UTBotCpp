@@ -248,6 +248,10 @@ bool types::Type::isLValueReference() const {
     return isSimple() && dynamic_cast<SimpleType *>(mKinds.front().get())->isLValue();
 }
 
+bool types::Type::isRValueReference() const {
+    return isSimple() && dynamic_cast<SimpleType *>(mKinds.front().get())->isRValue();
+}
+
 bool types::Type::isConstQualified() const {
     return isSimple() && dynamic_cast<SimpleType *>(mKinds.front().get())->isConstQualified();
 }

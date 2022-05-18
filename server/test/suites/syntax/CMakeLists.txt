@@ -40,4 +40,5 @@ add_executable(syntax1
         namespace.cpp
         input_output.c
         file.c
-        bitfields.c)
+        bitfields.c
+        function_with_rvalue_params.cpp)
