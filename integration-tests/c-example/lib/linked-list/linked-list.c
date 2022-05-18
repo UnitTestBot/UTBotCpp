@@ -189,3 +189,28 @@ int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int)) {
     }
     return 0;
 }
+
+int length_of_empty_list(struct EmptyNode *head) {
+    if (head == NULL) {
+        return 0;
+    }
+    if (head->next == NULL) {
+        return 1;
+    }
+    if (head->next->next == NULL) {
+        return 2;
+    }
+    if (head->next->next->next == NULL) {
+        return 3;
+    }
+    return -1;
+}
+
+int content_of_void_ptr(struct DataNode *node) {
+    if (node->flag == 1) {
+        return 1;
+    } else {
+        int *data = (int *)(node->data);
+        return *data;
+    }
+}

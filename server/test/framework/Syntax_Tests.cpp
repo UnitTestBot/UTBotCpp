@@ -54,6 +54,7 @@ namespace {
         fs::path array_sort_c = getTestFilePath("array_sort.c");
         fs::path constructors_cpp = getTestFilePath("constructors.cpp");
         fs::path stubs_c = getTestFilePath("stubs.c");
+        fs::path namespace_cpp = getTestFilePath("namespace.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -88,6 +89,12 @@ namespace {
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            size_t failed_build = TestRunner::buildTests(testGen.projectContext, testGen.tests);
+            if (status.ok() && failed_build != 0) {
+                std::string message = StringUtils::stringFormat("Build tests failed: %d", failed_build);
+                LOG_S(ERROR) << message;
+                return { testGen, Status(StatusCode::FAILED_PRECONDITION, message) };
+            }
             return { testGen, status };
         }
     };
@@ -2550,6 +2557,117 @@ namespace {
                     },
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, length_of_empty_list) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 170);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 2;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 3;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, content_of_void_ptr) {
+        auto [testGen, status] = createTestForFunction(linked_list_c, 186);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(linked_list_c).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, example_namespace) {
+        auto [testGen, status] = createTestForFunction(namespace_cpp, 7);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return StringUtils::startsWith(testCase.returnValueView->getSubViews()[2]->getEntryValue(), "from_bytes<uni::inner1::U>") &&
+                             stoi(testCase.returnValueView->getSubViews()[0]->getEntryValue()) == 5;
+                    },
+                     [] (const tests::Tests::MethodTestCase& testCase) {
+                       return StringUtils::startsWith(testCase.returnValueView->getSubViews()[2]->getEntryValue(), "from_bytes<uni::inner1::U>") &&
+                              stoi(testCase.returnValueView->getSubViews()[0]->getEntryValue()) == -1;
+                     },
+                     [] (const tests::Tests::MethodTestCase& testCase) {
+                       return StringUtils::startsWith(testCase.returnValueView->getSubViews()[2]->getEntryValue(), "from_bytes<uni::inner1::U>") &&
+                              stoi(testCase.returnValueView->getSubViews()[0]->getEntryValue()) == 10;
+                     }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, struct_with_union_as_return_type_cpp) {
+        auto [testGen, status] = createTestForFunction(namespace_cpp, 28);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return StringUtils::startsWith(testCase.returnValueView->getSubViews()[0]->getEntryValue(), "from_bytes<StructWithUnion::InnerUnion>") &&
+                             StringUtils::startsWith(testCase.returnValueView->getSubViews()[1]->getSubViews()[0]->getEntryValue(),
+                                                       "from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>") &&
+                               stoi(testCase.returnValueView->getSubViews()[2]->getEntryValue()) == -108;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return StringUtils::startsWith(testCase.returnValueView->getSubViews()[0]->getEntryValue(), "from_bytes<StructWithUnion::InnerUnion>") &&
+                             StringUtils::startsWith(testCase.returnValueView->getSubViews()[1]->getSubViews()[0]->getEntryValue(),
+                                                     "from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>") &&
+                             stoi(testCase.returnValueView->getSubViews()[2]->getEntryValue()) == 155;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, multi_union) {
+        auto [testGen, status] = createTestForFunction(namespace_cpp, 42);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
+            vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return StringUtils::startsWith(testCase.returnValueView->getSubViews()[0]->getEntryValue(), "from_bytes<A1::B1>") &&
+                             StringUtils::startsWith(testCase.returnValueView->getSubViews()[1]->getEntryValue(), "from_bytes<A1::C1>");
                     }
                 })
         );

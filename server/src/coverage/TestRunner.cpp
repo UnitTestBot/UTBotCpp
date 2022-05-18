@@ -17,7 +17,7 @@ using grpc::Status;
 using std::string;
 using std::vector;
 
-TestRunner::TestRunner(testsgen::ProjectContext projectContext,
+TestRunner::TestRunner(utbot::ProjectContext projectContext,
                        std::string testFilePath,
                        std::string testSuite,
                        std::string testName,
@@ -34,7 +34,7 @@ TestRunner::TestRunner(
     std::string testFilename,
     std::string testSuite,
     std::string testName)
-    : TestRunner(coverageAndResultsRequest->projectcontext(),
+    : TestRunner(utbot::ProjectContext(coverageAndResultsRequest->projectcontext()),
                  std::move(testFilename),
                  std::move(testSuite),
                  std::move(testName),
@@ -142,8 +142,7 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
                                       buildRunCommand;
                                   try {
                                       auto status = runTest(runCommand, testTimeout);
-                                      testStatusMap[unitTest.testFilePath][unitTest.testname] =
-                                          status;
+                                      testStatusMap[unitTest.testFilePath][unitTest.testname] = status;
                                       ExecUtils::throwIfCancelled();
                                   } catch (ExecutionProcessException const &e) {
                                       testStatusMap[unitTest.testFilePath][unitTest.testname] = testsgen::TEST_FAILED;
@@ -169,14 +168,29 @@ void TestRunner::init(bool withCoverage) {
     }
 }
 
-bool TestRunner::buildTest(const MakefileUtils::MakefileCommand &command) {
+bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs::path& sourcePath) {
     ExecUtils::throwIfCancelled();
-
-    auto [out, status, logFilePath] = command.run(projectContext.buildDir, true);
-    if (status != 0) {
-        throw ExecutionProcessException(command.getFailedCommand(), logFilePath.value());
+    fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+    if (fs::exists(makefile)) {
+        auto command = MakefileUtils::makefileCommand(projectContext, makefile, "build", "", {});
+        LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
+        auto[out, status, logFilePath] = command.run(projectContext.buildDir, true);
+        if (status != 0) {
+            return false;
+        }
+        return true;
     }
-    return true;
+    return false;
+}
+
+size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const tests::TestsMap& tests) {
+    size_t fail_count = 0;
+    for (const auto &[file, _]: tests) {
+        if(!TestRunner::buildTest(projectContext, file)) {
+            fail_count++;
+        }
+    }
+    return fail_count;
 }
 
 testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {

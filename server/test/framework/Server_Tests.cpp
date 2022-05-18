@@ -1459,8 +1459,8 @@ namespace {
         std::string suite = "object-file";
         setSuite(suite);
         static const std::string source2_c = getTestFilePath("source2.c");
-            auto projectRequest =
-        createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto projectRequest =
+            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         setTargetForFirstSource(testGen);

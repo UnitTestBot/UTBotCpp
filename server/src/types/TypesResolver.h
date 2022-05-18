@@ -17,6 +17,7 @@ class Fetcher;
 class TypesResolver {
 private:
     const Fetcher *const parent;
+    std::map <uint64_t, std::string> fullname;
 public:
     explicit TypesResolver(Fetcher const *parent);
 
@@ -29,6 +30,9 @@ public:
     void resolve(const clang::QualType &type);
 
 private:
+    std::string getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
+                            uint64_t id, const fs::path &sourceFilePath);
+
     void updateMaximumAlignment(uint64_t alignment) const;
 };
 

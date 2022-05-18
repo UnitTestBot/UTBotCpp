@@ -310,18 +310,15 @@ shared_ptr<StructValueView> KTestObjectParser::structView(const vector<char> &by
                 break;
             case TypeKind::STRUCT:
                 innerStruct = typesHandler.getStructInfo(field.type);
-                innerStruct.name = curStruct.name + "::" + innerStruct.name;
                 subViews.push_back(structView(byteArray, innerStruct, curPos + offsetField, usage, testingMethod,
                                               PrinterUtils::getFieldAccess(name, field.name), fromAddressToName, initReferences));
                 break;
             case TypeKind::ENUM:
                 innerEnum = typesHandler.getEnumInfo(field.type);
-                innerEnum.name = curStruct.name + "::" + innerEnum.name;
                 subViews.push_back(enumView(byteArray, innerEnum, curPos + offsetField, len));
                 break;
             case TypeKind::UNION:
                 innerUnion = typesHandler.getUnionInfo(field.type);
-                innerUnion.name = curStruct.name + "::" + innerUnion.name;
                 subViews.push_back(unionView(byteArray, innerUnion, curPos + offsetField, usage));
                 break;
             case TypeKind::ARRAY:
@@ -603,6 +600,10 @@ void KTestObjectParser::assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
         JsonNumAndType curVar = order.front();
         order.pop();
         if (testCase.objects[curVar.num].is_lazy) {
+            if (types::TypesHandler::baseTypeIsVoid(curVar.type)) {
+                throw UnImplementedException("Lazy variable has baseType=void");
+            }
+
             std::string name = testCase.objects[curVar.num].name;
             int ind = findObjectIndex(testCase.objects, name);
             if (ind == testCase.objects.size()) {
@@ -743,6 +744,8 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             methodDescription.testCases.push_back(testCase);
             methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
         } catch (const UnImplementedException &e) {
+            LOG_S(WARNING) << "Skipping test case: " << e.what();
+        } catch (const NoSuchTypeException &e) {
             LOG_S(WARNING) << "Skipping test case: " << e.what();
         }
     }

@@ -62,6 +62,25 @@ static void addInfo(uint64_t id, std::unordered_map<uint64_t, Info> &someMap, In
     }
 }
 
+std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
+                                       uint64_t id, const fs::path &sourceFilePath) {
+    auto pp = clang::PrintingPolicy(clang::LangOptions());
+    pp.SuppressTagKeyword = true;
+    std::string currentStructName = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
+    fullname.insert(std::make_pair(id, currentStructName));
+
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
+        if (const clang::RecordDecl *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
+            clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
+            uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
+            if (!fullname[parentID].empty()) {
+                fullname[id] = fullname[parentID] + "::" + fullname[id];
+            }
+        }
+    }
+    return fullname[id];
+}
+
 void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string &name) {
     clang::ASTContext const &context = D->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
@@ -71,13 +90,14 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     if (!isCandidateToReplace(id, parent->projectTypes->structs, name)) {
         return;
     }
+
     types::StructInfo structInfo;
     fs::path filename =
             sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
-    structInfo.name = name;
+    structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasUnnamedFields = false;
-
 
     if (Paths::isGtest(structInfo.filePath)) {
         return;
@@ -88,7 +108,6 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     ss << "Struct: " << structInfo.name << "\n"
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     for (const clang::FieldDecl *F : D->fields()) {
         if (F->isUnnamedBitfield()) {
             continue;
@@ -182,8 +201,10 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
     if (!isCandidateToReplace(id, parent->projectTypes->enums, name)) {
         return;
     }
+
     types::EnumInfo enumInfo;
-    enumInfo.name = name;
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    enumInfo.name = getFullname(EN, canonicalType, id, sourceFilePath);
     enumInfo.filePath = Paths::getCCJsonFileFullPath(
         sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
     clang::QualType promotionType = EN->getPromotionType();
@@ -226,10 +247,12 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     if (!isCandidateToReplace(id, parent->projectTypes->unions, name)) {
         return;
     }
+
     types::UnionInfo unionInfo;
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     unionInfo.filePath = Paths::getCCJsonFileFullPath(
         sourceManager.getFilename(D->getLocation()).str(), parent->buildRootPath.string());
-    unionInfo.name = name;
+    unionInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
 
     if (Paths::isGtest(unionInfo.filePath)) {
         return;
