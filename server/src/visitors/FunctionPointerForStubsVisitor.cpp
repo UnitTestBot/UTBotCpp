@@ -29,7 +29,6 @@ namespace visitor {
             }
             visitAny(testMethod.returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         }
-        string code = printer.ss.str();
         return printer.ss.str();
     }
 
@@ -38,7 +37,7 @@ namespace visitor {
                                                      const tests::AbstractValueView *view,
                                                      const string &access,
                                                      int depth,
-                                                     bool isConstructor) {
+                                                     tests::Tests::ConstructorInfo constructorInfo) {
         auto [_, inserted] = used.insert(type.getId());
         if (!inserted) {
             return;
@@ -52,7 +51,7 @@ namespace visitor {
         for (auto &field : structInfo.fields) {
             if (!types::TypesHandler::isPointerToFunction(field.type) &&
                 !types::TypesHandler::isArrayOfPointersToFunction(field.type)) {
-                visitAny(field.type, name, nullptr, access, depth + 1, isConstructor);
+                visitAny(field.type, name, nullptr, access, depth + 1, constructorInfo);
             }
         }
     }
@@ -73,9 +72,9 @@ namespace visitor {
                                                     const string &access,
                                                     size_t size,
                                                     int depth,
-                                                    bool isConstructor) {
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
         AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
-                                           depth + type.getDimension(), isConstructor);
+                                           depth + type.getDimension(), constructorInfo);
     }
 
     void FunctionPointerForStubsVisitor::visitPrimitive(const types::Type &type,
@@ -83,7 +82,7 @@ namespace visitor {
                                                         const tests::AbstractValueView *view,
                                                         const string &access,
                                                         int depth,
-                                                        bool isConstructor) {
+                                                        tests::Tests::ConstructorInfo constructorInfo) {
         // need to be implemented
     }
 }

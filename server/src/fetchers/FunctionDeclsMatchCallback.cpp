@@ -36,8 +36,11 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
-        if (ClangUtils::isConstructor(Result)) {
-            methodDescription.isConstructor = true;
+        if (const CXXConstructorDecl *CS = ClangUtils::isConstructor(Result)) {
+            methodDescription.constructorInfo.isConstructor = true;
+            if (CS->isMoveConstructor()) {
+                methodDescription.constructorInfo.isMoveConstructor = true;
+            }
         }
         if (onlyNames) {
             addMethod(sourceFilePath, methodDescription);
@@ -63,7 +66,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
 
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
-        if (FS->isCXXClassMember() && !methodDescription.isConstructor) {
+        if (FS->isCXXClassMember() && !methodDescription.constructorInfo.isConstructor) {
             string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
             auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);

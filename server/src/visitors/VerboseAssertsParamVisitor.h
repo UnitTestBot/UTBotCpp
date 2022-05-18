@@ -31,14 +31,14 @@ namespace visitor {
                     const string &access,
                     size_t size,
                     int depth,
-                    bool isConstructor = false) override;
+                    tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
 
     void visitPrimitive(const types::Type &type,
                         const string &name,
                         const tests::AbstractValueView *view,
                         const string &access,
                         int depth,
-                        bool isConstructor = false) override;
+                        tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
   };
 }
 

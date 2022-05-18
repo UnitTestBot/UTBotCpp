@@ -22,7 +22,7 @@ namespace visitor {
             return;
         }
         additionalPointersCount = 0;
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0, methodDescription.isConstructor);
+        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0, methodDescription.constructorInfo);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,
@@ -30,10 +30,10 @@ namespace visitor {
                                                           const tests::AbstractValueView *view,
                                                           const string &access,
                                                           int depth,
-                                                          bool isConstructor) {
+                                                          tests::Tests::ConstructorInfo constructorInfo) {
         const auto &gtestMacro = predicateMapping.at(predicate);
         std::string expectedValue;
-        if (isConstructor) {
+        if (constructorInfo.isConstructor) {
             expectedValue = view->getEntryValue();
         } else {
             expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
@@ -59,7 +59,7 @@ namespace visitor {
                                                       const string &access,
                                                       size_t size,
                                                       int depth,
-                                                      bool isConstructor) {
+                                                      tests::Tests::ConstructorInfo constructorInfo) {
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
             VerboseAssertsVisitor::visitArray(type, name, view, access, size, depth);

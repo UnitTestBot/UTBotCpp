@@ -30,7 +30,7 @@ namespace visitor {
                         const std::string &access,
                         size_t size,
                         int depth,
-                        bool isConstructor = false) override;
+                        tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
     };
 }
 

@@ -29,13 +29,13 @@ namespace visitor {
                                            const string &access,
                                            size_t size,
                                            int depth,
-                                           bool isConstructor) {
+                                           tests::Tests::ConstructorInfo constructorInfo) {
         std::vector<size_t> sizes = type.arraysSizes(usage);
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 
         visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
-                 depth + sizes.size(), isConstructor);
+                 depth + sizes.size(), constructorInfo);
         printer->closeBrackets(sizes.size());
     }
 }

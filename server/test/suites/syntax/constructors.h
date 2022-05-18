@@ -28,9 +28,8 @@ struct Closet {
     bool flag = false;
 
     Closet();
-    Closet(double length_, double width_, double height_);
+    Closet(double length_, double width_, double height_, double volume_);
     Closet(const Closet &other);
-    Closet(Closet &&other);
 };
 
 struct Closet2 {
@@ -40,9 +39,6 @@ struct Closet2 {
     double volume;
 
     Closet2();
-    Closet2(double length_, double width_, double height_);
-    Closet2(const Closet2& other);
-    Closet2(Closet2 && other);
 };
 
 struct Closet3 {
@@ -53,8 +49,7 @@ struct Closet3 {
     bool flag;
 
     Closet3();
-    Closet3(double length_, double width_, double height_);
-    Closet3(const Closet3& other);
+    Closet3(double length_, double width_, double height_, double volume_);
     Closet3(Closet3 && other);
 };
 
@@ -66,8 +61,6 @@ struct Closet4 {
 
     Closet4();
     Closet4(double length_, double width_, double height_);
-    Closet4(const Closet4& other);
-    Closet4(Closet4 && other);
 };
 
 

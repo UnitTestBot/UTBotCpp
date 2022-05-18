@@ -37,7 +37,7 @@ namespace visitor {
                                                     const tests::AbstractValueView *view,
                                                     const string &access,
                                                     int depth,
-                                                    bool isConstrcutor) {
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
       kleeAssume(PrinterUtils::getEqualString(name, PrinterUtils::fillVarName(access, outVariable)));
   }
 
@@ -60,7 +60,7 @@ namespace visitor {
                                                 const string &access,
                                                 size_t size,
                                                 int depth,
-                                                bool isConstructor) {
+                                                tests::Tests::ConstructorInfo constructorInfo) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
@@ -77,7 +77,7 @@ namespace visitor {
       if (assignPointersToNull) {
           kleeAssume(PrinterUtils::getEqualString(name + indexing,  PrinterUtils::C_NULL));
       } else {
-          visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size(), isConstructor);
+          visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size(), constructorInfo);
       }
       printer->closeBrackets(sizes.size());
   }

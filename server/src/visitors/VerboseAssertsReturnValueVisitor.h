@@ -28,14 +28,14 @@ namespace visitor {
                             const tests::AbstractValueView *view,
                             const string &access,
                             int depth,
-                            bool isConstructor = false) override;
+                            tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
         void visitArray(const types::Type &type,
                         const string &name,
                         const tests::AbstractValueView *view,
                         const string &access,
                         size_t size,
                         int depth,
-                        bool isConstructor = false) override;
+                        tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
     };
 }
 

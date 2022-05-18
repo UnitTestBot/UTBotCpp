@@ -57,7 +57,7 @@ namespace visitor {
                                              const string &access,
                                              size_t size,
                                              int depth,
-                                             bool isConstructor) {
+                                             tests::Tests::ConstructorInfo constructorInfo) {
         if (needDeclaration) {
             printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(), parameterAlignment);
         } else {
@@ -89,7 +89,7 @@ namespace visitor {
                                               const tests::AbstractValueView *view,
                                               const string &access,
                                               int depth,
-                                              bool isConstructor) {
+                                              tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
             auto value = view->getEntryValue();
             if (needDeclaration) {
@@ -106,7 +106,7 @@ namespace visitor {
                                              const tests::AbstractValueView *view,
                                              const string &access,
                                              int depth,
-                                             bool isConstructor) {
+                                             tests::Tests::ConstructorInfo constructorInfo) {
         auto value = view->getEntryValue();
         if (depth == 0) {
             if (needDeclaration) {
@@ -123,7 +123,7 @@ namespace visitor {
                                                  const tests::AbstractValueView *view,
                                                  const string &access,
                                                  int depth,
-                                                 bool isConstructor) {
+                                                 tests::Tests::ConstructorInfo constructorInfo) {
         const auto typeName = types::TypesHandler::cBoolToCpp(type.usedType());
         auto value = view->getEntryValue();
         if (depth == 0) {

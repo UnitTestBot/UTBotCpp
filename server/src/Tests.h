@@ -403,6 +403,11 @@ namespace tests {
             bool isInline;
         };
 
+        struct ConstructorInfo {
+            bool isConstructor = false;
+            bool isMoveConstructor = false;
+        };
+
         struct MethodDescription {
             std::optional<MethodParam> classObj;
             std::string name;
@@ -425,7 +430,8 @@ namespace tests {
             vector<MethodTestCase> testCases;
             typedef std::unordered_map<string, vector<MethodTestCase>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
-            bool isConstructor = false;
+
+            ConstructorInfo constructorInfo{};
 
             bool operator==(const MethodDescription &other) const;
 

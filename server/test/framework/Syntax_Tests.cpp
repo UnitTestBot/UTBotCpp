@@ -2475,7 +2475,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Default_constructor) {
-        auto [testGen, status] = createTestForFunction(constructors_cpp, 53);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 59);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -2483,7 +2483,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Constructor_with_parameters) {
-        auto [testGen, status] = createTestForFunction(contsructors_cpp, 90);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -2499,7 +2499,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Move_constructor) {
-        auto [testGen, status] = createTestForFunction(constructors_cpp, 60);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 67);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
