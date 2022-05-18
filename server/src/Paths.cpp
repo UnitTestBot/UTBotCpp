@@ -281,17 +281,50 @@ namespace Paths {
     static const std::string MAKEFILE_EXTENSION = ".mk";
     static const std::string TEST_SUFFIX = "_test";
     static const std::string STUB_SUFFIX = "_stub";
+    static const std::string DOT_SEP = "_dot_";
+    static const char dot = '.';
 
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
         return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath) /
                sourcePathToTestName(sourceFilePath);
     }
+
+    static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
+                                                             const std::string &newExt) {
+        std::string extensionAsSuffix = path.extension().string();
+        if (!extensionAsSuffix.empty()) {
+            std::string fnWithNewExt =
+                path.stem().string() + DOT_SEP + extensionAsSuffix.substr(1) + newExt;
+            return path.parent_path() / fnWithNewExt;
+        }
+        return replaceExtension(path, newExt);
+    }
+
+    static inline fs::path restoreExtensionFromSuffix(const fs::path &path,
+                                                      const std::string &defaultExt) {
+        std::string fnWithoutExt = path.stem();
+        fs::path fnWithExt;
+        std::size_t posEncodedExtension = fnWithoutExt.rfind(DOT_SEP);
+        if (posEncodedExtension == std::string::npos) {
+            // In `sample_class_test.cpp` the `class` is not an extension
+            fnWithExt = fnWithoutExt + defaultExt;
+        }
+        else {
+            // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
+            fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
+                        + dot
+                        + fnWithoutExt.substr(posEncodedExtension + DOT_SEP.length());
+        }
+        return path.parent_path() / fs::path(fnWithExt);
+    }
+
     fs::path sourcePathToTestName(const fs::path &source) {
-        return replaceExtension(addSuffix(source, TEST_SUFFIX), ".cpp").filename();
+        return addSuffix(addOrigExtensionAsSuffixAndAddNew(source, ".cpp"),
+                         TEST_SUFFIX).filename();
     }
     fs::path testPathToSourceName(const fs::path &testFilePath) {
-        return replaceExtension(removeSuffix(testFilePath, TEST_SUFFIX), ".c").filename();
+        return restoreExtensionFromSuffix(removeSuffix(testFilePath, TEST_SUFFIX), ".c").filename();
     }
     fs::path sourcePathToStubName(const fs::path &source) {
         return addSuffix(source, STUB_SUFFIX).filename();

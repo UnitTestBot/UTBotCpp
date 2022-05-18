@@ -60,12 +60,18 @@ fs::path BaseTest::getTestDirectory() {
 
 fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const string &fileName) {
     return getTestDirectory() /
-           (Paths::addExtension(Paths::addTestSuffix(Paths::removeExtension(fileName)), ".cpp"));
+           (Paths::addExtension(
+               Paths::addTestSuffix(
+                   Paths::addSuffix(Paths::removeExtension(fileName), "_dot_c")),
+               ".cpp"));
 }
 
 fs::path BaseTest::getPathToGeneratedTestHeaderFileByTestedFile(const string &fileName) {
     return getTestDirectory() /
-           (Paths::addExtension(Paths::addTestSuffix(Paths::removeExtension(fileName)), ".h"));
+           (Paths::addExtension(
+               Paths::addTestSuffix(
+                   Paths::addSuffix(Paths::removeExtension(fileName), "_dot_c")),
+               ".h"));
 }
 
 fs::path BaseTest::getStubsDirectory() {
