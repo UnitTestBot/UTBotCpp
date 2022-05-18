@@ -15,6 +15,7 @@
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/SanitizerUtils.h"
+#include "sarif/Sarif.h"
 
 #include "loguru.h"
 
@@ -304,6 +305,7 @@ void KleeGenerator::parseKTestsToFinalCode(
         KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag,
                                      lineInfo);
     }
+    sarif::Sarif fileSarif(tests);
     printer::TestsPrinter testsPrinter(&typesHandler, Paths::getSourceLanguage(tests.sourceFilePath));
     for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
         const string &methodName = it.key();
@@ -322,13 +324,17 @@ void KleeGenerator::parseKTestsToFinalCode(
         auto predicate =
             lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
         testsPrinter.genCode(methodDescription, predicate, verbose);
-
     }
 
     printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath)).print(tests.testHeaderFilePath, tests.sourceFilePath,
                                    tests.headerCode);
     testsPrinter.joinToFinalCode(tests, tests.testHeaderFilePath);
     LOG_S(DEBUG) << "Generated code for " << tests.methods.size() << " tests";
+    for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
+        Tests::MethodDescription &methodDescription = it.value();
+        fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
+    }
+    fileSarif.writeSarifFile(projectContext.projectPath);
 }
 
 shared_ptr<BuildDatabase> KleeGenerator::getBuildDatabase() const {
