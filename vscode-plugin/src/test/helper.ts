@@ -136,7 +136,7 @@ export function checkTestFilesGenerated(dirPath: string, srcFiles: string[]): bo
     walk(testDirPath).forEach(file => {
         const testFileName = path.parse(file).name;
         if (testFileName.search(/_stub$/) < 0) {
-            const fileName = checkForFirstMatch(testFileName, [/_test_error$/, /_test$/]);
+            const fileName = checkForFirstMatch(testFileName, [/_dot_c_test_error$/, /_dot_c_test$/]);
             if (!srcFilesUsedMap.has(fileName)) {
                 TestLogger.getLogger().error('Unable to find a corresponding source file for test: [%s]', testFileName);
                 checked = false;
