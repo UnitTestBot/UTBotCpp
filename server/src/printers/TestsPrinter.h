@@ -107,6 +107,10 @@ namespace printer {
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo);
 
+        void printJsonPathFromKlee(const Tests::MethodTestCase &testCase);
+
+        void printFinalCodeAndAlterJson(Tests &tests);
+
         static std::vector<string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
                              const Tests::MethodTestCase &testCase);

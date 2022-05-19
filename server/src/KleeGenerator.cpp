@@ -15,6 +15,7 @@
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/SanitizerUtils.h"
+#include "sarif/FileSarif.h"
 
 #include "loguru.h"
 
@@ -322,7 +323,6 @@ void KleeGenerator::parseKTestsToFinalCode(
         auto predicate =
             lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
         testsPrinter.genCode(methodDescription, predicate, verbose);
-
     }
 
     printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath)).print(tests.testHeaderFilePath, tests.sourceFilePath,

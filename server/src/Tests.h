@@ -54,8 +54,15 @@ namespace tests {
         };
         vector<UTBotKTestObject> objects;
         Status status;
+        std::optional<fs::path> errorDescriptionInJson;
 
         UTBotKTest(const std::vector<UTBotKTestObject> &objects, const Status &status) : objects(objects), status(status) {}
+        UTBotKTest(const std::vector<UTBotKTestObject> &objects, const Status &status, fs::path errorJson) :
+            objects(objects), status(status), errorDescriptionInJson(std::move(errorJson)) {
+            if (!exists(errorDescriptionInJson.value())) {
+                LOG_S(ERROR) << "Sarif file not found";
+            }
+        }
     };
     using UTBotKTestList = vector<UTBotKTest>;
 
@@ -383,6 +390,7 @@ namespace tests {
             shared_ptr<AbstractValueView> returnValueView;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            std::optional<fs::path> errorDescriptionInJson;
 
             bool isError() const;
         };

@@ -12,6 +12,7 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
+#include "sarif/FileSarif.h"
 
 #include "loguru.h"
 
@@ -89,6 +90,18 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
                                         std::move(writeFunctor));
+    for (auto it = testsMap.begin(); it != testsMap.end(); it++) {
+        tests::Tests &tests = it.value();
+        sarif::FileSarif fileSarif(tests);
+        for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
+            Tests::MethodDescription &methodDescription = it.value();
+            fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
+        }
+        fileSarif.writeSarifFile(projectContext.projectPath);
+    }
+    sarif::ProjectSarif projectSarif;
+    projectSarif.joinSarifFiles(projectContext.projectPath);
+    projectSarif.writeSarifFile(projectContext.projectPath);
 }
 
 fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {
@@ -186,8 +199,14 @@ void KleeRunner::processBatch(MethodKtests &ktestChunk,
                             kTestObjects, [](const ConcretizedObject &kTestObject) {
                                 return UTBotKTestObject{kTestObject};
                             });
-
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                    fs::path tmp = path.filename();
+                    if (status == tests::UTBotKTest::Status::FAILED) {
+                        fs::path sarifOutput = path.parent_path() / fs::path(sarif::FileSarif::sarif_klee_prefix +
+                                                                             path.filename_without_extension() + sarif::FileSarif::sarif_klee_extension);
+                        ktestChunk[testMethod].emplace_back(objects, status, sarifOutput);
+                    } else {
+                        ktestChunk[testMethod].emplace_back(objects, status);
+                    }
                 }
             }
         }

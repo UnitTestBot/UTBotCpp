@@ -81,6 +81,7 @@ file(GLOB ALL_SOURCES
         "${PROJECT_SOURCE_DIR}/src/fetchers/*"
         "${PROJECT_SOURCE_DIR}/src/printers/*"
         "${PROJECT_SOURCE_DIR}/src/streams/*"
+        "${PROJECT_SOURCE_DIR}/src/sarif/*"
         "${PROJECT_SOURCE_DIR}/src/streams/coverage/*"
         "${PROJECT_SOURCE_DIR}/src/streams/stubs/*"
         "${PROJECT_SOURCE_DIR}/src/streams/tests/*"
@@ -120,7 +121,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 find_package(run_klee REQUIRED)
 
-add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
+add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES} src/sarif/ProjectSarif.cpp src/sarif/ProjectSarif.h)
 target_include_directories(UnitTestBotLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         resources
