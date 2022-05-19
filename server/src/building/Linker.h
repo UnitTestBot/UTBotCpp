@@ -33,8 +33,6 @@ public:
 
     void prepareArtifacts();
 
-    void writeMakefiles();
-
     std::vector<tests::TestMethod> getTestMethods();
 
     BuildResult
@@ -60,8 +58,6 @@ private:
     CollectionUtils::FileSet testedFiles;
     CollectionUtils::MapFileTo<fs::path> bitcodeFileName;
     CollectionUtils::FileSet brokenLinkFiles;
-
-    std::vector<printer::TestMakefilesContent> linkMakefiles;
 
     IRParser irParser;
 
