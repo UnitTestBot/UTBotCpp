@@ -305,7 +305,6 @@ void KleeGenerator::parseKTestsToFinalCode(
         KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag,
                                      lineInfo);
     }
-    sarif::FileSarif fileSarif(tests);
     printer::TestsPrinter testsPrinter(&typesHandler, Paths::getSourceLanguage(tests.sourceFilePath));
     for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
         const string &methodName = it.key();
@@ -330,11 +329,6 @@ void KleeGenerator::parseKTestsToFinalCode(
                                    tests.headerCode);
     testsPrinter.joinToFinalCode(tests, tests.testHeaderFilePath);
     LOG_S(DEBUG) << "Generated code for " << tests.methods.size() << " tests";
-    for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
-        Tests::MethodDescription &methodDescription = it.value();
-        fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
-    }
-    fileSarif.writeSarifFile(projectContext.projectPath);
 }
 
 shared_ptr<BuildDatabase> KleeGenerator::getBuildDatabase() const {
