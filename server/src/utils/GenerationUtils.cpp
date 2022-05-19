@@ -60,15 +60,15 @@ std::optional<fs::path> GenerationUtils::findTarget(const BaseTestGen &baseTestG
         LOG_S(INFO) << "Target was not chosen. Using UTBot: Auto target instead.";
         return GrpcUtils::UTBOT_AUTO_TARGET_PATH;
     }
-    auto rootTargets = baseTestGen.buildDatabase->getRootTargets();
-    auto candidates = CollectionUtils::filterOut(rootTargets, [&name](auto const &rootTarget) {
-        fs::path output = rootTarget->getOutput();
+    auto allTargets = baseTestGen.buildDatabase->getAllTargets();
+    auto candidates = CollectionUtils::filterOut(allTargets, [&name](auto const &target) {
+        fs::path output = target->getOutput();
         return !(output == name || output.stem() == name || output.stem() == "lib" + name);
     });
     if (candidates.empty()) {
         LOG_S(WARNING) << "Couldn't find appropriate target. List of available targets:\n";
-        for (const auto &rootTarget : rootTargets) {
-            LOG_S(WARNING) << rootTarget->getOutput() << "\n";
+        for (const auto &target : allTargets) {
+            LOG_S(WARNING) << target->getOutput() << "\n";
         }
         LOG_S(WARNING) << "\n";
         return std::nullopt;
