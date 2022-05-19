@@ -1,6 +1,5 @@
 package com.huawei.utbot.cpp
 
-import org.tinylog.kotlin.Logger
 import java.nio.file.Path
 
 abstract class CppCompiler {
@@ -8,18 +7,19 @@ abstract class CppCompiler {
 
     protected val bearPath = "/utbot_distr/bear/bin/bear"
     protected val cmakePath = "/utbot_distr/install/bin/cmake"
+    private val logger = com.intellij.openapi.diagnostic.Logger.getInstance(this.javaClass)
 
     abstract fun produceBuildCommand(buildDirName: String): String
     fun buildProject(projectPath: Path, buildDirName: String) {
         val buildCommand = produceBuildCommand(buildDirName)
-        Logger.trace("Building the project with compiler: $name, and build directory name: $buildDirName")
-        Logger.trace("BUILD COMMAND: $buildCommand")
+        logger.trace("Building the project with compiler: $name, and build directory name: $buildDirName")
+        logger.trace("BUILD COMMAND: $buildCommand")
         ProcessBuilder("bash", "-c", buildCommand)
             .directory(projectPath.toFile())
             .start()
             .waitFor()
 
-        Logger.trace("BUILDING FINISHED!")
+        logger.trace("BUILDING FINISHED!")
         projectPath.resolve(buildDirName).assertFileOrDirExists("Build directory after building project does not exist!")
     }
 }

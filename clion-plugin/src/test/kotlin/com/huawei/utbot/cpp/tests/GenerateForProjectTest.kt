@@ -8,12 +8,11 @@ import com.huawei.utbot.cpp.actions.GenerateForProjectAction
 import com.huawei.utbot.cpp.assertFileOrDirExists
 import com.huawei.utbot.cpp.assertTestFilesExist
 import org.junit.jupiter.api.Test
-import org.tinylog.kotlin.Logger
 
 
 class GenerateForProjectTest : BaseGenerationTestCase() {
     private fun doTest(compiler: CppCompiler, isVerbose: Boolean, targetNames: List<String> = emptyList()) {
-        Logger.info { "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}"}
+        logger.info ( "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}")
 
         generatorSettings.verbose = isVerbose
         compiler.buildProject(projectPath, buildDirName)

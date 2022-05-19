@@ -1,6 +1,7 @@
 package com.huawei.utbot.cpp.ui.userLog
 
-import com.huawei.utbot.cpp.client.logger.setLoggingLevel
+import com.huawei.utbot.cpp.client.logger.Level
+import com.huawei.utbot.cpp.utils.logger
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.Disposable
@@ -17,7 +18,6 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
 import javax.swing.JPanel
-import org.tinylog.Level
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridLayout
@@ -69,9 +69,7 @@ class OutputProvider(val project: Project) : Disposable {
                     ComboBox(Level.values().map { it.name }.toTypedArray()).apply {
                         addItemListener { itemEvent ->
                             if (itemEvent.stateChange == ItemEvent.SELECTED) {
-                                setLoggingLevel(
-                                    Level.values().find { it.name == (itemEvent.item as String) }!!
-                                )
+                                project.logger.level = Level.values().find { it.name == (itemEvent.item as String) }!!
                             }
                         }
                     },

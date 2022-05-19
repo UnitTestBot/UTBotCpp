@@ -1,12 +1,12 @@
 package com.huawei.utbot.cpp.client.handlers
 
 import com.huawei.utbot.cpp.utils.createFileAndMakeDirs
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.refreshAndFindIOFile
 import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Path
@@ -52,7 +52,7 @@ class TestsStreamHandler(
             if (isGeneratedFileTestSourceFile(filePath))
                 infoMessage += " with ${sourceCode.regressionMethodsNumber} tests in regression suite" +
                         " and ${sourceCode.errorMethodsNumber} tests in error suite"
-            Logger.info { "$infoMessage: $filePath" }
+            project.logger.info { "$infoMessage: $filePath" }
 
             refreshAndFindIOFile(filePath)
         }

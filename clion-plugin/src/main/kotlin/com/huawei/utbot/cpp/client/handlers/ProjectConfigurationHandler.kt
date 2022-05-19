@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.utils.getClient
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.huawei.utbot.cpp.utils.notifyUnknownResponse
@@ -13,7 +14,6 @@ import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.Util
 
@@ -25,7 +25,7 @@ abstract class ProjectConfigResponseHandler(
 ) : StreamHandlerWithProgress<Testgen.ProjectConfigResponse>(project, grpcStream, progressName, cancellationJob) {
     override fun onLastResponse(response: Testgen.ProjectConfigResponse?) {
         if (response == null) {
-            Logger.error("No responses from server!")
+            project.logger.error { "No responses from server!" }
             return
         }
         handle(response)

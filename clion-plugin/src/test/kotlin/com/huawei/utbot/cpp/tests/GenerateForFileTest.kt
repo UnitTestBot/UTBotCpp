@@ -6,11 +6,10 @@ import com.huawei.utbot.cpp.CppCompiler
 import com.huawei.utbot.cpp.assertAllFilesNotEmptyRecursively
 import com.huawei.utbot.cpp.assertFileOrDirExists
 import org.junit.jupiter.api.Test
-import org.tinylog.kotlin.Logger
 
 class GenerateForFileTest : BaseGenerationTestCase() {
     fun doTest(relativeFilePath: String, compiler: CppCompiler, isVerboseMode: Boolean) {
-        Logger.info { "Testing generate for file with file: $relativeFilePath, compiler: ${compiler.name}, verboseMode: $isVerboseMode" }
+        logger.info("Testing generate for file with file: $relativeFilePath, compiler: ${compiler.name}, verboseMode: $isVerboseMode")
         compiler.buildProject(projectPath, buildDirName)
         generatorSettings.verbose = isVerboseMode
 

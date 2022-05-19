@@ -123,6 +123,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
         }
 
         FunctionReturnTypeRequest(
+            e.project!!,
             getFunctionRequestMessage(e)
         ) { functionReturnType ->
             val type = functionReturnType.validationType

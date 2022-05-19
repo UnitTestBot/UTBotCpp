@@ -9,7 +9,6 @@ import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.layout.PropertyBinding
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
-import kotlin.reflect.KMutableProperty0
 
 fun JTextField.validateOnInput(parentDisposable: Disposable, validator: ()->ValidationInfo?) {
     ComponentValidator(parentDisposable).withValidator(validator).installOn(this)

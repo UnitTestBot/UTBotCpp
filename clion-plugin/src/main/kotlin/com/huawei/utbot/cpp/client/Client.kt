@@ -6,6 +6,7 @@ import com.huawei.utbot.cpp.client.requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.models.LoggingChannel
+import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.intellij.openapi.Disposable
 
 import testsgen.Testgen
@@ -21,6 +22,7 @@ import kotlinx.coroutines.launch
 
 import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.utbotSettings
 import io.grpc.Status
 import kotlinx.coroutines.CoroutineExceptionHandler
@@ -29,7 +31,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
-import org.tinylog.kotlin.Logger
 import kotlinx.coroutines.Job
 
 /**
@@ -47,6 +48,7 @@ class Client(
     private val messageBus = project.messageBus
     private var newClient = true
     private val settings = project.utbotSettings
+    private val logger = project.logger
 
     /*
      * need to provide handler explicitly, otherwise the exception is thrown:
@@ -68,7 +70,7 @@ class Client(
     val servicesCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     init {
-        Logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
+        logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
         startPeriodicHeartBeat()
     }
 
@@ -95,12 +97,12 @@ class Client(
 
     fun doHandShake() {
         requestsCS.launch {
-            Logger.info("sending HandShake request!")
+            // Logger.info("sending HandShake request!")
             try {
                 stub.handshake(getDummyRequest())
-                Logger.info("Handshake successful!")
+                logger.info { "Handshake successful!" }
             } catch (e: Exception) {
-                Logger.warn("HandShake failed with the following error: ${e.message}")
+                logger.warn { "HandShake failed with the following error: ${e.message}" }
             }
         }
     }
@@ -116,7 +118,7 @@ class Client(
     private fun registerClient() {
         requestsCS.launch {
             try {
-                Logger.info("sending REGISTER CLIENT request, clientID == $clientId")
+                logger.info { "Sending REGISTER CLIENT request, clientID == $clientId" }
                 stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientId).build())
             } catch (e: io.grpc.StatusException) {
                 handleGRPCStatusException(e, "Register client request failed with grpc exception!")
@@ -125,17 +127,19 @@ class Client(
     }
 
     private fun startPeriodicHeartBeat() {
-        Logger.info("The heartbeat started with interval: $HEARTBEAT_INTERVAL ms")
+        logger.info{ "The heartbeat started with interval: $HEARTBEAT_INTERVAL ms" }
         servicesCS.launch(CoroutineName("periodicHeartBeat")) {
             while (isActive) {
                 heartBeatOnce()
                 delay(HEARTBEAT_INTERVAL)
             }
-            Logger.info("Stopped heartBeating the server!")
+            logger.info { "Stopped heartBeating the server!" }
         }
     }
 
     private suspend fun heartBeatOnce() {
+        if (project.isDisposed)
+            return
         val oldStatus = connectionStatus
         try {
             val response = stub.heartbeat(Testgen.DummyRequest.newBuilder().build())
@@ -148,7 +152,7 @@ class Client(
             }
 
             if (oldStatus != ConnectionStatus.CONNECTED) {
-                Logger.info("Successfully connected to server!")
+                logger.info { "Successfully connected to server!" }
                 registerClient()
                 configureProject()
             }
@@ -176,23 +180,22 @@ class Client(
     }
 
     private fun handleGRPCStatusException(e: io.grpc.StatusException, message: String) {
-        Logger.error(message)
-        Logger.error(e.message)
+        logger.error { "$message \n${e.message}" }
         when (e.status) {
-            Status.UNAVAILABLE -> Logger.error("Server is unavailable: possibly it is shut down.")
-            Status.UNKNOWN -> Logger.error("Server threw an exception.")
+            Status.UNAVAILABLE -> logger.error { "Server is unavailable: possibly it is shut down." }
+            Status.UNKNOWN -> logger.error { "Server threw an exception." }
         }
     }
 
     override fun dispose() {
-        Logger.trace("Disposing client!")
+        logger.trace { "Disposing client!" }
         // when project is closed, cancel all running coroutines
         // cancelAllRequestsAndWaitForCancellation()
         requestsCS.cancel()
         servicesCS.cancel()
         // release resources associated with grpc
         close()
-        Logger.trace("Finished disposing client!")
+        logger.trace { "Finished disposing client!" }
     }
 
     fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
@@ -211,8 +214,8 @@ class Client(
                 while (requestsCS.hasChildren() || servicesCS.hasChildren()) {
                     requestsCS.cancel()
                     servicesCS.cancel()
-                    Logger.trace { "There are unfinished requests:\n${requestsCS.children}\n${servicesCS.children}" }
-                    Logger.trace("Waiting $DELAY_TIME ms for them to cancel!")
+                    logger.trace { "There are unfinished requests:\n${requestsCS.children}\n${servicesCS.children}" }
+                    logger.trace { "Waiting $DELAY_TIME ms for them to cancel!" }
                     delay(DELAY_TIME)
                 }
             }

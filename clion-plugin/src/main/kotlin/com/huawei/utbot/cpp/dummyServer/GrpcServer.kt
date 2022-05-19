@@ -49,9 +49,8 @@ class Server(private val port: Int) {
     private inner class TestGenService : TestsGenServiceGrpcKt.TestsGenServiceCoroutineImplBase() {
         private val messages: MutableList<String> = mutableListOf()
 
-        fun log(function: KCallable<*>, message: String) {
-            Logger.info("[${function.name}] $message")
-        }
+        // todo
+        fun log(function: KCallable<*>, message: String) {}
 
         fun logStarted(function: KCallable<*>) = log(function, "started")
         fun logFinished(function: KCallable<*>) = log(function, "finished")

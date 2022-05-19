@@ -9,9 +9,9 @@ import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class CheckProjectConfigurationRequest(
-    val project: Project,
+    project: Project,
     request: Testgen.ProjectConfigRequest,
-): BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request) {
+): BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request, project) {
     override val logMessage: String = "Sending request to check project configuration."
 
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> {

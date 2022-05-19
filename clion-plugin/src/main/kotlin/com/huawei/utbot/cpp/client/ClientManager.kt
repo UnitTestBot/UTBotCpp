@@ -5,6 +5,7 @@ import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.models.GTestChannel
 import com.huawei.utbot.cpp.models.LoggingChannel
 import com.huawei.utbot.cpp.models.ServerLogChannel
+import com.huawei.utbot.cpp.utils.logger
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -26,7 +27,7 @@ class ClientManager(val project: Project) {
         with(project.messageBus.connect()) {
             subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener { newSettings ->
                 if (newSettings.port != client.port || newSettings.serverName != client.serverName) {
-                    Logger.trace("Connection settings changed. Setting up new client.")
+                    project.logger.trace{ "Connection settings changed. Setting up new client." }
                     client.dispose()
                     client = Client(project, clientId, loggingChannels)
                 }

@@ -8,12 +8,11 @@ import com.huawei.utbot.cpp.assertAllFilesNotEmptyRecursively
 import com.huawei.utbot.cpp.assertFileOrDirExists
 import com.intellij.openapi.editor.Editor
 import org.junit.jupiter.api.Test
-import org.tinylog.kotlin.Logger
 
 class GenerateForLineTest: BaseGenerationTestCase() {
 
     fun doTest(lineNumber: Int, targetName: String = "liblib.a", compiler: CppCompiler = Clang, isVerbose: Boolean = true) {
-        Logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
+        logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
         compiler.buildProject(projectPath, buildDirName)
         setTarget(targetName)
         generatorSettings.verbose = isVerbose

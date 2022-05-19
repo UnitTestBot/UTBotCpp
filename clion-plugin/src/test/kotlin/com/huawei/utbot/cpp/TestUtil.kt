@@ -4,13 +4,9 @@ import com.huawei.utbot.cpp.utils.visitAllFiles
 import com.intellij.util.io.exists
 import com.intellij.util.io.readText
 import kotlin.io.path.name
-import org.tinylog.kotlin.Logger
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.attribute.BasicFileAttributes
 
+private val logger = com.intellij.openapi.diagnostic.Logger.getInstance("TestUtil")
 
 fun Path.assertAllFilesNotEmptyRecursively() {
     val emptyFiles = mutableListOf<Path>()
@@ -23,8 +19,8 @@ fun Path.assertAllFilesNotEmptyRecursively() {
 }
 
 fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
-    Logger.trace("Scanning folder $this for tests.")
-    Logger.trace("Source files are: ${sourceFileNames.joinToString()}")
+    logger.trace("Scanning folder $this for tests.")
+    logger.trace("Source files are: ${sourceFileNames.joinToString()}")
     var checked = true
     val visitedFile = sourceFileNames.associateWith { false }.toMutableMap()
 
@@ -32,7 +28,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
         if (!testFile.isStubFile()) {
             val sourceFileName = testFile.name.removeTestSuffixes()
             if (sourceFileName !in visitedFile) {
-                Logger.error { "Unable to find a corresponding source file for test: ${testFile.name}" }
+                logger.error { "Unable to find a corresponding source file for test: ${testFile.name}" }
                 checked = false
             } else {
                 visitedFile[sourceFileName] = true
@@ -42,7 +38,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
 
     val notVisitedFileNames = visitedFile.filterValues { visited -> !visited }.values
     if (notVisitedFileNames.isNotEmpty()) {
-        Logger.error { "Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}" }
+        logger.error { "Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}" }
         checked = false
     }
 
@@ -54,7 +50,7 @@ fun Path.isStubFile() = name.contains("""_stub\.(c|cpp|h)$""".toRegex())
 
 fun String.removeTestSuffixes(): String {
     val result = this.replace("""(_test|_test_error)\.(c|cpp|h)$""".toRegex(), "")
-    Logger.trace("Converting $this to $result")
+    logger.trace("Converting $this to $result")
     return result
 }
 

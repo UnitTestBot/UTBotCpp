@@ -10,6 +10,7 @@ import com.huawei.utbot.cpp.models.UTBotTarget
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.invokeOnEdt
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.relativize
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -21,6 +22,7 @@ class UTBotTargetsController(val project: Project) {
     private val listModel = CollectionListModel(mutableListOf<UTBotTarget>(UTBotTarget.autoTarget))
     private val client: Client
      get() = project.getClient()
+    private val logger = project.logger
 
     val targets: List<UTBotTarget>
         get() = listModel.toList()
@@ -33,11 +35,12 @@ class UTBotTargetsController(val project: Project) {
 
     fun requestTargetsFromServer() {
         if (!client.isServerAvailable()) {
-            Logger.error("Could not request targets from server: server is unavailable!")
+            logger.error { "Could not request targets from server: server is unavailable!" }
             return
         }
-        Logger.trace("Requesting project targets from server!")
+        logger.trace { "Requesting project targets from server!" }
         ProjectTargetsRequest(
+            project,
             getProjectTargetsRequest(project),
         ) { targetsResponse ->
             invokeOnEdt {

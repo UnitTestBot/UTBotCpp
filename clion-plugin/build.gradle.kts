@@ -65,13 +65,6 @@ dependencies {
     compileOnly("javax.annotation:javax.annotation-api:1.3.2")
     implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
 
-    // tinylog for showing log messages to the user
-    implementation("org.tinylog:tinylog-api-kotlin:2.5.0-M1.1")
-    implementation("org.tinylog:tinylog-impl:2.5.0-M1.1")
-
-    // koin for dependency injection
-    implementation("io.insert-koin:koin-core:3.1.5")
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
 
     // testing with JUnit 5

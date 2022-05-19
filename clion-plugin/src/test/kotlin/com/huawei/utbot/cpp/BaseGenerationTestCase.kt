@@ -6,6 +6,7 @@ import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.targetsToolWindow.UTBotTargetsController
 import com.huawei.utbot.cpp.utils.getClient
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
@@ -18,8 +19,6 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
-import org.koin.core.context.stopKoin
-import org.tinylog.kotlin.Logger
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -37,7 +36,7 @@ abstract class BaseGenerationTestCase {
      * This class solves the problem, by using [testsDirectory]
      * instead of some generated temp directory.
      */
-    class TestFixtureProxy(val testsDirectory: Path): TempDirTestFixtureImpl() {
+    class TestFixtureProxy(val testsDirectory: Path) : TempDirTestFixtureImpl() {
         override fun doCreateTempDirectory(): Path {
             return testsDirectory
         }
@@ -47,12 +46,11 @@ abstract class BaseGenerationTestCase {
     }
 
     init {
-        Logger.trace("Init block of base test case is called!!!")
-        stopKoin()
         Client.IS_TEST_MODE = true
     }
 
-    val projectPath: Path = Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
+    val projectPath: Path =
+        Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     val testsDirectoryPath: Path = projectPath.resolve("cl-plugin-test-tests")
     val buildDirName = "build"
     val buildDirectoryPath: Path
@@ -66,6 +64,7 @@ abstract class BaseGenerationTestCase {
         get() = project.service()
     val client: Client
         get() = project.getClient()
+    val logger = com.intellij.openapi.diagnostic.Logger.getInstance(this.javaClass)
     val targetsController = UTBotTargetsController(project)
 
     init {
@@ -74,13 +73,16 @@ abstract class BaseGenerationTestCase {
     }
 
     private fun createFixture(): CodeInsightTestFixture {
-        Logger.trace("Creating fixture")
+        logger.trace { "Creating fixture" }
         val fixture = IdeaTestFixtureFactory.getFixtureFactory().let {
-            it.createCodeInsightFixture(it.createFixtureBuilder(projectPath.name, projectPath, false).fixture, TestFixtureProxy(projectPath))
+            it.createCodeInsightFixture(
+                it.createFixtureBuilder(projectPath.name, projectPath, false).fixture,
+                TestFixtureProxy(projectPath)
+            )
         }
         fixture.setUp()
         fixture.testDataPath = projectPath.toString()
-        Logger.trace("Finished creating fixture")
+        logger.trace { "Finished creating fixture" }
         return fixture
     }
 
@@ -97,24 +99,23 @@ abstract class BaseGenerationTestCase {
      */
     fun waitForRequestsToFinish() = runBlocking {
         // requests to server are asynchronous, need to wait for server to respond
-        Logger.trace("Waiting for requests to finish.")
+        logger.trace { "Waiting for requests to finish." }
         client.waitForServerRequestsToFinish()
-        Logger.trace("Finished waiting!")
+        logger.trace { "Finished waiting!" }
     }
 
     @AfterEach
     fun tearDown() {
-        Logger.trace("tearDown is called!")
+        logger.trace { "tearDown is called!" }
         buildDirectoryPath.delete(recursively = true)
         testsDirectoryPath.delete(recursively = true)
     }
 
     @AfterAll
     fun tearDownAll() {
-        Logger.trace("tearDownAll of BaseGenerationTest is called")
+        logger.trace { "tearDownAll of BaseGenerationTest is called" }
         waitForRequestsToFinish()
         fixture.tearDown()
-        stopKoin()
-        Logger.trace("tearDownAll of BaseGenerationTest has finished!")
+        logger.trace { "tearDownAll of BaseGenerationTest has finished!" }
     }
 }

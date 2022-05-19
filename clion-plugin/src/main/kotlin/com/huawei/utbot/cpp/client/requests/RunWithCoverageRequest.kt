@@ -9,9 +9,9 @@ import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class RunWithCoverageRequest(
-    val project: Project,
+    project: Project,
     request: Testgen.CoverageAndResultsRequest
-): BaseRequest<Testgen.CoverageAndResultsRequest, Flow<Testgen.CoverageAndResultsResponse>>(request) {
+): BaseRequest<Testgen.CoverageAndResultsRequest, Flow<Testgen.CoverageAndResultsResponse>>(request, project) {
     override val logMessage: String = "Sending request to get tests RESULTS and COVERAGE."
 
     override suspend fun Flow<Testgen.CoverageAndResultsResponse>.handle(cancellationJob: Job?) {

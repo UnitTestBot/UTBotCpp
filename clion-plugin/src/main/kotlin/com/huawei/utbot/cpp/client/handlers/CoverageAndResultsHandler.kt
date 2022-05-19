@@ -4,6 +4,7 @@ import com.huawei.utbot.cpp.coverage.UTBotCoverageEngine
 import com.huawei.utbot.cpp.coverage.UTBotCoverageRunner
 import com.huawei.utbot.cpp.coverage.UTBotCoverageSuite
 import com.huawei.utbot.cpp.messaging.UTBotTestResultsReceivedListener
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.notifyError
 import com.intellij.coverage.CoverageDataManager
 import com.intellij.coverage.CoverageEngine
@@ -13,7 +14,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
-import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.Util
 
@@ -22,7 +22,7 @@ class CoverageAndResultsHandler(
     grpcStream: Flow<Testgen.CoverageAndResultsResponse>,
     progressName: String,
     cancellationJob: Job
-): StreamHandlerWithProgress<Testgen.CoverageAndResultsResponse>(project, grpcStream, progressName, cancellationJob) {
+) : StreamHandlerWithProgress<Testgen.CoverageAndResultsResponse>(project, grpcStream, progressName, cancellationJob) {
     override fun Testgen.CoverageAndResultsResponse.getProgress(): Util.Progress = progress
 
     override suspend fun handle() {
@@ -34,7 +34,7 @@ class CoverageAndResultsHandler(
 
     override fun onLastResponse(response: Testgen.CoverageAndResultsResponse?) {
         if (response == null) {
-            Logger.error("No responses from server!")
+            project.logger.error { "No responses from server!" }
             return
         }
         if (response.errorMessage.isNotEmpty()) {

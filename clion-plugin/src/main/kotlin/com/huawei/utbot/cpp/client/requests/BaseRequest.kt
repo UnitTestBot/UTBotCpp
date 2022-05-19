@@ -5,6 +5,7 @@ import com.huawei.utbot.cpp.client.Request
 import com.huawei.utbot.cpp.client.handlers.TestsStreamHandler
 import com.huawei.utbot.cpp.utils.getLongestCommonPathFromRoot
 import com.huawei.utbot.cpp.utils.isHeader
+import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
@@ -18,7 +19,7 @@ import java.nio.file.Path
  * Base class for requests.
  * It sends a request of type [X] and handles the response of type [Y].
  */
-abstract class BaseRequest<X, Y>(val request: X) : Request {
+abstract class BaseRequest<X, Y>(val request: X, val project: Project) : Request {
     abstract val logMessage: String
     override suspend fun execute(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub, cancellationJob: Job?) {
         logRequest()
@@ -30,8 +31,7 @@ abstract class BaseRequest<X, Y>(val request: X) : Request {
     abstract suspend fun Y.handle(cancellationJob: Job?)
 
     open fun logRequest() {
-        Logger.info(logMessage)
-        Logger.trace { "$request" }
+        project.logger.info { "$logMessage \n$request" }
     }
 }
 
@@ -39,9 +39,10 @@ abstract class BaseRequest<X, Y>(val request: X) : Request {
  * Base class for requests that handle a stream of [Testgen.TestsResponse].
  * @param progressName - a name of a progress that user will see, when this request will be executing.
  */
-abstract class BaseTestsRequest<R>(request: R, val project: Project, val progressName: String) :
-    BaseRequest<R, Flow<Testgen.TestsResponse>>(request) {
+abstract class BaseTestsRequest<R>(request: R, project: Project, val progressName: String) :
+    BaseRequest<R, Flow<Testgen.TestsResponse>>(request, project) {
     protected open val target: String = ""
+    val logger = project.logger
 
     override suspend fun Flow<Testgen.TestsResponse>.handle(cancellationJob: Job?) {
         if (cancellationJob?.isActive == true) {
@@ -58,6 +59,10 @@ abstract class BaseTestsRequest<R>(request: R, val project: Project, val progres
 
     open fun getFocusTarget(generatedTestFiles: List<Path>): Path? {
         return generatedTestFiles.filter { !isHeader(it.fileName.toString()) }.getLongestCommonPathFromRoot()
+    }
+
+    override fun logRequest() {
+        logger.info { "$logMessage \n$request" }
     }
 
     open fun notifySuccess(generatedTestFiles: List<Path>) {

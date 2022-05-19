@@ -5,6 +5,7 @@ import com.huawei.utbot.cpp.actions.utils.getLogChannelRequest
 import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.huawei.utbot.cpp.ui.userLog.UTBotConsole
 import com.huawei.utbot.cpp.utils.invokeOnEdt
+import com.huawei.utbot.cpp.utils.logger
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
@@ -20,10 +21,11 @@ interface LoggingChannel {
     suspend fun provide(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub)
 }
 
-abstract class BaseChannel: LoggingChannel {
+abstract class BaseChannel(val project: Project): LoggingChannel {
     abstract val name: String
     abstract val logLevel: String
     abstract val console: UTBotConsole
+    private val logger = project.logger
 
     abstract suspend fun close(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub)
     abstract suspend fun open(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub): Flow<Testgen.LogEntry>
@@ -39,15 +41,13 @@ abstract class BaseChannel: LoggingChannel {
     override suspend fun provide(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub) {
         try {
             close(stub)
-        } catch (e: io.grpc.StatusException) {
-            Logger.error("Exception when closing log channel: $name")
-            Logger.error(e)
+        } catch (cause: io.grpc.StatusException) {
+            logger.error{ "Exception when closing log channel: $name \n$cause" }
         }
 
         open(stub)
-            .catch { e ->
-                Logger.error("Exception in log channel: $name")
-                Logger.error(e)
+            .catch { cause ->
+                logger.error{ "Exception in log channel: $name \n$cause" }
             }
             .collect {
                 log(it)
@@ -55,7 +55,7 @@ abstract class BaseChannel: LoggingChannel {
     }
 }
 
-class GTestChannel(project: Project): BaseChannel() {
+class GTestChannel(project: Project): BaseChannel(project) {
     override val name: String = "GTest Log"
     override val logLevel: String = "TestLogLevel"
     override val console: UTBotConsole = project.service<OutputProvider>().gtestOutputChannel.outputConsole
@@ -69,7 +69,7 @@ class GTestChannel(project: Project): BaseChannel() {
     }
 }
 
-class ServerLogChannel(project: Project): BaseChannel() {
+class ServerLogChannel(project: Project): BaseChannel(project) {
     override val name: String = "Server Log"
     override val logLevel: String = "ServerLogLevel"
     override val console: UTBotConsole = project.service<OutputProvider>().serverOutputChannel.outputConsole
