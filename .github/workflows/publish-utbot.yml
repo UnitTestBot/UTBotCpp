@@ -1,6 +1,7 @@
 name: Publish UTBot as an archive
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
 
