@@ -25,6 +25,11 @@ namespace sarif {
                 json testCaseJson = JsonUtils::getJsonFromFile(jsonPath);
                 deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
                                               projectPath);
+                string errorLocationStr = getUriFromLocation(testCaseJson.at("locations").at(0));
+                if (!fs::exists(projectPath / errorLocationStr)) {
+                    LOG_S(ERROR) << "Found error location not in project: " << errorLocationStr;
+                    continue;
+                }
                 addResultToSarif(testCaseJson);
             }
         }
@@ -35,7 +40,11 @@ namespace sarif {
 
 
     json &FileSarif::getUriFromLocation(json &location) {
-        return location.at("location").at("physicalLocation").at("artifactLocation").at("uri");
+        if (location.contains("location")) {
+            return location.at("location").at("physicalLocation").at("artifactLocation").at("uri");
+        } else {
+            return location.at("physicalLocation").at("artifactLocation").at("uri");
+        }
     }
 
     void FileSarif::deleteExternalFilesFromResult(json &result, const fs::path &projectRoot) {
