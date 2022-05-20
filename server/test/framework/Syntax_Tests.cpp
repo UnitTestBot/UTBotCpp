@@ -54,6 +54,7 @@ namespace {
         fs::path array_sort_c = getTestFilePath("array_sort.c");
         fs::path stubs_c = getTestFilePath("stubs.c");
         fs::path namespace_cpp = getTestFilePath("namespace.cpp");
+        fs::path rvalue_reference_cpp = getTestFilePath("function_with_rvalue_params.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -2612,6 +2613,39 @@ namespace {
                 })
         );
     }
+
+    TEST_F(Syntax_Test, multiple_rvalue_params) {
+        auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 9);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 2);
+    }
+
+    TEST_F(Syntax_Test, const_rvalue_reference) {
+        auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 17);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 3);
+    }
+
+    TEST_F(Syntax_Test, return_and_get_params) {
+        auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 28);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 3);
+    }
+
+    TEST_F(Syntax_Test, rvalue_struct_param) {
+        auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 38);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 4);
+    }
+
 }
 
 
