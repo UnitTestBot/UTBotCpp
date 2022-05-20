@@ -24,7 +24,6 @@ struct Closet {
     double width;
     double height;
     double volume;
-    bool flag = false;
 
     Closet();
     Closet(double length_, double width_, double height_, double volume_);
@@ -45,7 +44,6 @@ struct Closet3 {
     double width;
     double height;
     double volume;
-    bool flag;
 
     Closet3();
     Closet3(double length_, double width_, double height_, double volume_);
