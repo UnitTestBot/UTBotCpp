@@ -37,5 +37,6 @@ add_executable(syntax1
         inner_unnamed.c
         array_sort.c
         stubs.c
+        input_output.c
         namespace.cpp
-        input_output.c)
+        function_with_rvalue_params.cpp)
