@@ -22,7 +22,7 @@ namespace visitor {
             return;
         }
         additionalPointersCount = 0;
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0, methodDescription.constructorInfo);
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0, methodDescription.constructorInfo);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,

@@ -33,7 +33,7 @@ namespace visitor {
         } else {
             additionalPointersCount = 0;
         }
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0,
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0,
                  methodDescription.constructorInfo);
         functionCall = {};
         additionalPointersCount = 0;
