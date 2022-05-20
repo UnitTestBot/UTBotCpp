@@ -181,7 +181,10 @@ std::vector<size_t> types::Type::arraysSizes(PointerUsage usage) const {
             if (kinds().size() <= 2) {
                 sizes.push_back(types::TypesHandler::getElementsNumberInPointerOneDim(usage));
             } else {
-                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim());
+                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim(usage));
+            }
+            if (usage == types::PointerUsage::LAZY) {
+                return sizes;
             }
             break;
         default:
@@ -355,8 +358,9 @@ types::Type types::Type::arrayCloneMultiDim(PointerUsage usage, std::vector<size
     Type t = *this;
     for(size_t i = 0; i < pointerSizes.size(); ++i) {
         if (t.mKinds[i]->getKind() == AbstractType::OBJECT_POINTER) {
-            t.mKinds[i] = std::make_shared<ArrayType>(TypesHandler::getElementsNumberInPointerMultiDim(pointerSizes[i]),
-                                                      true);
+            t.mKinds[i] = std::make_shared<ArrayType>(
+                TypesHandler::getElementsNumberInPointerMultiDim(usage, pointerSizes[i]),
+                true);
         }
     }
     return t;

@@ -73,7 +73,7 @@ namespace printer {
 
         void printFunctionParameters(const tests::Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
-                                     bool onlyLValue = false);
+                                     bool all);
 
         void verboseOutputVariable(const tests::Tests::MethodDescription &methodDescription,
                                    const Tests::MethodTestCase &testCase);
@@ -131,10 +131,15 @@ namespace printer {
                                             const Tests::MethodTestCase &testCase);
 
         void printLazyVariables(const Tests::MethodDescription &methodDescription,
-                                const Tests::MethodTestCase &testCase);
+                                const Tests::MethodTestCase &testCase,
+                                bool verbose);
+
+        void printLazyVariables(const vector<Tests::MethodParam> &lazyParams,
+                                const vector<Tests::TestCaseParamValue> &lazyValues);
 
         void printLazyReferences(const Tests::MethodDescription &methodDescription,
-                                 const Tests::MethodTestCase &testCase);
+                                 const Tests::MethodTestCase &testCase,
+                                 bool verbose);
 
         void printStubVariables(const Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase);

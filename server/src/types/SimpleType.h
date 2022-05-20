@@ -29,7 +29,7 @@ public:
           referenceType(referenceType) {
     }
 
-    Kind getKind() override {
+    [[nodiscard]] Kind getKind() const override {
         return SIMPLE;
     }
 

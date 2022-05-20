@@ -46,7 +46,7 @@ namespace testUtils {
             for (const auto &p : testCase.paramValues) {
                 params.back().push_back(p.view);
             }
-            returnValues.push_back(testCase.returnValueView);
+            returnValues.push_back(testCase.returnValue.view);
         }
         for (size_t p_i = 0; p_i < predicates.size(); p_i++) {
             const auto &predicate = predicates[p_i];
