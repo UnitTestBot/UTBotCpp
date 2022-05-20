@@ -330,7 +330,7 @@ namespace types {
             FUNCTION_POINTER, ARRAY, ENUM, UNION, UNKNOWN };
 
     enum class TypeUsage { PARAMETER, RETURN, ALL };
-    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE };
+    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
 
     class TypesHandler {
     public:
@@ -556,8 +556,17 @@ namespace types {
             return sizeContext.maximumAlignment;
         }
 
-        static size_t getElementsNumberInPointerMultiDim(size_t def = 2) noexcept {
-            return def;
+        static size_t getElementsNumberInPointerMultiDim(PointerUsage usage, size_t def = 2) noexcept {
+            switch (usage) {
+            case PointerUsage::PARAMETER:
+                return 2;
+            case PointerUsage::RETURN:
+                return 2;
+            case PointerUsage::LAZY:
+                return 1;
+            case PointerUsage::KNOWN_SIZE:
+                return def;
+            }
         }
 
         static size_t
@@ -567,6 +576,8 @@ namespace types {
             case PointerUsage::PARAMETER:
                 return 10;
             case PointerUsage::RETURN:
+                return 1;
+            case PointerUsage::LAZY:
                 return 1;
             case PointerUsage::KNOWN_SIZE:
                 return def;

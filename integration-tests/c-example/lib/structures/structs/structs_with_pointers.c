@@ -79,3 +79,36 @@ struct StructWithPointerInField some_calc(int a, int b) {
         return st;
     }
 }
+
+int sumStructWithPointer(struct StructWithPointer par) {
+  return par.x + *par.y;
+}
+
+int sumStructWithPointerAsPointer(struct StructWithPointer* par) {
+  return par->x + *par->y;
+}
+
+int sumStructWithDoublePointer(struct StructWithDoublePointer par) {
+  return par.x + **par.y;
+}
+
+int sumStructWithArrayOfPointer(struct StructWithArrayOfPointer par) {
+  return par.x + *(par.y[0]) + *(par.y[1]);
+}
+
+int sumStructWithStructWithPointer(struct StructWithStructWithPointer par) {
+  int sswp = sumStructWithPointer(par.swp);
+  int sswdp = sumStructWithDoublePointer(*par.swdp);
+  return sswp + sswdp;
+}
+
+int sumStructManyPointers(struct StructManyPointers par) {
+  return par.a + *par.b + **par.c + ***par.d;
+}
+
+int sumStructComplex(struct StructComplex par) {
+  int sswp = sumStructWithPointer(*par.swp);
+  int sswdp = sumStructWithDoublePointer(**par.swdp);
+  int ssmp = sumStructManyPointers(par.smp);
+  return par.x + *par.y + **par.z + sswp + sswdp + ssmp;
+}

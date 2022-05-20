@@ -16,13 +16,13 @@ namespace visitor {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                               ? methodDescription.returnType.arrayClone(usage, pointerSize)
                               : methodDescription.returnType.baseTypeObj();
-        if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")", PrinterUtils::ACTUAL));
             return;
         }
         additionalPointersCount = 0;
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,

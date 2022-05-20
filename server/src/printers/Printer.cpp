@@ -515,7 +515,7 @@ namespace printer {
             return ss;
         }
 
-        size_t pointerSize = types::TypesHandler::getElementsNumberInPointerMultiDim();
+        size_t pointerSize = types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
         auto typeObject = types::TypesHandler::isVoid(param.type.baseTypeObj())
                               ? types::Type::minimalScalarPointerType(2)
                               : param.type;

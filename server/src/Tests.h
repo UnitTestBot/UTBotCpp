@@ -285,8 +285,9 @@ namespace tests {
     struct InitReference {
         std::string varName;
         std::string refName;
-        InitReference(std::string varName, std::string refName)
-            : varName(std::move(varName)), refName(std::move(refName)) {
+        std::string typeName;
+        InitReference(std::string varName, std::string refName, std::string typeName)
+            : varName(std::move(varName)), refName(std::move(refName)), typeName(std::move(typeName)) {
         }
     };
 
@@ -300,6 +301,7 @@ namespace tests {
                 : type(std::move(type)), varName(std::move(varName)) {
             }
         };
+
         struct MethodParam {
             types::Type type;
             string name;
@@ -340,6 +342,8 @@ namespace tests {
             string name;
             std::optional<uint64_t> alignment;
             shared_ptr<AbstractValueView> view;
+            vector<MethodParam> lazyParams;
+            vector<TestCaseParamValue> lazyValues;
             TestCaseParamValue() = default;
             TestCaseParamValue(string name,
                                std::optional<uint64_t> alignment,
@@ -357,7 +361,7 @@ namespace tests {
             vector<MethodParam> stubValuesTypes;
             vector<TestCaseParamValue> stubValues;
 
-            MapAddressName fromAddressToName;
+            MapAddressName lazyAddressToName;
             vector<InitReference> lazyReferences;
 
             vector<TestCaseParamValue> funcParamValues;
@@ -376,25 +380,23 @@ namespace tests {
             vector<TestCaseParamValue> globalPreValues;
             vector<TestCaseParamValue> globalPostValues;
             std::optional <TestCaseParamValue> stdinValue;
-            vector<TypeAndVarName> lazyVariables;
             vector<InitReference> lazyReferences;
             vector<UTBotKTestObject> objects;
 
-            MapAddressName fromAddressToName;
+            MapAddressName lazyAddressToName;
 
             vector<MethodParam> stubValuesTypes;
             vector<TestCaseParamValue> stubValues;
 
             vector<TestCaseParamValue> paramValues;
             vector<TestCaseParamValue> paramPostValues;
-            vector<TestCaseParamValue> lazyValues;
             vector<TestCaseParamValue> stubParamValues;
             vector<MethodParam> stubParamTypes;
-            shared_ptr<AbstractValueView> returnValueView;
+            TestCaseParamValue returnValue;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
 
-            bool isError() const;
+            [[nodiscard]] bool isError() const;
         };
 
         struct Modifiers {
@@ -463,7 +465,7 @@ namespace tests {
                 return method;
             }
 
-            bool hasChangeable() const {
+            [[nodiscard]] bool hasChangeable() const {
                 for(const auto& i : params) {
                     if (i.isChangeable()) {
                         return true;
@@ -472,18 +474,18 @@ namespace tests {
                 return false;
             }
 
-            bool isClassMethod() const {
+            [[nodiscard]] bool isClassMethod() const {
                 return classObj.has_value();
             }
 
-            std::optional<std::string> getClassName() const {
+            [[nodiscard]] std::optional<std::string> getClassName() const {
                 if (isClassMethod()) {
                     return std::make_optional(classObj->name);
                 }
                 return std::nullopt;
             }
 
-            std::optional<std::string> getClassTypeName() const {
+            [[nodiscard]] std::optional<std::string> getClassTypeName() const {
                 if (isClassMethod()) {
                     return std::make_optional(classObj->type.typeName());
                 }
@@ -579,9 +581,14 @@ namespace tests {
             }
         };
 
-        struct JsonNumAndType {
-            int num;
-            types::Type type;
+        struct JsonIndAndParam {
+            size_t jsonInd;
+            Tests::MethodParam param;
+            Tests::TestCaseParamValue& paramValue;
+            JsonIndAndParam(size_t jsonInd, Tests::MethodParam param,
+                            Tests::TestCaseParamValue& paramValue) : jsonInd(jsonInd),
+                  param(std::move(param)), paramValue(paramValue) {
+            }
         };
 
         /**
@@ -714,20 +721,32 @@ namespace tests {
                                    const std::unordered_map<string, types::Type>& methodNameToReturnTypeMap,
                                    vector<RawKleeParam> &rawKleeParams);
 
+        static void addToOrder(const vector<UTBotKTestObject> &objects,
+                               const std::string &paramName,
+                               const types::Type &paramType,
+                               Tests::TestCaseParamValue &paramValue,
+                               std::vector<bool> &visited,
+                               std::queue<JsonIndAndParam>& order);
+
         void assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
                                   const Tests::MethodDescription &methodDescription);
 
         void assignTypeStubVar(Tests::MethodTestCase &testCase,
                                const Tests::MethodDescription &methodDescription);
 
-        void workWithStructInBFS(std::queue<JsonNumAndType> &order, std::vector<bool> &visited,
-                                 const Offset &off, std::vector<UTBotKTestObject> &objects, const types::StructInfo &structInfo);
+        size_t findFieldIndex(const types::StructInfo &structInfo, size_t offset);
 
-        int findFieldIndex(const types::StructInfo &structInfo, size_t offset);
+        types::Type traverseLazyInStruct(vector<bool> &visited,
+                            const types::Type &curVarType,
+                            size_t offset,
+                            const Tests::MethodTestCase &testCase,
+                            const Tests::MethodDescription &methodDescription);
 
-        int findObjectIndex(const std::vector<UTBotKTestObject> &objects, const std::string &name);
-
-        types::Type traverseStruct(const types::StructInfo &structInfo, size_t offset);
+        shared_ptr<AbstractValueView> getLazyPointerView(const MapAddressName &fromAddressToName,
+                                                         vector<InitReference> &initReferences,
+                                                         const string &name,
+                                                         std::string res,
+                                                         const types::Type &paramType) const;
     };
     /**
      * @brief This function is used for converting primiive value of a specific type

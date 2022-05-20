@@ -21,7 +21,7 @@ namespace visitor {
                           : methodDescription.returnType;
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
                                                           false);
-        if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(
                     StringUtils::stringFormat("EXPECT_TRUE(%s)",
@@ -30,7 +30,7 @@ namespace visitor {
         } else {
             additionalPointersCount = 0;
         }
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
         functionCall = {};
         additionalPointersCount = 0;
     }
