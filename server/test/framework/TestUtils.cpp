@@ -46,7 +46,7 @@ namespace testUtils {
             for (const auto &p : testCase.paramValues) {
                 params.back().push_back(p.view);
             }
-            returnValues.push_back(testCase.returnValueView);
+            returnValues.push_back(testCase.returnValue.view);
         }
         for (size_t p_i = 0; p_i < predicates.size(); p_i++) {
             const auto &predicate = predicates[p_i];
@@ -134,9 +134,29 @@ namespace testUtils {
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
                        const vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+                continue;
+            }
             const auto status = testStatusMap.at(filename).at(testname);
             EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
-                        (testsgen::TestStatus::TEST_DEATH == status));
+            (testsgen::TestStatus::TEST_DEATH == status));
+        }
+    }
+
+
+    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+                       const vector<UnitTest> &tests,
+                       const StatusCountMap &expectedStatusCountMap) {
+        StatusCountMap actualStatusCountMap;
+        for (auto const &[filename, suitename, testname] : tests) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+                continue;
+            }
+            const auto status = testStatusMap.at(filename).at(testname);
+            actualStatusCountMap[status]++;
+        }
+        for (const auto& [status, count] : actualStatusCountMap) {
+            ASSERT_GE(count, expectedStatusCountMap.at(status));
         }
     }
 

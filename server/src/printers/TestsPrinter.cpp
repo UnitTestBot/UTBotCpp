@@ -144,6 +144,13 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
+
+    printLazyVariables(methodDescription, testCase, true);
+    ss << NL;
+
+    printLazyReferences(methodDescription, testCase, true);
+    ss << NL;
+
     if (!testCase.isError()) {
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
@@ -162,20 +169,37 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
 }
 
 void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDescription,
-                                      const Tests::MethodTestCase &testCase) {
-    for (auto i = 0; i < testCase.lazyValues.size(); i++) {
-        const auto &param = testCase.lazyVariables[i];
-        const auto &value = testCase.lazyValues[i];
-        if (param.type.isObjectPointer()) {
-            strDeclareVar(param.type.baseType(), param.varName, value.view->getEntryValue());
+                                      const Tests::MethodTestCase &testCase,
+                                      bool verbose) {
+    if (!testCase.lazyReferences.empty()) {
+        if (verbose) {
+            strComment("Construct lazy instantiated variables");
+        }
+        for (const auto paramValue : testCase.paramValues) {
+            printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
         }
     }
 }
 
+void TestsPrinter::printLazyVariables(const vector<Tests::MethodParam> &lazyParams,
+                                      const vector<Tests::TestCaseParamValue> &lazyValues) {
+    for (size_t i = 0; i < lazyParams.size(); ++i) {
+        printLazyVariables(lazyValues[i].lazyParams, lazyValues[i].lazyValues);
+        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name, lazyValues[i].view->getEntryValue(),
+                          std::nullopt, true, lazyParams[i].type.getDimension());
+    }
+}
+
 void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDescription,
-                                       const Tests::MethodTestCase &testCase) {
-    for (const auto &lazy : testCase.lazyReferences) {
-        strAssignVar(lazy.varName, "&" + lazy.refName);
+                                       const Tests::MethodTestCase &testCase,
+                                       bool verbose) {
+    if (!testCase.lazyReferences.empty()) {
+        if (verbose) {
+            strComment("Assign lazy variables to pointer");
+        }
+        for (const auto &lazy : testCase.lazyReferences) {
+            strAssignVar(lazy.varName, lazy.typeName);
+        }
     }
 }
 
@@ -198,10 +222,10 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     parametrizedArrayParameters(methodDescription, testCase);
     printClassObject(methodDescription, testCase);
-    printLazyVariables(methodDescription, testCase);
-    printLazyReferences(methodDescription, testCase);
     printStubVariables(methodDescription, testCase);
-    printFunctionParameters(methodDescription, testCase, true);
+    printFunctionParameters(methodDescription, testCase, false);
+    printLazyVariables(methodDescription, testCase, false);
+    printLazyReferences(methodDescription, testCase, false);
     parametrizedAsserts(methodDescription, testCase, predicateInfo);
     ss << RB() << NL;
 }
@@ -306,14 +330,15 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         strComment("Construct input");
     }
     printClassObject(methodDescription, testCase);
-    printFunctionParameters(methodDescription, testCase, false);
+    printFunctionParameters(methodDescription, testCase, true);
 }
 
 void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &methodDescription,
-                                             const Tests::MethodTestCase &testCase,
-                                             bool onlyLValue){
+                                           const Tests::MethodTestCase &testCase,
+                                           bool all) {
     for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        if(!onlyLValue || methodDescription.params[i].type.isLValueReference()) {
+        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !methodDescription.params[i].isChangeable();
+        if (all || methodDescription.params[i].type.isLValueReference() || containsLazy) {
             Tests::MethodParam param = methodDescription.params[i];
             auto value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
@@ -371,11 +396,11 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
                types::TypesHandler::isArrayOfPointersToFunction(methodDescription.returnType)) {
         strComment("No output variable check for function returning pointer to function");
     } else if (methodDescription.returnType.isObjectPointer() &&
-               testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+               testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
         strComment("No output variable check for function returning null");
     } else {
         visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
-            .visit(expectedType, PrinterUtils::EXPECTED, testCase.returnValueView.get(), std::nullopt);
+            .visit(expectedType, PrinterUtils::EXPECTED, testCase.returnValue.view.get(), std::nullopt);
     }
 }
 
@@ -390,7 +415,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
     string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
         size_t returnPointersCount = 0;
-        if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
             returnPointersCount = methodDescription.returnType.countReturnPointers(true);
         }
         auto type = Printer::getConstQualifier(expectedType) + expectedType.usedType();
@@ -541,6 +566,8 @@ std::vector<string> TestsPrinter::methodParametersListParametrized(const Tests::
             args.push_back(maybeAmpersand + param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
+        } else if (!testCase.paramValues[i].lazyValues.empty()) {
+            args.push_back(param.name);
         } else {
             args.push_back(testCase.paramValues[i].view->getEntryValue());
         }
@@ -569,12 +596,9 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
 string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &methodDescription,
                                                const Tests::MethodTestCase &testCase,
                                                bool verboseMode) {
-    std::vector<string> methodArgs;
-    if (verboseMode) {
-        methodArgs = methodParametersListVerbose(methodDescription, testCase);
-    } else {
-        methodArgs = methodParametersListParametrized(methodDescription, testCase);
-    }
+    std::vector<string> methodArgs =
+        verboseMode ? methodParametersListVerbose(methodDescription, testCase)
+                    : methodParametersListParametrized(methodDescription, testCase);
 
     std::optional<types::Type> castType;
     if (types::TypesHandler::skipTypeInReturn(methodDescription.returnType.baseTypeObj()) &&
@@ -583,7 +607,7 @@ string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &m
     }
     auto classObjName = methodDescription.getClassName();
     size_t returnPointersCount = 0;
-    if (testCase.returnValueView && testCase.returnValueView->getEntryValue() != PrinterUtils::C_NULL) {
+    if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue() != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
     return constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,

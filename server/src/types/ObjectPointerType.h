@@ -14,7 +14,7 @@ public:
     explicit ObjectPointerType(bool constQualified) : constQualified(constQualified) {
     }
 
-    Kind getKind() override {
+    [[nodiscard]] Kind getKind() const override {
         return OBJECT_POINTER;
     }
 

@@ -14,11 +14,11 @@ public:
         SIMPLE
     };
 
-    virtual unsigned long int getSize() const {
+    [[nodiscard]] virtual unsigned long int getSize() const {
         return 0;
     }
 
-    virtual Kind getKind() = 0;
+    [[nodiscard]] virtual Kind getKind() const = 0;
 };
 
 #endif

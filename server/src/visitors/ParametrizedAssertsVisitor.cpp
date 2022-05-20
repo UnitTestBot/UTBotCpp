@@ -20,10 +20,11 @@ namespace visitor {
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
-                              ? methodDescription.returnType.arrayClone(usage, pointerSize)
-                              : methodDescription.returnType;
-        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false);
-        if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+                          ? methodDescription.returnType.arrayClone(usage, pointerSize)
+                          : methodDescription.returnType;
+        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
+                                                          false);
+        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(StringUtils::stringFormat(
                 "EXPECT_TRUE(%s)",

@@ -9,7 +9,7 @@
 
 class FunctionPointerType: public AbstractType {
 public:
-    Kind getKind() override {
+    [[nodiscard]] Kind getKind() const override {
         return FUNCTION_POINTER;
     }
 };

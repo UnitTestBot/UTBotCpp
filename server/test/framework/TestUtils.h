@@ -23,6 +23,7 @@ using Params = const std::vector<shared_ptr<tests::AbstractValueView>> &;
 using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
 using TestCasePredicate = std::function<bool(tests::Tests::MethodTestCase)>;
 using CoverageLines = CollectionUtils::MapFileTo<std::set<int>>;
+using StatusCountMap = std::unordered_map<testsgen::TestStatus, int>;
 
 namespace testUtils {
     using std::function;
@@ -45,6 +46,10 @@ namespace testUtils {
                        const CoverageLines &expectedLinesNone);
 
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap, const vector<UnitTest> &tests);
+
+    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+                            const vector<UnitTest> &tests,
+                            const StatusCountMap &expectedStatusCountMap);
 
     int getNumberOfTests(const tests::TestsMap &tests);
 

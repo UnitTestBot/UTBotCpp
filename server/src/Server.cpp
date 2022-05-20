@@ -271,7 +271,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         testGen.progressWriter->writeProgress("Building files", 0.0);
         Linker linker{ testGen, stubGen, lineInfo, generator };
         linker.prepareArtifacts();
-        linker.writeMakefiles();
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };

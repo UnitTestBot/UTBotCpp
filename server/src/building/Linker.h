@@ -33,8 +33,6 @@ public:
 
     void prepareArtifacts();
 
-    void writeMakefiles();
-
     std::vector<tests::TestMethod> getTestMethods();
 
     BuildResult
@@ -60,8 +58,6 @@ private:
     CollectionUtils::FileSet testedFiles;
     CollectionUtils::MapFileTo<fs::path> bitcodeFileName;
     CollectionUtils::FileSet brokenLinkFiles;
-
-    std::vector<printer::TestMakefilesContent> linkMakefiles;
 
     IRParser irParser;
 
@@ -94,12 +90,11 @@ private:
                                                            const fs::path &stubsMakefile) const;
     Result<utbot::Void> linkWithStubsIfNeeded(const fs::path &linkMakefile, const fs::path &targetBitcode) const;
 
-    void declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
-                                  const fs::path &output,
-                                  const vector<fs::path> &bitcodeDependencies,
-                                  const fs::path &prefixPath,
-                                  const utbot::RunCommand &removeAction,
-                                  vector<utbot::LinkCommand> archiveActions);
+    fs::path declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
+                                      const fs::path &output,
+                                      const vector<fs::path> &bitcodeDependencies,
+                                      const fs::path &prefixPath,
+                                      vector<utbot::LinkCommand> archiveActions);
 
     string getLinkArgument(const string &argument,
                            const fs::path &workingDir,

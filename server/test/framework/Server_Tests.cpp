@@ -146,14 +146,14 @@ namespace {
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                             stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                        stoi(testCase.returnValueView->getEntryValue()) ==
+                                        stoi(testCase.returnValue.view->getEntryValue()) ==
                                             stoi(testCase.paramValues[0].view->getEntryValue()) &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return stoi(testCase.paramValues[0].view->getEntryValue()) <=
                                              stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                         stoi(testCase.returnValueView->getEntryValue()) ==
+                                         stoi(testCase.returnValue.view->getEntryValue()) ==
                                              stoi(testCase.paramValues[1].view->getEntryValue()) &&
                                          testCase.stdinValue == std::nullopt;
                               } }),
@@ -164,12 +164,12 @@ namespace {
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
-                                        stoi(testCase.returnValueView->getEntryValue()) == -1 &&
+                                        stoi(testCase.returnValue.view->getEntryValue()) == -1 &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return stoi(testCase.paramValues[0].view->getEntryValue()) >= 0 &&
-                                         stoi(testCase.returnValueView->getEntryValue()) ==
+                                         stoi(testCase.returnValue.view->getEntryValue()) ==
                                              stoi(testCase.paramValues[0].view->getEntryValue()) *
                                                  stoi(testCase.paramValues[0]
                                                           .view->getEntryValue()) &&
@@ -181,15 +181,15 @@ namespace {
                         methodDescription.testCases,
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return testCase.returnValueView->getEntryValue() == "0" &&
+                                 return testCase.returnValue.view->getEntryValue() == "0" &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() == "1" &&
+                                  return testCase.returnValue.view->getEntryValue() == "1" &&
                                          testCase.stdinValue == std::nullopt;
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() == "2" &&
+                                  return testCase.returnValue.view->getEntryValue() == "2" &&
                                          testCase.stdinValue == std::nullopt;
                               } }),
                         methodName);
@@ -204,13 +204,13 @@ namespace {
                     { [](tests::Tests::MethodTestCase const &testCase) {
                          return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                     stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                stoi(testCase.returnValueView->getEntryValue()) ==
+                                stoi(testCase.returnValue.view->getEntryValue()) ==
                                     stoi(testCase.paramValues[0].view->getEntryValue()) * 2;
                      },
                       [](tests::Tests::MethodTestCase const &testCase) {
                           return stoi(testCase.paramValues[0].view->getEntryValue()) <=
                                      stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                 stoi(testCase.returnValueView->getEntryValue()) ==
+                                 stoi(testCase.returnValue.view->getEntryValue()) ==
                                      stoi(testCase.paramValues[1].view->getEntryValue()) * 2;
                       } }),
                 "double_max");
@@ -224,13 +224,13 @@ namespace {
                         methodDescription.testCases,
                         vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue() == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue() == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue() == "1";
                             },
                         }),
                         methodName);
@@ -242,23 +242,23 @@ namespace {
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), 'a');
+                                     testCase.returnValue.view->getEntryValue(), 'a');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'c');
+                                      testCase.returnValue.view->getEntryValue(), 'c');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'u');
+                                      testCase.returnValue.view->getEntryValue(), 'u');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '1');
+                                      testCase.returnValue.view->getEntryValue(), '1');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '0');
+                                      testCase.returnValue.view->getEntryValue(), '0');
                               } }),
                         methodName);
                 } else if (methodName == "operate_with_inner_structs") {
@@ -267,19 +267,19 @@ namespace {
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), '5');
+                                     testCase.returnValue.view->getEntryValue(), '5');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'e');
+                                      testCase.returnValue.view->getEntryValue(), 'e');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'g');
+                                      testCase.returnValue.view->getEntryValue(), 'g');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'o');
+                                      testCase.returnValue.view->getEntryValue(), 'o');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) { return true; } }),
                         methodName);
@@ -297,13 +297,13 @@ namespace {
                         methodDescription.testCases,
                         vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue() == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue() == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue() == "1";
                             },
                         }),
                         methodName);
@@ -313,13 +313,13 @@ namespace {
                         methodDescription.testCases,
                         vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue() == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue() == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue() == "1";
                             },
                         }),
                         methodName);
@@ -343,35 +343,35 @@ namespace {
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), '5');
+                                     testCase.returnValue.view->getEntryValue(), '5');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '5');
+                                      testCase.returnValue.view->getEntryValue(), '5');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '5');
+                                      testCase.returnValue.view->getEntryValue(), '5');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'e');
+                                      testCase.returnValue.view->getEntryValue(), 'e');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'f');
+                                      testCase.returnValue.view->getEntryValue(), 'f');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'g');
+                                      testCase.returnValue.view->getEntryValue(), 'g');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'o');
+                                      testCase.returnValue.view->getEntryValue(), 'o');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '\x0f');
+                                      testCase.returnValue.view->getEntryValue(), '\x0f');
                               } }),
                         methodName);
                 }
@@ -394,15 +394,15 @@ namespace {
                         methodDescription.testCases,
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return testCase.returnValueView->getEntryValue() ==
+                                 return testCase.returnValue.view->getEntryValue() ==
                                         testCase.paramValues[0].view->getEntryValue();
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() ==
+                                  return testCase.returnValue.view->getEntryValue() ==
                                          testCase.paramValues[2].view->getEntryValue();
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() ==
+                                  return testCase.returnValue.view->getEntryValue() ==
                                          testCase.paramValues[1].view->getEntryValue();
                               } }),
                         methodName);
@@ -470,7 +470,7 @@ namespace {
                  testGen.tests.at(floating_point_c).methods) {
                 std::unordered_set<std::string> completeness;
                 for (const auto &testCase : methodDescription.testCases) {
-                    completeness.insert(testCase.returnValueView->getEntryValue());
+                    completeness.insert(testCase.returnValue.view->getEntryValue());
                 }
                 if (methodName == "get_double_sign") {
                     EXPECT_GE(methodDescription.testCases.size(), 3);
@@ -499,7 +499,7 @@ namespace {
                 if (methodName == "plain_isnan") {
                     std::unordered_set<std::string> completeness;
                     for (const auto &testCase : methodDescription.testCases) {
-                        completeness.insert(testCase.returnValueView->getEntryValue());
+                        completeness.insert(testCase.returnValue.view->getEntryValue());
                     }
                     EXPECT_GE(methodDescription.testCases.size(), 2);
                     EXPECT_GE(completeness.size(), 2);
@@ -527,7 +527,7 @@ namespace {
                         md.testCases,
                         vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                auto returnValue = testCase.returnValueView->getEntryValue();
+                                auto returnValue = testCase.returnValue.view->getEntryValue();
                                 auto preValue = testCase.globalPreValues[0].view->getEntryValue();
                                 auto postValue = testCase.globalPostValues[0].view->getEntryValue();
                                 return returnValue == postValue &&
@@ -561,7 +561,7 @@ namespace {
                                             vector<TestCasePredicate>(
                                                 { [](tests::Tests::MethodTestCase const &testCase) {
                                                     auto returnValue =
-                                                        testCase.returnValueView->getEntryValue();
+                                                        testCase.returnValue.view->getEntryValue();
                                                     return returnValue == "256";
                                                 } }));
                 } else if (md.name == "stop_now") {
@@ -583,7 +583,7 @@ namespace {
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                 auto x = testCase.paramValues[0].view->getEntryValue();
                                 auto y = testCase.paramValues[1].view->getEntryValue();
-                                auto z = testCase.returnValueView->getEntryValue();
+                                auto z = testCase.returnValue.view->getEntryValue();
                                 return (stoi(x) & stoi(y)) == stoi(z);
                             } }));
                 } else if (md.name == "using") {
@@ -678,7 +678,7 @@ namespace {
                 testGen.tests.at(main_c).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) - 2 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                           stoi(testCase.returnValue.view->getEntryValue());
                 } }));
         }
         {
@@ -695,7 +695,7 @@ namespace {
                 testGen.tests.at(a_c).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) + 1 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                           stoi(testCase.returnValue.view->getEntryValue());
                 } }));
         }
         {
@@ -712,7 +712,7 @@ namespace {
                 testGen.tests.at(b_c).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) - 1 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                           stoi(testCase.returnValue.view->getEntryValue());
                 } }));
         }
 
@@ -1020,7 +1020,7 @@ namespace {
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
             vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
-                       stoi(testCase.returnValueView->getEntryValue()) == -1;
+                       stoi(testCase.returnValue.view->getEntryValue()) == -1;
                 } }),
             "sqr_positive");
     }
@@ -1036,7 +1036,7 @@ namespace {
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
             vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return stoi(testCase.returnValueView->getEntryValue()) ==
+                return stoi(testCase.returnValue.view->getEntryValue()) ==
                        stoi(testCase.paramValues[0].view->getEntryValue()) *
                            stoi(testCase.paramValues[0].view->getEntryValue());
             } }),
@@ -1054,7 +1054,7 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "1";} }),
+                    return testCase.returnValue.view->getEntryValue() == "1";} }),
                 "get1");
     }
 
@@ -1069,7 +1069,7 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                    return testCase.returnValue.view->getEntryValue() == "2";} }),
                 "get2");
     }
 
@@ -1084,7 +1084,7 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
                 vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                    return testCase.returnValue.view->getEntryValue() == "2";} }),
                 "get3");
     }
 
@@ -1104,13 +1104,13 @@ namespace {
                 { [](tests::Tests::MethodTestCase const &testCase) {
                      return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                 stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                            stoi(testCase.returnValueView->getEntryValue()) ==
+                            stoi(testCase.returnValue.view->getEntryValue()) ==
                                 stoi(testCase.paramValues[0].view->getEntryValue());
                  },
                   [](tests::Tests::MethodTestCase const &testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue()) <=
                                  stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                             stoi(testCase.returnValueView->getEntryValue()) ==
+                             stoi(testCase.returnValue.view->getEntryValue()) ==
                                  stoi(testCase.paramValues[1].view->getEntryValue());
                   } }),
             "max_");
@@ -1157,7 +1157,7 @@ namespace {
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
             vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return testCase.returnValueView->getEntryValue() == "\"abacaba\"";
+                return testCase.returnValue.view->getEntryValue() == "\"abacaba\"";
             } }),
             "const_str");
     }
@@ -1176,7 +1176,7 @@ namespace {
         bool foundPath = false;
         for (const auto &testCase :
             testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases) {
-            foundPath |= (testCase.returnValueView->getEntryValue() == "1");
+            foundPath |= (testCase.returnValue.view->getEntryValue() == "1");
             if (foundPath) {
                 break;
             }
@@ -1342,6 +1342,9 @@ namespace {
         ASSERT_FALSE(statusMap.empty());
 
         testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 25}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
 
@@ -1476,7 +1479,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1486,7 +1489,11 @@ namespace {
 
         ASSERT_FALSE(statusMap.empty());
         EXPECT_GT(statusMap.getNumberOfTests(), 2);
+
         testUtils::checkStatuses(statusMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
     struct ProjectInfo {
@@ -1560,6 +1567,10 @@ namespace {
                       statusMap.begin()->second.begin()->second);
         } else {
             testUtils::checkStatuses(statusMap, tests);
+
+            StatusCountMap expectedStatusCountMap{
+                {testsgen::TEST_PASSED, 3}};
+            testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
         }
     }
 
