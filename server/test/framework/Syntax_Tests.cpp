@@ -2619,7 +2619,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 2);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 2);
     }
 
     TEST_F(Syntax_Test, const_rvalue_reference) {
@@ -2627,7 +2627,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 3);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 3);
     }
 
     TEST_F(Syntax_Test, return_and_get_params) {
@@ -2635,7 +2635,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 3);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 3);
     }
 
     TEST_F(Syntax_Test, rvalue_struct_param) {
@@ -2643,7 +2643,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases, 4);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 4);
     }
 
 }
