@@ -37,7 +37,6 @@ Closet::Closet(const Closet& other) {
     width = other.width;
     height = other.height;
     volume = other.volume;
-    assert(volume == length * width * height);
 }
 
 Closet::Closet() {
@@ -66,7 +65,6 @@ Closet3::Closet3(Closet3 && other) {
     width = other.width;
     height = other.height;
     volume = other.volume;
-    assert(volume == length * width * height);
 }
 
 Closet3::Closet3() {

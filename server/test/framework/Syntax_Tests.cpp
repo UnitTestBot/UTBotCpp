@@ -2490,7 +2490,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Constructor_with_parameters) {
-        auto [testGen, status] = createTestForFunction(constructors_cpp, 90);
+        auto [testGen, status] = createTestForFunction(constructors_cpp, 86);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
