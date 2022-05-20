@@ -12,12 +12,11 @@ struct BigOrSmallInteger {
     BigOrSmallInteger(bool isBig);
 };
 
-struct BufferOfFiveElements {
+struct TwoElements {
     int first;
-    int last;
-    int vec[5];
-    BufferOfFiveElements();
-    BufferOfFiveElements(int vec[], int size);
+    int second;
+    TwoElements();
+    TwoElements(int *first_, int *second_);
 };
 
 struct Closet {

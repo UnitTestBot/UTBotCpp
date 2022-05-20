@@ -17,20 +17,19 @@ BigOrSmallInteger::BigOrSmallInteger() {
     number = 0;
 }
 
-BufferOfFiveElements::BufferOfFiveElements(int vec_[], int size) {
-    first = vec_[0];
-    last = vec_[size - 1];
-    for (int i = 0; i < size; i++) {
-        vec[i] = vec_[i];
+TwoElements::TwoElements(int *first_, int *second_) {
+    if (*first_ > *second_) {
+        first = *first_;
+        second = *second_;
+    } else {
+        first = *second_;
+        second = *first_;
     }
-    assert(last == vec[4]);
-    assert(size == 5);
 }
 
-BufferOfFiveElements::BufferOfFiveElements() {
+TwoElements::TwoElements() {
     first = 0;
-    last = 0;
-    vec[0] = vec[1] = vec[2] = vec[3] = vec[4] = 0;
+    second = 0;
 }
 
 Closet::Closet(const Closet& other) {

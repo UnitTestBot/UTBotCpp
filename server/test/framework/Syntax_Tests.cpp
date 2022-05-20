@@ -2518,7 +2518,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
     }
 
     TEST_F(Syntax_Test, Constructor_with_if_stmt) {
