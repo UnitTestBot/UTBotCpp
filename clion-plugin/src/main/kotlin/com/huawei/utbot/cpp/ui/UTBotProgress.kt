@@ -3,11 +3,12 @@ package com.huawei.utbot.cpp.ui
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.progress.TaskInfo
 import com.intellij.openapi.progress.util.AbstractProgressIndicatorExBase
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ex.StatusBarEx
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import kotlinx.coroutines.Job
 
-class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = null) : AbstractProgressIndicatorExBase() {
+class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = null, val project: Project) : AbstractProgressIndicatorExBase(true) {
     val task = UTBotRequestTaskInfo(name)
 
     init {
@@ -15,7 +16,7 @@ class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = nul
     }
 
     override fun start() {
-        val frame = WindowManagerEx.getInstanceEx().findFrameFor(null) ?: return
+        val frame = WindowManagerEx.getInstanceEx().findFrameFor(project) ?: return
         val statusBar = frame.statusBar as? StatusBarEx ?: return
         statusBar.addProgress(this, task)
         super.start()

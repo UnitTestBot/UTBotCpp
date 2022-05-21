@@ -11,7 +11,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
-import org.tinylog.kotlin.Logger
 
 import java.io.File
 import java.nio.file.Files
@@ -27,12 +26,12 @@ class Server(private val port: Int) {
 
     fun start() {
         server.start()
-        Logger.info("Server started, listening on $port")
+        println("Server started, listening on $port")
         Runtime.getRuntime().addShutdownHook(
             Thread {
-                Logger.info("*** shutting down gRPC server since JVM is shutting down")
+                println("*** shutting down gRPC server since JVM is shutting down")
                 this@Server.stop()
-                Logger.info("*** server shut down")
+                println("*** server shut down")
             }
         )
     }
@@ -214,7 +213,7 @@ class Server(private val port: Int) {
 
         override fun configureProject(request: Testgen.ProjectConfigRequest): Flow<Testgen.ProjectConfigResponse> {
             return flow {
-                Logger.info("Before emit in configureProject!")
+                println("Before emit in configureProject!")
                 emit(
                     Testgen.ProjectConfigResponse.newBuilder()
                         .setType(
@@ -224,7 +223,7 @@ class Server(private val port: Int) {
                         )
                         .build()
                 )
-                Logger.info("After emit in configureProject")
+                println("After emit in configureProject")
             }
         }
     }

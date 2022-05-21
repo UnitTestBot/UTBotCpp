@@ -15,7 +15,6 @@ import com.huawei.utbot.cpp.utils.relativize
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.tinylog.kotlin.Logger
 
 class UTBotTargetsController(val project: Project) {
     private val utbotSettings = project.service<UTBotSettings>()

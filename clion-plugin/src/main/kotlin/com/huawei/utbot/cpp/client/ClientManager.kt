@@ -10,7 +10,6 @@ import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlin.random.Random
-import org.tinylog.kotlin.Logger
 
 @Service
 class ClientManager(val project: Project) {

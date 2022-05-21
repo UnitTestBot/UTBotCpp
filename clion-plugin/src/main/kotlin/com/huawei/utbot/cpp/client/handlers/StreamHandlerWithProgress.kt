@@ -17,9 +17,7 @@ abstract class StreamHandlerWithProgress<T>(
     progressName: String,
     cancellationJob: Job
 ): StreamHandler<T>(project, grpcStream) {
-    private val indicator = UTBotRequestProgressIndicator(progressName).apply {
-        requestJob = cancellationJob
-    }
+    private val indicator = UTBotRequestProgressIndicator(progressName, cancellationJob, project)
 
     override fun onStart() {
         super.onStart()

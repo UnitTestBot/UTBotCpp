@@ -10,7 +10,6 @@ import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import org.tinylog.kotlin.Logger
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 import java.nio.file.Path
