@@ -1,7 +1,8 @@
 package com.huawei.utbot.cpp.client.logger
 
-import com.huawei.utbot.cpp.client.Client
 import com.huawei.utbot.cpp.ui.userLog.OutputProvider
+import com.huawei.utbot.cpp.utils.invokeOnEdt
+import com.intellij.execution.ui.ConsoleViewContentType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -12,6 +13,66 @@ enum class Level(val text: String) {
     TRACE("TRACE"), DEBUG("DEBUG"), INFO("INFO"), WARN("WARN"), ERROR("ERROR"), OFF("OFF")
 }
 
+interface Writer {
+    fun write(message: LogMessage)
+}
+
+interface Formatter {
+    fun format(message: LogMessage): String
+}
+
+class SimpleFormatter : Formatter {
+    override fun format(message: LogMessage): String {
+        val dateTime = DateTimeFormatter.ofPattern("HH:mm:ss.SSSS").format(message.dateTime)
+        return "$dateTime | ${message.fileName}: ${message.line} [${message.threadName}] " +
+                "|${message.level.text}| ${message.messageSupplier()} \n"
+    }
+}
+
+data class LogMessage(
+    val messageSupplier: () -> (String),
+    val line: Int,
+    val fileName: String,
+    val threadName: String,
+    val methodName: String,
+    val level: Level,
+    val dateTime: LocalDateTime = LocalDateTime.now(),
+) {
+    constructor(message: () -> String, level: Level, frame: StackTraceElement) :
+            this(
+                message,
+                frame.lineNumber,
+                frame.fileName ?: "Unknown file",
+                Thread.currentThread().name,
+                frame.methodName,
+                level
+            )
+}
+
+class ConsoleWriter(project: Project) : Writer {
+    private val console = project.service<OutputProvider>().clientOutputChannel.outputConsole
+    private val formatter = SimpleFormatter()
+    override fun write(message: LogMessage) {
+        val type = when (message.level) {
+            Level.INFO -> ConsoleViewContentType.NORMAL_OUTPUT
+            Level.WARN -> ConsoleViewContentType.LOG_WARNING_OUTPUT
+            Level.ERROR -> ConsoleViewContentType.LOG_ERROR_OUTPUT
+            Level.DEBUG -> ConsoleViewContentType.LOG_DEBUG_OUTPUT
+            else -> ConsoleViewContentType.NORMAL_OUTPUT
+        }
+        invokeOnEdt {
+            console.print(formatter.format(message), type)
+        }
+    }
+}
+
+class SystemWriter : Writer {
+    private val formatter = SimpleFormatter()
+    override fun write(message: LogMessage) {
+        println(formatter.format(message))
+    }
+}
+
 @Service
 class ClientLogger(private val project: Project) {
     var level = Level.TRACE
@@ -19,6 +80,8 @@ class ClientLogger(private val project: Project) {
             info { "Setting new log level: ${value.text}" }
             field = value
         }
+
+    val writers: MutableList<Writer> = mutableListOf(ConsoleWriter(project))
 
     fun info(message: () -> String) {
         log(message, Level.INFO)
@@ -40,30 +103,12 @@ class ClientLogger(private val project: Project) {
         log(message, Level.TRACE)
     }
 
-    fun log(messageSupplier: ()->(String), level: Level, depth: Int = 3) {
+    fun log(messageSupplier: () -> (String), level: Level, depth: Int = 3) {
         if (level.ordinal < this.level.ordinal)
             return
-        val logMessage: String = format(messageSupplier, depth + 1, level)
-        val console = project.service<OutputProvider>().clientOutputChannel.outputConsole
-
-        if (Client.IS_TEST_MODE)
-            println(logMessage)
-        else
-            console.info(logMessage)
-    }
-
-    private fun format(message: ()->(String), depth: Int, level: Level): String {
-        val thread = Thread.currentThread()
-        val stackTrace = thread.stackTrace[depth]
-        val lineNumber = stackTrace.lineNumber
-        val fileName = stackTrace.fileName
-        val threadName = thread.name
-        return "${getDateString()} | $fileName: $lineNumber [$threadName] |${level.text}| ${message()} \n"
-    }
-
-    private fun getDateString(): String {
-        val dtf = DateTimeFormatter.ofPattern("HH:mm:ss.SSSS")
-        val now = LocalDateTime.now()
-        return dtf.format(now)
+        val logMessage: LogMessage = LogMessage(messageSupplier, level, Thread.currentThread().stackTrace[depth])
+        writers.forEach {
+            it.write(logMessage)
+        }
     }
 }

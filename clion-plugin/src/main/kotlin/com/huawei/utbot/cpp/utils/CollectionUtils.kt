@@ -7,7 +7,7 @@ fun <T> CollectionListModel<T>.removeIndices(indices: IntArray) {
     val oldList = toList()
     var i = 0
     for (j in oldList.indices) {
-        if (indices[i] == j) {
+        if (i < indices.size && indices[i] == j) {
             i++
             continue
         }

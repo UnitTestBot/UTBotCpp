@@ -88,14 +88,14 @@
                     description="Generate unit tests for this folder"/>
         </group>
 
-        <action id="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
-                class="com.huawei.utbot.cpp.actions.MarkSourceFolderAction" text="Mark As UTBot Folders"
-                description="Marks selected folders as UTBot folders">
-            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
-        </action>
         <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
                 class="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction" text="Unmark UTBot Folders"
                 description="Unmarks selected folders as UTBot folders">
+            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
+        </action>
+        <action id="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
+                class="com.huawei.utbot.cpp.actions.MarkSourceFolderAction" text="Mark As UTBot Folders"
+                description="Marks selected folders as UTBot folders">
             <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
         </action>
 

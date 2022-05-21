@@ -1,10 +1,12 @@
 package com.huawei.utbot.cpp
 
 import com.huawei.utbot.cpp.client.Client
+import com.huawei.utbot.cpp.client.logger.SystemWriter
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.ui.targetsToolWindow.UTBotTargetsController
 import com.huawei.utbot.cpp.utils.getClient
+import com.huawei.utbot.cpp.utils.logger
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.trace
 import com.intellij.openapi.project.Project
@@ -70,6 +72,10 @@ abstract class BaseGenerationTestCase {
     init {
         settings.buildDirPath = buildDirectoryPath.toString()
         settings.testDirPath = testsDirectoryPath.toString()
+        project.logger.writers.let {
+            it.clear()
+            it.add(SystemWriter())
+        }
     }
 
     private fun createFixture(): CodeInsightTestFixture {
