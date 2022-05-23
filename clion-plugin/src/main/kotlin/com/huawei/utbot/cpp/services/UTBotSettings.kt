@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
+import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.Paths
 
@@ -158,7 +159,7 @@ data class UTBotSettings(
         var result = path
         if (isRemoteScenario()) {
             val relativeToProjectPath = path.getRelativeToProjectPath()
-            result = Paths.get(remotePath, relativeToProjectPath).toString()
+            result = FilenameUtils.separatorsToUnix(Paths.get(remotePath, relativeToProjectPath).toString())
         }
         logger.info("The resulting path: $result")
         return result
@@ -180,7 +181,7 @@ data class UTBotSettings(
                 return "/"
             }
             val relativeToProjectPath = path.getRelativeToProjectPath(remotePath)
-            result = Paths.get(projectLocalPath, relativeToProjectPath).toString()
+            result = FilenameUtils.separatorsToSystem(Paths.get(projectLocalPath, relativeToProjectPath).toString())
         }
         logger.info("The resulting path: $result")
         return result
@@ -194,13 +195,6 @@ data class UTBotSettings(
         }
         return relativize(projectPath, this)
     }
-
-    private fun couldNotGetItem(itemName: String) = notifyError(
-        """Could not get $itemName.
-               Please, provide paths manually in settings -> tools -> UTBot Settings.
-            """.trimMargin(),
-        project
-    )
 
     // try to predict build dir, tests dir, cmake target paths, and get source folders paths from ide,
     // so user don't have to fill in them by hand
