@@ -21,8 +21,6 @@
  */
 namespace ExecUtils {
     using grpc::ServerContext;
-    using std::vector;
-    using std::string;
 
     /**
      * @brief Executes command in a child process. `popen` is used.
@@ -31,13 +29,13 @@ namespace ExecUtils {
      * @param redirectStderr If true, redirects stderr to stdout.
      * @return Pair of stdout and returned code.
      */
-     ExecutionResult exec(const string &command,
-                     const string &fromDir = "",
-                     const string &projectName = "",
-                     bool redirectStderr = true,
-                     bool logOut = false,
-                     bool ignoreErrors = false,
-                     const std::optional<std::chrono::seconds> &timeout = std::nullopt);
+     ExecutionResult exec(const std::string &command,
+                         const std::string &fromDir = "",
+                         const std::string &projectName = "",
+                         bool redirectStderr = true,
+                         bool logOut = false,
+                         bool ignoreErrors = false,
+                         const std::optional<std::chrono::seconds> &timeout = std::nullopt);
 
     void throwIfCancelled();
 
@@ -55,10 +53,10 @@ namespace ExecUtils {
         }
     }
 
-    void toCArgumentsPtr(vector<std::string> &argv,
-                         vector<std::string> &envp,
-                         vector<char *> &cargv,
-                         vector<char *> &cenvp,
+    void toCArgumentsPtr(std::vector<std::string> &argv,
+                         std::vector<std::string> &envp,
+                         std::vector<char *> &cargv,
+                         std::vector<char *> &cenvp,
                          bool appendNull);
 
     std::vector<std::string> environAsVector();

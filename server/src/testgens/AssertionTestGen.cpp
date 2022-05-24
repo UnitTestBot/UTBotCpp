@@ -12,6 +12,6 @@ AssertionTestGen::AssertionTestGen(const testsgen::AssertionRequest &request,
     : LineTestGen(request.linerequest(), progressWriter, testMode) {
 }
 
-string AssertionTestGen::toString() {
+std::string AssertionTestGen::toString() {
     return LineTestGen::toString();
 }

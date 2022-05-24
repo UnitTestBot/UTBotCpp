@@ -12,9 +12,6 @@
 #include <vector>
 
 namespace SanitizerUtils {
-    using std::vector;
-    using std::string;
-
     extern const std::vector<std::string> CLANG_SANITIZER_CHECKS;
     extern const std::string CLANG_SANITIZER_CHECKS_FLAG;
 
@@ -23,8 +20,8 @@ namespace SanitizerUtils {
     extern const std::string ASAN_OPTIONS_NAME;
     extern const std::string ASAN_OPTIONS_VALUE;
 
-    std::vector<string> getSanitizeCompileFlags(CompilationUtils::CompilerName const &compilerName);
-    string getSanitizeLinkFlags(CompilationUtils::CompilerName const &compilerName);
+    std::vector<std::string> getSanitizeCompileFlags(CompilationUtils::CompilerName const &compilerName);
+    std::string getSanitizeLinkFlags(CompilationUtils::CompilerName const &compilerName);
 };
 
 

@@ -22,36 +22,40 @@ namespace visitor {
 
     protected:
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
+
         void visitArray(const types::Type &type,
-                        const string &name,
+                        const std::string &name,
                         const tests::AbstractValueView *view,
-                        const string &access,
+                        const std::string &access,
                         size_t size,
                         int depth) override;
+
         void visitStruct(const types::Type &type,
-                         const string &name,
+                         const std::string &name,
                          const tests::AbstractValueView *view,
-                         const string &access,
+                         const std::string &access,
                          int depth) override;
+
         void visitUnion(const types::Type &type,
-                        const string &name,
+                        const std::string &name,
                         const tests::AbstractValueView *view,
-                        const string &access,
+                        const std::string &access,
                         int depth) override;
+
         void visitPrimitive(const types::Type &type,
-                            const string &name,
+                            const std::string &name,
                             const tests::AbstractValueView *view,
-                            const string &access,
+                            const std::string &access,
                             int depth) override;
 
         void visitPointerToFunction(const types::Type &type,
-                                    const string &name,
+                                    const std::string &name,
                                     const tests::AbstractValueView *view,
-                                    const string &access,
+                                    const std::string &access,
                                     int depth) override;
     };
 }

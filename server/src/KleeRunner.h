@@ -34,7 +34,7 @@ public:
     void runKlee(const std::vector<tests::TestMethod> &testMethods,
                  tests::TestsMap &testsMap,
                  const std::shared_ptr<KleeGenerator>& generator,
-                 const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
+                 const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
                  bool isBatched,

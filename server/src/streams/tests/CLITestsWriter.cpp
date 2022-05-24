@@ -10,7 +10,7 @@
 
 
 void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                            const string &message,
+                                            const std::string &message,
                                             const fs::path &testDirPath,
                                             std::function<void(tests::Tests &)> &&functor) {
     size_t size = testMap.size();

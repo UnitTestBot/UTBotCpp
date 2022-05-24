@@ -22,7 +22,7 @@ public:
     virtual void writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
-                               std::optional<string> errorMessage) = 0;
+                               std::optional<std::string> errorMessage) = 0;
 };
 
 

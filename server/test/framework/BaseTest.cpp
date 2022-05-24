@@ -7,11 +7,11 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/ServerUtils.h"
 
-BaseTest::BaseTest(const string &suiteName) {
+BaseTest::BaseTest(const std::string &suiteName) {
     setSuite(suiteName);
 }
 
-void BaseTest::setSuite(const string &suite) {
+void BaseTest::setSuite(const std::string &suite) {
     suiteName = suite;
     suitePath = baseSuitePath / suiteName;
     srcPaths = { suitePath, suitePath / "inner" };
@@ -23,12 +23,12 @@ void BaseTest::setCompiler(CompilationUtils::CompilerName name) {
     setBuildDirectory(getBuildDirectoryName(compilerName));
 }
 
-void BaseTest::setBuildDirectory(const string &buildDirectoryName) {
+void BaseTest::setBuildDirectory(const std::string &buildDirectoryName) {
     buildDirRelativePath = buildDirectoryName;
     buildPath = suitePath / buildDirRelativePath;
 }
 
-fs::path BaseTest::getTestFilePath(const string &fileName) {
+fs::path BaseTest::getTestFilePath(const std::string &fileName) {
     return suitePath / fileName;
 }
 
@@ -58,7 +58,7 @@ fs::path BaseTest::getTestDirectory() {
     return suitePath / "tests";
 }
 
-fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const string &fileName) {
+fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const std::string &fileName) {
     return getTestDirectory() /
            (Paths::addExtension(
                Paths::addTestSuffix(
@@ -66,7 +66,7 @@ fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const string &fileName
                ".cpp"));
 }
 
-fs::path BaseTest::getPathToGeneratedTestHeaderFileByTestedFile(const string &fileName) {
+fs::path BaseTest::getPathToGeneratedTestHeaderFileByTestedFile(const std::string &fileName) {
     return getTestDirectory() /
            (Paths::addExtension(
                Paths::addTestSuffix(

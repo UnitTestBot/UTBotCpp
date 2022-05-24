@@ -18,7 +18,7 @@ using namespace clang::ast_matchers;
 
 BordersFinder::BordersFinder(const fs::path &filePath,
                              unsigned line,
-                             const shared_ptr<CompilationDatabase> &compilationDatabase,
+                             const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                              const fs::path &compileCommandsJsonPath)
         : line(line), classBorder(std::nullopt), clangToolRunner(compilationDatabase) {
     buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(), CompilationUtils::MOUNTED_CC_JSON_DIR_NAME);
@@ -93,7 +93,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         lineInfo.initialized = true;
 
-        string strRepresentation = ASTPrinter::getSourceText(currentStmt->getSourceRange(), sourceManager);
+        std::string strRepresentation = ASTPrinter::getSourceText(currentStmt->getSourceRange(), sourceManager);
         auto parents = Result.Context->getParents(*currentStmt);
         const int MAX_ITERATIONS = 50;
         // if more than MAX_ITERATIONS happen, something is wrong

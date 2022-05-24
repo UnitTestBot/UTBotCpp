@@ -36,7 +36,7 @@ namespace printer {
 
         void close();
 
-        void addLinkTargetRecursively(const fs::path &unitFile, const string &suffixForParentOfStubs);
+        void addLinkTargetRecursively(const fs::path &unitFile, const std::string &suffixForParentOfStubs);
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
 

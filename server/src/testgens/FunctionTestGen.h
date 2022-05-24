@@ -16,7 +16,7 @@ public:
 
     ~FunctionTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     bool needToAddPathFlag() override;
 };

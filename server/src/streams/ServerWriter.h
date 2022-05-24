@@ -17,7 +17,7 @@ namespace utbot {
             : BaseWriter<Response, grpc::ServerWriter<Response>>(writer) {
         }
 
-        void writeProgress(const std::optional<string> &message,
+        void writeProgress(const std::optional<std::string> &message,
                            double percent = 0.0,
                            bool completed = false) const override {
             if (!this->hasStream()) {

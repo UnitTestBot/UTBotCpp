@@ -39,8 +39,8 @@ Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &build
 
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
-                                                          const string &projectName,
-                                                          vector<string> cmakeOptions,
+                                                          const std::string &projectName,
+                                                          std::vector<std::string> cmakeOptions,
                                                           ProjectConfigWriter const &writer) {
     try {
         fs::path bearShPath = createBearShScript(buildDirPath);
@@ -71,12 +71,12 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
 
 void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                               const ShellExecTask::ExecutionParameters &params,
-                                                              const string &projectName,
+                                                              const std::string &projectName,
                                                               const ProjectConfigWriter &writer) {
     auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectName, true, true);
     if (status != 0) {
         auto logFilePath = LogUtils::writeLog(out, Paths::getTmpDir(projectName), "project-import");
-        string message = StringUtils::stringFormat(
+        std::string message = StringUtils::stringFormat(
                 "Running command \"%s\" failed. See more info in logs.", params.toString());
         throw std::runtime_error(message);
     }
@@ -98,7 +98,7 @@ fs::path UserProjectConfiguration::getBearShScriptPath(const fs::path &buildDirP
     return buildDirPath / "bear.sh";
 }
 
-static string getBearShEnvironmentSetting() {
+static std::string getBearShEnvironmentSetting() {
     auto libraryDirs = {
             Paths::getUTBotDebsInstallDir() / "usr/lib/x86_64-linux-gnu",
             Paths::getUTBotDebsInstallDir() / "lib/x86_64-linux-gnu",
@@ -123,8 +123,8 @@ fs::path UserProjectConfiguration::createBearShScript(const fs::path &buildDirPa
 
 Status UserProjectConfiguration::RunProjectReConfigurationCommands(const fs::path &buildDirPath,
                                                                    const fs::path &projectDirPath,
-                                                                   const string &projectName,
-                                                                   vector<string> cmakeOptions,
+                                                                   const std::string &projectName,
+                                                                   std::vector<std::string> cmakeOptions,
                                                                    ProjectConfigWriter const &writer) {
     try {
         fs::remove_all(Paths::getTmpDir(""));

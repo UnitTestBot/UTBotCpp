@@ -38,7 +38,7 @@ class Synchronizer {
                           const types::TypesHandler &typesHandler);
     void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const;
 
-    shared_ptr<CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
         std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
         const fs::path &ccJsonStubDirPath) const;

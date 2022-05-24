@@ -62,7 +62,7 @@ namespace {
         void checkReturnEnum(FunctionTestGen &testGen) {
             checkTestCasePredicates(
                     testGen.tests.at(enums_c).methods.begin().value().testCases,
-                    vector<TestCasePredicate>(
+                    std::vector<TestCasePredicate>(
                             {[] (const tests::Tests::MethodTestCase& testCase) {
                                 return stoi(testCase.paramValues[0].view->getEntryValue()) == 0
                                     && testCase.returnValue.view->getEntryValue() == "ZERO";
@@ -105,7 +105,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue()) == 0
                                 && testCase.paramValues[0].view->getEntryValue().find(", 0}") != std::string::npos;
@@ -130,7 +130,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {
                          [] (const tests::Tests::MethodTestCase& testCase) {
                             return testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), 'a');
@@ -158,7 +158,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) == 0
                                && testCase.returnValue.view->getEntryValue() == "{{'0', {0U, 0LL}, 0}, 0, 0LL}";
@@ -185,7 +185,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue()) == 0 &&
                                 testCase.paramValues[0].view->getEntryValue() == "from_bytes<IntBytesUnion>({0, 0, 0, 0})";
@@ -210,7 +210,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue()) == 1
                                 && testCase.paramValues[0].view->getEntryValue().find("from_bytes<ShortBytesUnion>({0, ") == 0;
@@ -234,7 +234,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) == 0
                                && testCase.returnValue.view->getEntryValue() == "from_bytes<MainUnion>({48, 0, 0, 0, 0, 0, 0, 0})";
@@ -259,7 +259,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             size_t it = 0;
                             int cnt = 0;
@@ -280,7 +280,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                 return stoi(testCase.returnValue.view->getEntryValue()) == 0;
             } }),
             "operateWithUnionWithPointer");
@@ -293,7 +293,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoll(testCase.paramValues[0].view->getEntryValue()) < stoll(testCase.paramValues[1].view->getEntryValue())
                                 && stoll(testCase.paramValues[0].view->getEntryValue()) == stoll(testCase.returnValue.view->getEntryValue());
@@ -313,7 +313,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoll(testCase.paramValues[0].view->getEntryValue()) < stoll(testCase.paramValues[1].view->getEntryValue())
                                 && "{" + testCase.paramValues[0].view->getEntryValue() + ", " + testCase.paramValues[1].view->getEntryValue() + "}"
@@ -334,7 +334,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                 auto entryValue = testCase.paramValues[0].view->getEntryValue();
                 auto returnValue = stoll(testCase.returnValue.view->getEntryValue());
@@ -352,7 +352,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return /*stoll(testCase.paramValues[0].view->getEntryValue()) == stoll(testCase.returnValue.view->getSubViews()[5]->getEntryValue())
                          && */stoll(testCase.paramValues[1].view->getEntryValue()) == stoll(testCase.returnValue.view->getSubViews()[0]->getEntryValue());
@@ -368,7 +368,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.paramValues[2].view->getEntryValue()) + 7
                         == stoi(testCase.returnValue.view->getEntryValue())
@@ -389,7 +389,7 @@ namespace {
         const std::string alphabet = "{'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'}";
         checkTestCasePredicates(
                 testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[&alphabet] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue()) == 1 &&
                                 testCase.paramValues[0].view->getEntryValue().find(alphabet) != std::string::npos;
@@ -409,7 +409,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoll(testCase.paramValues[0].view->getEntryValue()) >= 0 &&
                                 "{1, {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'}}" == testCase.returnValue.view->getEntryValue();
@@ -429,9 +429,9 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
-                    string expectedString = StringUtils::stringFormat("{%s, {%s, %s}, 0}",
+                    std::string expectedString = StringUtils::stringFormat("{%s, {%s, %s}, 0}",
                                                                       PrinterUtils::C_NULL, PrinterUtils::C_NULL, PrinterUtils::C_NULL);
                   return testCase.returnValue.view->getEntryValue() ==  expectedString &&
                         testCase.paramValues[0].view->getEntryValue() == expectedString &&
@@ -448,7 +448,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(types_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "false"
                                 && testCase.paramValues[1].view->getEntryValue() == "false" && testCase.returnValue.view->getEntryValue() == "4";
@@ -476,7 +476,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(types_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) > 0 && testCase.returnValue.view->getEntryValue() == "true";
                         },
@@ -494,7 +494,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(enums_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "NEGATIVE" && stoi(testCase.returnValue.view->getEntryValue()) == -1;
                         },
@@ -516,7 +516,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return testCase.paramValues[0].view->getEntryValue() == "0" && stoll(testCase.returnValue.view->getEntryValue()) == 0;
                 }
@@ -531,17 +531,17 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(enums_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
-                            return testCase.paramValues[0].view->getEntryValue().find("NEGATIVE") != string::npos
+                            return testCase.paramValues[0].view->getEntryValue().find("NEGATIVE") != std::string::npos
                                 && stoi(testCase.returnValue.view->getEntryValue()) == -1;
                         },
                          [] (const tests::Tests::MethodTestCase& testCase) {
-                           return testCase.paramValues[0].view->getEntryValue().find("POSITIVE") != string::npos
+                           return testCase.paramValues[0].view->getEntryValue().find("POSITIVE") != std::string::npos
                                 && stoi(testCase.returnValue.view->getEntryValue()) == 1;
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
-                            return testCase.paramValues[0].view->getEntryValue().find("ZERO") != string::npos
+                            return testCase.paramValues[0].view->getEntryValue().find("ZERO") != std::string::npos
                                 && stoi(testCase.returnValue.view->getEntryValue()) == 0;
                          }
                         }
@@ -573,7 +573,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(enums_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
 
                             return testCase.paramValues[0].view->getEntryValue() == "{ZERO}" && stoi(testCase.returnValue.view->getEntryValue()) == 0;
@@ -596,7 +596,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(enums_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "NEGATIVE" && stoi(testCase.returnValue.view->getEntryValue()) == 0;
                         },
@@ -620,7 +620,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(enums_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                      return testCase.paramValues[0].view->getEntryValue() ==
                                 "{EnumWithinRecord::CLOSED}" &&
@@ -645,7 +645,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(typedefs_1_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             auto strParam = testCase.paramValues[0].view->getEntryValue();
                             return stoi(strParam.substr(1, strParam.size() - 2)) > 0
@@ -672,7 +672,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(typedefs_1_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) < stoi(testCase.paramValues[1].view->getEntryValue())
                             && stoi(testCase.returnValue.view->getEntryValue()) == stoi(testCase.paramValues[0].view->getEntryValue());
@@ -693,7 +693,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(typedefs_1_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) < stoi(testCase.paramValues[1].view->getEntryValue())
                             && stoi(testCase.returnValue.view->getEntryValue()) == stoi(testCase.paramValues[0].view->getEntryValue());
@@ -713,7 +713,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(typedefs_2_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "NEG1" && stoi(testCase.returnValue.view->getEntryValue()) == -1;
                         },
@@ -735,7 +735,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(typedefs_2_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 && testCase.returnValue.view->getEntryValue() == "NEG2";
                         },
@@ -757,7 +757,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(packed_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getSubViews().back()->getEntryValue()) > 0
                                 && testCase.returnValue.view->getEntryValue() == "1";
@@ -782,7 +782,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(packed_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), '1');
                         },
@@ -810,7 +810,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(constants_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "4294967295U" && testCase.returnValue.view->getEntryValue() == "true";
                         },
@@ -831,7 +831,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(constants_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "9223372036854775807LL" && testCase.returnValue.view->getEntryValue() == "true";
                         },
@@ -852,7 +852,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(constants_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "(-9223372036854775807LL - 1)" && testCase.returnValue.view->getEntryValue() == "true";
                         },
@@ -873,7 +873,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(constants_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "18446744073709551615ULL" && testCase.returnValue.view->getEntryValue() == "true";
                         },
@@ -893,7 +893,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(packed_structs_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return testCase.returnValue.view->getEntryValue() == "0";
                         },
@@ -920,7 +920,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(void_functions_c).methods.begin().value().testCases,
-                    vector<TestCasePredicate>(
+                    std::vector<TestCasePredicate>(
                             {[] (const tests::Tests::MethodTestCase& testCase) {
                                 return stoi(testCase.paramValues[0].view->getEntryValue()) < 0;
                             },
@@ -941,7 +941,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(void_functions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getSubViews()[0]->getEntryValue()) * stoi(testCase.paramValues[1].view->getSubViews()[0]->getEntryValue()) < 0;
                         },
@@ -962,7 +962,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(void_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return true;
                 }})
@@ -976,7 +976,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(void_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 6;
                 }
@@ -991,7 +991,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) == 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), 'a');
                 },
@@ -1009,7 +1009,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) == 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), 'a');
                 },
@@ -1027,7 +1027,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) < stoi(testCase.paramValues[1].view->getEntryValue()) &&
                       stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue()) < stoi(testCase.returnValue.view->getSubViews()[1]->getEntryValue());
@@ -1047,7 +1047,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue()) == 5;
                 }
@@ -1068,7 +1068,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return testCase.returnValue.view->getEntryValue() == "5";
                 },
@@ -1089,7 +1089,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL;
                 },
@@ -1107,7 +1107,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(qualifiers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return testCase.paramValues[0].view->getEntryValue() == "\"hello\"" && stoi(testCase.returnValue.view->getEntryValue()) == 1;
                 },
@@ -1125,7 +1125,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(qualifiers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), '-');
                 },
@@ -1146,7 +1146,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(qualifiers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(), '-');
                 },
@@ -1167,7 +1167,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(qualifiers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) < stoi(testCase.paramValues[1].view->getEntryValue()) &&
                     stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue()) == stoi(testCase.paramValues[0].view->getEntryValue()) &&
@@ -1188,7 +1188,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getSubViews()[0]->getEntryValue()) > 0 &&
                             stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1215,7 +1215,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[](const tests::Tests::MethodTestCase& testCase) {
                         return stoi(testCase.returnValue.view->getEntryValue()) == 1;
                  },
@@ -1246,7 +1246,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                     return testCase.lazyReferences.size() >= 3;
                 }
@@ -1260,7 +1260,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                      return !testCase.lazyReferences.empty();
                  }
@@ -1274,7 +1274,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                      return !testCase.lazyReferences.empty();
                  }
@@ -1288,7 +1288,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                      return testCase.lazyReferences.size() >= 2;
                  }
@@ -1302,7 +1302,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                      return testCase.lazyReferences.size() >= 3;
                  }
@@ -1316,7 +1316,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 0;
                 },
@@ -1336,7 +1336,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return testCase.returnValue.view->getEntryValue() == "'\\0'";
                 },
@@ -1353,7 +1353,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 0;
                 },
@@ -1373,7 +1373,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 12;
                 },
@@ -1389,10 +1389,10 @@ namespace {
 
     TEST_F(Syntax_Test, Correct_CodeText_For_Regression_And_Error) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 7);
-        const string code = testGen.tests.begin()->second.code;
-        const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
-        const string endRegion = std::string("#pragma endregion") + NL;
-        const string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        const std::string code = testGen.tests.begin()->second.code;
+        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
+        const std::string endRegion = std::string("#pragma endregion") + NL;
+        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
         ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
         ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
         ASSERT_TRUE(code.find(beginErrorRegion) != std::string::npos) << "No error begin region";
@@ -1404,7 +1404,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 0;
                 },
@@ -1470,7 +1470,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[](const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 1 &&
                          testCase.paramValues.front().view->getEntryValue() ==
@@ -1503,7 +1503,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[](const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 1;
                 },
@@ -1522,7 +1522,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 1;
                 },
@@ -1545,7 +1545,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   return stoi(testCase.paramValues[0].view->getEntryValue()) > 0 &&
                       testCase.returnValue.view->getEntryValue() == "{{{1, 2, 3, 4, 5}, {1, 2, 3, 4, 5}}}";
@@ -1568,7 +1568,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                      return stoi(testCase.returnValue.view->getEntryValue()) < 0;
                  },
@@ -1586,7 +1586,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
             testGen.tests.at(multi_arrays_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                   return stoi(testCase.returnValue.view->getEntryValue()) == 0;
                 },
@@ -1606,7 +1606,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(floats_special_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase &testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "NAN";
                         }}));
@@ -1619,7 +1619,7 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
                 testGen.tests.at(floats_special_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase &testCase) {
                             return testCase.paramValues[0].view->getEntryValue() == "NAN";
                         }}));
@@ -1633,7 +1633,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(floats_special_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                     { [](const tests::Tests::MethodTestCase &testCase) {
                         return testCase.paramValues[0].view->getEntryValue() == "INFINITY";
                     } }));
@@ -1685,7 +1685,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) != 0 &&
                                     StringUtils::startsWith(testCase.returnValue.view->getEntryValue(),
@@ -1711,7 +1711,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) +
                                    stoi(testCase.paramValues[1].view->getEntryValue()) < 0 &&
@@ -1743,7 +1743,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue()) <
                                    stoi(testCase.paramValues[1].view->getEntryValue()) &&
@@ -1775,7 +1775,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {
                             [] (const tests::Tests::MethodTestCase& testCase) {
                                 return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1800,7 +1800,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-                    vector<TestCasePredicate>(
+                    std::vector<TestCasePredicate>(
                         {
                             [] (const tests::Tests::MethodTestCase& testCase) {
                                 return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1822,7 +1822,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1844,7 +1844,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {
                                 [] (const tests::Tests::MethodTestCase& testCase) {
                                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1866,7 +1866,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {
                                 [] (const tests::Tests::MethodTestCase& testCase) {
                                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -1909,7 +1909,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -1928,7 +1928,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -1950,7 +1950,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -1972,7 +1972,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(array_sort_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -1994,7 +1994,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(array_sort_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -2024,7 +2024,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(stubs_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == -1;
@@ -2043,7 +2043,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(tree_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {
                                 [] (const tests::Tests::MethodTestCase& testCase) {
                                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -2130,7 +2130,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(types_3_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
               EXPECT_TRUE(testCase.globalPostValues.empty());
               return testCase.returnValue.view->getEntryValue() == "-1";
             } }),
@@ -2216,7 +2216,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.empty();
                       }}),
@@ -2232,7 +2232,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return stoi(testCase.paramPostValues[0].view->getEntryValue()) == stoi(testCase.returnValue.view->getEntryValue());
                        },
@@ -2252,7 +2252,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase &testCase) {
                             return stoi(
                                     testCase.paramPostValues[0].view->getSubViews().front()->getSubViews().front()->getEntryValue()) ==
@@ -2276,7 +2276,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return stoi(testCase.paramPostValues[0].view->getEntryValue()) == stoi(testCase.returnValue.view->getEntryValue());
                         },
@@ -2296,7 +2296,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.empty();
                       }}),
@@ -2312,7 +2312,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.empty();
                       }}),
@@ -2328,7 +2328,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.empty();
                       }}),
@@ -2344,7 +2344,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(different_parameters_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.empty();
                       }}),
@@ -2384,7 +2384,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(simple_class_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue() == "0" &&
                                testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue() == "0";
@@ -2414,7 +2414,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(simple_class_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return stoi(testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue())
                                    == abs(stoi(testCase.paramValues.front().view->getSubViews()[0]->getEntryValue())) &&
@@ -2444,7 +2444,7 @@ namespace {
 
         checkTestCasePredicates(
               testGen.tests.at(simple_class_cpp).methods.begin().value().testCases,
-              vector<TestCasePredicate>(
+              std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.classPostValues.has_value() &&
                                stoi(testCase.classPostValues.value().view->getSubViews()[0]->getEntryValue())
@@ -2475,7 +2475,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     std::stringstream ss;
                     EXPECT_EQ(testCase.paramValues.front().view->getEntryValue().size(), 3);
                     ss << "from_bytes<StructWithUnnamedUnion>({"
@@ -2494,7 +2494,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     return "from_bytes<StructWithUnnamedUnion>({0, 0, 0, 0, 0, 0, 0, 0})" ==
                            testCase.paramValues.front().view->getEntryValue() &&
                            "from_bytes<StructWithUnnamedUnion>({42, 0, 0, 0, 42, 0, 0, 0})" ==
@@ -2515,7 +2515,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     std::stringstream ss;
                     EXPECT_EQ(testCase.paramValues.front().view->getEntryValue().size(), 3);
                     ss << "from_bytes<UnionWithUnnamedStruct>({"
@@ -2535,7 +2535,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     return "from_bytes<UnionWithUnnamedStruct>({0, 0, 0, 0, 0, 0, 0, 0})" ==
                            testCase.paramValues.front().view->getEntryValue() &&
                            "from_bytes<UnionWithUnnamedStruct>({42, 0, 0, 0, 42, 0, 0, 0})" ==
@@ -2558,7 +2558,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     return "{{0}, {0}}" == testCase.paramValues.front().view->getEntryValue() &&
                            "42" == testCase.returnValue.view->getEntryValue();
                 }, [](const tests::Tests::MethodTestCase &testCase) {
@@ -2575,7 +2575,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -2597,7 +2597,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == 0;
@@ -2625,7 +2625,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue()) == 1;
@@ -2641,7 +2641,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[2]->getEntryValue(), "from_bytes<uni::inner1::U>") &&
@@ -2666,7 +2666,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[0]->getEntryValue(), "from_bytes<StructWithUnion::InnerUnion>") &&
@@ -2691,7 +2691,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(namespace_cpp).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[0]->getEntryValue(), "from_bytes<A1::B1>") &&

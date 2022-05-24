@@ -282,7 +282,7 @@ namespace types {
         uint64_t alignment;
     };
 
-    typedef std::unordered_map<string, std::shared_ptr<FunctionInfo>> FPointerMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
 
     struct StructInfo: TypeInfo {
         std::vector<Field> fields{};
@@ -671,13 +671,13 @@ namespace types {
     static inline const std::vector<std::string> QUALIFIERS = { CONST_QUALIFIER, RESTRICT_QUALIFIER, VOLATILE_QUALIFIER };
 
     struct FunctionInfo {
-        string name;
+        std::string name;
         bool isArray;
         types::Type returnType;
 
         struct FunctionParamInfo {
             types::Type type;
-            string name;
+            std::string name;
         };
         std::vector<FunctionParamInfo> params;
     };

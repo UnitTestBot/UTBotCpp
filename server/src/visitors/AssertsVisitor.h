@@ -22,16 +22,16 @@ namespace visitor {
 
         size_t pointerSize;
         std::string predicate = "";
-        static const std::unordered_map<string, string> predicateMapping;
+        static const std::unordered_map<std::string, std::string> predicateMapping;
 
         static FunctionSignature processExpect(const types::Type &type,
                                                const std::string &gtestMacro,
                                                std::vector<std::string> &&args);
 
-        [[nodiscard]] std::string getDecorateActualVarName(const string& access);
+        [[nodiscard]] std::string getDecorateActualVarName(const std::string& access);
 
         FunctionSignature changeSignatureToNullCheck(const FunctionSignature& signature, const types::Type& type,
-                                                     const tests::AbstractValueView *view, const string &access);
+                                                     const tests::AbstractValueView *view, const std::string &access);
 
     public:
         explicit AssertsVisitor(const types::TypesHandler *typesHandler,

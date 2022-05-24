@@ -16,14 +16,11 @@
 #include <fstream>
 
 namespace CompilationUtils {
-    using std::string;
-    using std::shared_ptr;
-
-    shared_ptr<CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     getCompilationDatabase(const fs::path &buildCommandsJsonPath) {
         fs::path clangCompileCommandsJsonPath =
             getClangCompileCommandsJsonPath(buildCommandsJsonPath);
-        string errorMessage;
+        std::string errorMessage;
         auto compilationDatabase = CompilationDatabase::autoDetectFromDirectory(
             clangCompileCommandsJsonPath.string(), errorMessage);
         if (!errorMessage.empty()) {
@@ -75,7 +72,7 @@ namespace CompilationUtils {
         }
         std::ifstream ifs(compileCommandsJsonPath);
         json json = json::parse(ifs);
-        string projectPathStr = Paths::normalizedTrimmed(fs::absolute(projectPath)).string();
+        std::string projectPathStr = Paths::normalizedTrimmed(fs::absolute(projectPath)).string();
         Paths::removeBackTrailedSlash(projectPathStr);
 
         const std::string directoryFieldName = "directory";
@@ -85,19 +82,19 @@ namespace CompilationUtils {
         const std::string argumentsFieldName = "arguments";
 
         for (auto &cmd : json) {
-            string directoryField = cmd[directoryFieldName];
-            string userSystemProjectPath =
+            std::string directoryField = cmd[directoryFieldName];
+            std::string userSystemProjectPath =
                 Paths::subtractPath(directoryField, buildDirRelativePath);
             Paths::removeBackTrailedSlash(userSystemProjectPath);
 
             if (cmd.contains(commandFieldName)) {
-                string commandField = cmd[commandFieldName];
+                std::string commandField = cmd[commandFieldName];
                 StringUtils::replaceAll(commandField, userSystemProjectPath, projectPathStr);
                 cmd[commandFieldName] = commandField;
             }
             if (cmd.contains(argumentsFieldName)) {
                 for (auto &arg : cmd[argumentsFieldName]) {
-                    string argumentsField = arg;
+                    std::string argumentsField = arg;
                     StringUtils::replaceAll(argumentsField, userSystemProjectPath, projectPathStr);
                     arg = argumentsField;
                 }
@@ -107,12 +104,12 @@ namespace CompilationUtils {
             cmd[directoryFieldName] = directoryField;
 
             if (cmd.contains(fileFieldName)) {
-                string fileField = cmd[fileFieldName];
+                std::string fileField = cmd[fileFieldName];
                 StringUtils::replaceAll(fileField, userSystemProjectPath, projectPathStr);
                 cmd[fileFieldName] = fileField;
             } else {
                 for (auto &currentFile : cmd[filesFieldName]) {
-                    string currentFileField = currentFile;
+                    std::string currentFileField = currentFile;
                     StringUtils::replaceAll(currentFileField, userSystemProjectPath,
                                             projectPathStr);
                     currentFile = currentFileField;
@@ -191,7 +188,7 @@ namespace CompilationUtils {
         case CompilerName::GCC:
         case CompilerName::GXX: {
             // /usr/bin/gcc -> /usr/lib/gcc/x86_64-linux-gnu/9/libgcc.a
-            string command = StringUtils::stringFormat("%s -print-libgcc-file-name", buildCompilerPath);
+            std::string command = StringUtils::stringFormat("%s -print-libgcc-file-name", buildCompilerPath);
             auto [output, status, outPath] = ShellExecTask::runPlainShellCommand(command);
             if (status == 0) {
                 StringUtils::rtrim(output);
@@ -213,7 +210,7 @@ namespace CompilationUtils {
         case CompilerName::CLANG:
         case CompilerName::CLANGXX: {
             // /utbot_distr/install/bin/clang -> /utbot_distr/install/lib/clang/10.0.1
-            string command = StringUtils::stringFormat("%s -print-resource-dir", buildCompilerPath);
+            std::string command = StringUtils::stringFormat("%s -print-resource-dir", buildCompilerPath);
             auto [output, status, outPath] = ShellExecTask::runPlainShellCommand(command);
             if (status == 0) {
                 StringUtils::rtrim(output);

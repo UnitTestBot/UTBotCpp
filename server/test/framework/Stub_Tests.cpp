@@ -41,7 +41,7 @@ namespace {
         fs::path sum_test_cpp =
                 Paths::sourcePathToTestPath(projectContext, calc_sum_c);
 
-        vector<fs::path> modifiedSourceFiles = { literals_foo_c, calc_sum_h, calc_sum_c };
+        std::vector<fs::path> modifiedSourceFiles = { literals_foo_c, calc_sum_h, calc_sum_c };
 
         void SetUp() override {
             clearTestDirectory();
@@ -59,13 +59,13 @@ namespace {
             }
         }
 
-        static void checkStubFileNoChanges(const fs::path& stubFilePath, const string& expectedContent) {
+        static void checkStubFileNoChanges(const fs::path& stubFilePath, const std::string& expectedContent) {
             std::ifstream stream(stubFilePath);
-            string timestampComment;
+            std::string timestampComment;
             getline(stream, timestampComment);
             std::string fileContent((std::istreambuf_iterator<char>(stream)),
                                             std::istreambuf_iterator<char>());
-            string expectedContentCopy = expectedContent;
+            std::string expectedContentCopy = expectedContent;
             StringUtils::removeLineEndings(expectedContentCopy);
             StringUtils::removeLineEndings(fileContent);
             EXPECT_EQ(expectedContentCopy, fileContent);
@@ -73,7 +73,7 @@ namespace {
 
         static void checkStubFileEqualsTo(const fs::path& stubFilePath, const fs::path& expectedFilePath) {
             std::ifstream stream(stubFilePath);
-            string timestampComment;
+            std::string timestampComment;
             getline(stream, timestampComment);
             std::string stubFileContent((std::istreambuf_iterator<char>(stream)),
                                     std::istreambuf_iterator<char>());
@@ -85,7 +85,7 @@ namespace {
             EXPECT_EQ(stubFileContent, expectedFileContent);
         }
 
-        string modifyStubFile(const fs::path& stubFilePath) {
+        std::string modifyStubFile(const fs::path& stubFilePath) {
             fs::path modifiedContentPath = suitePath / "modified" / stubFilePath.filename();
             if (!fs::exists(stubFilePath) || !fs::exists(modifiedContentPath)) return "";
             std::ifstream modifiedIStream(modifiedContentPath);
@@ -93,11 +93,11 @@ namespace {
                                             std::istreambuf_iterator<char>());
 
             std::ifstream stubIStream(stubFilePath);
-            string timestampComment;
+            std::string timestampComment;
             getline(stubIStream, timestampComment);
             stubIStream.close();
             std::ofstream stubOStream(stubFilePath);
-            string stubContent = timestampComment + modifiedFileContent;
+            std::string stubContent = timestampComment + modifiedFileContent;
             stubOStream << stubContent;
             auto fsNow = fs::file_time_type::clock::now();
             fs::last_write_time(stubFilePath, fsNow);
@@ -146,7 +146,7 @@ namespace {
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
         }
-        string stubCode = modifyStubFile(sum_stub_c);
+        std::string stubCode = modifyStubFile(sum_stub_c);
 
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
@@ -196,7 +196,7 @@ namespace {
         auto const &methods = testGen.tests.at(literals_foo_c).methods;
         testUtils::checkTestCasePredicates(
             methods.at("check_stubs").testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](tests::Tests::MethodTestCase const &testCase) {
                     auto result = testCase.returnValue.view->getEntryValue();
                     return result == "1";
@@ -253,7 +253,7 @@ namespace {
         auto const &methods = testGen.tests.at(literals_foo_c).methods;
         testUtils::checkTestCasePredicates(
             methods.at("check_stubs").testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](tests::Tests::MethodTestCase const &testCase) {
                     auto result = testCase.returnValue.view->getEntryValue();
                     return result == "1";
@@ -279,9 +279,9 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        vector<fs::path> sourcesToModify = {literals_foo_c, calc_sum_c, calc_sum_h};
+        std::vector<fs::path> sourcesToModify = {literals_foo_c, calc_sum_c, calc_sum_h};
         modifySources(sourcesToModify);
-        string stubCode = modifyStubFile(sum_stub_c);
+        std::string stubCode = modifyStubFile(sum_stub_c);
 
         auto request2 = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, true);
         auto testGen2 = FileTestGen(*request2, writer.get(), TESTMODE);

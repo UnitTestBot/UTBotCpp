@@ -5,7 +5,7 @@
 #include "FileTargetsWriter.h"
 
 void FileTargetsWriter::writeResponse(
-    const vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets,
+    const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets,
     const utbot::ProjectContext &projectContext) {
     if (!hasStream()) {
         return;

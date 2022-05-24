@@ -13,8 +13,8 @@
 
 class PredicateTestGen final : public LineTestGen {
 public:
-    string predicate;
-    string returnValue;
+    std::string predicate;
+    std::string returnValue;
     testsgen::ValidationType type;
 
     explicit PredicateTestGen(const testsgen::PredicateRequest &request,
@@ -23,7 +23,7 @@ public:
 
     ~PredicateTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     bool needToAddPathFlag() override;
 };

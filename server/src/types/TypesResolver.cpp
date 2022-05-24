@@ -20,7 +20,7 @@
 TypesResolver::TypesResolver(const Fetcher *parent) : parent(parent) {
 }
 
-static bool canBeReplaced(const string &nameInMap, const string &name) {
+static bool canBeReplaced(const std::string &nameInMap, const std::string &name) {
     return nameInMap.empty() && !name.empty();
 }
 
@@ -122,7 +122,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
                     field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
             if (returnType->isPointerType() && returnType->getPointeeType()->isStructureType()) {
-                string structName =
+                std::string structName =
                         returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
                                                   structName)) {
@@ -172,9 +172,9 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     LOG_S(DEBUG) << ss.str();
 }
 
-static std::optional<string> getAccess(const clang::Decl *decl) {
+static std::optional<std::string> getAccess(const clang::Decl *decl) {
     const clang::DeclContext *pContext = decl->getDeclContext();
-    std::vector<string> result;
+    std::vector<std::string> result;
     while (pContext != nullptr) {
         if (auto pNamedDecl = llvm::dyn_cast<clang::NamedDecl>(pContext)) {
             auto name = pNamedDecl->getNameAsString();
@@ -192,7 +192,7 @@ static std::optional<string> getAccess(const clang::Decl *decl) {
     return StringUtils::joinWith(llvm::reverse(result), "::");
 }
 
-void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
+void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &name) {
     clang::ASTContext const &context = EN->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
 
@@ -214,7 +214,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
 
     for (auto it = EN->enumerator_begin(); it != EN->enumerator_end(); ++it) {
         types::EnumInfo::EnumEntry enumEntry;
-        string entryName = it->getNameAsString();
+        std::string entryName = it->getNameAsString();
         enumEntry.name = entryName;
         enumEntry.value = std::to_string(it->getInitVal().getSExtValue());
         enumInfo.valuesToEntries[enumEntry.value] = enumEntry;
@@ -269,7 +269,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
             continue;
         }
         types::Field field;
-        string fieldName = F->getNameAsString();
+        std::string fieldName = F->getNameAsString();
         field.name = fieldName;
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
@@ -297,7 +297,7 @@ void TypesResolver::resolve(const clang::QualType &type) {
     if (tagDecl == nullptr) {
         return;
     }
-    string name = tagDecl->getNameAsString();
+    std::string name = tagDecl->getNameAsString();
     if (auto enumDecl = llvm::dyn_cast<clang::EnumDecl>(tagDecl)) {
         resolveEnum(enumDecl, name);
     }

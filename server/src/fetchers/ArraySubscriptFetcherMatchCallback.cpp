@@ -36,7 +36,7 @@ void ArraySubscriptFetcherMatchCallback::run(const MatchFinder::MatchResult &Res
         auto declrefExpr = cast<DeclRefExpr>(variableExpr);
         auto variableDecl = declrefExpr->getDecl();
         auto contextDecl = variableDecl->getParentFunctionOrMethod();
-        if (contextDecl == nullptr || string(contextDecl->getDeclKindName()) != "Function") {
+        if (contextDecl == nullptr || std::string(contextDecl->getDeclKindName()) != "Function") {
             return;
         }
         auto currentFunctionDecl = cast<FunctionDecl>(contextDecl);

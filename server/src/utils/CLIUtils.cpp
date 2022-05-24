@@ -73,7 +73,7 @@ std::vector<fs::path> getSourcePaths(const ProjectContextOptionGroup &projectCon
                                      const std::string &sourcePathsString) {
     if (!sourcePathsString.empty()) {
         return CollectionUtils::transformTo<std::vector<fs::path>>(
-            StringUtils::split(sourcePathsString, ','), [](string const &file) {
+            StringUtils::split(sourcePathsString, ','), [](std::string const &file) {
                 return Paths::normalizedTrimmed(fs::absolute(fs::path(file)));
             });
     } else if (!projectContextOptions.getProjectPath().empty()) {
@@ -280,7 +280,7 @@ char *CLIUtils::getCmdOption(char **begin, char **end, const std::string &option
 }
 
 
-void CLIUtils::setOptPath(int argc, char **argv, const string &option, fs::path &var) {
+void CLIUtils::setOptPath(int argc, char **argv, const std::string &option, fs::path &var) {
     auto optPath = getCmdOption(argv, argv + argc, option);
     if (optPath != nullptr) {
         if (Paths::isValidDir(std::string(optPath))) {

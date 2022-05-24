@@ -14,7 +14,7 @@ PredicateTestGen::PredicateTestGen(const testsgen::PredicateRequest &request,
       returnValue(request.predicateinfo().returnvalue()) {
 }
 
-string PredicateTestGen::toString() {
+std::string PredicateTestGen::toString() {
     std::stringstream s;
     s << LineTestGen::toString() << "\n\ttype: " << testsgen::ValidationType_Name(type)
       << "\n\tpredicate: " << predicate << "\n\treturnValue: " << returnValue << "\n";

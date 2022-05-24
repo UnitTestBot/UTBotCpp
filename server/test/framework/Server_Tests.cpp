@@ -21,7 +21,6 @@
 #include <tuple>
 
 namespace {
-    using namespace std::literals;
     using CompilationUtils::CompilerName;
     using CompilationUtils::getBuildDirectoryName;
     using grpc::Channel;
@@ -77,7 +76,7 @@ namespace {
             printer::NativeMakefilePrinter nativeMakefilePrinter(projectContext, buildDatabase,
                                                                  root, compilerPath, &stubsSources);
             nativeMakefilePrinter.addLinkTargetRecursively(root, "");
-            string makefileContent =
+            std::string makefileContent =
                 printer::NativeMakefilePrinter{ nativeMakefilePrinter, sourceFile }.ss.str();
             fs::path makefilePath =
                 Paths::getMakefilePathFromSourceFilePath(projectContext, sourceFile);
@@ -124,7 +123,7 @@ namespace {
         void checkAssertionFailures_C(BaseTestGen &testGen) {
             testUtils::checkTestCasePredicates(
                 testGen.tests.at(assertion_failures_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                     { [](tests::Tests::MethodTestCase const &testCase) {
                          return stoi(testCase.paramValues[0].view->getEntryValue()) < 7;
                      },
@@ -142,7 +141,7 @@ namespace {
                 if (methodName == "max_") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                             stoi(testCase.paramValues[1].view->getEntryValue()) &&
@@ -161,7 +160,7 @@ namespace {
                 } else if (methodName == "sqr_positive") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
                                         stoi(testCase.returnValue.view->getEntryValue()) == -1 &&
@@ -179,7 +178,7 @@ namespace {
                 } else if (methodName == "simple_loop") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testCase.returnValue.view->getEntryValue() == "0" &&
                                         testCase.stdinValue == std::nullopt;
@@ -200,7 +199,7 @@ namespace {
         void checkDependentFunctions_C(BaseTestGen &testGen) {
             checkTestCasePredicates(
                 testGen.tests.at(dependent_functions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                     { [](tests::Tests::MethodTestCase const &testCase) {
                          return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                     stoi(testCase.paramValues[1].view->getEntryValue()) &&
@@ -222,7 +221,7 @@ namespace {
                 if (methodName == "get_sign_struct") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
                                 return testCase.returnValue.view->getEntryValue() == "0";
                             },
@@ -239,7 +238,7 @@ namespace {
                 } else if (methodName == "get_symbol_by_struct") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
                                      testCase.returnValue.view->getEntryValue(), 'a');
@@ -264,7 +263,7 @@ namespace {
                 } else if (methodName == "operate_with_inner_structs") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
                                      testCase.returnValue.view->getEntryValue(), '5');
@@ -295,7 +294,7 @@ namespace {
                 if (methodName == "get_sign_union") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
                                 return testCase.returnValue.view->getEntryValue() == "0";
                             },
@@ -311,7 +310,7 @@ namespace {
                 if (methodName == "extract_bit") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
                                 return testCase.returnValue.view->getEntryValue() == "0";
                             },
@@ -330,7 +329,7 @@ namespace {
                 if (methodName == "get_coordinate") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                 int i = stoi(testCase.paramValues[1].view->getEntryValue());
                                 return i >= 0 && i < 2;
@@ -340,7 +339,7 @@ namespace {
                 if (methodName == "operate_with_inner_unions") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
                                      testCase.returnValue.view->getEntryValue(), '5');
@@ -392,7 +391,7 @@ namespace {
                 } else if (methodName == "median") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testCase.returnValue.view->getEntryValue() ==
                                         testCase.paramValues[0].view->getEntryValue();
@@ -525,7 +524,7 @@ namespace {
                 if (md.name == "increment") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                 auto returnValue = testCase.returnValue.view->getEntryValue();
                                 auto preValue = testCase.globalPreValues[0].view->getEntryValue();
@@ -558,7 +557,7 @@ namespace {
             for (const auto &[_, md] : methods) {
                 if (md.name == "get_size_of_data") {
                     checkTestCasePredicates(md.testCases,
-                                            vector<TestCasePredicate>(
+                                            std::vector<TestCasePredicate>(
                                                 { [](tests::Tests::MethodTestCase const &testCase) {
                                                     auto returnValue =
                                                         testCase.returnValue.view->getEntryValue();
@@ -567,7 +566,7 @@ namespace {
                 } else if (md.name == "stop_now") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  auto i = testCase.paramValues[0].view->getEntryValue();
                                  return i == "0";
@@ -579,7 +578,7 @@ namespace {
                 } else if (md.name == "and") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                 auto x = testCase.paramValues[0].view->getEntryValue();
                                 auto y = testCase.paramValues[1].view->getEntryValue();
@@ -603,7 +602,7 @@ namespace {
                 } else if (md.name == "access_to_int") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  auto i = testCase.paramValues[0].view->getEntryValue();
                                  return i == "private_";
@@ -626,7 +625,7 @@ namespace {
             for (const auto &[_, md] : methods) {
                 if (md.name == "passthrough") {
                     checkTestCasePredicates(
-                        md.testCases, vector<TestCasePredicate>(
+                        md.testCases, std::vector<TestCasePredicate>(
                                           { [](tests::Tests::MethodTestCase const &testCase) {
                                               auto alignment = testCase.paramValues[0].alignment;
                                               return alignment == decltype(alignment){ 32768 };
@@ -676,7 +675,7 @@ namespace {
 
             checkTestCasePredicates(
                 testGen.tests.at(main_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) - 2 ==
                            stoi(testCase.returnValue.view->getEntryValue());
                 } }));
@@ -693,7 +692,7 @@ namespace {
 
             checkTestCasePredicates(
                 testGen.tests.at(a_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) + 1 ==
                            stoi(testCase.returnValue.view->getEntryValue());
                 } }));
@@ -710,7 +709,7 @@ namespace {
 
             checkTestCasePredicates(
                 testGen.tests.at(b_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return stoi(testCase.paramValues[0].view->getEntryValue()) - 1 ==
                            stoi(testCase.returnValue.view->getEntryValue());
                 } }));
@@ -743,9 +742,9 @@ namespace {
                     return testCase.globalPreValues.size() == 1;
                 };
                 checkTestCasePredicates(
-                    md.testCases, vector<TestCasePredicate>({ inBounds, std::not_fn(inBounds) }));
+                    md.testCases, std::vector<TestCasePredicate>({ inBounds, std::not_fn(inBounds) }));
                 checkTestCasePredicates(md.testCases,
-                                        vector<TestCasePredicate>{ 2, hasGlobalParameter });
+                                        std::vector<TestCasePredicate>{ 2, hasGlobalParameter });
             } else if (md.name == "FOO_FUNCTION_2") {
                 EXPECT_GE(md.testCases.size(), 3);
             } else if (md.name == "FOO_FUNCTION_3") {
@@ -830,10 +829,10 @@ namespace {
 
     TEST_F(Server_Test, Correct_CodeText_For_Regression) {
         auto [testGen, status] = performFeatureFileTestsRequest(floating_point_plain_c);
-        const string code = testGen.tests.begin()->second.code;
-        const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
-        const string endRegion = std::string("#pragma endregion") + NL;
-        const string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        const std::string code = testGen.tests.begin()->second.code;
+        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
+        const std::string endRegion = std::string("#pragma endregion") + NL;
+        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
         ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
         ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
     }
@@ -1018,7 +1017,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
                        stoi(testCase.returnValue.view->getEntryValue()) == -1;
                 } }),
@@ -1035,7 +1034,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return stoi(testCase.returnValue.view->getEntryValue()) ==
                        stoi(testCase.paramValues[0].view->getEntryValue()) *
                            stoi(testCase.paramValues[0].view->getEntryValue());
@@ -1053,7 +1052,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return testCase.returnValue.view->getEntryValue() == "1";} }),
                 "get1");
     }
@@ -1068,7 +1067,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return testCase.returnValue.view->getEntryValue() == "2";} }),
                 "get2");
     }
@@ -1083,7 +1082,7 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                     return testCase.returnValue.view->getEntryValue() == "2";} }),
                 "get3");
     }
@@ -1100,7 +1099,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) {
                      return stoi(testCase.paramValues[0].view->getEntryValue()) >
                                 stoi(testCase.paramValues[1].view->getEntryValue()) &&
@@ -1133,7 +1132,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.paramValues[0].view->getEntryValue() == "6";
             } }),
             "sqr_positive");
@@ -1156,7 +1155,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.returnValue.view->getEntryValue() == "\"abacaba\"";
             } }),
             "const_str");
@@ -1404,7 +1403,7 @@ namespace {
         */
         checkTestCasePredicates(
             methods.at("out_of_bound_access_to_stack").testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) { return testCase.isError(); },
                   [](tests::Tests::MethodTestCase const &testCase) {
                       return !testCase.isError();
@@ -1412,7 +1411,7 @@ namespace {
             "out_of_bound_access_to_stack");
         checkTestCasePredicates(
             methods.at("out_of_bound_access_to_globals").testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) { return testCase.isError(); },
                   [](tests::Tests::MethodTestCase const &testCase) {
                       return !testCase.isError();
@@ -1420,19 +1419,19 @@ namespace {
             "out_of_bound_access_to_globals");
         checkTestCasePredicates(
             methods.at("use_after_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "use_after_free");
         checkTestCasePredicates(
             methods.at("leak_stack").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "leak_stack");
         checkTestCasePredicates(
             methods.at("use_after_return").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "use_after_return");
@@ -1446,13 +1445,13 @@ namespace {
         */
         checkTestCasePredicates(
             methods.at("double_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "double_free");
         checkTestCasePredicates(
             methods.at("invalid_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "invalid_free");

@@ -15,21 +15,21 @@ namespace visitor {
     KleeAssumeParamVisitor(const types::TypesHandler *typesHandler,
                            printer::KleePrinter *printer);
 
-    void visit(const Tests::MethodParam &param, const string &_outVariable);
+    void visit(const Tests::MethodParam &param, const std::string &_outVariable);
 
-    void visitGlobal(const Tests::MethodParam &param, const string &_outVariable);
+    void visitGlobal(const Tests::MethodParam &param, const std::string &_outVariable);
 
   protected:
     void visitPrimitive(const types::Type &type,
-                        const string &name,
+                        const std::string &name,
                         const tests::AbstractValueView *view,
-                        const string &access,
+                        const std::string &access,
                         int depth) override;
 
     void visitPointer(const types::Type &type,
-                      const string &name,
+                      const std::string &name,
                       const tests::AbstractValueView *view,
-                      const string &access,
+                      const std::string &access,
                       int depth) override;
 
     void visitArray(const types::Type &type,

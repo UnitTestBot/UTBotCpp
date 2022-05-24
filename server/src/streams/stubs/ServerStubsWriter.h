@@ -13,7 +13,7 @@ public:
         : StubsWriter(writer), synchronizeCode(synchronizeCode) {
     }
 
-    void writeResponse(const vector<Stubs> &synchronizedStubs,
+    void writeResponse(const std::vector<Stubs> &synchronizedStubs,
                        const fs::path &testDirPath) override;
 private:
     bool synchronizeCode;

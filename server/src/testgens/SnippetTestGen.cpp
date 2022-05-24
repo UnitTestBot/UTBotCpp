@@ -27,7 +27,7 @@ SnippetTestGen::SnippetTestGen(const testsgen::SnippetRequest &request,
     setInitializedTestsMap();
 }
 
-string SnippetTestGen::toString() {
+std::string SnippetTestGen::toString() {
     return StringUtils::stringFormat("\tfilepath: %s\n", filePath);
 }
 

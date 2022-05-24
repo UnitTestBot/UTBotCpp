@@ -27,7 +27,7 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
     writeCompleted(testMap, totalTestsCounter);
 }
 
-void ServerTestsWriter::writeStubs(const vector<Stubs> &synchronizedStubs) {
+void ServerTestsWriter::writeStubs(const std::vector<Stubs> &synchronizedStubs) {
     testsgen::TestsResponse response;
     auto stubsResponse = std::make_unique<testsgen::StubsResponse>();
     for (auto const &synchronizedStub : synchronizedStubs) {
@@ -42,7 +42,7 @@ void ServerTestsWriter::writeStubs(const vector<Stubs> &synchronizedStubs) {
 
 bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
                                                  const fs::path &testDirPath,
-                                                 const string &message,
+                                                 const std::string &message,
                                                  double percent,
                                                  bool isCompleted) const {
     fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;

@@ -15,7 +15,7 @@ FileTestGen::FileTestGen(const testsgen::FileRequest &request,
     setInitializedTestsMap();
 }
 
-string FileTestGen::toString() {
+std::string FileTestGen::toString() {
     std::stringstream s;
     s << ProjectTestGen::toString() << "\n\tfilepath: " << filepath << "\n";
     return s.str();

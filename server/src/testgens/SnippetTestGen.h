@@ -15,7 +15,7 @@ public:
 
     ~SnippetTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     fs::path filePath;
 
