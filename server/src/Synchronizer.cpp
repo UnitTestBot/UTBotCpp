@@ -55,7 +55,7 @@ bool Synchronizer::isProbablyOutdated(const fs::path &srcFilePath) const {
         return true;
     }
     std::ifstream stubFile(stubFilePath);
-    string sLine;
+    std::string sLine;
     getline(stubFile, sLine);
     long long stubTimestamp, srcTimestamp;
     try {
@@ -81,7 +81,7 @@ bool Synchronizer::removeStubIfSourceAbsent(const StubOperator &stub) const {
             fs::remove(stub.getStubPath(testGen->projectContext));
             return true;
         } catch (const fs::filesystem_error &e) {
-            string message = StringUtils::stringFormat("Failed to delete stub file '%s'", stub.getStubPath(testGen->projectContext));
+            std::string message = StringUtils::stringFormat("Failed to delete stub file '%s'", stub.getStubPath(testGen->projectContext));
             throw FileSystemException(message, e);
         }
         return false;
@@ -166,7 +166,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
         fs::path stubPath = outdatedStub.getStubPath(testGen->projectContext);
         Tests const &methodDescription = stubFilesMap[stubPath];
         if (outdatedStub.isHeader()) {
-            string code = sourceToHeaderRewriter.generateStubHeader(outdatedStub.getSourceFilePath());
+            std::string code = sourceToHeaderRewriter.generateStubHeader(outdatedStub.getSourceFilePath());
             testGen->synchronizedStubs.emplace_back(stubPath, code);
         } else {
             tests::Tests newStubFile = StubGen::mergeSourceFileIntoStub(
@@ -180,7 +180,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     StubsWriter::writeStubsFilesOnServer(testGen->synchronizedStubs, testGen->projectContext.testDirPath);
 }
 
-shared_ptr<CompilationDatabase>
+std::shared_ptr<CompilationDatabase>
 Synchronizer::createStubsCompilationDatabase(StubSet &stubFiles,
                                              const fs::path &ccJsonStubDirPath) const {
     printer::CCJsonPrinter::createDummyBuildDB(
@@ -207,7 +207,7 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
             SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
                                                           testGen->compilationDatabase, nullptr,
                                                           testGen->serverBuildDir);
-            string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
+            std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
             printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFilePath)).print(testGen->projectContext, sourceFilePath, wrapper);
         });
 }

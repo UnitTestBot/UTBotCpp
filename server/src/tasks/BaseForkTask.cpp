@@ -69,7 +69,7 @@ ExecUtils::ExecutionResult BaseForkTask::run() {
             LOG_S(DEBUG) << "Running " << processName << " out of process from pid: " << getpid();
             initMessage();
             int status = waitForFinishedOrCancelled();
-            string output = collectAndCleanup();
+            std::string output = collectAndCleanup();
             if (cancelled) {
                 status = TIMEOUT_CODE;
             }

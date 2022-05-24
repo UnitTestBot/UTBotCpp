@@ -21,8 +21,6 @@
 #include <vector>
 
 namespace CollectionUtils {
-    using std::vector;
-
     template <typename V>
     using MapFileTo = std::unordered_map<fs::path, V, HashUtils::PathHash>;
     template <typename V>
@@ -135,13 +133,9 @@ namespace CollectionUtils {
 
     template <typename ContainerTo, typename ContainerFrom, typename Functor>
     [[nodiscard]] ContainerTo transformTo(ContainerFrom const &items, Functor &&functor) {
-        using std::cbegin;
-        using std::cend;
-        using std::end;
-
         ContainerTo result;
         result.reserve(items.size());
-        std::transform(cbegin(items), cend(items), std::inserter(result, end(result)), functor);
+        std::transform(std::cbegin(items), std::cend(items), std::inserter(result, std::end(result)), functor);
         return result;
     }
 
@@ -168,9 +162,7 @@ namespace CollectionUtils {
     >
     [[nodiscard]] std::vector<T, Ts...> filterToVector(Container<T, Ts...> const &items, Functor &&functor) {
         std::vector<T, Ts...> res;
-        using std::begin;
-        using std::end;
-        std::copy_if(begin(items), end(items), std::back_inserter(res), functor);
+        std::copy_if(std::begin(items), std::end(items), std::back_inserter(res), functor);
         return res;
     }
 
@@ -180,8 +172,8 @@ namespace CollectionUtils {
      * @return vector of keys of type T.
      */
     template <template <typename, typename, typename...> class Map, typename K, typename V, typename T = K, typename... Ts>
-    [[nodiscard]] vector<T> getKeys(const Map<K, V, Ts...> &map) {
-        vector<T> keys;
+    [[nodiscard]] std::vector<T> getKeys(const Map<K, V, Ts...> &map) {
+        std::vector<T> keys;
         keys.reserve(map.size());
         for (const auto &[key, value] : map) {
             keys.push_back(key);
@@ -195,8 +187,8 @@ namespace CollectionUtils {
      * @return vector of values of type V.
      */
     template <typename K, typename V, typename HashT>
-    [[nodiscard]] vector<V> getValues(const std::unordered_map<K, V, HashT> &map) {
-        vector<V> values;
+    [[nodiscard]] std::vector<V> getValues(const std::unordered_map<K, V, HashT> &map) {
+        std::vector<V> values;
         values.reserve(map.size());
         for (const auto &[key, value] : map) {
             values.push_back(value);
@@ -210,15 +202,15 @@ namespace CollectionUtils {
      * @return vector with unique values of type T.
      */
     template <typename T>
-    [[nodiscard]] vector<T> removeDuplicates(const vector<T>& v) {
-        vector<T> uniqueV = v;
+    [[nodiscard]] std::vector<T> removeDuplicates(const std::vector<T> &v) {
+        std::vector<T> uniqueV = v;
         sort(uniqueV.begin(), uniqueV.end());
         uniqueV.erase(std::unique(uniqueV.begin(), uniqueV.end()), uniqueV.end());
         return uniqueV;
     }
 
     template <typename T, template <typename, typename, typename...> class Map, typename K, typename V, typename... Ts>
-    [[nodiscard]] vector<T> getKeysAs(const Map<K, V, Ts...> &map) {
+    [[nodiscard]] std::vector<T> getKeysAs(const Map<K, V, Ts...> &map) {
         return getKeys<Map, K, V, T, Ts...>(map);
     }
 

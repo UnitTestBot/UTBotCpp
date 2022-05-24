@@ -8,7 +8,7 @@
 #include "BaseException.h"
 
 struct CompilationDatabaseException : public BaseException {
-    explicit CompilationDatabaseException(string message) : BaseException(std::move(message)) {
+    explicit CompilationDatabaseException(std::string message) : BaseException(std::move(message)) {
     }
 };
 

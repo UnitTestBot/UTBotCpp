@@ -11,7 +11,7 @@
 namespace printer {
     void HeaderPrinter::print(const fs::path &testHeaderFilePath,
                                  const fs::path &sourceFilePath,
-                                 string &headerCode) {
+                                 std::string &headerCode) {
         processHeader(Include(true, "cstring"));
         processHeader(Include(true, "unistd.h"));
         ss << NL;

@@ -13,9 +13,9 @@ namespace visitor {
     }
 
     void VerboseAssertsVisitor::visitPointer(const types::Type &type,
-                                             const string &name,
+                                             const std::string &name,
                                              const tests::AbstractValueView *view,
-                                             const string &access,
+                                             const std::string &access,
                                              int depth) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
         printer->strForBound(IND, size) << printer->LB();
@@ -24,9 +24,9 @@ namespace visitor {
     }
 
     void VerboseAssertsVisitor::visitArray(const types::Type &type,
-                                           const string &name,
+                                           const std::string &name,
                                            const tests::AbstractValueView *view,
-                                           const string &access,
+                                           const std::string &access,
                                            size_t size,
                                            int depth) {
         std::vector<size_t> sizes = type.arraysSizes(usage);

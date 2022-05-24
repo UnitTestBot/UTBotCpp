@@ -21,10 +21,6 @@
 #include <utility>
 #include <vector>
 
-using std::string;
-using std::vector;
-using std::unordered_map;
-
 using tests::Tests;
 
 namespace printer {
@@ -38,11 +34,11 @@ namespace printer {
 
         fs::path writeTmpKleeFile(
             const Tests &tests,
-            const string &buildDir,
+            const std::string &buildDir,
             const PathSubstitution &pathSubstitution,
             const std::optional<LineInfo::PredicateInfo> &predicateInfo = std::nullopt,
-            const string &testedMethod = "",
-            const std::optional<string> &testedClass = "",
+            const std::string &testedMethod = "",
+            const std::optional<std::string> &testedClass = "",
             bool onlyForOneFunction = false,
             bool onlyForOneClass = false,
             const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter = [](tests::Tests::MethodDescription const &) { return true; });
@@ -80,7 +76,7 @@ namespace printer {
 
         void genParamsKleeAssumes(const Tests::MethodDescription &testMethod,
                                   const std::optional<PredInfo> &predicateInfo,
-                                  const string &testedMethod,
+                                  const std::string &testedMethod,
                                   bool onlyForOneEntity);
 
         void genGlobalsKleeAssumes(const Tests::MethodDescription &testMethod);
@@ -90,29 +86,29 @@ namespace printer {
         /*
          * Functions for constraints generation.
          */
-        void genConstraints(const Tests::MethodParam &param, const string& methodName = "");
+        void genConstraints(const Tests::MethodParam &param, const std::string& methodName = "");
 
         void genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare);
 
         void genVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
-                             const std::optional<PredInfo> &predicateInfo,
-                             const string &testedMethod,
-                             bool onlyForOneEntity);
+                                    const std::optional<PredInfo> &predicateInfo,
+                                    const std::string &testedMethod,
+                                    bool onlyForOneEntity);
 
         void genNonVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
-                                const std::optional<PredInfo> &predicateInfo,
-                                const string &testedMethod,
-                                bool onlyForOneEntity);
+                                       const std::optional<PredInfo> &predicateInfo,
+                                       const std::string &testedMethod,
+                                       bool onlyForOneEntity);
 
         void genKleePathSymbolicIfNeeded(const std::optional<PredInfo> &predicateInfo,
-                                         const string &testedMethod,
+                                         const std::string &testedMethod,
                                          bool onlyForOneEntity);
 
         void genKleePathSymbolicAssumeIfNeeded(const std::optional<PredInfo> &predicateInfo,
-                                                      const string &testedMethod,
-                                                      bool onlyForOneEntity);
+                                               const std::string &testedMethod,
+                                               bool onlyForOneEntity);
 
-        [[maybe_unused]] void addHeaderIncludeIfNecessary(std::unordered_set<string> &headers, const types::Type &type);
+        [[maybe_unused]] void addHeaderIncludeIfNecessary(std::unordered_set<std::string> &headers, const types::Type &type);
 
         Stream strKleeMakeSymbolic(SRef varName, bool needAmpersand);
 

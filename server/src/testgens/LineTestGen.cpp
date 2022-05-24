@@ -23,7 +23,7 @@ const fs::path &LineTestGen::getSourcePath() const {
     return *testingMethodsSourcePaths.begin();
 }
 
-string LineTestGen::toString() {
+std::string LineTestGen::toString() {
     std::stringstream s;
     s << ProjectTestGen::toString() << "\tline info:"
       << "\n\t\tfilepath: " << filePath << "\n\t\tline: " << line << "\n";

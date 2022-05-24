@@ -12,8 +12,6 @@
 #include <thread>
 #include <fstream>
 
-using namespace std::chrono_literals;
-
 void RunKleeTask::timeoutMessage() const {
     LOG_S(WARNING) << "Time is up (" << timeout->count() << "s). Stop executing.";
 }

@@ -10,7 +10,7 @@
 
 class FolderTestGen final : public ProjectTestGen {
 public:
-    string folderPath;
+    std::string folderPath;
 
     FolderTestGen(const testsgen::FolderRequest &request,
                   ProgressWriter *progressWriter,
@@ -18,7 +18,7 @@ public:
 
     ~FolderTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

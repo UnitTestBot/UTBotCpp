@@ -11,8 +11,6 @@
 
 #include <memory>
 
-using std::shared_ptr;
-
 types::Type ParamsHandler::getType(const clang::QualType &paramDef,
                                    const clang::QualType &paramDecl,
                                    const clang::SourceManager &sourceManager) {
@@ -24,7 +22,7 @@ types::Type ParamsHandler::getType(const clang::QualType &paramDef,
 
 std::shared_ptr<types::FunctionInfo>
 ParamsHandler::getFunctionPointerDeclaration(const clang::FunctionType *fType,
-                                             const string &fName,
+                                             const std::string &fName,
                                              const clang::SourceManager &mng,
                                              bool isArray) {
     auto functionParamDescription = std::make_shared<types::FunctionInfo>();
@@ -90,7 +88,7 @@ void ClangToolRunner::run(const tests::TestsMap *const tests,
 void ClangToolRunner::runWithProgress(const tests::TestsMap *tests,
                                       clang::tooling::ToolAction *toolAction,
                                       const ProgressWriter *progressWriter,
-                                      const string &message,
+                                      const std::string &message,
                                       bool ignoreDiagnostics) {
     MEASURE_FUNCTION_EXECUTION_TIME
     auto files = CollectionUtils::getKeys(*tests);
@@ -107,7 +105,7 @@ void ClangToolRunner::checkStatus(int status) const {
 void ClangToolRunner::setResourceDirOption(clang::tooling::ClangTool *clangTool) {
     auto const &resourceDir = compilationDatabase->getResourceDir();
     if (resourceDir.has_value()) {
-        string resourceDirFlag =
+        std::string resourceDirFlag =
             StringUtils::stringFormat("-resource-dir=%s", resourceDir.value());
         auto resourceDirAdjuster = clang::tooling::getInsertArgumentAdjuster(
             resourceDirFlag.c_str(), clang::tooling::ArgumentInsertPosition::END);

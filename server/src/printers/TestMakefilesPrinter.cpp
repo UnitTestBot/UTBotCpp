@@ -40,7 +40,7 @@ namespace printer {
     }
 
     void
-    TestMakefilesPrinter::addLinkTargetRecursively(const fs::path &unitFile, const string &suffixForParentOfStubs) {
+    TestMakefilesPrinter::addLinkTargetRecursively(const fs::path &unitFile, const std::string &suffixForParentOfStubs) {
         sharedMakefilePrinter.addLinkTargetRecursively(unitFile, suffixForParentOfStubs, true);
         objMakefilePrinter.addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false);
     }

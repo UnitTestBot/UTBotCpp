@@ -12,10 +12,10 @@ namespace ExecUtils {
         }
     }
 
-    void toCArgumentsPtr(vector<std::string> &argv,
-                         vector<std::string> &envp,
-                         vector<char *> &cargv,
-                         vector<char *> &cenvp,
+    void toCArgumentsPtr(std::vector<std::string> &argv,
+                         std::vector<std::string> &envp,
+                         std::vector<char *> &cargv,
+                         std::vector<char *> &cenvp,
                          bool appendNull) {
         for (auto &s : argv) {
             cargv.emplace_back((char*)s.data());
@@ -29,8 +29,8 @@ namespace ExecUtils {
         cenvp.emplace_back(nullptr);
     }
 
-    vector<std::string> environAsVector() {
-        static vector <std::string> res;
+    std::vector<std::string> environAsVector() {
+        static std::vector<std::string> res;
         if (res.empty()) {
             char **env = environ;
             for (int i = 0; env[i]; i++) {

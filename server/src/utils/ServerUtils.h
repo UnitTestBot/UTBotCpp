@@ -10,13 +10,11 @@
 #include <grpcpp/impl/codegen/server_context.h>
 
 namespace ServerUtils {
-    using std::string;
-
     void setThreadOptions(grpc::ServerContext *context, bool testMode);
 
-    void registerClient(concurrent_set<string> &clients, string client);
+    void registerClient(concurrent_set<std::string> &clients, std::string client);
 
-    void loadClientsData(concurrent_set<string> &result);
+    void loadClientsData(concurrent_set<std::string> &result);
 
     /**
      * @return true if can use port

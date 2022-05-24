@@ -32,7 +32,7 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     setInitializedTestsMap();
 }
 
-string ProjectTestGen::toString() {
+std::string ProjectTestGen::toString() {
     std::stringstream s;
     s << request->projectcontext().DebugString() << "\n";
     s << request->settingscontext().DebugString() << "\n";
@@ -48,8 +48,8 @@ const testsgen::ProjectRequest *ProjectTestGen::getRequest() const {
     return request;
 }
 
-vector<fs::path> ProjectTestGen::getRequestSourcePaths() const {
-    return CollectionUtils::transformTo<vector<fs::path>>(
+std::vector<fs::path> ProjectTestGen::getRequestSourcePaths() const {
+    return CollectionUtils::transformTo<std::vector<fs::path>>(
             request->sourcepaths(), [](std::string const &sourcePath) { return fs::path(sourcePath); });
 }
 

@@ -42,7 +42,7 @@ private:
     void addFunctionPointer(tests::Tests::MethodDescription::FPointerMap &functionPointers,
                        const clang::FunctionType *functionType,
                        const clang::QualType &qualType,
-                       const string &name,
+                       const std::string &name,
                        const clang::SourceManager &sourceManager,
                        const types::Type &type);
 };

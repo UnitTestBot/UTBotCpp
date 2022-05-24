@@ -23,7 +23,7 @@ void GlobalVariableUsageMatchCallback::checkUsage(const MatchFinder::MatchResult
     if (const auto *pVarDecl =
             Result.Nodes.getNodeAs<clang::VarDecl>(Matchers::GLOBAL_VARIABLE_USAGE)) {
         clang::QualType varType = pVarDecl->getType();
-        string name = pVarDecl->getNameAsString();
+        std::string name = pVarDecl->getNameAsString();
         if (!pVarDecl->isKnownToBeDefined()) {
             LOG_S(DEBUG) << "Variable \"" << name << "\" was skipped - it has no definition.";
             return;
@@ -74,7 +74,7 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
     method.globalParams.emplace_back(paramType, usage.variableName, AlignmentFetcher::fetch(varDecl));
 }
 
-GlobalVariableUsageMatchCallback::Usage::Usage(string variableName, string functionName)
+GlobalVariableUsageMatchCallback::Usage::Usage(std::string variableName, std::string functionName)
     : variableName(std::move(variableName)), functionName(std::move(functionName)) {
 }
 

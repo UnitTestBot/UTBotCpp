@@ -12,22 +12,20 @@
 #include <unordered_set>
 #include <vector>
 
-using std::vector;
-
 class StubSourcesFinder {
 public:
     explicit StubSourcesFinder(std::shared_ptr<BuildDatabase> buildDatabase);
 
-    vector<fs::path> find(const fs::path& testedFilePath);
+    std::vector<fs::path> find(const fs::path& testedFilePath);
 
-    vector<fs::path> excludeFind(const fs::path& testedFilePath, const fs::path& rootPath);
+    std::vector<fs::path> excludeFind(const fs::path &testedFilePath, const fs::path &rootPath);
 
     void printAllModules();
 
 private:
     std::shared_ptr<BuildDatabase> buildDatabase;
 
-    CollectionUtils::FileSet getLibraryBitcodeFiles(const fs::path& testedFilePath);
+    CollectionUtils::FileSet getLibraryBitcodeFiles(const fs::path &testedFilePath);
 };
 
 

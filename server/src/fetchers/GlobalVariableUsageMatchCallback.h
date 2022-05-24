@@ -36,7 +36,7 @@ private:
         std::string variableName;
         std::string functionName;
 
-        Usage(string variableName, string functionName);
+        Usage(std::string variableName, std::string functionName);
 
         bool operator==(const Usage &rhs) const;
         bool operator!=(const Usage &rhs) const;

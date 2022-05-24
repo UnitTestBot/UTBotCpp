@@ -52,7 +52,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(helloworld_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                 int ret = stoi(testCase.returnValue.view->getEntryValue());
                 int param = stoi(testCase.paramValues[0].view->getEntryValue());
                 return ret == param + 1;
@@ -70,7 +70,7 @@ namespace {
 
             checkTestCasePredicates(
                 testGen.tests.at(source).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                     return testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL;
                 } }),
                 "byword");
@@ -100,7 +100,7 @@ namespace {
         {
             checkTestCasePredicates(
                 testGen.tests.at(source1).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
                   return true;
@@ -110,7 +110,7 @@ namespace {
         {
             checkTestCasePredicates(
                 testGen.tests.at(source2).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                     EXPECT_EQ(0, testCase.globalPreValues.size());
                     EXPECT_EQ(0, testCase.globalPostValues.size());
                     return true;
@@ -129,7 +129,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
               EXPECT_EQ(1, testCase.globalPreValues.size());
               EXPECT_EQ(1, testCase.globalPostValues.size());
               return !testCase.isError();
@@ -147,7 +147,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
@@ -166,7 +166,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
@@ -183,7 +183,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -198,7 +198,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -213,7 +213,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -228,7 +228,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return testCase.isError();
                 } }),

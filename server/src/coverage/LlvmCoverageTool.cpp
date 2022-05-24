@@ -21,7 +21,6 @@
 
 using Coverage::CoverageMap;
 using Coverage::FileCoverage;
-using std::vector;
 
 LlvmCoverageTool::LlvmCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
@@ -29,14 +28,14 @@ LlvmCoverageTool::LlvmCoverageTool(utbot::ProjectContext projectContext,
 }
 
 std::vector<BuildRunCommand>
-LlvmCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, bool withCoverage) {
+LlvmCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) {
     return CollectionUtils::transform(testsToLaunch, [&](UnitTest const &testToLaunch) {
         fs::path sourcePath =
             Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath);
         auto makefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
         auto testName = testToLaunch.testname;
         auto gtestFlags = getTestFilter(testToLaunch);
-        vector<string> profileEnv;
+        std::vector<std::string> profileEnv;
         if (withCoverage) {
             auto profrawFilePath = Paths::getProfrawFilePath(projectContext, testName);
             profileEnv = { StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath) };
@@ -50,9 +49,9 @@ LlvmCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, boo
 }
 
 std::vector<ShellExecTask>
-LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
+LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) {
     MEASURE_FUNCTION_EXECUTION_TIME
-    vector<string> coverageCommands;
+    std::vector<std::string> coverageCommands;
     auto profrawFilePaths =
         CollectionUtils::transform(testsToLaunch, [&](UnitTest const &testToLaunch) {
             return Paths::getProfrawFilePath(projectContext, testToLaunch.testname);
@@ -162,7 +161,7 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
         coverageJson.at("data"), progressWriter, "Reading coverage.json",
         [&coverageMap](const nlohmann::json &data) {
             for (const nlohmann::json &function : data.at("functions")) {
-                string filename = function.at("filenames").at(0);
+                std::string filename = function.at("filenames").at(0);
                 // no need to show coverage for gtest library
                 if (Paths::isGtest(filename)) {
                     continue;
@@ -193,7 +192,7 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
 }
 
 void LlvmCoverageTool::countLineCoverage(Coverage::CoverageMap &coverageMap,
-                                         const string &filename) const {
+                                         const std::string &filename) const {
     for (auto range : coverageMap[filename].uncoveredRanges) {
         coverageMap[filename].noCoverageLinesBorders.insert({ range.start.line });
         coverageMap[filename].noCoverageLinesBorders.insert({ range.end.line });

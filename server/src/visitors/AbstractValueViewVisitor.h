@@ -85,7 +85,7 @@ namespace visitor {
                                             int depth);
 
         [[nodiscard]] static std::string
-        getDecoratedVarName(const string& varName, size_t pointersCount, const string& access);
+        getDecoratedVarName(const std::string &varName, size_t pointersCount, const std::string &access);
     };
 }
 

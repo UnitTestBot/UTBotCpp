@@ -13,12 +13,12 @@ class GcovCoverageTool : public CoverageTool {
 public:
     GcovCoverageTool(utbot::ProjectContext projectContext, ProgressWriter const *progressWriter);
 
-    std::vector<BuildRunCommand> getBuildRunCommands(const vector<UnitTest> &testsToLaunch,
+    std::vector<BuildRunCommand> getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch,
                                                      bool withCoverage) override;
 
     std::vector <std::string> getGcovArguments(bool jsonFormat) const;
 
-    std::vector<ShellExecTask> getCoverageCommands(const vector<UnitTest> &testsToLaunch) override;
+    std::vector<ShellExecTask> getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) override;
 
     [[nodiscard]] Coverage::CoverageMap getCoverageInfo() const override;
 

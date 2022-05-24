@@ -41,7 +41,7 @@ namespace {
 
         testUtils::checkTestCasePredicates(
             testGen.tests.at(test_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
                      return stoi(testCase.returnValue.view->getEntryValue()) == 1;
                  },
@@ -57,7 +57,7 @@ namespace {
 
         testUtils::checkTestCasePredicates(
             testGen2.tests.at(test_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
                 },

@@ -25,8 +25,6 @@
 
 using Coverage::CoverageMap;
 using Coverage::FileCoverage;
-using std::string;
-using std::vector;
 
 GcovCoverageTool::GcovCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
@@ -34,7 +32,7 @@ GcovCoverageTool::GcovCoverageTool(utbot::ProjectContext projectContext,
 }
 
 std::vector<BuildRunCommand>
-GcovCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, bool withCoverage) {
+GcovCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) {
     ExecUtils::throwIfCancelled();
 
     std::vector<BuildRunCommand> result;
@@ -71,7 +69,7 @@ std::vector <std::string> GcovCoverageTool::getGcovArguments(bool jsonFormat) co
     return gcovArgs;
 }
 
-std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
+std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) {
     MEASURE_FUNCTION_EXECUTION_TIME
     fs::path gcovDir = Paths::getGccCoverageDir(projectContext);
     auto gcovArgs = getGcovArguments(true);

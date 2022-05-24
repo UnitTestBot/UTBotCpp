@@ -18,7 +18,7 @@ public:
 
     const fs::path &getSourcePath() const;
 
-    string toString() override;
+    std::string toString() override;
 
     virtual bool needToAddPathFlag();
 

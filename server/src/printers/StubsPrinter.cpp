@@ -57,7 +57,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
         }
 
         if (!typesHandler.omitMakeSymbolic(methodCopy.returnType)) {
-            string stubSymbolicVarName = getStubSymbolicVarName(method.name);
+            std::string stubSymbolicVarName = getStubSymbolicVarName(method.name);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }

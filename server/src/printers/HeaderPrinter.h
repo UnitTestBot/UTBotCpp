@@ -19,7 +19,7 @@ namespace printer {
 
         void print(const fs::path &testHeaderFilePath,
                    const fs::path &sourceFilePath,
-                   string &headerCode);
+                   std::string &headerCode);
 
         void processHeader(const Include &relatedHeader);
     };

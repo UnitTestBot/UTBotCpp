@@ -17,7 +17,7 @@ ServerCoverageAndResultsWriter::ServerCoverageAndResultsWriter(
 void ServerCoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                                    const Coverage::CoverageMap &coverageMap,
                                                   const nlohmann::json &totals,
-                                                   std::optional<string> errorMessage) {
+                                                   std::optional<std::string> errorMessage) {
     if (!hasStream()) {
         return;
     }

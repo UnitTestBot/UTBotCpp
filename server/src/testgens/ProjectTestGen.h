@@ -19,7 +19,7 @@ public:
 
     ~ProjectTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     const testsgen::ProjectRequest *getRequest() const;
     
@@ -28,7 +28,7 @@ public:
 private:
     testsgen::ProjectRequest const *const request;
 
-    vector<fs::path> getRequestSourcePaths() const;
+    std::vector<fs::path> getRequestSourcePaths() const;
 
     void autoDetectSourcePathsIfNotEmpty();
 };

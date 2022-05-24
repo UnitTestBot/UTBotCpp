@@ -8,7 +8,7 @@
 #include "BaseException.h"
 
 struct LLVMException : public BaseException {
-    explicit LLVMException(string message) : BaseException(std::move(message)) {
+    explicit LLVMException(std::string message) : BaseException(std::move(message)) {
     }
 };
 

@@ -17,16 +17,16 @@ using CompilationUtils::CompilerName;
 
 class BaseTest : public testing::Test {
 protected:
-    explicit BaseTest(const string& suiteName);
+    explicit BaseTest(const std::string &suiteName);
 
     const bool TESTMODE = true;
     Server server = Server(TESTMODE); // testmode on
     fs::path baseSuitePath = fs::current_path().parent_path() / testUtils::getRelativeTestSuitePath("");
-    string suiteName;
+    std::string suiteName;
     fs::path suitePath;
 
     CompilerName compilerName = CompilerName::CLANG;
-    string buildDirRelativePath;
+    std::string buildDirRelativePath;
     fs::path buildPath;
     std::vector<fs::path> srcPaths;
 
@@ -35,13 +35,13 @@ protected:
     std::unique_ptr<ServerContext> ctx;
     std::unique_ptr<TestsWriter> writer;
 
-    void setSuite(const string &suite);
+    void setSuite(const std::string &suite);
 
     void setCompiler(CompilationUtils::CompilerName name);
 
-    void setBuildDirectory(const string &buildDirectoryName);
+    void setBuildDirectory(const std::string &buildDirectoryName);
 
-    fs::path getTestFilePath(const string& fileName);
+    fs::path getTestFilePath(const std::string &fileName);
 
     void clearEnv();
 
@@ -53,9 +53,9 @@ protected:
 
     fs::path getStubsDirectory();
 
-    fs::path getPathToGeneratedTestFileByTestedFile(const string &fileName);
+    fs::path getPathToGeneratedTestFileByTestedFile(const std::string &fileName);
 
-    fs::path getPathToGeneratedTestHeaderFileByTestedFile(const string &fileName);
+    fs::path getPathToGeneratedTestHeaderFileByTestedFile(const std::string &fileName);
 };
 
 #endif //UNITTESTBOT_BASETEST_H

@@ -10,17 +10,15 @@
 #include <utility>
 #include "utils/path/FileSystemPath.h"
 
-using std::string;
-
 struct ExecutionProcessException : public std::exception {
-    explicit ExecutionProcessException(string cmd, fs::path logFilePath);
+    explicit ExecutionProcessException(std::string cmd, fs::path logFilePath);
 
     [[nodiscard]] const char *what() const noexcept override;
 
-    [[nodiscard]] string getLogFilePath() const noexcept;
+    [[nodiscard]] std::string getLogFilePath() const noexcept;
 
 private:
-    string cmd;
+    std::string cmd;
     fs::path logFilePath;
 };
 

@@ -17,48 +17,48 @@ namespace visitor {
   static thread_local std::string outVariable;
 
   void KleeAssumeParamVisitor::visit(const Tests::MethodParam &param,
-                                     const string &_outVariable) {
+                                     const std::string &_outVariable) {
       outVariable = _outVariable;
-      string name = param.dataVariableName();
+      std::string name = param.dataVariableName();
       auto paramType = param.type.arrayCloneMultiDim(usage);
       visitAny(paramType, name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       outVariable = {};
   }
 
   void KleeAssumeParamVisitor::visitGlobal(const Tests::MethodParam &globalParam,
-                                           const string &_outVariable) {
+                                           const std::string &_outVariable) {
       outVariable = _outVariable;
       visitAny(globalParam.type, globalParam.name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       outVariable = {};
   }
 
   void KleeAssumeParamVisitor::visitPrimitive(const types::Type &type,
-                                                    const string &name,
-                                                    const tests::AbstractValueView *view,
-                                                    const string &access,
-                                                    int depth) {
+                                              const std::string &name,
+                                              const tests::AbstractValueView *view,
+                                              const std::string &access,
+                                              int depth) {
       kleeAssume(PrinterUtils::getEqualString(name, PrinterUtils::fillVarName(access, outVariable)));
   }
 
   void KleeAssumeParamVisitor::visitPointer(const types::Type &type,
-                                                  const string &name,
-                                                  const tests::AbstractValueView *view,
-                                                  const string &access,
-                                                  int depth) {
+                                            const std::string &name,
+                                            const tests::AbstractValueView *view,
+                                            const std::string &access,
+                                            int depth) {
       if (depth == 0) {
           auto sizes = type.arraysSizes(usage);
-          string newName = PrinterUtils::getDereferencePointer(name, sizes.size());
+          std::string newName = PrinterUtils::getDereferencePointer(name, sizes.size());
           KleeAssumeVisitor::visitAny(type.baseTypeObj(), newName, view, access, depth);
       }
       //TODO add assert visit struct.pointer
   }
 
   void KleeAssumeParamVisitor::visitArray(const types::Type &type,
-                                                const string &name,
-                                                const tests::AbstractValueView *view,
-                                                const string &access,
-                                                size_t size,
-                                                int depth) {
+                                          const std::string &name,
+                                          const tests::AbstractValueView *view,
+                                          const std::string &access,
+                                          size_t size,
+                                          int depth) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);

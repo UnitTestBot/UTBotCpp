@@ -12,8 +12,6 @@
 
 using grpc::Status;
 using grpc::StatusCode;
-using std::string;
-using std::vector;
 
 CoverageAndResultsGenerator::CoverageAndResultsGenerator(
     testsgen::CoverageAndResultsRequest const *coverageAndResultsRequest,

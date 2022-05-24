@@ -10,7 +10,7 @@
 struct NoTestGeneratedException : public BaseException {
     explicit NoTestGeneratedException() : BaseException("") {}
 
-    explicit NoTestGeneratedException(const string& message) : BaseException("") {
+    explicit NoTestGeneratedException(const std::string& message) : BaseException("") {
         this->message = defaultMessage + " " + message;
     }
 
@@ -22,7 +22,7 @@ struct NoTestGeneratedException : public BaseException {
     }
 
 private:
-    string defaultMessage = "No tests generated.";
+    std::string defaultMessage = "No tests generated.";
 };
 
 #endif //UNITTESTBOT_NOTESTGENERATEDEXCEPTION_H
