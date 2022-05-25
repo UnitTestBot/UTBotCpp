@@ -10,7 +10,7 @@ ProjectTargetsWriter::ProjectTargetsWriter(testsgen::ProjectTargetsResponse *res
 
 void ProjectTargetsWriter::writeResponse(
     const utbot::ProjectContext &projectContext,
-    const vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets) {
+    const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets) {
     if (!hasStream()) {
         return;
     }

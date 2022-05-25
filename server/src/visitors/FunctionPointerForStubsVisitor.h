@@ -19,30 +19,30 @@ namespace visitor {
 
     protected:
         void visitStruct(const types::Type &type,
-                         const string &name,
+                         const std::string &name,
                          const tests::AbstractValueView *view,
-                         const string &access,
+                         const std::string &access,
                          int depth,
                          tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
 
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
 
         void visitArray(const types::Type &type,
-                        const string &name,
+                        const std::string &name,
                         const tests::AbstractValueView *view,
-                        const string &access,
+                        const std::string &access,
                         size_t size,
                         int depth,
                         tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
 
         void visitPrimitive(const types::Type &type,
-                            const string &name,
+                            const std::string &name,
                             const tests::AbstractValueView *view,
-                            const string &access,
+                            const std::string &access,
                             int depth,
                             tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
     };

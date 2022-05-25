@@ -33,7 +33,7 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitStruct(const types::Type &type,
-                                                     const string &name,
+                                                     const std::string &name,
                                                      const tests::AbstractValueView *view,
                                                      const string &access,
                                                      int depth,
@@ -57,9 +57,9 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitPointer(const types::Type &type,
-                                                      const string &name,
+                                                      const std::string &name,
                                                       const tests::AbstractValueView *view,
-                                                      const string &access,
+                                                      const std::string &access,
                                                       int depth) {
         if (depth == 0) {
             AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
@@ -67,9 +67,9 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitArray(const types::Type &type,
-                                                    const string &name,
+                                                    const std::string &name,
                                                     const tests::AbstractValueView *view,
-                                                    const string &access,
+                                                    const std::string &access,
                                                     size_t size,
                                                     int depth,
                                                     tests::Tests::ConstructorInfo constructorInfo) {
@@ -78,9 +78,9 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitPrimitive(const types::Type &type,
-                                                        const string &name,
+                                                        const std::string &name,
                                                         const tests::AbstractValueView *view,
-                                                        const string &access,
+                                                        const std::string &access,
                                                         int depth,
                                                         tests::Tests::ConstructorInfo constructorInfo) {
         // need to be implemented

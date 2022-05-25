@@ -54,7 +54,7 @@ public:
 
     static std::shared_ptr<types::FunctionInfo> getFunctionPointerDeclaration(
         const clang::FunctionType* fType,
-        const string& fName,
+        const std::string &fName,
         const clang::SourceManager& mng,
         bool isArray);
 };

@@ -30,7 +30,7 @@ KleeRunner::KleeRunner(utbot::ProjectContext projectContext,
 void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          tests::TestsMap &testsMap,
                          const std::shared_ptr<KleeGenerator> &generator,
-                         const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
+                         const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                          const std::shared_ptr<LineInfo> &lineInfo,
                          TestsWriter *testsWriter,
                          bool isBatched,
@@ -137,11 +137,11 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
         LOG_S(WARNING) << message;
     }
 
-    string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
-    string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
+    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
+    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
     auto kleeOut = getKleeMethodOutFile(testMethod);
     fs::create_directories(kleeOut.parent_path());
-    string outputDir = "--output-dir=" + kleeOut.string();
+    std::string outputDir = "--output-dir=" + kleeOut.string();
     std::vector<std::string> argvData = { "klee",
                                           entryPointFlag,
                                           "--libc=klee",
@@ -249,8 +249,8 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     }
 
     TestMethod testMethod = testMethods[0];
-    string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
-    string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
+    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
+    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
     auto kleeOut = getKleeMethodOutFile(testMethod);
     fs::create_directories(kleeOut.parent_path());
 

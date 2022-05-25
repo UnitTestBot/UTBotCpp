@@ -23,9 +23,6 @@
 #include <unordered_set>
 
 namespace KleeUtils {
-    using namespace std::chrono;
-    using std::string;
-
     //Operators exclude brackets
     const std::unordered_set<std::string_view> CPP_OPERATORS = {
             "+", "-", "*", "/", "%", "^", "&", "|", "~", "!",
@@ -54,7 +51,7 @@ namespace KleeUtils {
       return false;
     }
 
-    string getRenamedOperator(std::string_view methodName) {
+    std::string getRenamedOperator(std::string_view methodName) {
         const std::unordered_map<char, std::string> SYMBOL_TO_NAME = {
                 {'+', "plus"}, {'-', "minus"}, {'*', "asterisk"},
                 {'/', "slash"}, {'%', "percent"}, {'^', "caret"},
@@ -86,11 +83,11 @@ namespace KleeUtils {
         return {methodName.begin(), methodName.end()};
     }
 
-    string entryPointFunction(const tests::Tests &tests,
-                              const std::string &methodName,
-                              bool needToMangle) {
-        string methodNewName = getRenamedOperator(methodName);
-        string mangledPath = Paths::mangle(tests.relativeFileDir / tests.sourceFileNameNoExt);
+    std::string entryPointFunction(const tests::Tests &tests,
+                                   const std::string &methodName,
+                                   bool needToMangle) {
+        std::string methodNewName = getRenamedOperator(methodName);
+        std::string mangledPath = Paths::mangle(tests.relativeFileDir / tests.sourceFileNameNoExt);
         mangledPath = StringUtils::stringFormat("klee_entry__%s_%s", mangledPath, methodNewName);
         if (needToMangle && Paths::isCXXFile(tests.sourceFilePath)) {
             mangledPath = "_Z" + std::to_string(mangledPath.size()) + mangledPath + "iPPcS0_";
@@ -98,9 +95,10 @@ namespace KleeUtils {
         return mangledPath;
     }
 
-    string postSymbolicVariable(const string &variableName) {
+    std::string postSymbolicVariable(const std::string &variableName) {
         return variableName + "_post";
     }
+
     std::string processNumberOption() {
         if (Commands::kleeProcessNumber != 0) {
             return "--process-number=" + std::to_string(Commands::kleeProcessNumber);

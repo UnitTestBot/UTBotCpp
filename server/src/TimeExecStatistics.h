@@ -14,25 +14,22 @@
 // add this macro to the beginning of the function
 #define MEASURE_FUNCTION_EXECUTION_TIME const TimeExecStatistics timeExecStats(__FILE__, __FUNCTION__, __LINE__);
 
-using std::string;
-using std::vector;
-
 class TimeExecStatistics {
 public:
-    TimeExecStatistics(const fs::path& file, const string& function, uint32_t line);
+    TimeExecStatistics(const fs::path &file, const std::string &function, uint32_t line);
 
     ~TimeExecStatistics();
 
     struct Caller {
-        string file, function;
+        std::string file, function;
 
-        Caller(string  file, string  function);
+        Caller(std::string file, std::string function);
 
-        [[nodiscard]] string get() const;
+        [[nodiscard]] std::string get() const;
 
-        bool operator==(const Caller& other) const;
+        bool operator==(const Caller &other) const;
 
-        friend std::ostream& operator<<(std::ostream& os, const Caller& caller);
+        friend std::ostream& operator<<(std::ostream &os, const Caller &caller);
     };
 
     struct CallerHash {
@@ -51,7 +48,7 @@ private:
 
     static SummaryRowType getFunctionSummary(const Caller &function);
 
-    static void printRowDelimiter(std::stringstream& ss, const vector<size_t>& columnsWidth);
+    static void printRowDelimiter(std::stringstream &ss, const std::vector<size_t> &columnsWidth);
 
     template <std::size_t N> struct num { static const constexpr auto value = N; };
 

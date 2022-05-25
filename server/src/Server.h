@@ -203,22 +203,22 @@ public:
     private:
         std::mutex logChannelOperationsMutex;
 
-        std::map <string, TimeUtils::systemClockTimePoint> linkedWithClient;
-        std::map <string, std::atomic_bool> openedChannel;
-        std::map <string, std::atomic_bool> openedGTestChannel;
-        std::map <string, std::atomic_bool> holdLockFlag;
-        concurrent_set<string> clients;
+        std::map <std::string, TimeUtils::systemClockTimePoint> linkedWithClient;
+        std::map <std::string, std::atomic_bool> openedChannel;
+        std::map <std::string, std::atomic_bool> openedGTestChannel;
+        std::map <std::string, std::atomic_bool> holdLockFlag;
+        concurrent_set<std::string> clients;
 
         template <class Key, class Value>
         using ConcurrentMap = phmap::node_hash_map<Key, Value>;
 
-        ConcurrentMap<string, RequestLockMutex> locks;
+        ConcurrentMap<std::string, RequestLockMutex> locks;
 
         RequestLockMutex &getLock();
 
         std::unique_lock<RequestLockMutex> acquireLock(ProgressWriter *writer = nullptr);
 
-        static shared_ptr<LineInfo> getLineInfo(LineTestGen &lineTestGen);
+        static std::shared_ptr<LineInfo> getLineInfo(LineTestGen &lineTestGen);
 
         static Status failedToLoadCDbStatus(const CompilationDatabaseException &e);
 
@@ -226,7 +226,7 @@ public:
                                        ServerWriter<LogEntry> *writer,
                                        const std::string &logLevel,
                                        loguru::log_handler_t handler,
-                                       std::map<string, std::atomic_bool> &channelStorage,
+                                       std::map<std::string, std::atomic_bool> &channelStorage,
                                        bool openFiles);
 
     protected:
@@ -241,10 +241,10 @@ private:
 
     const static uint16_t DEFAULT_PORT = 2121;
 
-    const static unordered_map<string, loguru::NamedVerbosity> verbosity;
+    const static std::unordered_map<std::string, loguru::NamedVerbosity> verbosity;
 
-    const static string logPrefix;
-    const static string gtestLogPrefix;
+    const static std::string logPrefix;
+    const static std::string gtestLogPrefix;
 
     std::unique_ptr<grpc::Server> gRPCServer;
 
@@ -256,7 +256,7 @@ private:
     struct WriterData {
         ServerWriter<LogEntry> *writer;
         std::mutex writerMutex;
-        const string client;
+        const std::string client;
     };
 
     //recommended size from loguru

@@ -26,9 +26,9 @@ namespace visitor {
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,
-                                                          const string &name,
+                                                          const std::string &name,
                                                           const tests::AbstractValueView *view,
-                                                          const string &access,
+                                                          const std::string &access,
                                                           int depth,
                                                           tests::Tests::ConstructorInfo constructorInfo) {
         const auto &gtestMacro = predicateMapping.at(predicate);
@@ -43,9 +43,9 @@ namespace visitor {
         printer->strFunctionCall(signature.name, signature.args);
     }
     void VerboseAssertsReturnValueVisitor::visitPointer(const types::Type &type,
-                                                        const string &name,
+                                                        const std::string &name,
                                                         const tests::AbstractValueView *view,
-                                                        const string &access,
+                                                        const std::string &access,
                                                         int depth) {
         if (depth == 0) {
             VerboseAssertsVisitor::visitPointer(type, name, view, access, depth);
@@ -54,9 +54,9 @@ namespace visitor {
         }
     }
     void VerboseAssertsReturnValueVisitor::visitArray(const types::Type &type,
-                                                      const string &name,
+                                                      const std::string &name,
                                                       const tests::AbstractValueView *view,
-                                                      const string &access,
+                                                      const std::string &access,
                                                       size_t size,
                                                       int depth,
                                                       tests::Tests::ConstructorInfo constructorInfo) {

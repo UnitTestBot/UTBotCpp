@@ -6,7 +6,7 @@
 
 #include "loguru.h"
 
-void ServerStubsWriter::writeResponse(const vector<Stubs> &synchronizedStubs,
+void ServerStubsWriter::writeResponse(const std::vector<Stubs> &synchronizedStubs,
                                       const fs::path &testDirPath) {
     writeStubsFilesOnServer(synchronizedStubs, testDirPath);
     if (!hasStream()) {

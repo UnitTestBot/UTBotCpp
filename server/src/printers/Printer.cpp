@@ -15,7 +15,6 @@
 
 namespace printer {
     using StringUtils::stringFormat;
-    using namespace std::string_literals;
 
     Printer::Printer(utbot::Language srcLanguage) : srcLanguage(srcLanguage){
     }
@@ -30,17 +29,17 @@ namespace printer {
         tabsDepth = 0;
     }
 
-    string printer::Printer::LB(bool startsWithSpace) {
+    std::string printer::Printer::LB(bool startsWithSpace) {
         tabsDepth++;
-        return string(startsWithSpace ? " " : "") + "{\n";
+        return std::string(startsWithSpace ? " " : "") + "{\n";
     }
 
-    string printer::Printer::RB(bool needSC) {
+    std::string printer::Printer::RB(bool needSC) {
         tabsDepth--;
         return TAB_N() + "}" + (needSC ? ";" : "") + "\n";
     }
 
-    Printer::Stream &printer::Printer::strInclude(const string &header, bool isAngled) {
+    Printer::Stream &printer::Printer::strInclude(const std::string &header, bool isAngled) {
         char begin = isAngled ? '<' : '\"';
         char end = isAngled ? '>' : '\"';
         ss << TAB_N() << "#include " << begin << header << end << NL;
@@ -56,27 +55,27 @@ namespace printer {
         return strInclude(include.path, include.is_angled);
     }
 
-    Printer::Stream &printer::Printer::strIncludeSystem(const string &header) {
+    Printer::Stream &printer::Printer::strIncludeSystem(const std::string &header) {
         ss << TAB_N() << "#include <" << header << ">" << NL;
         return ss;
     }
 
-    Printer::Stream &printer::Printer::strForBound(const string &it, size_t n) {
+    Printer::Stream &printer::Printer::strForBound(const std::string &it, size_t n) {
         ss << TAB_N() << "for (int " << it << " = 0; " << it << " < " << n << "; " << it << " ++)";
         return ss;
     }
 
-    Printer::Stream &printer::Printer::strIfBound(const string &condition) {
+    Printer::Stream &printer::Printer::strIfBound(const std::string &condition) {
         ss << TAB_N() << "if (" << condition << ")";
         return ss;
     }
 
-    std::vector<string>
+    std::vector<std::string>
     printer::Printer::printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds) {
         thread_local int counter = 0;
         counter++;
 
-        std::vector<string> iterators;
+        std::vector<std::string> iterators;
         for (size_t i = 0; i < bounds.size(); ++i) {
             std::string it = StringUtils::stringFormat("it_%d_%d", counter, i);
             iterators.push_back(it);
@@ -118,7 +117,7 @@ namespace printer {
         }
     }
 
-    Printer::Stream &printer::Printer::strDeclareAbsError(const string &name) {
+    Printer::Stream &printer::Printer::strDeclareAbsError(const std::string &name) {
         ss << TAB_N() << "static const float " << name << " = 1e-6;" << NL;
         return ss;
     }
@@ -130,7 +129,7 @@ namespace printer {
                                                           std::optional<uint64_t> alignment,
                                                           bool complete) {
         auto baseType = type.baseType();
-        string arrayName{ name.data(), name.length() };
+        std::string arrayName{ name.data(), name.length() };
 
         if (needDecorate()) {
             baseType = NameDecorator::decorate(baseType);
@@ -176,12 +175,12 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strFunctionDecl(
-        const string &returnType,
-        const string &functionName,
+        const std::string &returnType,
+        const std::string &functionName,
         const std::vector<types::Type> &paramTypes,
-        const std::vector<string> &paramValues,
-        const string &end,
-        const std::vector<string> &modifiers,
+        const std::vector<std::string> &paramValues,
+        const std::string &end,
+        const std::vector<std::string> &modifiers,
         const tests::Tests::MethodDescription::FPointerMap &fullDeclSubstitutions,
         bool isVariadic) {
         ss << TAB_N();
@@ -229,8 +228,8 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strFunctionDecl(const tests::Tests::MethodDescription &method,
-                                              const string &end,
-                                              const std::vector<string> &modifiers) {
+                                              const std::string &end,
+                                              const std::vector<std::string> &modifiers) {
         return strFunctionDecl(method.returnType.usedType(), method.name, method.getParamTypes(),
                                method.getParamNames(), end, modifiers, method.functionPointers,
                                method.isVariadic);
@@ -239,8 +238,8 @@ namespace printer {
 
     Printer::Stream &
     Printer::strFunctionDeclWithParamString(const tests::Tests::MethodDescription &method,
-                                            const string &end,
-                                            const std::vector<string> &modifiers) {
+                                            const std::string &end,
+                                            const std::vector<std::string> &modifiers) {
         ss << TAB_N();
         for (const auto &modifier : modifiers) {
             ss << modifier << " ";
@@ -251,9 +250,9 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strFunctionCall(std::string_view functionName,
-                                              const std::vector<string> &args,
-                                              const string &end,
-                                              const std::optional<string> &classObj,
+                                              const std::vector<std::string> &args,
+                                              const std::string &end,
+                                              const std::optional<std::string> &classObj,
                                               bool needTabs,
                                               size_t retPointers,
                                               std::optional<types::Type> castType,
@@ -268,7 +267,7 @@ namespace printer {
         if (castType.has_value()) {
             ss << "(" << castType->typeName() << ")";
         }
-        string methodName(functionName);
+        std::string methodName(functionName);
         if (needDecorate()) {
             methodName = NameDecorator::decorate(functionName);
         }
@@ -281,10 +280,10 @@ namespace printer {
 
     Printer::Stream &Printer::strFunctionCall(const tests::Tests::MethodDescription &method,
                                               size_t returnPointers,
-                                              const string &end,
+                                              const std::string &end,
                                               bool needTabs) {
         strTabIf(needTabs);
-        vector<string> parameters;
+        std::vector<std::string> parameters;
         for (const auto &param : method.params) {
             string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
             string parameter = maybeAmpersand + param.name;
@@ -297,7 +296,7 @@ namespace printer {
         return strFunctionCall(method.name, parameters, end, classObjName, needTabs, returnPointers);
     }
 
-    Printer::Stream &Printer::strComment(const string &comment) {
+    Printer::Stream &Printer::strComment(const std::string &comment) {
         ss << TAB_N() << "// " << comment << NL;
         return ss;
     }
@@ -307,15 +306,15 @@ namespace printer {
         return ss;
     }
 
-    string Printer::constrIndex(const string &arrayName, const string &ind) {
+    std::string Printer::constrIndex(const std::string &arrayName, const std::string &ind) {
         return arrayName + "[" + ind + "]";
     }
 
-    string Printer::constrIndex(const string &arrayName, int ind) {
+    std::string Printer::constrIndex(const std::string &arrayName, int ind) {
         return constrIndex(arrayName, std::to_string(ind));
     }
 
-    string Printer::constrMultiIndex(const string &arrayName, const std::vector<string> &indexes) {
+    std::string Printer::constrMultiIndex(const std::string &arrayName, const std::vector<std::string> &indexes) {
         std::string element = arrayName;
         for (const auto &index : indexes) {
             element = constrIndex(element, index);
@@ -323,22 +322,22 @@ namespace printer {
         return element;
     }
 
-    string Printer::constrMultiIndex(const string &arrayName, const std::vector<size_t> &indexes) {
-        std::vector<string> strIndexes;
+    std::string Printer::constrMultiIndex(const std::string &arrayName, const std::vector<size_t> &indexes) {
+        std::vector<std::string> strIndexes;
         for (size_t index : indexes) {
             strIndexes.push_back(std::to_string(index));
         }
         return constrMultiIndex(arrayName, strIndexes);
     }
 
-    string Printer::constrMultiIndex(const std::vector<string> &indexes) {
+    std::string Printer::constrMultiIndex(const std::vector<std::string> &indexes) {
         return constrMultiIndex("", indexes);
     }
 
-    string Printer::constrFunctionCall(const tests::Tests::MethodDescription &method,
-                                       size_t returnPointers,
-                                       const string &end,
-                                       bool needTabs) {
+    std::string Printer::constrFunctionCall(const tests::Tests::MethodDescription &method,
+                                            size_t returnPointers,
+                                            const std::string &end,
+                                            bool needTabs) {
         std::stringstream func_ss;
         ss.swap(func_ss);
         strFunctionCall(method, returnPointers, end, needTabs);
@@ -346,13 +345,13 @@ namespace printer {
         return func_ss.str();
     }
 
-    string Printer::constrFunctionCall(const string &functionName,
-                                       const std::vector<string> &args,
-                                       const string &end,
-                                       const std::optional<string> &classObjName,
-                                       bool needTabs,
-                                       size_t retPointers,
-                                       std::optional<types::Type> castType) {
+    std::string Printer::constrFunctionCall(const std::string &functionName,
+                                            const std::vector<std::string> &args,
+                                            const std::string &end,
+                                            const std::optional<std::string> &classObjName,
+                                            bool needTabs,
+                                            size_t retPointers,
+                                            std::optional<types::Type> castType) {
         std::stringstream func_ss;
         ss.swap(func_ss);
         strFunctionCall(functionName, args, end, classObjName, needTabs, retPointers,
@@ -366,7 +365,8 @@ namespace printer {
         ss << TAB_N() << str << SCNL;
         return ss;
     }
-    string Printer::recursiveIteratorName(const string &prefix) const {
+
+    std::string Printer::recursiveIteratorName(const std::string &prefix) const {
         return prefix + std::to_string(tabsDepth);
     }
 
@@ -394,7 +394,7 @@ namespace printer {
         return ss;
     }
 
-    std::stringstream& Printer::checkOverflowStubArray(const string &cntCall) {
+    std::stringstream& Printer::checkOverflowStubArray(const std::string &cntCall) {
         ss << TAB_N() << "if (" << cntCall << " == " <<
            types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << NL;
         tabsDepth++;
@@ -406,15 +406,15 @@ namespace printer {
 
     std::stringstream &Printer::strStubForMethod(const Tests::MethodDescription &method,
                                                  const types::TypesHandler &typesHandler,
-                                                 const string &prefix,
-                                                 const string &suffix,
-                                                 const string& methodName,
-                                                 const string& nameForStub,
+                                                 const std::string &prefix,
+                                                 const std::string &suffix,
+                                                 const std::string &methodName,
+                                                 const std::string &nameForStub,
                                                  bool makeStatic) {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        string stubSymbolicVarName = getStubSymbolicVarName(nameForStub);
+        std::string stubSymbolicVarName = getStubSymbolicVarName(nameForStub);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
             stubSymbolicVarName = getStubSymbolicVarName(methodName + "_" + nameForStub);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
@@ -427,7 +427,7 @@ namespace printer {
         if (!suffix.empty()) {
             methodCopy.name += "_" + suffix;
         }
-        vector<string> modifiers;
+        std::vector<std::string> modifiers;
         if (makeStatic) {
             modifiers.emplace_back("static");
         }
@@ -439,9 +439,9 @@ namespace printer {
             return ss;
         }
 
-        string firstTimeCallVar = "firstTimeCall";
+        std::string firstTimeCallVar = "firstTimeCall";
         strDeclareVar("static int", firstTimeCallVar, "1");
-        const string cntCall = "cntCall";
+        const std::string cntCall = "cntCall";
         strDeclareVar("static int", cntCall, "0");
         ss << TAB_N() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
         tabsDepth++;
@@ -467,11 +467,11 @@ namespace printer {
         return ss;
     }
 
-    string Printer::getStubSymbolicVarName(const string& methodName) {
+    std::string Printer::getStubSymbolicVarName(const std::string &methodName) {
         return methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
     }
 
-    Printer::Stream Printer::strKleeMakeSymbolic(const string &varName, bool needAmpersand, SRef pseudoName) {
+    Printer::Stream Printer::strKleeMakeSymbolic(const std::string &varName, bool needAmpersand, SRef pseudoName) {
         auto pointer = (needAmpersand ? "&" : "") + varName;
         auto size = "sizeof(" + varName + ")";
         auto name = "\"" + pseudoName + "\"";
@@ -480,7 +480,7 @@ namespace printer {
     }
 
     std::stringstream &Printer::strDeclareArrayOfFunctionPointerVar(
-        const string &arrayType, const string &arrayName, const string &stubFunctionName) {
+        const std::string &arrayType, const std::string &arrayName, const std::string &stubFunctionName) {
         size_t size =
             types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strDeclareVar(arrayType, arrayName + "[" + std::to_string(size) + "]");
@@ -493,16 +493,16 @@ namespace printer {
     }
 
     std::stringstream &Printer::strTypedefFunctionPointer(const types::FunctionInfo &method,
-                                                          const string &name) {
+                                                          const std::string &name) {
         auto paramTypes =
             CollectionUtils::transform(method.params, [](const auto &param) { return param.type; });
         ss << TAB_N() << "typedef ";
         strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(*%s)", name), paramTypes,
-                        std::vector<string>(paramTypes.size(), ""), "") << SCNL;
+                        std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         if (method.isArray) {
             ss << TAB_N() << "typedef ";
             strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(**%s)", name + "_arr"), paramTypes,
-                            std::vector<string>(paramTypes.size(), ""), "") << SCNL;
+                            std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         }
         return ss;
     }
@@ -525,7 +525,7 @@ namespace printer {
                               : param.type;
         auto baseType = typeObject.baseType();
         auto type = stringFormat("%s%s **", getConstQualifier(typeObject), baseType);
-        string value =
+        std::string value =
             stringFormat("(%s) calloc(%zu, sizeof(%s *))", type, pointerSize + 1, baseType);
         if (needDeclare) {
             strDeclareVar(type, param.name, value);
@@ -543,9 +543,10 @@ namespace printer {
 
     Printer::Stream
     Printer::strMemcpyImpl(std::string_view dest, std::string_view src, bool needDereference) {
-        string destArg = stringFormat("(void *) %s%.*s", (needDereference ? "&"s : ""s),
+        using namespace std::string_literals;
+        std::string destArg = stringFormat("(void *) %s%.*s", (needDereference ? "&"s : ""s),
                                       dest.length(), dest.data());
-        string count = stringFormat("%s(%.*s)", SIZEOF, src.length(), src.data());
+        std::string count = stringFormat("%s(%.*s)", SIZEOF, src.length(), src.data());
         strFunctionCall(MEMCPY, { destArg, std::string(src), count });
         return ss;
     }
@@ -553,10 +554,10 @@ namespace printer {
     void printer::Printer::writeStubsForFunctionParams(const types::TypesHandler *typesHandler,
                                                        const Tests::MethodDescription &testMethod,
                                                        bool forKlee) {
-        string scopeName = (forKlee ? testMethod.getClassName().value_or("") : "");
-        string prefix = PrinterUtils::getKleePrefix(forKlee);
+        std::string scopeName = (forKlee ? testMethod.getClassName().value_or("") : "");
+        std::string prefix = PrinterUtils::getKleePrefix(forKlee);
         for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
-            string stubName = PrinterUtils::getFunctionPointerStubName(scopeName,
+            std::string stubName = PrinterUtils::getFunctionPointerStubName(scopeName,
                                                                        testMethod.name, name, true);
             writeStubForParam(typesHandler, pointerFunctionStub, testMethod.name, stubName, true,
                               forKlee);
@@ -564,7 +565,7 @@ namespace printer {
     }
 
     void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
-        std::unordered_map<string, string> symbolicNamesToTypesMap;
+        std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
         for (const auto& testCase: testMethod.testCases) {
             for (size_t i = 0; i < testCase.stubValues.size(); i++) {
                 symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
@@ -577,8 +578,8 @@ namespace printer {
 
     void printer::Printer::writeStubForParam(const types::TypesHandler *typesHandler,
                                              const std::shared_ptr<types::FunctionInfo> &fInfo,
-                                             const string &methodName,
-                                             const string &stubName,
+                                             const std::string &methodName,
+                                             const std::string &stubName,
                                              bool needToTypedef,
                                              bool makeStatic) {
         if (needToTypedef) {
@@ -627,21 +628,21 @@ namespace printer {
         }
     }
 
-    void Printer::genStubForStructFunctionPointer(const string &structName,
-                                                  const string &fieldName,
-                                                  const string &stubName) {
-        string name = PrinterUtils::getFieldAccess(structName, fieldName);
+    void Printer::genStubForStructFunctionPointer(const std::string &structName,
+                                                  const std::string &fieldName,
+                                                  const std::string &stubName) {
+        std::string name = PrinterUtils::getFieldAccess(structName, fieldName);
         strAssignVar(name, stubName);
     }
 
-    void Printer::genStubForStructFunctionPointerArray(const string &structName,
-                                                       const string &fieldName,
-                                                       const string &stubName) {
+    void Printer::genStubForStructFunctionPointerArray(const std::string &structName,
+                                                       const std::string &fieldName,
+                                                       const std::string &stubName) {
         size_t size =
             types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
-        string name = structName + "." + fieldName + "[i]";
+        std::string name = structName + "." + fieldName + "[i]";
         strAssignVar(name, stubName);
         tabsDepth--;
         ss << TAB_N() << "}" << NL;
@@ -667,7 +668,7 @@ namespace printer {
     }
 
     std::string Printer::getConstQualifier(const types::Type& type) {
-        string constQualifier;
+        std::string constQualifier;
         if (auto simpleType = dynamic_cast<SimpleType *>(type.kinds().back().get())) {
             if (simpleType->isConstQualified()) {
                 constQualifier = "const ";
@@ -675,6 +676,7 @@ namespace printer {
         }
         return constQualifier;
     }
+
     void Printer::writeCopyrightHeader() {
         ss << Copyright::GENERATED_C_CPP_FILE_HEADER << NL;
     }

@@ -27,7 +27,7 @@ namespace visitor {
                            std::nullopt, true, additionalPointersCount);
         checkNotNullBefore();
         if (predicateInfo.has_value()) {
-            string assumption;
+            std::string assumption;
             if (predicateInfo->type != testsgen::STRING) {
                 assumption = PrinterUtils::getEqualString(KleeUtils::RESULT_VARIABLE_NAME, KleeUtils::TEMP_VARIABLE_NAME);
                 kleeAssumeWithNullCheck(assumption);
@@ -60,20 +60,20 @@ namespace visitor {
     }
 
     void KleeAssumeReturnValueVisitor::visitPrimitive(const types::Type &type,
-                                                      const string &name,
+                                                      const std::string &name,
                                                       const tests::AbstractValueView *view,
-                                                      const string &access,
+                                                      const std::string &access,
                                                       int depth,
                                                       tests::Tests::ConstructorInfo constructorInfo) {
-        string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
+        std::string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
                                              PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
         kleeAssumeWithNullCheck(assumption);
     }
 
     void KleeAssumeReturnValueVisitor::visitStruct(const types::Type &type,
-                                                   const string &name,
+                                                   const std::string &name,
                                                    const tests::AbstractValueView *view,
-                                                   const string &access,
+                                                   const std::string &access,
                                                    int depth,
                                                    tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
@@ -86,9 +86,9 @@ namespace visitor {
     }
 
     void KleeAssumeReturnValueVisitor::visitUnion(const types::Type &type,
-                                                  const string &name,
+                                                  const std::string &name,
                                                   const tests::AbstractValueView *view,
-                                                  const string &access,
+                                                  const std::string &access,
                                                   int depth,
                                                   tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
@@ -98,9 +98,9 @@ namespace visitor {
     }
 
     void KleeAssumeReturnValueVisitor::visitPointer(const types::Type &type,
-                                                    const string &name,
+                                                    const std::string &name,
                                                     const tests::AbstractValueView *view,
-                                                    const string &access,
+                                                    const std::string &access,
                                                     int depth) {
         if (depth == 0) {
             KleeAssumeReturnValueVisitor::visitPrimitive(type, name, view, access, depth);
@@ -134,7 +134,7 @@ namespace visitor {
         printer->closeBrackets(sizes.size());
     }
 
-   void KleeAssumeReturnValueVisitor::kleeAssumeWithNullCheck(const string& assumption, bool useBasicAssumeIfNotPointer) {
+   void KleeAssumeReturnValueVisitor::kleeAssumeWithNullCheck(const std::string &assumption, bool useBasicAssumeIfNotPointer) {
        if (!useBasicAssumeIfNotPointer && additionalPointersCount == 0) {
            return;
        }
@@ -157,7 +157,7 @@ namespace visitor {
        return type;
    }
 
-   std::string KleeAssumeReturnValueVisitor::getDecorateTmpVarName(const string &access) const {
+   std::string KleeAssumeReturnValueVisitor::getDecorateTmpVarName(const std::string &access) const {
        return AbstractValueViewVisitor::getDecoratedVarName(KleeUtils::TEMP_VARIABLE_NAME,
                                                             additionalPointersCount, access);
    }

@@ -19,12 +19,6 @@
 #include <unordered_map>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::unordered_map;
-using std::vector;
-
 using tests::Tests;
 
 namespace printer {
@@ -52,7 +46,7 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase,
                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
-        void testHeader(const string &scopeName,
+        void testHeader(const std::string &scopeName,
                         const tests::Tests::MethodDescription &methodDescription,
                         int testNum);
 
@@ -101,18 +95,18 @@ namespace printer {
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
-        static std::vector<string>
+        static std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
                                          const Tests::MethodTestCase &testCase);
 
-        static std::vector<string>
+        static std::vector<std::string>
         methodParametersListVerbose(const tests::Tests::MethodDescription &methodDescription,
                                     const Tests::MethodTestCase &testCase);
 
 
-        string constrVisitorFunctionCall(const tests::Tests::MethodDescription &methodDescription,
-                                         const Tests::MethodTestCase &testCase,
-                                         bool verboseMode);
+        std::string constrVisitorFunctionCall(const tests::Tests::MethodDescription &methodDescription,
+                                              const Tests::MethodTestCase &testCase,
+                                              bool verboseMode);
 
         struct FunctionSignature {
             std::string name;
@@ -133,8 +127,8 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase,
                                 bool verbose);
 
-        void printLazyVariables(const vector<Tests::MethodParam> &lazyParams,
-                                const vector<Tests::TestCaseParamValue> &lazyValues);
+        void printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
+                                const std::vector<Tests::TestCaseParamValue> &lazyValues);
 
         void printLazyReferences(const Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
@@ -145,14 +139,14 @@ namespace printer {
 
         static Tests::MethodParam getValueParam(const Tests::MethodParam &param);
 
-        void genCodeBySuiteName(const string &targetSuiteName,
+        void genCodeBySuiteName(const std::string &targetSuiteName,
                                 Tests::MethodDescription &methodDescription,
                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                 bool verbose,
                                 int &testNum);
 
-        std::uint32_t printSuiteAndReturnMethodsCount(const string &suiteName,
-                                                      const Tests::MethodsMap &methods);
+
+        std::uint32_t printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

@@ -18,7 +18,7 @@ public:
 
     ~FileTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

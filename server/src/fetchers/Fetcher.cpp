@@ -25,7 +25,7 @@ using namespace llvm;
 using namespace Matchers;
 
 Fetcher::Fetcher(Options options,
-                 const shared_ptr<CompilationDatabase> &compilationDatabase,
+                 const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                  tests::TestsMap &tests,
                  types::TypeMaps *types,
                  uint64_t *pointerSize,

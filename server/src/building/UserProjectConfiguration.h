@@ -15,7 +15,6 @@
 
 
 using grpc::Status;
-using std::string;
 using testsgen::ProjectConfigStatus;
 
 class UserProjectConfiguration {
@@ -27,20 +26,20 @@ public:
                                             ProjectConfigWriter const &writer);
 
     static Status RunProjectConfigurationCommands(const fs::path &buildDirPath,
-                                                  const string &projectName,
-                                                  vector<string> cmakeOptions,
+                                                  const std::string &projectName,
+                                                  std::vector<std::string> cmakeOptions,
                                                   ProjectConfigWriter const &writer);
 
     static Status RunProjectReConfigurationCommands(const fs::path &buildDirPath,
                                                     const fs::path &projectDirPath,
-                                                    const string &projectName,
-                                                    vector<string> cmakeOptions,
+                                                    const std::string &projectName,
+                                                    std::vector<std::string> cmakeOptions,
                                                     ProjectConfigWriter const &writer);
 
 private:
     static void RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                const ShellExecTask::ExecutionParameters &params,
-                                               const string &projectName,
+                                               const std::string &projectName,
                                                const ProjectConfigWriter &writer);
 
     static fs::path getCmakeListsPath(const fs::path &buildDirPath);

@@ -11,7 +11,7 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitAny(const types::Type &type,
-                                            const string &name,
+                                            const std::string &name,
                                             const tests::AbstractValueView *view,
                                             const string &access,
                                             int depth,
@@ -50,16 +50,16 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitArrayElementAfter(const types::Type &type,
-                                                          const string &name,
+                                                          const std::string &name,
                                                           const tests::AbstractValueView *view,
-                                                          const string &access,
+                                                          const std::string &access,
                                                           int depth) {
     }
 
     void AbstractValueViewVisitor::visitPointer(const types::Type &type,
-                                                const string &name,
+                                                const std::string &name,
                                                 const tests::AbstractValueView *view,
-                                                const string &access,
+                                                const std::string &access,
                                                 int depth) {
         size_t size =
             types::TypesHandler::getElementsNumberInPointerOneDim(usage);
@@ -67,9 +67,9 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitArray(const types::Type &type,
-                                              const string &name,
+                                              const std::string &name,
                                               const tests::AbstractValueView *view,
-                                              const string &access,
+                                              const std::string &access,
                                               size_t size,
                                               int depth,
                                               tests::Tests::ConstructorInfo constructorInfo) {
@@ -85,15 +85,15 @@ namespace visitor {
         }
     }
     void AbstractValueViewVisitor::visitCString(const types::Type &type,
-                                                const string &name,
+                                                const std::string &name,
                                                 const tests::AbstractValueView *view,
-                                                const string &access,
+                                                const std::string &access,
                                                 int depth) {
         visitPointer(type, name, view, access, depth);
     }
 
     void AbstractValueViewVisitor::visitStruct(const types::Type &type,
-                                               const string &name,
+                                               const std::string &name,
                                                const tests::AbstractValueView *view,
                                                const string &access,
                                                int depth,
@@ -109,7 +109,7 @@ namespace visitor {
         }
     }
     void AbstractValueViewVisitor::visitUnion(const types::Type &type,
-                                              const string &name,
+                                              const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const string &access,
                                               int depth,
@@ -129,7 +129,7 @@ namespace visitor {
         inUnion = oldFlag;
     }
     void AbstractValueViewVisitor::visitEnum(const types::Type &type,
-                                             const string &name,
+                                             const std::string &name,
                                              const tests::AbstractValueView *view,
                                              const string &access,
                                              int depth,
@@ -138,14 +138,15 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitPointerToFunction(const types::Type &type,
-                                                          const string &name,
+                                                          const std::string &name,
                                                           const tests::AbstractValueView *view,
-                                                          const string &access,
+                                                          const std::string &access,
                                                           int depth) {
     }
 
-    std::string AbstractValueViewVisitor::getDecoratedVarName(const string& varName,
-                                                                size_t pointersCount, const string& access) {
+    std::string AbstractValueViewVisitor::getDecoratedVarName(const std::string &varName,
+                                                              size_t pointersCount,
+                                                              const std::string &access) {
         if (access.empty() || pointersCount == 0) {
             return StringUtils::repeat("*", pointersCount) +
                     PrinterUtils::fillVarName(access, varName);

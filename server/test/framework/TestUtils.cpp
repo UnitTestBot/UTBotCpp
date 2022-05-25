@@ -9,13 +9,11 @@
 
 
 namespace testUtils {
-    using std::string;
-
-    static string getMessageForTestCaseNotMatching(
+    static std::string getMessageForTestCaseNotMatching(
         size_t predicateNumber,
-        const string &functionName,
-        const vector<vector<shared_ptr<tests::AbstractValueView>>> &parameters,
-        const vector<shared_ptr<tests::AbstractValueView>> &returnValues) {
+        const std::string &functionName,
+        const std::vector<std::vector<std::shared_ptr<tests::AbstractValueView>>> &parameters,
+        const std::vector<std::shared_ptr<tests::AbstractValueView>> &returnValues) {
         std::stringstream ss;
         ss << "Predicates don't match test cases:\n";
         ss << "\tNot found test case for predicate at position:" << predicateNumber << "\n";
@@ -31,16 +29,16 @@ namespace testUtils {
         return ss.str();
     }
 
-    void checkTestCasePredicates(const vector<tests::Tests::MethodTestCase> &testCases,
-                                 const vector<TestCasePredicate> &predicates,
-                                 const string &functionName) {
+    void checkTestCasePredicates(const std::vector<tests::Tests::MethodTestCase> &testCases,
+                                 const std::vector<TestCasePredicate> &predicates,
+                                 const std::string &functionName) {
         EXPECT_GE(testCases.size(), predicates.size())
             << " Number of test cases (" << testCases.size()
             << ") less than"
                " number of predicates ("
             << predicates.size() << ") for function " << functionName << ".";
-        vector<vector<shared_ptr<tests::AbstractValueView>>> params;
-        vector<shared_ptr<tests::AbstractValueView>> returnValues;
+        std::vector<std::vector<std::shared_ptr<tests::AbstractValueView>>> params;
+        std::vector<std::shared_ptr<tests::AbstractValueView>> returnValues;
         for (const auto &testCase : testCases) {
             params.emplace_back();
             for (const auto &p : testCase.paramValues) {
@@ -132,7 +130,7 @@ namespace testUtils {
     }
 
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
-                       const vector<UnitTest> &tests) {
+                       const std::vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
             if (suitename == tests::Tests::ERROR_SUITE_NAME) {
                 continue;
@@ -145,7 +143,7 @@ namespace testUtils {
 
 
     void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
-                       const vector<UnitTest> &tests,
+                       const std::vector<UnitTest> &tests,
                        const StatusCountMap &expectedStatusCountMap) {
         StatusCountMap actualStatusCountMap;
         for (auto const &[filename, suitename, testname] : tests) {
@@ -177,14 +175,14 @@ namespace testUtils {
         EXPECT_LE(minNumber, testsCounter) << "Number of test cases is too small";
     }
 
-    void checkMinNumberOfTests(const vector<tests::Tests::MethodTestCase> &testCases,
+    void checkMinNumberOfTests(const std::vector<tests::Tests::MethodTestCase> &testCases,
                                int minNumber) {
         EXPECT_LE(minNumber, testCases.size()) << "Number of test cases is too small";
     }
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const string &buildDirRelativePath,
+                                                         const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
                                                          bool useStubs,
                                                          bool verbose,
@@ -198,7 +196,7 @@ namespace testUtils {
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const string &buildDirRelativePath,
+                                                   const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    bool useStubs,
@@ -210,7 +208,7 @@ namespace testUtils {
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const string &buildDirRelativePath,
+                                                   const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
@@ -224,7 +222,7 @@ namespace testUtils {
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const string &buildDirRelativePath,
+                                                   const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
@@ -261,7 +259,7 @@ namespace testUtils {
         return request;
     }
 
-    bool cmpChars(const string &charAsString, char c) {
+    bool cmpChars(const std::string &charAsString, char c) {
         return charAsString ==
                std::string("'") + StringUtils::charCodeToLiteral(c) + std::string("'");
     }
@@ -287,7 +285,7 @@ namespace testUtils {
                                                  CompilationUtils::CompilerName compilerName,
                                                  bool build) {
         std::string result;
-        string interceptor;
+        std::string interceptor;
         switch (buildCommandsTool) {
         case BuildCommandsTool::CMAKE_BUILD_COMMANDS_TOOL:
             result += StringUtils::stringFormat(
@@ -310,10 +308,10 @@ namespace testUtils {
         if (build) {
             result += StringUtils::stringFormat(" && %s %s -j8", interceptor, Paths::getMake());
             if (buildCommandsTool == BuildCommandsTool::MAKE_BUILD_COMMANDS_TOOL) {
-                string buildDir = (compilerName == CompilationUtils::CompilerName::GCC)
+                std::string buildDir = (compilerName == CompilationUtils::CompilerName::GCC)
                                       ? "build_gcc"
                                       : "build_clang";
-                auto copyJsonIntoBuildDir = [&](const string &buildDir, const string &jsonName) {
+                auto copyJsonIntoBuildDir = [&](const std::string &buildDir, const std::string &jsonName) {
                     return StringUtils::stringFormat("cp %s.json %s/%s.json", jsonName, buildDir,
                                                      jsonName);
                 };
@@ -329,7 +327,7 @@ namespace testUtils {
                                  CompilationUtils::CompilerName compilerName,
                                  BuildCommandsTool buildCommandsTool,
                                  bool build) {
-        string command = setupCompilerCommand(compilerName) + " && " +
+        std::string command = setupCompilerCommand(compilerName) + " && " +
                          setupGettingBuildCommands(buildCommandsTool, compilerName, build);
 
         auto res =
@@ -341,19 +339,19 @@ namespace testUtils {
         }
     }
 
-    fs::path getRelativeTestSuitePath(const string &suiteName) {
+    fs::path getRelativeTestSuitePath(const std::string &suiteName) {
         return fs::path("test") / "suites" / suiteName;
     }
 
-    string fileNotExistsMessage(const fs::path &filePath) {
+    std::string fileNotExistsMessage(const fs::path &filePath) {
         return "Expected existence of this file:\n\t" + filePath.string();
     }
 
-    string unexpectedFileMessage(const fs::path &filePath) {
+    std::string unexpectedFileMessage(const fs::path &filePath) {
         return "Unexpected file found:\n\t" + filePath.string();
     }
 
-    std::vector<char *> createArgvVector(const vector<std::string> &args) {
+    std::vector<char *> createArgvVector(const std::vector<std::string> &args) {
         auto argv = CollectionUtils::transformTo<std::vector<char *>>(
             args, [](const std::string &arg) { return (char *)arg.data(); });
         argv.push_back(nullptr);

@@ -18,7 +18,7 @@ namespace LogUtils {
         return loguru::g_stderr_verbosity == loguru::Verbosity_MAX;
     }
 
-    fs::path writeLog(const string &log, const string &projectName, const string &stage) {
+    fs::path writeLog(const std::string &log, const std::string &projectName, const std::string &stage) {
         fs::path compileLogPath;
         if (projectName.empty()) {
             LOG_S(WARNING) << "writeLog: projectName is empty. Logs will be written in folder " + NO_PROJECT;

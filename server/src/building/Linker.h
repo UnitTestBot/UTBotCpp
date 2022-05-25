@@ -28,8 +28,8 @@ class Linker {
 public:
     Linker(BaseTestGen &testGen,
            StubGen stubGen,
-           shared_ptr<LineInfo> lineInfo,
-           shared_ptr<KleeGenerator> kleeGenerator);
+           std::shared_ptr<LineInfo> lineInfo,
+           std::shared_ptr<KleeGenerator> kleeGenerator);
 
     void prepareArtifacts();
 
@@ -51,9 +51,9 @@ public:
     };
 private:
     BaseTestGen &testGen;
-    shared_ptr<KleeGenerator> kleeGenerator;
+    std::shared_ptr<KleeGenerator> kleeGenerator;
     StubGen stubGen;
-    shared_ptr<LineInfo> lineInfo;
+    std::shared_ptr<LineInfo> lineInfo;
 
     CollectionUtils::FileSet testedFiles;
     CollectionUtils::MapFileTo<fs::path> bitcodeFileName;
@@ -83,7 +83,7 @@ private:
 
     void checkSiblingsExist(const CollectionUtils::FileSet &archivedFiles) const;
     void addToGenerated(const CollectionUtils::FileSet &objectFiles, const fs::path &output);
-    fs::path getPrefixPath(const vector<fs::path> &dependencies, fs::path defaultPath) const;
+    fs::path getPrefixPath(const std::vector<fs::path> &dependencies, fs::path defaultPath) const;
 
     Result<CollectionUtils::FileSet> generateStubsMakefile(const fs::path &root,
                                                            const fs::path &outputFile,
@@ -92,16 +92,17 @@ private:
 
     fs::path declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
                                       const fs::path &output,
-                                      const vector<fs::path> &bitcodeDependencies,
+                                      const std::vector<fs::path> &bitcodeDependencies,
                                       const fs::path &prefixPath,
-                                      vector<utbot::LinkCommand> archiveActions);
+                                      std::vector<utbot::LinkCommand> archiveActions);
 
-    string getLinkArgument(const string &argument,
-                           const fs::path &workingDir,
-                           const CollectionUtils::MapFileTo<fs::path> &dependencies,
-                           const BuildDatabase::TargetInfo &linkUnitInfo,
-                           const fs::path &output);
-    vector<utbot::LinkCommand>
+    std::string getLinkArgument(const std::string &argument,
+                                const fs::path &workingDir,
+                                const CollectionUtils::MapFileTo<fs::path> &dependencies,
+                                const BuildDatabase::TargetInfo &linkUnitInfo,
+                                const fs::path &output);
+
+    std::vector<utbot::LinkCommand>
     getLinkActionsForExecutable(const fs::path &workingDir,
                                 const CollectionUtils::MapFileTo<fs::path> &dependencies,
                                 const BuildDatabase::TargetInfo &linkUnitInfo,

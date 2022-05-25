@@ -15,13 +15,11 @@
 using namespace CompilationUtils;
 
 namespace CompilationUtils {
-    using std::vector;
-
     fs::path toCppCompiler(const fs::path &compilerPath) {
         auto compiler = fs::path(compilerPath).filename().string();
         switch (getCompilerName(compiler)) {
         case CompilerName::GCC: {
-            string result = compilerPath.string();
+            std::string result = compilerPath.string();
             StringUtils::replaceLast(result, "gcc", "g++");
             if (fs::exists(result)) {
                 return result;
@@ -36,7 +34,7 @@ namespace CompilationUtils {
         case CompilerName::GXX:
             return compilerPath;
         case CompilerName::CLANG: {
-            string result = compilerPath.string();
+            std::string result = compilerPath.string();
             StringUtils::replaceLast(result, "clang", "clang++");
             if (fs::exists(result)) {
                 return result;
@@ -80,7 +78,7 @@ namespace CompilationUtils {
         return linker;
     }
 
-    std::vector<string> getCoverageCompileFlags(const CompilerName &compilerName) {
+    std::vector<std::string> getCoverageCompileFlags(const CompilerName &compilerName) {
         switch (compilerName) {
         case CompilerName::GCC:
         case CompilerName::GXX:
@@ -97,7 +95,7 @@ namespace CompilationUtils {
         return {};
     }
 
-    vector<string> getCoverageLinkFlags(const CompilerName &compilerName) {
+    std::vector<std::string> getCoverageLinkFlags(const CompilerName &compilerName) {
         switch (compilerName) {
         case CompilerName::GCC:
         case CompilerName::GXX:

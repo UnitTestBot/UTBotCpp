@@ -19,26 +19,27 @@ namespace visitor {
 
     protected:
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
+
         void visitPrimitive(const types::Type &type,
-                            const string &name,
+                            const std::string &name,
                             const tests::AbstractValueView *view,
-                            const string &access,
+                            const std::string &access,
                             int depth,
                             tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
         void visitStruct(const types::Type &type,
-                         const string &name,
+                         const std::string &name,
                          const tests::AbstractValueView *view,
-                         const string &access,
+                         const std::string &access,
                          int depth,
                          tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
         void visitUnion(const types::Type &type,
-                        const string &name,
+                        const std::string &name,
                         const tests::AbstractValueView *view,
-                        const string &access,
+                        const std::string &access,
                         int depth,
                         tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
 
@@ -53,13 +54,13 @@ namespace visitor {
     private:
         bool returnTypeIsArray = false;
 
-        [[nodiscard]] std::string getDecorateTmpVarName(const string& access = PrinterUtils::DEFAULT_ACCESS) const;
+        [[nodiscard]] std::string getDecorateTmpVarName(const std::string &access = PrinterUtils::DEFAULT_ACCESS) const;
 
         void checkNotNullBefore();
 
         void checkNotNullAfter();
 
-        void kleeAssumeWithNullCheck(const string& assumption, bool useBasicAssumeIfNotPointer = true);
+        void kleeAssumeWithNullCheck(const std::string &assumption, bool useBasicAssumeIfNotPointer = true);
 
         static types::Type getActualTmpVarType(const types::Type &type);
     };

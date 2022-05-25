@@ -6,51 +6,51 @@
 #include "PrinterUtils.h"
 
 namespace StringUtils {
-    bool isNumber(string_view s) {
+    bool isNumber(std::string_view s) {
         return !s.empty() && std::all_of(s.begin(),
                                          s.end(), [](unsigned char c) { return std::isdigit(c); });
     }
 
-    bool startsWith(string_view str, string_view pattern) {
+    bool startsWith(std::string_view str, std::string_view pattern) {
         if (str.length() >= pattern.length()) {
             return str.compare(0, pattern.length(), pattern) == 0;
         }
         return false;
     }
 
-    bool endsWith(string_view str, string_view pattern) {
+    bool endsWith(std::string_view str, std::string_view pattern) {
         if (str.length() >= pattern.length()) {
             return str.compare(str.length() - pattern.length(), pattern.length(), pattern) == 0;
         }
         return false;
     }
 
-    string tolower(string_view data) {
-        string res(data.length(), 0);
+    std::string tolower(std::string_view data) {
+        std::string res(data.length(), 0);
         std::transform(data.begin(), data.end(), std::begin(res),
                        [](unsigned char c) { return std::tolower(c); });
         return res;
     }
 
-    string toupper(string_view data) {
-        string res(data.length(), 0);
+    std::string toupper(std::string_view data) {
+        std::string res(data.length(), 0);
         std::transform(data.begin(), data.end(), std::begin(res),
                        [](unsigned char c) { return std::toupper(c); });
         return res;
     }
 
 
-    vector<string> split(string_view str, char delim) {
-        vector<string> result;
+    std::vector<std::string> split(std::string_view str, char delim) {
+        std::vector<std::string> result;
         std::stringstream ss(str.data());
-        string token;
+        std::string token;
         while (std::getline(ss, token, delim)) {
             result.push_back(token);
         }
         return result;
     }
 
-    bool replaceLast(string &str, const string &from, const string &to) {
+    bool replaceLast(std::string &str, const std::string &from, const std::string &to) {
         size_t start_pos = str.rfind(from);
         if (start_pos != std::string::npos) {
             str.replace(start_pos, from.length(), to);
@@ -60,7 +60,7 @@ namespace StringUtils {
         }
     }
 
-    void replaceAll(string &str, char from, char to) {
+    void replaceAll(std::string &str, char from, char to) {
         for (char &c : str) {
             if (c == from) {
                 c = to;
@@ -68,7 +68,7 @@ namespace StringUtils {
         }
     }
 
-    void replaceAll(string &str, const string &from, const string &to) {
+    void replaceAll(std::string &str, const std::string &from, const std::string &to) {
         size_t start_pos = 0;
         while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
             str.replace(start_pos, from.length(), to);
@@ -102,33 +102,33 @@ namespace StringUtils {
         return res;
     }
 
-    std::vector<std::string> splitByWhitespaces(string_view input) {
+    std::vector<std::string> splitByWhitespaces(std::string_view input) {
         std::istringstream buffer(input.data());
         std::vector<std::string> ret((std::istream_iterator<std::string>(buffer)),
                                      std::istream_iterator<std::string>());
         return ret;
     }
 
-    void ltrim(string &s) {
+    void ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
                     return std::isspace(ch) == 0;
                 }));
     }
 
-    void rtrim(string &s) {
+    void rtrim(std::string &s) {
         s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
                     return std::isspace(ch) == 0;
                 }).base(),
                 s.end());
     }
 
-    void trim(string &s) {
+    void trim(std::string &s) {
         ltrim(s);
         rtrim(s);
     }
 
-    string repeat(const string &s, int n) {
-        string s1;
+    std::string repeat(const std::string &s, int n) {
+        std::string s1;
         s1.reserve(s.size() * std::max(0, n));
         for (int i = 0; i < n; i++) {
             s1 += s;
@@ -136,11 +136,11 @@ namespace StringUtils {
         return s1;
     }
 
-    bool contains(string_view s, string_view t) {
-        return s.find(t) != string_view::npos;
+    bool contains(std::string_view s, std::string_view t) {
+        return s.find(t) != std::string_view::npos;
     }
 
-    void removeLineEndings(string &s) {
+    void removeLineEndings(std::string &s) {
         s.erase(std::remove(s.begin(), s.end(), '\r'), s.end());
         s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
     }

@@ -13,53 +13,51 @@
 #include <algorithm>
 
 namespace {
-    using std::vector;
-    using std::string;
     auto projectPath = fs::current_path().parent_path() / testUtils::getRelativeTestSuitePath("server");
 
     TEST(Utils_Test, Split) {
-        string s = "a,b,c,d,";
-        vector<string> vs = StringUtils::split(s, ',');
-        EXPECT_EQ(vector<string>({"a", "b", "c", "d"}), vs);
+        std::string s = "a,b,c,d,";
+        std::vector<std::string> vs = StringUtils::split(s, ',');
+        EXPECT_EQ(std::vector<std::string>({"a", "b", "c", "d"}), vs);
     }
 
     TEST(Utils_Test, Ltrim) {
-        string s = " aaaa  ";
+        std::string s = " aaaa  ";
         StringUtils::ltrim(s);
         EXPECT_EQ("aaaa  ", s);
     }
 
     TEST(Utils_Test, Rtrim) {
-        string s = " aaaa  ";
+        std::string s = " aaaa  ";
         StringUtils::rtrim(s);
         EXPECT_EQ(" aaaa", s);
     }
 
     TEST(Utils_Test, Trim) {
-        string s = " aaaa  ";
+        std::string s = " aaaa  ";
         StringUtils::trim(s);
         EXPECT_EQ("aaaa", s);
     }
 
     TEST(Utils_Test, GetKeys) {
-        std::unordered_map<string, string> map;
+        std::unordered_map<std::string, std::string> map;
         map["a"] = "z";
         map["b"] = "y";
         map["c"] = "x";
         auto keys = CollectionUtils::getKeys(map);
         std::sort(keys.begin(), keys.end());
-        EXPECT_EQ(vector<string>({"a", "b", "c"}), keys);
+        EXPECT_EQ(std::vector<std::string>({"a", "b", "c"}), keys);
     }
 
     TEST(Utils_Test, JoinWith) {
-        vector<string> vs({"xx", "yy", "zz"});
-        string joined = StringUtils::joinWith(vs, "::");
+        std::vector<std::string> vs({"xx", "yy", "zz"});
+        std::string joined = StringUtils::joinWith(vs, "::");
         EXPECT_EQ("xx::yy::zz", joined);
     }
 
     TEST(Utils_Test, IsNumber) {
-        string s1 = "123";
-        string s2 = "q123";
+        std::string s1 = "123";
+        std::string s2 = "q123";
         EXPECT_EQ(true, StringUtils::isNumber(s1));
         EXPECT_EQ(false, StringUtils::isNumber(s2));
     }
@@ -71,11 +69,11 @@ namespace {
                                      projectPath / "basic_functions.h",
                                      projectPath / "zzz/snippet.c"
                              };
-        vector<fs::path> dirNames{ projectPath };
+        std::vector<fs::path> dirNames{ projectPath };
         auto filteredPaths = Paths::filterPathsByDirNames(paths, dirNames, Paths::isCFile);
         EXPECT_EQ(CollectionUtils::FileSet({
-                                           projectPath / "basic_functions.c",
-                                           projectPath / "types.c"}),
+                      projectPath / "basic_functions.c",
+                      projectPath / "types.c"}),
                   filteredPaths);
     }
 
@@ -86,7 +84,6 @@ namespace {
     }
 
     TEST(Utils_Test, Exec_Timeout) {
-        using namespace std::chrono_literals;
         auto task = ShellExecTask::getShellCommandTask("sleep", {"5h"}, std::chrono::seconds(2));
         auto start = std::chrono::system_clock::now();
         auto execResult = task.run();

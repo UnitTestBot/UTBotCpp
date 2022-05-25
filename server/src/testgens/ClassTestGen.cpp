@@ -10,7 +10,7 @@ ClassTestGen::ClassTestGen(const testsgen::ClassRequest &request,
     : LineTestGen(request.linerequest(), progressWriter, testMode, true) {
 }
 
-string ClassTestGen::toString() {
+std::string ClassTestGen::toString() {
     return LineTestGen::toString();
 }
 

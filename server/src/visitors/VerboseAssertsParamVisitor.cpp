@@ -18,7 +18,7 @@ namespace visitor {
 
   void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name) {
       expectedVariable = PrinterUtils::getExpectedVarName(name);
-      string paramName = param.dataVariableName();
+      std::string paramName = param.dataVariableName();
       types::Type paramType = param.type.arrayCloneMultiDim(usage);
       visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       expectedVariable = {};
@@ -31,22 +31,22 @@ namespace visitor {
   }
 
   void VerboseAssertsParamVisitor::visitPointer(const types::Type &type,
-                                                      const string &name,
-                                                      const tests::AbstractValueView *view,
-                                                      const string &access,
-                                                      int depth) {
+                                                const std::string &name,
+                                                const tests::AbstractValueView *view,
+                                                const std::string &access,
+                                                int depth) {
       if (depth == 0) {
           const auto sizes = type.arraysSizes(usage);
-          string newName = type.maybeJustPointer() ? name :
+          std::string newName = type.maybeJustPointer() ? name :
                            PrinterUtils::getDereferencePointer(name, sizes.size());
           visitAny(type.baseTypeObj(), newName, view, access, depth);
       }
   }
 
   void VerboseAssertsParamVisitor::visitArray(const types::Type &type,
-                                                    const string &name,
+                                                    const std::string &name,
                                                     const tests::AbstractValueView *view,
-                                                    const string &access,
+                                                    const std::string &access,
                                                     size_t size,
                                                     int depth,
                                                     tests::Tests::ConstructorInfo constructorInfo) {
@@ -62,9 +62,9 @@ namespace visitor {
   }
 
   void VerboseAssertsParamVisitor::visitPrimitive(const types::Type &type,
-                                                        const string &name,
+                                                        const std::string &name,
                                                         const tests::AbstractValueView *view,
-                                                        const string &access,
+                                                        const std::string &access,
                                                         int depth,
                                                         tests::Tests::ConstructorInfo constructorInfo) {
       auto signature = processExpect(type, PrinterUtils::EQ, {PrinterUtils::fillVarName(access, expectedVariable), name });

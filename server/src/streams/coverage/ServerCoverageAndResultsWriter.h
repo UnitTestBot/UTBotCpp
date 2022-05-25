@@ -23,7 +23,7 @@ public:
     virtual void writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
-                               std::optional<string> errorMessage) override;
+                               std::optional<std::string> errorMessage) override;
 };
 
 

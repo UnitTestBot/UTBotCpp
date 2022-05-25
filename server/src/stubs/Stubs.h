@@ -12,14 +12,11 @@
 #include <vector>
 #include "utils/path/FileSystemPath.h"
 
-using std::string;
-using std::vector;
-
 struct Stubs {
     fs::path filePath;
-    string code;
+    std::string code;
     Stubs() = default;
-    Stubs(fs::path filePath, string code) : filePath(std::move(filePath)), code(std::move(code)) {}
+    Stubs(fs::path filePath, std::string code) : filePath(std::move(filePath)), code(std::move(code)) {}
 };
 
 #endif // UNITTESTBOT_STUBS_H

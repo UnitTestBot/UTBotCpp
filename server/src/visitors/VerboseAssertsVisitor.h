@@ -19,9 +19,9 @@ namespace visitor {
                                        const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
 
         void visitArray(const types::Type &type,

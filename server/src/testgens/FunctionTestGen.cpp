@@ -12,7 +12,7 @@ FunctionTestGen::FunctionTestGen(const testsgen::FunctionRequest &request,
     : LineTestGen(request.linerequest(), progressWriter, testMode) {
 }
 
-string FunctionTestGen::toString() {
+std::string FunctionTestGen::toString() {
     return LineTestGen::toString();
 }
 

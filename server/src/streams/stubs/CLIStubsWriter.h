@@ -12,7 +12,7 @@ class CLIStubsWriter : public StubsWriter {
 public:
     explicit CLIStubsWriter(): StubsWriter(nullptr) {};
 
-    void writeResponse(const vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) override;
+    void writeResponse(const std::vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) override;
 
 };
 

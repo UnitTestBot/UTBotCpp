@@ -33,7 +33,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
                                       ->tryGetRealPathName()
                                       .str();
 
-        string methodName = FS->getNameAsString();
+        std::string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
         if (const CXXConstructorDecl *CS = ClangUtils::isConstructor(Result)) {
@@ -66,6 +66,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
 
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
+
         if (FS->isCXXClassMember() && !methodDescription.constructorInfo.isConstructor) {
             string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
@@ -161,7 +162,7 @@ void FunctionDeclsMatchCallback::addFunctionPointer(
     tests::Tests::MethodDescription::FPointerMap &functionPointers,
     const clang::FunctionType *functionType,
     const clang::QualType &qualType,
-    const string &name,
+    const std::string &name,
     const clang::SourceManager &sourceManager,
     const types::Type &type) {
     if (type.isPointerToFunction()) {

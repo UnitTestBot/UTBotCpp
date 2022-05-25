@@ -51,7 +51,7 @@ const std::optional<fs::path> &CompilationDatabase::getResourceDir() const {
     return resourceDir;
 }
 std::unique_ptr<CompilationDatabase>
-CompilationDatabase::autoDetectFromDirectory(fs::path const& SourceDir, string &ErrorMessage) {
+CompilationDatabase::autoDetectFromDirectory(fs::path const& SourceDir, std::string &ErrorMessage) {
     auto clangCompilationDatabase = clang::tooling::CompilationDatabase::autoDetectFromDirectory(
         SourceDir.c_str(), ErrorMessage);
     if (clangCompilationDatabase == nullptr) {

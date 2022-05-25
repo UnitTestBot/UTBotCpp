@@ -13,7 +13,7 @@ namespace visitor {
      * in form EXPECT_(expected, actual) and
      * therefore we need to flip the operator
      */
-    const std::unordered_map<string, string> AssertsVisitor::predicateMapping = {
+    const std::unordered_map<std::string, std::string> AssertsVisitor::predicateMapping = {
         { "", "EQ" },  { "==", "EQ" }, { "!=", "NE" }, { ">", "LT" },
         { "<", "GT" }, { ">=", "LE" }, { "<=", "GE" }
     };
@@ -35,7 +35,7 @@ namespace visitor {
     AssertsVisitor::FunctionSignature AssertsVisitor::processExpect(
         const types::Type &type, const std::string &gtestMacro, std::vector<std::string> &&args) {
         bool changePredicate = types::TypesHandler::isFloatingPointType(type) && (gtestMacro == PrinterUtils::EQ);
-        string targetMacro = gtestMacro;
+        std::string targetMacro = gtestMacro;
         if (changePredicate) {
             targetMacro = "NEAR";
             args.emplace_back(PrinterUtils::ABS_ERROR);
@@ -43,7 +43,7 @@ namespace visitor {
         return VerboseAssertsVisitor::FunctionSignature{ PrinterUtils::EXPECT_ + targetMacro, std::move(args) };
     }
 
-    std::string AssertsVisitor::getDecorateActualVarName(const string &access) {
+    std::string AssertsVisitor::getDecorateActualVarName(const std::string &access) {
         return AbstractValueViewVisitor::getDecoratedVarName(PrinterUtils::ACTUAL, additionalPointersCount,
                                                              access);
     }
@@ -51,7 +51,7 @@ namespace visitor {
     AssertsVisitor::FunctionSignature AssertsVisitor::changeSignatureToNullCheck(const FunctionSignature& signature,
                                                                                  const types::Type& type,
                                                                                  const tests::AbstractValueView *view,
-                                                                                 const string &access) {
+                                                                                 const std::string &access) {
         if (additionalPointersCount > 0 && view->getEntryValue() == PrinterUtils::C_NULL) {
             return processExpect(type, "TRUE", {
                     PrinterUtils::fillVarName(access, PrinterUtils::ACTUAL) + " == " + PrinterUtils::C_NULL });
