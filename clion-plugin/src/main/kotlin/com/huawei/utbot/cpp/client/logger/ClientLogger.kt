@@ -106,7 +106,7 @@ class ClientLogger(private val project: Project) {
     fun log(messageSupplier: () -> (String), level: Level, depth: Int = 3) {
         if (level.ordinal < this.level.ordinal)
             return
-        val logMessage: LogMessage = LogMessage(messageSupplier, level, Thread.currentThread().stackTrace[depth])
+        val logMessage: LogMessage = LogMessage(messageSupplier, level, Thread.currentThread().stackTrace[depth + 1])
         writers.forEach {
             it.write(logMessage)
         }
