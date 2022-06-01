@@ -24,6 +24,7 @@ namespace {
     using testsgen::TestsGenService;
     using testsgen::TestsResponse;
     using namespace testUtils;
+    using namespace ::testsgen;
 
     class Server_Test : public BaseTest {
     protected:
@@ -1204,6 +1205,8 @@ namespace {
         fs::path simple_loop_uncovered_c;
         fs::path dependent_functions_c;
         fs::path simple_class_cpp;
+        fs::path methods_with_exceptions_cpp;
+        fs::path methods_with_asserts_cpp;
 
         fs::path dependent_functions_test_cpp;
 
@@ -1220,6 +1223,8 @@ namespace {
             simple_loop_uncovered_c = getTestFilePath("simple_loop_uncovered.c");
             dependent_functions_c = getTestFilePath("dependent_functions.c");
             simple_class_cpp = getTestFilePath("simple_class.cpp");
+            methods_with_exceptions_cpp = getTestFilePath("methods_with_exceptions.cpp");
+            methods_with_asserts_cpp = getTestFilePath("methods_with_asserts.cpp");
 
             dependent_functions_test_cpp =
                 Paths::sourcePathToTestPath(*projectContext, dependent_functions_c);
@@ -1231,13 +1236,13 @@ namespace {
         }
 
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,
-                                             bool withCoverage) {
+                                             bool withCoverage, ErrorMode errorMode = ErrorMode::FAILING) {
             auto request = createCoverageAndResultsRequest(
                 projectName, suitePath, testDirPath, buildDirRelativePath, std::move(testFilter));
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1323,7 +1328,7 @@ namespace {
         testUtils::checkCoverage(coverageMap, linesCovered, linesUncovered, linesNone);
     }
 
-    TEST_P(TestRunner_Test, Status_Test) {
+    TEST_P(TestRunner_Test, Status_Test_with_failing_error_mode) {
         auto testFilter = GrpcUtils::createTestFilterForProject();
         CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false);
 
@@ -1340,6 +1345,23 @@ namespace {
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
+
+    TEST_P(TestRunner_Test, Status_Test_with_passing_error_mode) {
+        auto testFilter = GrpcUtils::createTestFilterForProject();
+        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false, ErrorMode::PASSING);
+
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto statusMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        ASSERT_FALSE(statusMap.empty());
+
+        testUtils::checkStatuses(statusMap, tests, ErrorMode::PASSING);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 50}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap, ErrorMode::PASSING);
+    }
 
     TEST_F(Server_Test, Halt_Test) {
         std::string suite = "halt";
@@ -1471,7 +1493,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1544,7 +1566,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());

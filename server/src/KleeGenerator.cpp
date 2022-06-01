@@ -15,6 +15,7 @@
 #include "loguru.h"
 
 using namespace tests;
+using namespace ::testsgen;
 
 static const std::string GENERATION_COMPILE_MAKEFILE = "GenerationCompileMakefile.mk";
 static const std::string GENERATION_KLEE_MAKEFILE = "GenerationKleeMakefile.mk";
@@ -323,7 +324,8 @@ void KleeGenerator::parseKTestsToFinalCode(
     const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
     const std::vector<MethodKtests> &kleeOutput,
     const std::shared_ptr<LineInfo> &lineInfo,
-    bool verbose) {
+    bool verbose,
+    ErrorMode errorMode) {
     for (const auto &batch : kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());
@@ -349,6 +351,8 @@ void KleeGenerator::parseKTestsToFinalCode(
         }
         auto predicate =
             lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
+        testsPrinter.genCode(methodDescription, predicate, verbose, errorMode);
+
 
         testsPrinter.genCode(methodDescription, predicate, verbose);
     }

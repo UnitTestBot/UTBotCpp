@@ -9,10 +9,13 @@
 #include "utils/PrinterUtils.h"
 #include "utils/SizeUtils.h"
 #include "json.hpp"
+#include "utils/ErrorInfo.h"
+
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
+#include "Paths.h"
 
 #include <cassert>
 #include <climits>
@@ -78,6 +81,8 @@ namespace tests {
         std::vector<UTBotKTestObject> objects;
         Status status;
         std::vector<std::string> errorDescriptors;
+        AssertInfo assertInfo;
+        ErrorInfo errorInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects,
                    const Status &status,
@@ -86,6 +91,10 @@ namespace tests {
                 status(status),
                 errorDescriptors(errorDescriptors) {}
 
+        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status,
+                    ErrorInfo errorInfo_)
+            : objects(std::move(objects)), status(status),
+            errorInfo(std::move(errorInfo_)) {
         [[nodiscard]] bool isError() const {
             return !errorDescriptors.empty();
         }
@@ -412,6 +421,7 @@ namespace tests {
             std::optional <std::vector<TestCaseParamValue>> filesValues = std::nullopt;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            ErrorInfo errorInfo;
         };
 
         struct MethodTestCase {
@@ -439,6 +449,8 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             std::vector<std::string> errorDescriptors;
+            AssertInfo assertInfo;
+            ErrorInfo errorInfo;
 
             [[nodiscard]] bool isError() const;
         };
@@ -898,5 +910,5 @@ namespace tests {
                                         const std::string &typeName,
                                         size_t offsetInBits,
                                         size_t lenInBits);
-}
+} // tests
 #endif // UNITTESTBOT_TESTS_H

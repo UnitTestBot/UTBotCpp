@@ -1,6 +1,7 @@
 #include "SettingsContext.h"
 
 #include <protobuf/testgen.grpc.pb.h>
+using  namespace ::testsgen;
 
 namespace utbot {
     SettingsContext::SettingsContext(bool generateForStaticFunctions,
@@ -8,7 +9,8 @@ namespace utbot {
                                      int32_t timeoutPerFunction,
                                      int32_t timeoutPerTest,
                                      bool useDeterministicSearcher,
-                                     bool useStubs)
+                                     bool useStubs,
+                                     ErrorMode errorMode)
         : generateForStaticFunctions(generateForStaticFunctions),
           verbose(verbose),
           timeoutPerFunction(timeoutPerFunction > 0
@@ -17,7 +19,8 @@ namespace utbot {
          timeoutPerTest(timeoutPerTest > 0
          ? std::make_optional(std::chrono::seconds{ timeoutPerTest })
          : std::nullopt),
-          useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs) {
+          useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs),
+          errorMode(errorMode) {
     }
     SettingsContext::SettingsContext(const testsgen::SettingsContext &settingsContext)
         : SettingsContext(settingsContext.generateforstaticfunctions(),
@@ -25,6 +28,7 @@ namespace utbot {
                           settingsContext.timeoutperfunction(),
                           settingsContext.timeoutpertest(),
                           settingsContext.usedeterministicsearcher(),
-                          settingsContext.usestubs()) {
+                          settingsContext.usestubs(),
+                          settingsContext.errormode()) {
     }
 }

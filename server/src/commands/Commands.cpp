@@ -408,6 +408,10 @@ bool Commands::SettingsContextOptionGroup::withStubs() const {
     return !noStubs;
 }
 
+ErrorMode Commands::SettingsContextOptionGroup::getErrorMode() const {
+    return errorMode;
+}
+
 Commands::RunTestsCommands::RunTestsCommands(Commands::MainCommands &commands) {
     runCommand = commands.getRunTestsCommand();
 

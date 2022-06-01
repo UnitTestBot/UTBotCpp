@@ -1,14 +1,16 @@
 import * as path from 'path';
 import * as vs from 'vscode';
-import { UTBotFoldersStorage } from "../explorer/utbotFoldersStorage";
-import { UTBotProjectTarget } from '../explorer/UTBotProjectTarget';
-import { ExtensionLogger } from '../logger';
+import {UTBotFoldersStorage} from "../explorer/utbotFoldersStorage";
+import {UTBotProjectTarget} from '../explorer/UTBotProjectTarget';
+import {ExtensionLogger} from '../logger';
 import * as pathUtils from '../utils/pathUtils';
 import * as vsUtils from '../utils/vscodeUtils';
 import * as defcfg from './defaultValues';
 import * as Randomstring from 'randomstring';
-import { SettingsContext } from '../proto-ts/testgen_pb';
-import { isWin32 } from '../utils/utils';
+import {SettingsContext} from '../proto-ts/testgen_pb';
+import {isWin32} from '../utils/utils';
+import {ErrorMode} from '../proto-ts/testgen_pb'
+
 const { logger } = ExtensionLogger;
 
 export class Prefs {
@@ -41,6 +43,8 @@ export class Prefs {
     public static STATIC_FUNCTIONS_PREF = 'unittestbot.testsGeneration.generateForStaticFunctions';
 
     public static SHOW_TEST_RESULTS_PREF = 'unittestbot.visual.showTestResults';
+
+    public static ERROR_SUITES_PREF = 'unittestbot.testsGeneration.errorMode';
 
 
     public static isLocalHost(): boolean {
@@ -78,7 +82,8 @@ export class Prefs {
         .setTimeoutperfunction(Prefs.timeoutPerFunction())
         .setTimeoutpertest(Prefs.timeoutPerTest())
         .setUsedeterministicsearcher(Prefs.useDeterministicSearcher())
-        .setUsestubs(Prefs.useStubs());
+        .setUsestubs(Prefs.useStubs())
+        .setErrormode(Prefs.errorMode());
         return settingsContext;
     }
 
@@ -369,6 +374,20 @@ export class Prefs {
         return this.getAssetBase(Prefs.DETERMINISTIC_SEARCHER_PREF, false);
     }
 
+    public static errorMode(): ErrorMode {
+        let errorMode: ErrorMode;
+        const defaultValue: string = "Failing";
+        const errorModeString = this.getAssetBase(Prefs.ERROR_SUITES_PREF, defaultValue);
+        if (errorModeString === "Passing") {
+            errorMode = ErrorMode.PASSING;
+        } else if (errorModeString === "Failing") {
+            errorMode = ErrorMode.FAILING;
+        } else {
+            errorMode = ErrorMode.PASSING_IN_TARGET_ONLY;
+        }
+        return errorMode;
+    }
+
     public static async setVerboseTestMode(mode: boolean): Promise<void> {
         await this.setAsset(Prefs.VERBOSE_MODE_PREF, mode);
     }
@@ -380,4 +399,5 @@ export class Prefs {
     public static showTestResults(): boolean {
         return this.getAssetBase(Prefs.SHOW_TEST_RESULTS_PREF, true);
     }
+
 }

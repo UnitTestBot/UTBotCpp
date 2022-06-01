@@ -10,8 +10,10 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
+#include "TimeExecStatistics.h"
 #include "utils/stats/CSVReader.h"
 #include "utils/stats/TestsGenerationStats.h"
+#include "utils/TraceUtils.h"
 
 #include "loguru.h"
 
@@ -19,6 +21,7 @@
 #include <utility>
 
 using namespace tests;
+using namespace ::testsgen;
 
 namespace {
     void clearUnusedData(const fs::path &kleeDir) {
@@ -53,6 +56,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          const std::shared_ptr<LineInfo> &lineInfo,
                          TestsWriter *testsWriter,
                          bool isBatched,
+                         bool interactiveMode,
+                         ErrorMode errorMode) {
                          bool interactiveMode,
                          StatsUtils::TestsGenerationStatsFileMap &generationStats) {
     LOG_SCOPE_FUNCTION(DEBUG);
@@ -159,6 +164,7 @@ static void processMethod(MethodKtests &ktestChunk,
                                             : UTBotKTest::Status::FAILED;
                 std::vector<ConcretizedObject> kTestObjects(
                     ktestData->objects, ktestData->objects + ktestData->n_objects);
+
 
                 std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
                     kTestObjects, [](const ConcretizedObject &kTestObject) {

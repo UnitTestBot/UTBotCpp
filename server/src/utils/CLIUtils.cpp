@@ -61,7 +61,8 @@ createSettingsContextByOptions(const SettingsContextOptionGroup &settingsContext
         settingsContextOptionGroup.isVerbose(), settingsContextOptionGroup.getTimeoutPerFunction(),
         settingsContextOptionGroup.getTimeoutPerTest(),
         settingsContextOptionGroup.isDeterministicSearcherUsed(),
-        settingsContextOptionGroup.withStubs());
+        settingsContextOptionGroup.withStubs(),
+        settingsContextOptionGroup.getErrorMode());
 }
 
 std::vector<fs::path> getSourcePaths(const ProjectContextOptionGroup &projectContextOptions,

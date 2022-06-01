@@ -15,6 +15,7 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
+
 #include "utils/path/FileSystemPath.h"
 #include "testgens/BaseTestGen.h"
 
@@ -24,6 +25,7 @@
 
 
 using json = nlohmann::json;
+using namespace ::testsgen;
 
 /**
  * @brief Contains methods for generating files for KLEE and build them.
@@ -117,7 +119,8 @@ public:
         const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
         const std::vector<MethodKtests> &kleeOutput,
         const std::shared_ptr<LineInfo> &lineInfo = nullptr,
-        bool verbose = false);
+                           bool verbose = false,
+                           ErrorMode errorMode = ErrorMode::FAILING);
 
     [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 

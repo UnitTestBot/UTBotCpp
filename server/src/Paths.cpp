@@ -8,6 +8,7 @@
 
 #include <pwd.h>
 #include <unistd.h>
+#include <utils/ErrorInfo.h>
 
 namespace Paths {
     bool testInputFile(const std::string &fileName) {
@@ -128,6 +129,7 @@ namespace Paths {
     static bool errorFileExists(const fs::path &path, std::string const& suffix) {
         return fs::exists(errorFile(path, suffix));
     }
+
 
     bool hasInternalError(const fs::path &path) {
         static const auto internalErrorSuffixes = {
