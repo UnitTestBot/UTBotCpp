@@ -16,6 +16,7 @@
                                         implementationClass="com.huawei.utbot.cpp.ui.UTBotTestRunLineMarkerProvider"/>
         <projectService serviceImplementation="com.huawei.utbot.cpp.services.GeneratorSettings"/>
         <projectService serviceImplementation="com.huawei.utbot.cpp.services.UTBotSettings"/>
+        <applicationService serviceImplementation="com.huawei.utbot.cpp.services.UTBotPluginSpecificSettings"/>
         <coverageEngine implementation="com.huawei.utbot.cpp.coverage.UTBotCoverageEngine"/>
         <postStartupActivity implementation="com.huawei.utbot.cpp.services.UTBotStartupActivity"/>
         <projectConfigurable parentId="tools" instance="com.huawei.utbot.cpp.ui.UTBotConfigurable"

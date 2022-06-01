@@ -24,7 +24,7 @@ interface Formatter {
 class SimpleFormatter : Formatter {
     override fun format(message: LogMessage): String {
         val dateTime = DateTimeFormatter.ofPattern("HH:mm:ss.SSSS").format(message.dateTime)
-        return "$dateTime | ${message.fileName}: ${message.line} [${message.threadName}] " +
+        return "$dateTime | ${message.fileName}:${message.line} [${message.threadName}] " +
                 "|${message.level.text}| ${message.messageSupplier()} \n"
     }
 }

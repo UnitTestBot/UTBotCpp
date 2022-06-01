@@ -13,9 +13,7 @@ class ShowWizardAction: NotificationAction(UTBot.message("wizard.show")) {
     }
 
     override fun actionPerformed(e: AnActionEvent) {
-        if (UTBotWizard(e.project ?: return).showAndGet())
-            // when user completes the wizard, some new settings were probably set
-            e.project!!.utbotSettings.fireUTBotSettingsChanged()
+        UTBotWizard(e.project ?: return).showAndGet()
     }
 
     override fun update(e: AnActionEvent) {
