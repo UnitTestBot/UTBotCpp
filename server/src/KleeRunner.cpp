@@ -194,6 +194,10 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                     }
                     UTBotKTest::Status status = Paths::hasError(path) ? UTBotKTest::Status::FAILED
                                                                       : UTBotKTest::Status::SUCCESS;
+                    bool uncaughtException = false;
+                    if (status == UTBotKTest::Status::FAILED) {
+                        uncaughtException = Paths::hasUncaughtException(path);
+                    }
                     std::vector<ConcretizedObject> kTestObjects(
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
 
@@ -202,7 +206,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                    ktestChunk[testMethod].emplace_back(objects, status, uncaughtException);
                 }
             }
         }
@@ -333,6 +337,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                         UTBotKTest::Status status = Paths::hasError(path)
                                                     ? UTBotKTest::Status::FAILED
                                                     : UTBotKTest::Status::SUCCESS;
+                        bool uncaughtException = false;
+                        if (status == UTBotKTest::Status::FAILED) {
+                            uncaughtException = Paths::hasUncaughtException(path);
+                        }
                         std::vector<ConcretizedObject> kTestObjects(
                             ktestData->objects, ktestData->objects + ktestData->n_objects);
 
@@ -341,7 +349,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                               return UTBotKTestObject{ kTestObject };
                             });
 
-                        ktestChunk[method].emplace_back(objects, status);
+                        ktestChunk[method].emplace_back(objects, status, uncaughtException);
                     }
                 }
             }

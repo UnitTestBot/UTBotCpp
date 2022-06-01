@@ -710,6 +710,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             std::swap(testCase.objects, testCaseDescription.objects);
             std::swap(testCase.lazyAddressToName, testCaseDescription.lazyAddressToName);
             std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+            testCase.hasUncaughtException = testCaseDescription.hasUncaughtException;
             if (filterByLineFlag) {
                 auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
                 if (!view || view->getEntryValue() != "1") {
@@ -789,6 +790,7 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
 
     Tests::TestCaseDescription testCaseDescription;
     testCaseDescription.objects = ktest.objects;
+    testCaseDescription.hasUncaughtException = ktest.uncaughtException;
 
     for (const auto &obj : testCaseDescription.objects) {
         if (obj.name != LAZYNAME) {

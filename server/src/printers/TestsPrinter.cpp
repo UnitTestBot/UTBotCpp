@@ -218,15 +218,25 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
+    std::string code = ss.str();
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
+    code = ss.str();
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
+    code = ss.str();
     parametrizedArrayParameters(methodDescription, testCase);
+    code = ss.str();
     printClassObject(methodDescription, testCase);
+    code = ss.str();
     printStubVariables(methodDescription, testCase);
+    code = ss.str();
     printFunctionParameters(methodDescription, testCase, false);
+    code = ss.str();
     printLazyVariables(methodDescription, testCase, false);
+    code = ss.str();
     printLazyReferences(methodDescription, testCase, false);
+    code = ss.str();
     parametrizedAsserts(methodDescription, testCase, predicateInfo);
+    code = ss.str();
     ss << RB() << NL;
 }
 
@@ -610,8 +620,14 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue() != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
-    return constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
+    std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
                               castType);
+    if (testCase.hasUncaughtException) {
+        functionCall = "EXPECT_ANY_THROW(" + functionCall + ")";
+    } else if (testCase.isError()) {
+        functionCall = "EXPECT_DEATH(" + functionCall + ")";
+    }
+    return functionCall;
 }
 
 void printer::TestsPrinter::parametrizedInitializeGlobalVariables(const Tests::MethodDescription &methodDescription,

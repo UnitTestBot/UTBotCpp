@@ -11,6 +11,7 @@
 #include "utils/CollectionUtils.h"
 #include "utils/CompilationUtils.h"
 #include "utils/TimeUtils.h"
+#include "utils/JsonUtils.h"
 
 #include "utils/path/FileSystemPath.h"
 #include <optional>
@@ -360,6 +361,8 @@ namespace Paths {
     static inline fs::path getStubsRelativeDirPath(const fs::path &relativeTestDirPath) {
         return "stubs" / relativeTestDirPath;
     }
+
+    bool hasUncaughtException(const fs::path &path);
 
     //endregion
 
