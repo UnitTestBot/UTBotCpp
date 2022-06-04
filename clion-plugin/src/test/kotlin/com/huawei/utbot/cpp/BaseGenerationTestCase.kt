@@ -79,6 +79,7 @@ abstract class BaseGenerationTestCase {
     }
 
     private fun createFixture(): CodeInsightTestFixture {
+        println("Creating fixture")
         logger.trace { "Creating fixture" }
         val fixture = IdeaTestFixtureFactory.getFixtureFactory().let {
             it.createCodeInsightFixture(
@@ -86,9 +87,11 @@ abstract class BaseGenerationTestCase {
                 TestFixtureProxy(projectPath)
             )
         }
+        println("Before doing setUP")
         fixture.setUp()
         fixture.testDataPath = projectPath.toString()
         logger.trace { "Finished creating fixture" }
+        println("Finished creating fixture")
         return fixture
     }
 

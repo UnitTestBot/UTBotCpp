@@ -213,7 +213,7 @@ data class UTBotSettings(
 
         val cmakeConfiguration = CMakeAppRunConfiguration.getSelectedConfigurationAndTarget(project)
             ?.first?.cMakeTarget?.buildConfigurations?.first()
-            ?: return notifyError("Can't get source paths: CMake model is unavailable")
+            ?: return
 
         sourcePaths = getSourceFoldersFromSources(cmakeConfiguration.sources)
     }

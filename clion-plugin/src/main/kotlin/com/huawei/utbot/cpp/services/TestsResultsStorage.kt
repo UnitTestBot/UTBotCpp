@@ -2,10 +2,13 @@ package com.huawei.utbot.cpp.services
 
 import com.huawei.utbot.cpp.messaging.UTBotTestResultsReceivedListener
 import com.huawei.utbot.cpp.models.TestNameAndTestSuite
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.impl.CurrentEditorProvider
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
@@ -13,6 +16,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
 import testsgen.Testgen
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
@@ -29,6 +33,8 @@ class TestsResultsStorage(val project: Project) {
                     log.info("Result: ${testResult.testname} status: ${testResult.status}")
                     storage[testResult.testname] = testResult
                 }
+
+                forceGutterIconsUpdate()
             })
 
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
@@ -44,12 +50,30 @@ class TestsResultsStorage(val project: Project) {
                         }
                     }
                 }
+
                 if (wasSave) {
-                    DaemonCodeAnalyzer.getInstance(project).restart()
+                    forceGutterIconsUpdate()
                 }
             }
         })
 
+    }
+
+    private fun shouldForceUpdate(): Boolean {
+        val currentlyOpenedFilePaths = FileEditorManager.getInstance(project).selectedEditors.mapNotNull {
+            it.file?.toNioPath()
+        }
+        for (testResult in storage.values) {
+            if (Paths.get(project.utbotSettings.convertFromRemotePathIfNeeded(testResult.testFilePath)) in currentlyOpenedFilePaths) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun forceGutterIconsUpdate() {
+        if (shouldForceUpdate())
+            DaemonCodeAnalyzer.getInstance(project).restart()
     }
 
     fun getTestStatusIcon(element: PsiElement): Icon {

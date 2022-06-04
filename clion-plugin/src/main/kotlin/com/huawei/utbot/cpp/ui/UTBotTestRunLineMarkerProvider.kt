@@ -23,12 +23,10 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
             GutterIconRenderer.Alignment.LEFT,
             { message }
         ) {
-        val log = Logger.getInstance(this::class.java)
         override fun createGutterRenderer(): GutterIconRenderer {
             return object : LineMarkerInfo.LineMarkerGutterIconRenderer<PsiElement>(this) {
                 override fun isNavigateAction(): Boolean = true
                 override fun getClickAction(): AnAction? {
-                    log.debug("getClickAction was called!")
                     return element?.let { RunWithCoverageAction(it) }
                 }
             }
