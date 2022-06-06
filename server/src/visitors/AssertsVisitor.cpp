@@ -52,7 +52,7 @@ namespace visitor {
                                                                                  const types::Type& type,
                                                                                  const tests::AbstractValueView *view,
                                                                                  const std::string &access) {
-        if (additionalPointersCount > 0 && view->getEntryValue() == PrinterUtils::C_NULL) {
+        if (additionalPointersCount > 0 && view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             return processExpect(type, "TRUE", {
                     PrinterUtils::fillVarName(access, PrinterUtils::ACTUAL) + " == " + PrinterUtils::C_NULL });
         }

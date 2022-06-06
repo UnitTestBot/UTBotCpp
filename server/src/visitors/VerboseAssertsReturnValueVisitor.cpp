@@ -16,7 +16,7 @@ namespace visitor {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                               ? methodDescription.returnType.arrayClone(usage, pointerSize)
                               : methodDescription.returnType.baseTypeObj();
-        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")", PrinterUtils::ACTUAL));
             return;

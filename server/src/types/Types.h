@@ -289,6 +289,7 @@ namespace types {
 
         FPointerMap functionFields{};
         bool hasUnnamedFields;
+        bool isCLike;
     };
 
     struct UnionInfo: TypeInfo {

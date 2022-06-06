@@ -53,8 +53,8 @@ namespace {
         checkTestCasePredicates(
             testGen.tests.at(helloworld_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                int ret = stoi(testCase.returnValue.view->getEntryValue());
-                int param = stoi(testCase.paramValues[0].view->getEntryValue());
+                int ret = stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                int param = stoi(testCase.paramValues[0].view->getEntryValue(nullptr));
                 return ret == param + 1;
             } }),
             "helloworld");
@@ -71,7 +71,7 @@ namespace {
             checkTestCasePredicates(
                 testGen.tests.at(source).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                    return testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL;
+                    return testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL;
                 } }),
                 "byword");
         }

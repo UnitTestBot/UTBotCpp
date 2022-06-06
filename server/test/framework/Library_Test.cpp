@@ -43,10 +43,10 @@ namespace {
             testGen.tests.at(test_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
+                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                  },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue()) == -1;
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );
@@ -59,10 +59,10 @@ namespace {
             testGen2.tests.at(test_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValue.view->getEntryValue()) == 1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValue.view->getEntryValue()) == -1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );

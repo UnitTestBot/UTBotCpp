@@ -22,9 +22,9 @@ namespace testUtils {
         for (size_t i = 0; i < parameters.size(); i++) {
             ss << "\t\tParameters values: ";
             for (const auto &param : parameters[i]) {
-                ss << param->getEntryValue() << " ";
+                ss << param->getEntryValue(nullptr) << " ";
             }
-            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue() << "\n";
+            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue(nullptr) << "\n";
         }
         return ss.str();
     }
