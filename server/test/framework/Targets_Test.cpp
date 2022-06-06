@@ -46,7 +46,7 @@ TEST_F(TargetsTest, Valid_Target_Test_1) {
         checkTestCasePredicates(
             testGen.tests.at(parse_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                std::string ret = testCase.returnValue.view->getEntryValue();
+                std::string ret = testCase.returnValue.view->getEntryValue(nullptr);
                 return ret == "\'l\'";
             } }),
             "parse");
@@ -65,7 +65,7 @@ TEST_F(TargetsTest, Valid_Target_Test_1) {
         checkTestCasePredicates(
             testGen.tests.at(parse_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                std::string ret = testCase.returnValue.view->getEntryValue();
+                std::string ret = testCase.returnValue.view->getEntryValue(nullptr);
                 return ret == "\'c\'";
             } }),
             "parse");
@@ -97,7 +97,7 @@ TEST_F(TargetsTest, Valid_Target_Test_1) {
         checkTestCasePredicates(
                 testGen.tests.at(parse_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
-                    std::string ret = testCase.returnValue.view->getEntryValue();
+                    std::string ret = testCase.returnValue.view->getEntryValue(nullptr);
                     return ret == "\'c\'" || ret == "\'l\'";
                 }}),
                 "parse");

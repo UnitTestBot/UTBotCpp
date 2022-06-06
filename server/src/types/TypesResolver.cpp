@@ -98,6 +98,13 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasUnnamedFields = false;
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
+        const clang::CXXRecordDecl *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        structInfo.isCLike = cppD != nullptr && cppD->isCLike();
+    }
+    else {
+        structInfo.isCLike = true;
+    }
 
     if (Paths::isGtest(structInfo.filePath)) {
         return;

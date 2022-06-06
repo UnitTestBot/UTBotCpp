@@ -95,7 +95,7 @@ namespace printer {
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo);
 
-        static std::vector<std::string>
+        std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
                                          const Tests::MethodTestCase &testCase);
 
