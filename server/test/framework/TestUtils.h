@@ -18,6 +18,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <regex>
 
 using Params = const std::vector<std::shared_ptr<tests::AbstractValueView>> &;
 using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
@@ -35,6 +36,9 @@ namespace testUtils {
     void checkTestCasePredicates(const std::vector<tests::Tests::MethodTestCase> &testCases,
                                  const std::vector<TestCasePredicate> &predicates,
                                  const std::string &functionName = "");
+
+    void checkRegexp(const std::string &value,
+                     const std::string &regexp);
 
     void checkCoverage(const Coverage::CoverageMap &coverageMap,
                        const CoverageLines &expectedLinesCovered,

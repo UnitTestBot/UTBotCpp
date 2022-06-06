@@ -7,6 +7,7 @@
 #include "BaseTest.h"
 #include "KleeGenerator.h"
 #include "Server.h"
+#include "TestUtils.h"
 #include "streams/coverage/ServerCoverageAndResultsWriter.h"
 #include "coverage/CoverageAndResultsGenerator.h"
 
@@ -104,9 +105,10 @@ namespace {
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
                                 .methods.begin().value().testCases.begin();
-        ASSERT_EQ("{"
-                  "\n    .x = 0,"
-                  "\n    .a = 2}", tests[0].paramValues[0].view->getEntryValue(&testsPrinter));
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]x = .+[,]"
+                               "\n    [.]a = .+[}]");
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
@@ -165,15 +167,16 @@ namespace {
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
                 .methods.begin().value().testCases.begin();
-        ASSERT_EQ("{"
-                  "\n    .inner = {"
-                  "\n        .c = '2',"
-                  "\n        .ininner = {"
-                  "\n            .u = 2U,"
-                  "\n            .l = 2LL},"
-                  "\n        .s = 2},"
-                  "\n    .x = 2,"
-                  "\n    .y = 2LL}", tests[0].returnValue.view->getEntryValue(&testsPrinter));
+        testUtils::checkRegexp(tests[0].returnValue.view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]inner = [{]"
+                               "\n        [.]c = ['].+['][,]"
+                               "\n        [.]ininner = [{]"
+                               "\n            [.]u = .+U[,]"
+                               "\n            [.]l = .+LL[}][,]"
+                               "\n        [.]s = .+[}][,]"
+                               "\n    [.]x = .+[,]"
+                               "\n    [.]y = .+LL[}]");
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
@@ -2401,9 +2404,10 @@ namespace {
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::CXX);
         const auto &tests = testGen.tests.at(simple_class_cpp)
                                 .methods.begin().value().testCases.begin();
-        ASSERT_EQ("{"
-                  "\n    /*.x = */-1,"
-                  "\n    /*.y = */2}", tests[0].paramValues[0].view->getEntryValue(&testsPrinter));
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    /[*][.]x = [*]/.+[,]"
+                               "\n    /[*][.]y = [*]/.+[}]");
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 5);
 

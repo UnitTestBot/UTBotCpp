@@ -65,6 +65,11 @@ namespace testUtils {
         }
     }
 
+    void checkRegexp(const std::string &value, const std::string &regexp) {
+       ASSERT_TRUE(std::regex_match(value.begin(), value.end(), std::regex(regexp)))
+            << "Value: " << value << "\nDon't correspond to: " << regexp << std::endl;
+    }
+
     void checkCoverage(const Coverage::CoverageMap &coverageMap,
                        const CoverageLines &expectedLinesCovered,
                        const CoverageLines &expectedLinesUncovered,
