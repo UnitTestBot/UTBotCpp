@@ -1,7 +1,12 @@
 package com.huawei.utbot.cpp.utils
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import kotlin.io.path.div
+import kotlin.io.path.extension
+import kotlin.io.path.relativeTo
+import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -70,5 +75,52 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
         }
     }.let { visitor ->
         Files.walkFileTree(this, visitor)
+    }
+}
+
+val DOT_SEP = "_dot_"
+val TEST_SUFFIX = "_test"
+
+fun testFilePathToSourceFilePath(path: String, project: Project): Path = testFilePathToSourceFilePath(Paths.get(path), project)
+
+fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
+    val relativeToProject = Paths.get(project.utbotSettings.testDirPath).relativize(path.parent)
+    println(relativeToProject.toString())
+    return (Paths.get(project.utbotSettings.projectPath) / relativeToProject / testFileNameToSourceFileName(path)).also {
+        println(it)
+    }
+}
+
+fun testFileNameToSourceFileName(path: Path): Path {
+    return restoreExtensionFromSuffix(removeSuffix(path, TEST_SUFFIX)).fileName.also {
+        println(it)
+    }
+}
+
+fun removeSuffix(path: Path, suffix: String): Path {
+    return path.parent.resolve(
+        path.fileName.let {
+            val fn = it.toString()
+            val posOfSuffix = fn.lastIndexOf(suffix)
+            fn.removeRange(posOfSuffix until (posOfSuffix + suffix.length))
+        }.also {
+            println("REMOVING SUFFIX FORM $path")
+            println(it)
+        }
+    )
+}
+
+// todo: tests
+fun restoreExtensionFromSuffix(path: Path, defaultExt: String = ".c"): Path {
+    val fnWithoutExt = FilenameUtils.removeExtension(path.fileName.toString())
+    val posEncodedExtension = fnWithoutExt.lastIndexOf(DOT_SEP)
+    val fnWithExt = if (posEncodedExtension == -1) {
+        fnWithoutExt + defaultExt
+    } else {
+        fnWithoutExt.substring(0 until posEncodedExtension) + "." + fnWithoutExt.substring(posEncodedExtension + DOT_SEP.length)
+    }
+    return path.parent.resolve(fnWithExt).also {
+        println("RESTORING EXTESION FROM $path")
+        println(it)
     }
 }

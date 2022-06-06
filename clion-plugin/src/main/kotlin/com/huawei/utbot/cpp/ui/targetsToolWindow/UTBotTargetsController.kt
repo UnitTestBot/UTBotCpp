@@ -28,7 +28,7 @@ class UTBotTargetsController(val project: Project) {
 
     init {
         requestTargetsFromServer()
-        addTargetPathIfNotPresent(utbotSettings.targetPath)
+        // addTargetPathIfNotPresent(utbotSettings.targetPath)
         connectToEvents()
     }
 

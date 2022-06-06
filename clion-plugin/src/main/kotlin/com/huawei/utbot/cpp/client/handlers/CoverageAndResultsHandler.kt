@@ -1,11 +1,14 @@
 package com.huawei.utbot.cpp.client.handlers
 
+import com.huawei.utbot.cpp.actions.FocusAction
 import com.huawei.utbot.cpp.coverage.UTBotCoverageEngine
 import com.huawei.utbot.cpp.coverage.UTBotCoverageRunner
 import com.huawei.utbot.cpp.coverage.UTBotCoverageSuite
 import com.huawei.utbot.cpp.messaging.UTBotTestResultsReceivedListener
 import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.notifyError
+import com.huawei.utbot.cpp.utils.notifyInfo
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.coverage.CoverageDataManager
 import com.intellij.coverage.CoverageEngine
 import com.intellij.coverage.CoverageRunner
@@ -16,12 +19,14 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import testsgen.Testgen
 import testsgen.Util
+import java.nio.file.Path
 
 class CoverageAndResultsHandler(
     project: Project,
     grpcStream: Flow<Testgen.CoverageAndResultsResponse>,
     progressName: String,
-    cancellationJob: Job
+    cancellationJob: Job,
+    val sourceFilePath: Path? = null
 ) : StreamHandlerWithProgress<Testgen.CoverageAndResultsResponse>(project, grpcStream, progressName, cancellationJob) {
     override fun Testgen.CoverageAndResultsResponse.getProgress(): Util.Progress = progress
 
@@ -58,5 +63,14 @@ class CoverageAndResultsHandler(
         )
 
         manager.coverageGathered(suite)
+        notify(response)
+    }
+
+    private fun notify(reponse: Testgen.CoverageAndResultsResponse) {
+        sourceFilePath ?: return
+        notifyInfo(
+            "Coverage received!", project,
+            FocusAction(sourceFilePath)
+        )
     }
 }

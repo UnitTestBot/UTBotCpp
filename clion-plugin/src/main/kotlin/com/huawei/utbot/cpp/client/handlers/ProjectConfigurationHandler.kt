@@ -23,6 +23,7 @@ abstract class ProjectConfigResponseHandler(
     progressName: String,
     cancellationJob: Job
 ) : StreamHandlerWithProgress<Testgen.ProjectConfigResponse>(project, grpcStream, progressName, cancellationJob) {
+    override fun Testgen.ProjectConfigResponse.getProgress() = progress
     override fun onLastResponse(response: Testgen.ProjectConfigResponse?) {
         if (response == null) {
             project.logger.error { "No responses from server!" }
@@ -40,10 +41,6 @@ class CheckProjectConfigurationHandler(
     progressName: String,
     cancellationJob: Job
 ) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
-    override fun Testgen.ProjectConfigResponse.getProgress(): Util.Progress {
-        return progress
-    }
-
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
@@ -80,10 +77,6 @@ class CreateBuildDirHandler(
     progressName: String,
     cancellationJob: Job
 ) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
-    override fun Testgen.ProjectConfigResponse.getProgress(): Util.Progress {
-        return progress
-    }
-
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
@@ -117,5 +110,4 @@ class GenerateJsonHandler(
         refreshAndFindIOFile(project.utbotSettings.buildDirPath)
     }
 
-    override fun Testgen.ProjectConfigResponse.getProgress() = progress
 }
