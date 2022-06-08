@@ -10,6 +10,7 @@
    "unittestbot.testsGeneration.generateForStaticFunctions.description": "True, if you want UTBot to generate tests for static functions. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#generate-for-static-functions)",
    "unittestbot.visual.showTestResults.description": "True, if you want UTBot to display whether test passed/failed. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#show-test-results)",
    "unittestbot.stubs.useStubs.description": "True, if you want UTBot to use generated stubs from <testsDir>/stubs folder instead real files. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#use-stubs)",
+   "unittestbot.analysis.genSarif.description": "True, if you want UTBot to generate SARIF file",
    "unittestbot.advanced.enableDeveloperMode.description": "Enables hidden commands for debug. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#enable-developer-mode)",
    "unittestbot.advanced.timeoutPerFunction.description": "Maximum time (in seconds) alloted for generation tests per function. Set to non-positive number to disable it. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#timeout-per-function)",
    "unittestbot.advanced.timeoutPerTest.description": "Maximum time (in seconds) alloted for a single test run. Set to non-positive number to disable it. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#timeout-per-test)",
