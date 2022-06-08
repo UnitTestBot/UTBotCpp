@@ -1,7 +1,7 @@
 {
-	"name": "unittestbot",
+	"name": "UTBotCpp",
 	"displayName": "UnitTestBot for C/C++",
-	"publisher": "Huawei",
+	"publisher": "UnitTestBot",
 	"repository": "https://github.com/UnitTestBot/UTBotCpp",
 	"description": "Provides instruments for auto generating regression tests in C/C++ projects.",
 	"version": "0.0.1",
@@ -498,10 +498,10 @@
 					"default": "",
 					"markdownDescription": "%unittestbot.paths.sourceDirectories.description%"
 				},
-				"unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard": {
+				"unittestbot.testsGeneration.verboseFormatting": {
 					"type": "boolean",
 					"default": false,
-					"markdownDescription": "%unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard.description%"
+					"markdownDescription": "%unittestbot.testsGeneration.verboseFormatting.description%"
 				},
 				"unittestbot.testsGeneration.generateForStaticFunctions": {
 					"type": "boolean",

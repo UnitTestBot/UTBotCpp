@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "bits.h"
 
 UINT32 NSE_BITS_CLZ64(UINT64 uiiData)

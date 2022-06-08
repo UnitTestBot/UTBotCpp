@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "simple_structs.h"
 
 int get_sign_struct(struct MyStruct st) {

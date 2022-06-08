@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { ExtensionContext } from 'vscode';
 
 export type IconPath = string | { dark: string; light: string };

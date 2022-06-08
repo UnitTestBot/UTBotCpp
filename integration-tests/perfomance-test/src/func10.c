@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 // function_count 10
 int fun_0 (int a) {
     if (a >= 0) {
@@ -72,4 +68,3 @@ int fun_9 (int a) {
     }
     return -1 * a;
 }
-

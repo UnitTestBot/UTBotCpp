@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "stubs.h"
 
 int find_maximum(int x, int y, int (*compare) (int, int)) {

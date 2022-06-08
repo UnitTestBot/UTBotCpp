@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CLIUtils.h"
 
 #include "GenerationUtils.h"
@@ -9,7 +5,7 @@
 #include "commands/Commands.h"
 
 #include "loguru.h"
-
+#include "config.h"
 
 using namespace GenerationUtils;
 using namespace Commands;

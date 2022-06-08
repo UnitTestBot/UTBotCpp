@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BORDERSFINDER_H
 #define UNITTESTBOT_BORDERSFINDER_H
 

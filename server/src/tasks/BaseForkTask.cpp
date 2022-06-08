@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BaseForkTask.h"
 #include "RequestEnvironment.h"
 #include "exceptions/BaseException.h"
@@ -236,4 +232,3 @@ void BaseForkTask::setLogFilePath(fs::path path) {
 void BaseForkTask::setRetainOutputFile(bool retain) {
     retainOutputFile = retain;
 }
-

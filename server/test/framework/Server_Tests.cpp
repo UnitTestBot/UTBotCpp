@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -1026,7 +1022,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Line_Test2) {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         basic_functions_c, 21);
+                                         basic_functions_c, 17);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1044,7 +1040,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Class_test1) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 10);
+                                          multiple_classes_h, 6);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1059,7 +1055,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Class_test2) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 15);
+                                          multiple_classes_h, 11);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1074,7 +1070,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, DISABLED_Class_test3) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 18);
+                                          multiple_classes_h, 14);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1089,7 +1085,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Function_Test) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 10);
+                                             basic_functions_c, 6);
         auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
@@ -1117,7 +1113,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Integer) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 21);
+                                             basic_functions_c, 17);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("36");
@@ -1140,7 +1136,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Str) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 36);
+                                             basic_functions_c, 32);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("abacaba");
@@ -1258,19 +1254,19 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = {6, 7, 8, 11, 17, 20, 22};
+        linesCovered[basic_functions_c] = {2, 3, 4, 7, 13, 16, 18};
         linesUncovered[basic_functions_c] = {};
-        linesNone[basic_functions_c] = { 4, 5, 14, 23 };
+        linesNone[basic_functions_c] = { 0, 1, 10, 19 };
 
-        linesCovered[simple_loop_uncovered_c] = {6, 7, 8, 9, 10, 11, 16, 17};
-        linesUncovered[simple_loop_uncovered_c] = { 13 };
-        linesNone[simple_loop_uncovered_c] = { 4, 5 };
+        linesCovered[simple_loop_uncovered_c] = {2, 3, 4, 5, 6, 7, 12, 13};
+        linesUncovered[simple_loop_uncovered_c] = { 9 };
+        linesNone[simple_loop_uncovered_c] = { 0, 1 };
 
-        linesCovered[simple_class_cpp] = {15, 19, 23, 27, 28, 60, 63, 66, 69};
+        linesCovered[simple_class_cpp] = {10, 14, 18, 22, 23, 55, 58, 61, 64};
         linesUncovered[simple_class_cpp] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForProject();
         CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), true);
@@ -1286,16 +1282,16 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = {6, 7, 8, 11};
-        linesUncovered[basic_functions_c] =  {15, 16, 17, 20, 24, 25, 26, 29};
-        linesNone[basic_functions_c] = {4, 5, 14, 23};
+        linesCovered[basic_functions_c] = {2, 3, 4, 7};
+        linesUncovered[basic_functions_c] =  {11, 12, 13, 16, 20, 21, 22, 25};
+        linesNone[basic_functions_c] = {0, 1, 10, 19};
 
         linesCovered[simple_loop_uncovered_c] = {};
         linesUncovered[simple_loop_uncovered_c] = {};
         linesNone[simple_loop_uncovered_c] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForFile(dependent_functions_test_cpp);
         CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), true);
@@ -1310,16 +1306,16 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = { 6, 7, 8 };
-        linesUncovered[basic_functions_c] = {11, 15, 16, 17, 20, 24, 25, 26, 29};
-        linesNone[basic_functions_c] =  {4, 5, 14, 23};
+        linesCovered[basic_functions_c] = { 2, 3, 4 };
+        linesUncovered[basic_functions_c] = {7, 11, 12, 13, 16, 20, 21, 22, 25};
+        linesNone[basic_functions_c] =  {0, 1, 10, 19};
 
         linesCovered[simple_loop_uncovered_c] = {};
         linesUncovered[simple_loop_uncovered_c] = {};
         linesNone[simple_loop_uncovered_c] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForTest(dependent_functions_test_cpp,
                                                              "regression", "double_max_test_2");
