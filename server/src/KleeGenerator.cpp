@@ -199,6 +199,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &sourceFilePath,
 }
 
 
+
 fs::path KleeGenerator::writeKleeFile(
     printer::KleePrinter &kleePrinter,
     Tests const &tests,
@@ -295,7 +296,8 @@ void KleeGenerator::parseKTestsToFinalCode(
     const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
     const std::vector<MethodKtests> &kleeOutput,
     const std::shared_ptr<LineInfo> &lineInfo,
-    bool verbose) {
+    bool verbose,
+    ErrorMode::ErrorMode errorMode) {
     for (const auto &batch : kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());
@@ -320,7 +322,7 @@ void KleeGenerator::parseKTestsToFinalCode(
         }
         auto predicate =
             lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
-        testsPrinter.genCode(methodDescription, predicate, verbose);
+        testsPrinter.genCode(methodDescription, predicate, verbose, errorMode);
 
     }
 

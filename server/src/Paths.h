@@ -364,7 +364,9 @@ namespace Paths {
 
     bool hasUncaughtException(const fs::path &path);
 
-    //endregion
+    bool hasFailedAssert(const fs::path& path);
+
+        //endregion
 
     bool isHeadersEqual(const fs::path& srcPath, const fs::path& headerPath);
 }

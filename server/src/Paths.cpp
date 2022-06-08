@@ -176,6 +176,13 @@ namespace Paths {
         return false;
     }
 
+    bool hasFailedAssert(const fs::path& path) {
+        if (errorFileExists(path, "assert")) {
+            return true;
+        }
+        return false;
+    }
+
 
     bool hasInternalError(const fs::path &path) {
         static const auto internalErrorSuffixes = {

@@ -10,6 +10,7 @@
 #include "SettingsContext.h"
 #include "Tests.h"
 #include "streams/tests/TestsWriter.h"
+#include "utils/ErrorMode.h"
 
 #include <grpcpp/grpcpp.h>
 
@@ -38,7 +39,8 @@ public:
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
                  bool isBatched,
-                 bool interactiveMode);
+                 bool interactiveMode,
+                 ErrorMode::ErrorMode errorMode);
 
 private:
     const utbot::ProjectContext projectContext;

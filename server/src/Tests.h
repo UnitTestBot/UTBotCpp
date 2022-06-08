@@ -54,13 +54,16 @@ namespace tests {
         std::vector<UTBotKTestObject> objects;
         Status status;
         bool uncaughtException = false;
+        bool failedAssert = false;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
             : objects(std::move(objects)), status(status) {
         }
 
-        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status, bool uncaughtException)
-            : objects(std::move(objects)), status(status), uncaughtException(uncaughtException) {
+        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status, bool uncaughtException,
+                   bool failedAssert)
+            : objects(std::move(objects)), status(status), uncaughtException(uncaughtException),
+            failedAssert(failedAssert) {
         }
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
@@ -375,6 +378,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             bool hasUncaughtException = false;
+            bool hasFailedAssert = false;
         };
 
         struct MethodTestCase {
@@ -399,6 +403,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             bool hasUncaughtException = false;
+            bool hasFailedAssert = false;
 
             [[nodiscard]] bool isError() const;
         };

@@ -6,6 +6,7 @@
 #define UNITTESTBOT_PARAMETRIZEDASSERTSVISITOR_H
 
 #include "AssertsVisitor.h"
+#include "utils/ErrorMode.h"
 
 namespace visitor {
     class ParametrizedAssertsVisitor : public AssertsVisitor {
@@ -18,7 +19,8 @@ namespace visitor {
                                             bool isError);
 
         void visit(const Tests::MethodDescription &methodDescription,
-                   const Tests::MethodTestCase &testCase);
+                   const Tests::MethodTestCase &testCase,
+                   ErrorMode::ErrorMode errorMode = ErrorMode::ErrorMode::FAILING);
 
     protected:
         void visitPointer(const types::Type &type,

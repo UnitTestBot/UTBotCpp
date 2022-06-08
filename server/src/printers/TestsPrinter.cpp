@@ -12,6 +12,7 @@
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
+#include "utils/ErrorMode.h"
 
 #include "loguru.h"
 
@@ -87,7 +88,8 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
 
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
                            const std::optional<LineInfo::PredicateInfo>& predicateInfo,
-                           bool verbose) {
+                           bool verbose,
+                           ErrorMode::ErrorMode errorMode) {
     resetStream();
 
     if(needDecorate()) {
@@ -106,13 +108,15 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
                        methodDescription,
                        predicateInfo,
                        verbose,
-                       testNum);
+                       testNum,
+                       errorMode);
     resetStream();
     genCodeBySuiteName(Tests::ERROR_SUITE_NAME,
                        methodDescription,
                        predicateInfo,
                        verbose,
-                       testNum);
+                       testNum,
+                       errorMode);
     resetStream();
 }
 
@@ -120,7 +124,8 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       Tests::MethodDescription &methodDescription,
                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                       bool verbose,
-                                      int &testNum) {
+                                      int &testNum,
+                                      ErrorMode::ErrorMode errorMode) {
     const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
@@ -130,9 +135,9 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
         testHeader(testCase.suiteName, methodDescription, testNum);
         redirectStdin(methodDescription, testCase, verbose);
         if (verbose) {
-            genVerboseTestCase(methodDescription, testCase, predicateInfo);
+            genVerboseTestCase(methodDescription, testCase, predicateInfo, errorMode);
         } else {
-            genParametrizedTestCase(methodDescription, testCase, predicateInfo);
+            genParametrizedTestCase(methodDescription, testCase, predicateInfo, errorMode);
         }
     }
 
@@ -141,7 +146,8 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
-                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
+                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+                                      ErrorMode::ErrorMode errorMode) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
 
@@ -155,9 +161,9 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
     }
-    TestsPrinter::verboseFunctionCall(methodDescription, testCase);
+    TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
     ss << NL;
-    if (testCase.isError()) {
+    if (testCase.isError() && errorMode == ErrorMode::ErrorMode::FAILING) {
         ss << TAB_N()
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
@@ -217,26 +223,17 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
 
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
-                                           const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
-    std::string code = ss.str();
+                                           const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                           ErrorMode::ErrorMode errorMode) {
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
-    code = ss.str();
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
-    code = ss.str();
     parametrizedArrayParameters(methodDescription, testCase);
-    code = ss.str();
     printClassObject(methodDescription, testCase);
-    code = ss.str();
     printStubVariables(methodDescription, testCase);
-    code = ss.str();
     printFunctionParameters(methodDescription, testCase, false);
-    code = ss.str();
     printLazyVariables(methodDescription, testCase, false);
-    code = ss.str();
     printLazyReferences(methodDescription, testCase, false);
-    code = ss.str();
-    parametrizedAsserts(methodDescription, testCase, predicateInfo);
-    code = ss.str();
+    parametrizedAsserts(methodDescription, testCase, predicateInfo, errorMode);
     ss << RB() << NL;
 }
 
@@ -415,14 +412,15 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
 }
 
 void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDescription,
-                                       const Tests::MethodTestCase &testCase) {
+                                       const Tests::MethodTestCase &testCase,
+                                       ErrorMode::ErrorMode errorMode) {
     std::string baseReturnType = types::TypesHandler::cBoolToCpp(methodDescription.returnType.baseType());
     types::Type expectedType = typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     if (methodDescription.returnType.maybeReturnArray()) {
         expectedType = methodDescription.returnType.arrayClone(types::PointerUsage::RETURN);
     }
     strComment("Trigger the function");
-    std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true);
+    std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true, errorMode);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
         size_t returnPointersCount = 0;
         if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
@@ -551,9 +549,10 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
 
 void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase,
-                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
+                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                       ErrorMode::ErrorMode errorMode) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
-    visitor.visit(methodDescription, testCase);
+    visitor.visit(methodDescription, testCase, errorMode);
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
@@ -605,7 +604,8 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
 
 std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &methodDescription,
                                                     const Tests::MethodTestCase &testCase,
-                                                    bool verboseMode) {
+                                                    bool verboseMode,
+                                                    ErrorMode::ErrorMode errorMode) {
     std::vector<std::string> methodArgs =
         verboseMode ? methodParametersListVerbose(methodDescription, testCase)
                     : methodParametersListParametrized(methodDescription, testCase);
@@ -622,10 +622,17 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     }
     std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
                               castType);
-    if (testCase.hasUncaughtException) {
-        functionCall = "EXPECT_ANY_THROW(" + functionCall + ")";
-    } else if (testCase.isError()) {
-        functionCall = "EXPECT_DEATH(" + functionCall + ")";
+    switch (errorMode) {
+        case ErrorMode::ErrorMode::PASSING:
+            if (testCase.hasUncaughtException) {
+                functionCall = "EXPECT_ANY_THROW(" + functionCall + ")";
+            } else if (testCase.isError()) {
+                functionCall = "ASSERT_DEATH(" + functionCall + ", \".*\")";
+            }
+            break;
+        case ErrorMode::ErrorMode::PASSING_IN_TARGET_ONLY:
+            // TODO: generate EXPECT_ANY_THROW and ASSERT_DEATH only if runtime error was in target function
+            break;
     }
     return functionCall;
 }

@@ -12,6 +12,7 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
+#include "utils/ErrorMode.h"
 #include "TimeExecStatistics.h"
 
 #include "loguru.h"
@@ -34,7 +35,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          const std::shared_ptr<LineInfo> &lineInfo,
                          TestsWriter *testsWriter,
                          bool isBatched,
-                         bool interactiveMode) {
+                         bool interactiveMode,
+                         ErrorMode::ErrorMode errorMode) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
@@ -89,7 +91,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
           }
         }
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
-                                          settingsContext.verbose);
+                                          settingsContext.verbose, errorMode);
     };
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
@@ -195,8 +197,10 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                     UTBotKTest::Status status = Paths::hasError(path) ? UTBotKTest::Status::FAILED
                                                                       : UTBotKTest::Status::SUCCESS;
                     bool uncaughtException = false;
+                    bool failedAssert = false;
                     if (status == UTBotKTest::Status::FAILED) {
                         uncaughtException = Paths::hasUncaughtException(path);
+                        failedAssert = Paths::hasFailedAssert(path);
                     }
                     std::vector<ConcretizedObject> kTestObjects(
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
@@ -206,7 +210,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[testMethod].emplace_back(objects, status, uncaughtException);
+                    ktestChunk[testMethod].emplace_back(objects, status, uncaughtException, failedAssert);
                 }
             }
         }
@@ -338,8 +342,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                                     ? UTBotKTest::Status::FAILED
                                                     : UTBotKTest::Status::SUCCESS;
                         bool uncaughtException = false;
+                        bool failedAssert = false;
                         if (status == UTBotKTest::Status::FAILED) {
                             uncaughtException = Paths::hasUncaughtException(path);
+                            failedAssert = Paths::hasFailedAssert(path);
                         }
                         std::vector<ConcretizedObject> kTestObjects(
                             ktestData->objects, ktestData->objects + ktestData->n_objects);
@@ -349,7 +355,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                               return UTBotKTestObject{ kTestObject };
                             });
 
-                        ktestChunk[method].emplace_back(objects, status, uncaughtException);
+                        ktestChunk[method].emplace_back(objects, status, uncaughtException, failedAssert);
                     }
                 }
             }

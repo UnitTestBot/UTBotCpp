@@ -15,12 +15,13 @@ namespace visitor {
     static thread_local std::string functionCall;
 
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
-                                           const Tests::MethodTestCase &testCase) {
+                                           const Tests::MethodTestCase &testCase,
+                                           ErrorMode::ErrorMode errorMode) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
-                                                          false);
+                                                          false, errorMode);
         if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(
