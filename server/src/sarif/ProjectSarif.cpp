@@ -13,23 +13,27 @@ namespace sarif {
         sarifJson["runs"][0]["results"] = json::array();
     }
 
-    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path) :
-        sarifName(name  + default_output_suffix + sarif_default_extension), outputPath(default_output_dir_name / path) {
+    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path, bool writeFlag) :
+        sarifName(name  + default_output_suffix + sarif_default_extension),
+        outputPath(default_output_dir_name / path),
+        writeFileFlag(writeFlag) {
         init();
     }
 
-    ProjectSarif::ProjectSarif() : ProjectSarif(sarif_default_name, "") {}
+    ProjectSarif::ProjectSarif(bool writeFlag) : ProjectSarif(sarif_default_name, "", writeFlag) {}
 
     void ProjectSarif::writeSarifFile(const fs::path &projectPath) {
-        fs::path sarifPath = projectPath / outputPath / sarifName;
-        LOG_S(INFO) << "Create FileSarif " << sarifPath;
-        JsonUtils::writeJsonToFile(sarifPath, sarifJson);
+        if (writeFileFlag) {
+            fs::path sarifPath = projectPath / outputPath / sarifName;
+            LOG_S(INFO) << "Create FileSarif " << sarifPath;
+            JsonUtils::writeJsonToFile(sarifPath, sarifJson);
+        }
     }
 
     void ProjectSarif::joinSarifFiles(const fs::path &projectPath) {
         CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(projectPath / outputPath);
         for (const auto &file : allFiles) {
-            if (file.parent_path() != projectPath / outputPath) {
+            if (file.filename_without_extension() != sarifName + default_output_suffix) {
                 addResultsFromFile(file);
             }
         }

@@ -6,10 +6,8 @@
 
 namespace sarif {
 
-    FileSarif::FileSarif(const tests::Tests &tests) : ProjectSarif(tests.sourceFileNameNoExt, tests.relativeFileDir),
+    FileSarif::FileSarif(const tests::Tests &tests, bool writeFlag) : ProjectSarif(tests.sourceFileNameNoExt, tests.relativeFileDir, writeFlag),
                                                       sourcePath(tests.sourceFilePath) {}
-
-
 
     int FileSarif::generateSarifForFunction(const tests::Tests::MethodDescription &methodDescription,
                                             const fs::path &projectPath) {
@@ -24,10 +22,10 @@ namespace sarif {
                 fs::path jsonPath = testCase.errorDescriptionInJson.value();
                 json testCaseJson = JsonUtils::getJsonFromFile(jsonPath);
                 string errorLocationStr = getUriFromLocation(testCaseJson.at("locations").at(0));
-                if (projectPath / errorLocationStr != sourcePath) {
-                    LOG_S(ERROR) << "Found error location not in project: " << errorLocationStr;
-                    continue;
-                }
+//                if (projectPath / errorLocationStr != sourcePath) {
+//                    LOG_S(ERROR) << "Found error location not in project: " << errorLocationStr;
+//                    continue;
+//                }
                 deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
                                               projectPath);
                 addResultToSarif(testCaseJson);

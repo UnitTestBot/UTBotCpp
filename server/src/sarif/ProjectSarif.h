@@ -24,10 +24,11 @@ namespace sarif {
         json sarifJson;
         const std::string sarifName = "project_code";
         const fs::path outputPath = default_output_dir_name;
+        const bool writeFileFlag;
 
     public:
-        ProjectSarif();
-        ProjectSarif(const std::string &, const fs::path &);
+        explicit ProjectSarif(bool);
+        ProjectSarif(const std::string &, const fs::path &, bool);
 
         void writeSarifFile(const fs::path &);
 
