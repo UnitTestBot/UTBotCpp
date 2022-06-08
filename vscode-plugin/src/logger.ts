@@ -7,7 +7,7 @@ import * as log4js from "log4js";
 import 'source-map-support/register';
 import * as vs from 'vscode';
 import { utbotUI } from "./interface/utbotUI";
-
+import {AppenderModule, AppenderFunction} from "log4js";
 
 export type LogLevel = 'FATAL' | 'ERROR' | 'DEBUG' | 'TRACE' | 'INFO' | 'WARN';
 
@@ -17,7 +17,7 @@ export class ExtensionLogger {
     public static get logger(): log4js.Logger {
         if (ExtensionLogger._logger === undefined) {
             ExtensionLogger._logger = Logger.getLog4JsLogger(
-                'INFO', 
+                'INFO',
                 utbotUI.channels().outputClientLogChannel
             );
         }
@@ -44,13 +44,13 @@ export class Logger {
      * Configurates Log4js logger.
      */
     private static configureLog4js(configLogLevel: LogLevel, outputLogChannel: vs.OutputChannel): log4js.Logger {
-        /** 
-         * Creating custom appender, that writes logs to 
-         * VS Code output channel 
+        /**
+         * Creating custom appender, that writes logs to
+         * VS Code output channel
         */
-        const vscodeOutChannelAppender = {
-            configure: (config: any, layouts: any): {} => {
-                const vscodeAppender = (loggingEvent: log4js.LoggingEvent): void => {
+        const vscodeOutChannelAppender: AppenderModule = {
+            configure: (config: any, layouts: any): AppenderFunction => {
+                const vscodeAppender: AppenderFunction = (loggingEvent: log4js.LoggingEvent): void => {
                     let layout = layouts.basicLayout;
                     if (config.layout) {
                         layout = layouts.layout(config.layout.type, config.layout);
@@ -58,14 +58,9 @@ export class Logger {
                     outputLogChannel.append(`${layout(loggingEvent, config.timezoneOffset)}`);
                 };
 
-                vscodeAppender.shutdown = (done: any): void => {
-                    outputLogChannel.dispose();
-                    setTimeout(done, 10);
-                };
                 return vscodeAppender;
             }
         };
-
         log4js.configure({
             appenders: {
                 vscodeOutChannel: {
@@ -78,11 +73,11 @@ export class Logger {
                 console: {
                     type: 'console',
                     layout: {
-                        type: 'pattern', 
+                        type: 'pattern',
                         pattern: this.patternString
                     }
                 },
-                vscodeOutChannelForClientOnlyAppender : {
+                vscodeOutChannelForClientOnlyAppender: {
                     type: vscodeOutChannelAppender,
                     layout: {
                         type: 'pattern',
@@ -103,14 +98,19 @@ export class Logger {
 
             },
             categories: {
-                default: { appenders: ['vscodeOutChannelForInfo', 'vscodeOutChannelForDebug', 'console'], level: configLogLevel, enableCallStack: true },
+                default: {
+                    appenders: ['vscodeOutChannelForInfo', 'vscodeOutChannelForDebug', 'console'],
+                    level: configLogLevel,
+                    enableCallStack: true
+                },
             }
         });
 
         return log4js.getLogger("Client");
     }
-   
+
     public static configToLog4jsLogLevel(configLogLevel: LogLevel): string {
         return configLogLevel.toLowerCase();
     }
 }
+
