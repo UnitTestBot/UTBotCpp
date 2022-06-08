@@ -92,14 +92,14 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                                         std::move(writeFunctor));
     for (auto it = testsMap.begin(); it != testsMap.end(); it++) {
         tests::Tests &tests = it.value();
-        sarif::FileSarif fileSarif(tests);
+        sarif::FileSarif fileSarif(tests, settingsContext.genSarif);
         for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
             Tests::MethodDescription &methodDescription = it.value();
             fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
         }
         fileSarif.writeSarifFile(projectContext.projectPath);
     }
-    sarif::ProjectSarif projectSarif;
+    sarif::ProjectSarif projectSarif(settingsContext.genSarif);
     projectSarif.joinSarifFiles(projectContext.projectPath);
     projectSarif.writeSarifFile(projectContext.projectPath);
 }

@@ -30,7 +30,7 @@ namespace utbot {
         const std::optional<std::chrono::seconds> timeoutPerFunction, timeoutPerTest;
         const bool useDeterministicSearcher;
         const bool useStubs;
-        const bool genSarif;
+        const bool genSarif = false;
     };
 }
 
