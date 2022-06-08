@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 import { GTestInfo, TestsCache } from '../cache/testsCache';
 import { Commands } from '../config/commands';

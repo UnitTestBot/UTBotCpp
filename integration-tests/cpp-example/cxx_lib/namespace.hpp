@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef NAMESPACE_HPP
 #define NAMESPACE_HPP
 

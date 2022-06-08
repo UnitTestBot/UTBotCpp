@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "types_2.h"
 
 size_t foo(MY_INT x) {
@@ -41,4 +37,3 @@ typedef_from_c diff(typedef_from_c_param x) {
 
     return 1;
 }
-

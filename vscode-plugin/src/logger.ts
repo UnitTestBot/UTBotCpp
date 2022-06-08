@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as log4js from "log4js";
 /**
  * Makes it possible to build code source map.

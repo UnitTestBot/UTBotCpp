@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -35,7 +31,7 @@ namespace {
     };
 
     TEST_F(Library_Test, sum) {
-        auto [testGen, status] = createTestForFunction(test_c, 7);
+        auto [testGen, status] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -51,7 +47,7 @@ namespace {
             })
         );
 
-        auto [testGen2, status2] = createTestForFunction(test_c, 7);
+        auto [testGen2, status2] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status2.ok()) << status2.error_message();
 

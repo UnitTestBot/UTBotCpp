@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "simple_loop_uncovered_dot_c_test.h"
 
 #include "gtest/gtest.h"
@@ -36,4 +32,3 @@ namespace UTBot {
         EXPECT_EQ(expected, actual);
     }
 }
-

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { Client } from "../client/client";
 import { Prefs } from "../config/prefs";
 import { CoverageAndResultsResponse, ProjectConfigResponse, StubsResponse, TestsResponse } from "../proto-ts/testgen_pb";
