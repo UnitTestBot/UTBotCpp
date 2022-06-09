@@ -6,13 +6,26 @@
 
 namespace sarif {
 
-    FileSarif::FileSarif(const tests::Tests &tests, bool writeFlag) : ProjectSarif(tests.sourceFileNameNoExt, tests.relativeFileDir, writeFlag),
-                                                      sourcePath(tests.sourceFilePath) {}
+    json getLocationFromResult(const json &result) {
+        return result.at("locations").at(0);
+    }
+
+    std::string getFileFromResult(const json &result) {
+        return getLocationFromResult(result).at("physicalLocation").at("artifactLocation").at("uri");
+    }
+
+    int getLineFromResult(const json &result) {
+        return getLocationFromResult(result).at("physicalLocation").at("region").at("startLine");
+    }
+
+    FileSarif::FileSarif(const tests::Tests &tests, bool writeFlag) : ProjectSarif(tests.sourceFileNameNoExt,
+                                                                                   tests.relativeFileDir, writeFlag),
+                                                                      sourcePath(tests.sourceFilePath) {}
 
     int FileSarif::generateSarifForFunction(const tests::Tests::MethodDescription &methodDescription,
                                             const fs::path &projectPath) {
         int errorTestCases = 0;
-        for (const auto &testCase : methodDescription.testCases) {
+        for (const auto &testCase: methodDescription.testCases) {
             if (testCase.isError()) {
                 errorTestCases++;
                 if (!testCase.errorDescriptionInJson.has_value()) {
@@ -28,35 +41,46 @@ namespace sarif {
 //                }
                 deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
                                               projectPath);
+                testCaseJson.at("locations").at(0) = testCaseJson.at("codeFlows").at(0).
+                        at("threadFlows").at(0).at("locations").back().at("location");
                 addResultToSarif(testCaseJson);
             }
         }
-        LOG_S(INFO) << "Found " << errorTestCases << " error test cases for " << methodDescription.name << " in " << sourcePath;
+        LOG_S(INFO)
+        << "Found " << errorTestCases << " error test cases for " << methodDescription.name << " in " << sourcePath;
         return errorTestCases;
     }
 
 
-
     json &FileSarif::getUriFromLocation(json &location) {
-            return location.at("physicalLocation").at("artifactLocation").at("uri");
+        return location.at("physicalLocation").at("artifactLocation").at("uri");
     }
 
     void FileSarif::deleteExternalFilesFromResult(json &result, const fs::path &projectRoot) {
         for (int i = 0; i < result.at("locations").size(); ++i) {
             json &location = result.at("locations").at(i).at("location");
-            string location_path = fs::path((string)getUriFromLocation(location));
+            string location_path = fs::path((string) getUriFromLocation(location));
             if (Paths::isSubPathOf(projectRoot, location_path)) {
                 getUriFromLocation(location) = location_path.substr(projectRoot.string().size() + 1);
             }
         }
         auto it = std::remove_if(result.at("locations").begin(), result.at("locations").end(),
                                  [&](json &location) {
-            return !fs::exists(projectRoot / (string)getUriFromLocation(location.at("location")));
-        });
+                                     return !fs::exists(
+                                             projectRoot / (string) getUriFromLocation(location.at("location")));
+                                 });
         result.at("locations").erase(it, result.at("locations").end());
     }
 
     void FileSarif::addResultToSarif(const json &result) {
+        for (auto &sarifResult: sarifJson.at("runs").at(0).at("results")) {
+            if (getFileFromResult(sarifResult) == getFileFromResult(result) &&
+                    getLineFromResult(sarifResult) == getLineFromResult(result)) {
+                sarifResult.at("codeFlows").push_back(result.at("codeFlows").at(0));
+                return;
+            }
+        }
         sarifJson.at("runs").at(0).at("results").push_back(result);
     }
+
 }
