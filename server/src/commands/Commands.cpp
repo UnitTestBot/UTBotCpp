@@ -11,8 +11,8 @@ Commands::MainCommands::MainCommands(CLI::App &app) {
     app.set_help_all_flag("--help-all", "Expand all help");
     app.add_flag_function("--version", [](int count){
         std::cout << PROJECT_NAME << " " << PROJECT_VERSION << std::endl;
-        if (strlen(RUN_URL)) {
-            std::cout << "Build by " << RUN_URL << std::endl;
+        if (strlen(RUN_INFO)) {
+            std::cout << "Build by " << RUN_INFO << std::endl;
         }
         exit(0);
     }, "Get UTBotCpp version and build detail");
