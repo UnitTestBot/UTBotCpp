@@ -8,7 +8,6 @@
 #include <chrono>
 #include <optional>
 #include <protobuf/testgen.grpc.pb.h>
-#include <utils/ErrorMode.h>
 
 namespace testsgen {
     class SettingsContext;
