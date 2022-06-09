@@ -297,7 +297,7 @@ void KleeGenerator::parseKTestsToFinalCode(
     const std::vector<MethodKtests> &kleeOutput,
     const std::shared_ptr<LineInfo> &lineInfo,
     bool verbose,
-    ErrorMode::ErrorMode errorMode) {
+    ::testsgen::ErrorMode errorMode) {
     for (const auto &batch : kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());

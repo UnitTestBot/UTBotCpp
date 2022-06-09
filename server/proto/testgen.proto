@@ -86,6 +86,12 @@ message ProjectContext {
     string resultsDirRelativePath = 5;
 }
 
+enum ErrorMode {
+    FAILING = 0;
+    PASSING_IN_TARGET_ONLY = 1;
+    PASSING = 2;
+}
+
 message SettingsContext {
     bool generateForStaticFunctions = 1;
     bool verbose = 2;
@@ -93,11 +99,6 @@ message SettingsContext {
     int32 timeoutPerTest = 4;
     bool useDeterministicSearcher = 5;
     bool useStubs = 6;
-    enum ErrorMode {
-        FAILING = 0;
-        PASSING_IN_TARGET_ONLY = 1;
-        PASSING = 2;
-    }
     ErrorMode errorMode = 7;
 }
 

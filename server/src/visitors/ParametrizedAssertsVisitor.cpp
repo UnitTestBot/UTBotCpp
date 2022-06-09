@@ -16,7 +16,7 @@ namespace visitor {
 
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
-                                           ErrorMode::ErrorMode errorMode) {
+                                           ::testsgen::ErrorMode errorMode) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;

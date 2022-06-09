@@ -34,7 +34,6 @@
 #include "utils/LogUtils.h"
 #include "utils/ServerUtils.h"
 #include "utils/TypeUtils.h"
-#include "utils/ErrorMode.h"
 
 #include <thread>
 #include <fstream>
@@ -277,7 +276,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                testGen.serverBuildDir };
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto start_time = std::chrono::steady_clock::now();
-//        ErrorMode::ErrorMode errorMode = ErrorMode::ErrorMode::FAILING;
+//        ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING;
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
                            lineInfo, testsWriter, testGen.isBatched(), interactiveMode, /*errorMode */ testGen.settingsContext.errorMode);
         auto finish_time = std::chrono::steady_clock::now();

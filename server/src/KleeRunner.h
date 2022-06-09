@@ -10,7 +10,6 @@
 #include "SettingsContext.h"
 #include "Tests.h"
 #include "streams/tests/TestsWriter.h"
-#include "utils/ErrorMode.h"
 
 #include <grpcpp/grpcpp.h>
 
@@ -40,7 +39,7 @@ public:
                  TestsWriter *testsWriter,
                  bool isBatched,
                  bool interactiveMode,
-                 ErrorMode::ErrorMode errorMode);
+                 ::testsgen::ErrorMode errorMode);
 
 private:
     const utbot::ProjectContext projectContext;

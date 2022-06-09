@@ -509,9 +509,15 @@
 					"markdownDescription": "%unittestbot.testsGeneration.generateForStaticFunctions.description%"
 				},
 				"unittestbot.testsGeneration.errorMode" : {
-					"type": "number",
-					"default": 0,
-					"markdownDescription": "%unittestbot.testsGeneration.errorMode.description%"
+					"type": "string",
+					"enum": [
+						"Failing",
+						"Errors failing if only they occured in target",
+						"Passing"
+					],
+					"default": "Failing",
+					"markdownDescription": "%unittestbot.testsGeneration.errorMode.description%",
+					"scope": "window"
 				},
 				"unittestbot.visual.showTestResults": {
 					"type": "boolean",

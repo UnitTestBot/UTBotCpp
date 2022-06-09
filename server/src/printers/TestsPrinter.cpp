@@ -12,7 +12,6 @@
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
-#include "utils/ErrorMode.h"
 
 #include "loguru.h"
 
@@ -89,7 +88,7 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
                            const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                            bool verbose,
-                           ErrorMode::ErrorMode errorMode) {
+                           ::testsgen::ErrorMode errorMode) {
     resetStream();
 
     if(needDecorate()) {
@@ -125,7 +124,7 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                       bool verbose,
                                       int &testNum,
-                                      ErrorMode::ErrorMode errorMode) {
+                                      ::testsgen::ErrorMode errorMode) {
     const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
@@ -147,7 +146,7 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-                                      ErrorMode::ErrorMode errorMode) {
+                                      ::testsgen::ErrorMode errorMode) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
 
@@ -163,7 +162,7 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     }
     TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
     ss << NL;
-    if (testCase.isError() && errorMode == ErrorMode::ErrorMode::FAILING) {
+    if (testCase.isError() && errorMode == ::testsgen::ErrorMode::FAILING) {
         ss << TAB_N()
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
@@ -224,7 +223,7 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            const std::optional<LineInfo::PredicateInfo>& predicateInfo,
-                                           ErrorMode::ErrorMode errorMode) {
+                                           ::testsgen::ErrorMode errorMode) {
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     parametrizedArrayParameters(methodDescription, testCase);
@@ -413,7 +412,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
 
 void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase,
-                                       ErrorMode::ErrorMode errorMode) {
+                                       ::testsgen::ErrorMode errorMode) {
     std::string baseReturnType = types::TypesHandler::cBoolToCpp(methodDescription.returnType.baseType());
     types::Type expectedType = typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     if (methodDescription.returnType.maybeReturnArray()) {
@@ -550,7 +549,7 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
 void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase,
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo,
-                                       ErrorMode::ErrorMode errorMode) {
+                                       ::testsgen::ErrorMode errorMode) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase, errorMode);
     if (!testCase.isError()) {
@@ -605,7 +604,7 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
 std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &methodDescription,
                                                     const Tests::MethodTestCase &testCase,
                                                     bool verboseMode,
-                                                    ErrorMode::ErrorMode errorMode) {
+                                                    ::testsgen::ErrorMode errorMode) {
     std::vector<std::string> methodArgs =
         verboseMode ? methodParametersListVerbose(methodDescription, testCase)
                     : methodParametersListParametrized(methodDescription, testCase);
@@ -623,14 +622,14 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
                               castType);
     switch (errorMode) {
-        case ErrorMode::ErrorMode::PASSING:
+        case ::testsgen::ErrorMode::PASSING:
             if (testCase.hasUncaughtException) {
                 functionCall = "EXPECT_ANY_THROW(" + functionCall + ")";
             } else if (testCase.isError()) {
                 functionCall = "ASSERT_DEATH(" + functionCall + ", \".*\")";
             }
             break;
-        case ErrorMode::ErrorMode::PASSING_IN_TARGET_ONLY:
+        case ::testsgen::ErrorMode::PASSING_IN_TARGET_ONLY:
             // TODO: generate EXPECT_ANY_THROW and ASSERT_DEATH only if runtime error was in target function
             break;
     }

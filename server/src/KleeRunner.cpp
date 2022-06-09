@@ -12,7 +12,6 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
-#include "utils/ErrorMode.h"
 #include "TimeExecStatistics.h"
 
 #include "loguru.h"
@@ -36,7 +35,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          TestsWriter *testsWriter,
                          bool isBatched,
                          bool interactiveMode,
-                         ErrorMode::ErrorMode errorMode) {
+                         ::testsgen::ErrorMode errorMode) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);

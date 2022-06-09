@@ -13,7 +13,7 @@ namespace utbot {
                                      int32_t timeoutPerTest,
                                      bool useDeterministicSearcher,
                                      bool useStubs,
-                                     ::testsgen::SettingsContext_ErrorMode errorMode)
+                                     ::testsgen::ErrorMode errorMode)
         : generateForStaticFunctions(generateForStaticFunctions),
           verbose(verbose),
           timeoutPerFunction(timeoutPerFunction > 0
@@ -23,7 +23,7 @@ namespace utbot {
          ? std::make_optional(std::chrono::seconds{ timeoutPerTest })
          : std::nullopt),
           useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs),
-          errorMode(static_cast<ErrorMode::ErrorMode>(errorMode)) {
+          errorMode(errorMode) {
     }
     SettingsContext::SettingsContext(const testsgen::SettingsContext &settingsContext)
         : SettingsContext(settingsContext.generateforstaticfunctions(),

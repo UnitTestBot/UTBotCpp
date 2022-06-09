@@ -25,14 +25,14 @@ namespace utbot {
                         int32_t timeoutPerTest,
                         bool useDeterministicSearcher,
                         bool useStubs,
-                        ::testsgen::SettingsContext_ErrorMode errorMode);
+                        ::testsgen::ErrorMode errorMode);
 
         const bool generateForStaticFunctions;
         const bool verbose;
         const std::optional<std::chrono::seconds> timeoutPerFunction, timeoutPerTest;
         const bool useDeterministicSearcher;
         const bool useStubs;
-        ErrorMode::ErrorMode errorMode;
+        ::testsgen::ErrorMode errorMode;
     };
 }
 

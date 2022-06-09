@@ -13,7 +13,7 @@ import * as defcfg from './defaultValues';
 import * as Randomstring from 'randomstring';
 import {SettingsContext} from '../proto-ts/testgen_pb';
 import {isWin32} from '../utils/utils';
-import ErrorMode = SettingsContext.ErrorMode;``
+import {ErrorMode} from '../proto-ts/testgen_pb'
 
 const { logger } = ExtensionLogger;
 
@@ -392,7 +392,17 @@ export class Prefs {
     }
 
     public static errorMode(): ErrorMode {
-        return this.getAssetBase(Prefs.ERROR_SUITES_PREF, ErrorMode.FAILING);
+        let errorMode: ErrorMode;
+        const defaultValue: string = "Failing";
+        const errorModeString = this.getAssetBase(Prefs.ERROR_SUITES_PREF, defaultValue);
+        if (errorModeString === "Passing") {
+            errorMode = ErrorMode.PASSING;
+        } else if (errorModeString === "Failing") {
+            errorMode = ErrorMode.FAILING;
+        } else {
+            errorMode = ErrorMode.PASSING_IN_TARGET_ONLY;
+        }
+        return errorMode;
     }
 
     public static async setVerboseTestMode(mode: boolean): Promise<void> {
