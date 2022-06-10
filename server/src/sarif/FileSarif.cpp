@@ -35,12 +35,9 @@ namespace sarif {
                 fs::path jsonPath = testCase.errorDescriptionInJson.value();
                 json testCaseJson = JsonUtils::getJsonFromFile(jsonPath);
                 string errorLocationStr = getUriFromLocation(testCaseJson.at("locations").at(0));
-//                if (projectPath / errorLocationStr != sourcePath) {
-//                    LOG_S(ERROR) << "Found error location not in project: " << errorLocationStr;
-//                    continue;
-//                }
-                deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
-                                              projectPath);
+//                deleteExternalFilesFromResult(testCaseJson.at("codeFlows").at(0).at("threadFlows").at(0),
+//                                              projectPath);
+                addCodeFlowWithoutExternal(testCaseJson, projectPath);
                 testCaseJson.at("locations").at(0) = testCaseJson.at("codeFlows").at(0).
                         at("threadFlows").at(0).at("locations").back().at("location");
                 addResultToSarif(testCaseJson);
@@ -54,6 +51,14 @@ namespace sarif {
 
     json &FileSarif::getUriFromLocation(json &location) {
         return location.at("physicalLocation").at("artifactLocation").at("uri");
+    }
+
+    void FileSarif::addCodeFlowWithoutExternal(json &result, const fs::path &projectRoot) {
+        json newResult = result;
+        deleteExternalFilesFromResult(newResult.at("codeFlows").at(0).at("threadFlows").at(0),
+                                      projectRoot);
+        newResult.at("codeFlows").push_back(result.at("codeFlows").at(0));
+        result = newResult;
     }
 
     void FileSarif::deleteExternalFilesFromResult(json &result, const fs::path &projectRoot) {
@@ -73,13 +78,6 @@ namespace sarif {
     }
 
     void FileSarif::addResultToSarif(const json &result) {
-        for (auto &sarifResult: sarifJson.at("runs").at(0).at("results")) {
-            if (getFileFromResult(sarifResult) == getFileFromResult(result) &&
-                    getLineFromResult(sarifResult) == getLineFromResult(result)) {
-                sarifResult.at("codeFlows").push_back(result.at("codeFlows").at(0));
-                return;
-            }
-        }
         sarifJson.at("runs").at(0).at("results").push_back(result);
     }
 

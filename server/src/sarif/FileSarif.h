@@ -18,6 +18,7 @@ namespace sarif {
         void deleteExternalFilesFromResult(json &result, const fs::path &projectRoot);
         json &getUriFromLocation(json &location);
         void addResultToSarif(const json &result);
+        void addCodeFlowWithoutExternal(json &result, const fs::path &projectRoot);
 
     public:
         const static inline std::string sarif_klee_prefix = "__sarif_";
