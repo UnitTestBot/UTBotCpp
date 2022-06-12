@@ -29,7 +29,7 @@ fun getProjectContextMessage(params: UTBotSettings, project: Project): Testgen.P
     return Testgen.ProjectContext.newBuilder()
         .setProjectName(project.name)
         .setProjectPath(params.convertedProjectPath)
-        .setBuildDirRelativePath(params.relativeBuildDirPath)
+        .setBuildDirRelativePath(params.buildDirRelativePath)
         .setResultsDirRelativePath("") // this path is used only for console interface, server don't use it.
         .setTestDirPath(params.convertedTestDirPath)
         .build()

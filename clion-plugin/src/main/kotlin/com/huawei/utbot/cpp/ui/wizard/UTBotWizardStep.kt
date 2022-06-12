@@ -33,6 +33,7 @@ import kotlinx.coroutines.launch
 import java.awt.Component
 import java.awt.Dimension
 
+
 abstract class UTBotWizardStep : Step {
     protected val panel by lazy { JPanel() }
     private var isInitialized = false
@@ -242,13 +243,9 @@ class BuildOptionsStep(private val project: Project, private val settingsModel: 
     override fun createUI() {
         addHtml("media/build_dir.html")
         panel {
-            row {
-                textFieldWithBrowseButton(
-                    "Choose Build Folder",
-                    project,
-                    FileChooserDescriptorFactory.createSingleFileDescriptor()
-                )
-                    .bindText(settingsModel::buildDirPath)
+            row("Relative Path to Build Folder") {
+                textField()
+                    .bindText(settingsModel::buildDirRelativePath)
                     .columns(COLUMNS_LARGE)
             }
         }.addToUI()

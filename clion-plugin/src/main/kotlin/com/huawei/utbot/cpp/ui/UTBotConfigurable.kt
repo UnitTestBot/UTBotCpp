@@ -65,7 +65,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
         return panel {
             group("Paths") {
                 createPathChooser(
-                    utbotSettings::buildDirPathRelative,
+                    utbotSettings::buildDirRelativePath,
                     UTBot.message("settings.project.buildDir"),
                     UTBot.message("settings.project.buildDir.browse.title")
                 )

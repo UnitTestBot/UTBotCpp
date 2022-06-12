@@ -70,7 +70,7 @@ abstract class BaseGenerationTestCase {
     val targetsController = UTBotTargetsController(project)
 
     init {
-        settings.buildDirPath = buildDirectoryPath.toString()
+        settings.buildDirRelativePath = buildDirName
         settings.testDirPath = testsDirectoryPath.toString()
         project.logger.writers.let {
             it.clear()

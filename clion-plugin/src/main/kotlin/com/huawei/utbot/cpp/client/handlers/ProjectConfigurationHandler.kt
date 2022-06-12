@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import testsgen.Testgen
-import testsgen.Util
 
 abstract class ProjectConfigResponseHandler(
     project: Project,
@@ -88,7 +87,7 @@ class CreateBuildDirHandler(
             }
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.utbotSettings.buildDirPath)
+        refreshAndFindIOFile(project.utbotSettings.buildDirPath.toString())
     }
 }
 
@@ -107,7 +106,6 @@ class GenerateJsonHandler(
             )
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.utbotSettings.buildDirPath)
+        refreshAndFindIOFile(project.utbotSettings.buildDirPath.toString())
     }
-
 }

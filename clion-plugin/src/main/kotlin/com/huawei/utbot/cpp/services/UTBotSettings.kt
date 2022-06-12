@@ -13,6 +13,7 @@ import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
 import org.apache.commons.io.FilenameUtils
 import java.io.File
+import java.nio.file.Path
 import java.nio.file.Paths
 
 /**
@@ -44,7 +45,7 @@ data class UTBotSettings(
     // serialized by the ide, the settings of plugin
     data class State(
         var targetPath: String = UTBotTarget.autoTarget.path,
-        var buildDirPath: String = "/",
+        var buildDirRelativePath: String = "build-utbot",
         var testDirPath: String = "/",
         var synchronizeCode: Boolean = false,
         var remotePath: String = "",
@@ -60,16 +61,13 @@ data class UTBotSettings(
             state.targetPath = value
         }
 
-    var buildDirPath: String
-        get() = state.buildDirPath
-        set(value) {
-            state.buildDirPath = value
-        }
+    val buildDirPath: Path
+        get() = Paths.get(projectPath).resolve(state.buildDirRelativePath)
 
-    var buildDirPathRelative: String
-        get() = state.buildDirPath.getRelativeToProjectPath(projectPath)
+    var buildDirRelativePath: String
+        get() = state.buildDirRelativePath
         set(value) {
-            state.buildDirPath = Paths.get(projectPath).resolve(value).toString()
+            state.buildDirRelativePath = value
         }
 
     var testDirPath: String
@@ -119,12 +117,6 @@ data class UTBotSettings(
 
     val convertedSourcePaths: List<String>
         get() = sourcePaths.map { convertToRemotePathIfNeeded(it) }
-
-    val relativeBuildDirPath: String
-        get() = buildDirPath.getRelativeToProjectPath()
-
-    val convertedBuildDirPath: String
-        get() = convertToRemotePathIfNeeded(buildDirPath)
 
     val convertedTestDirPath: String
         get() = convertToRemotePathIfNeeded(testDirPath)
@@ -208,7 +200,7 @@ data class UTBotSettings(
         val projectPath = project?.basePath ?: return notifyError("Path to project unavailable", project)
 
         testDirPath = Paths.get(projectPath, "tests").toString()
-        buildDirPath = Paths.get(projectPath, "build-utbot").toString()
+        buildDirRelativePath = "build-utbot"
         targetPath = UTBotTarget.autoTarget.path
 
         val cmakeConfiguration = CMakeAppRunConfiguration.getSelectedConfigurationAndTarget(project)
