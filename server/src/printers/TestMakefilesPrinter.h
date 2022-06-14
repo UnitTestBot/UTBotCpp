@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTMAKEFILESPRINTER_H
 #define UNITTESTBOT_TESTMAKEFILESPRINTER_H
 
@@ -36,7 +32,7 @@ namespace printer {
 
         void close();
 
-        void addLinkTargetRecursively(const fs::path &unitFile, const string &suffixForParentOfStubs);
+        void addLinkTargetRecursively(const fs::path &unitFile, const std::string &suffixForParentOfStubs);
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
 

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_LineTESTGEN_H
 #define UNITTESTBOT_LineTESTGEN_H
 
@@ -18,7 +14,7 @@ public:
 
     const fs::path &getSourcePath() const;
 
-    string toString() override;
+    std::string toString() override;
 
     virtual bool needToAddPathFlag();
 

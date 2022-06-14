@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SourceToHeaderMatchCallback.h"
 
 #include "Matchers.h"
@@ -200,9 +196,9 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     policy.TerseOutput = 1;
     policy.PolishForDeclaration = 1;
 
-    string name = decl->getNameAsString();
-    string decoratedName = decorate(name);
-    string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
+    std::string name = decl->getNameAsString();
+    std::string decoratedName = decorate(name);
+    std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
 
     std::string curDecl = getRenamedDeclarationAsString(decl, policy, decoratedName);
     std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
@@ -224,11 +220,11 @@ void SourceToHeaderMatchCallback::generateInternal(const VarDecl *decl) const {
      * &DECL = *var_wrapper;
      */
 
-    string name = decl->getNameAsString();
-    string decoratedName = decorate(name);
-    string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
-    string wrapperPointerName = stringFormat("(*%s)", wrapperName);
-    string refName = stringFormat("(&%s)", decoratedName);
+    std::string name = decl->getNameAsString();
+    std::string decoratedName = decorate(name);
+    std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
+    std::string wrapperPointerName = stringFormat("(*%s)", wrapperName);
+    std::string refName = stringFormat("(&%s)", decoratedName);
 
     std::string curDecl;
     llvm::raw_string_ostream curDeclStream{ curDecl };
@@ -254,8 +250,8 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
      * return fun(args...);
      * }
      */
-    string name = decl->getNameAsString();
-    string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
+    std::string name = decl->getNameAsString();
+    std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
     std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
 
     *wrapperStream << wrapperDecl << " {\n";
@@ -274,9 +270,9 @@ void SourceToHeaderMatchCallback::generateWrapper(const VarDecl *decl) const {
      * (*var_wrapper) = &var;
      */
 
-    string name = decl->getNameAsString();
-    string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
-    string wrapperPointerName = stringFormat("(*%s)", wrapperName);
+    std::string name = decl->getNameAsString();
+    std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
+    std::string wrapperPointerName = stringFormat("(*%s)", wrapperName);
     std::string wrapperPointerDecl =
         getRenamedDeclarationAsString(decl, policy, wrapperPointerName);
     *wrapperStream << wrapperPointerDecl << " = &" << name << ";\n";
@@ -361,7 +357,7 @@ SourceToHeaderMatchCallback::getRenamedDeclarationAsString(const clang::NamedDec
     return result;
 }
 
-void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const string &name) const {
+void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::string &name) const {
     auto &info = decl->getASTContext().Idents.get(name);
     DeclarationName wrapperDeclarationName{ &info };
     const_cast<NamedDecl *>(decl)->setDeclName(wrapperDeclarationName);

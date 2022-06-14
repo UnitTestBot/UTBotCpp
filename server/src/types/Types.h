@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TYPES_H
 #define UNITTESTBOT_TYPES_H
 
@@ -288,13 +284,14 @@ namespace types {
         uint64_t alignment;
     };
 
-    typedef std::unordered_map<string, std::shared_ptr<FunctionInfo>> FPointerMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
 
     struct StructInfo: TypeInfo {
         std::vector<Field> fields{};
 
         FPointerMap functionFields{};
         bool hasUnnamedFields;
+        bool isCLike;
     };
 
     struct UnionInfo: TypeInfo {
@@ -336,7 +333,7 @@ namespace types {
             FUNCTION_POINTER, ARRAY, ENUM, UNION, UNKNOWN };
 
     enum class TypeUsage { PARAMETER, RETURN, ALL };
-    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE };
+    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
 
     class TypesHandler {
     public:
@@ -562,8 +559,17 @@ namespace types {
             return sizeContext.maximumAlignment;
         }
 
-        static size_t getElementsNumberInPointerMultiDim(size_t def = 2) noexcept {
-            return def;
+        static size_t getElementsNumberInPointerMultiDim(PointerUsage usage, size_t def = 2) noexcept {
+            switch (usage) {
+            case PointerUsage::PARAMETER:
+                return 2;
+            case PointerUsage::RETURN:
+                return 2;
+            case PointerUsage::LAZY:
+                return 1;
+            case PointerUsage::KNOWN_SIZE:
+                return def;
+            }
         }
 
         static size_t
@@ -573,6 +579,8 @@ namespace types {
             case PointerUsage::PARAMETER:
                 return 10;
             case PointerUsage::RETURN:
+                return 1;
+            case PointerUsage::LAZY:
                 return 1;
             case PointerUsage::KNOWN_SIZE:
                 return def;
@@ -666,13 +674,13 @@ namespace types {
     static inline const std::vector<std::string> QUALIFIERS = { CONST_QUALIFIER, RESTRICT_QUALIFIER, VOLATILE_QUALIFIER };
 
     struct FunctionInfo {
-        string name;
+        std::string name;
         bool isArray;
         types::Type returnType;
 
         struct FunctionParamInfo {
             types::Type type;
-            string name;
+            std::string name;
         };
         std::vector<FunctionParamInfo> params;
     };

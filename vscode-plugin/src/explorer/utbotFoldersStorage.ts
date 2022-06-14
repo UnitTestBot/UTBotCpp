@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import { Prefs } from '../config/prefs';
 import { FSUtils } from '../utils/fsUtils';

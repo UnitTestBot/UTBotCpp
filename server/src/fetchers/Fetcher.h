@@ -1,6 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
 #ifndef UNITTESTBOT_FETCHER_H
 #define UNITTESTBOT_FETCHER_H
 
@@ -21,12 +18,6 @@
 #include <unordered_map>
 #include <variant>
 #include <vector>
-
-using std::shared_ptr;
-using std::string;
-using std::unique_ptr;
-using std::unordered_map;
-using std::vector;
 
 class Fetcher {
     using DeclarationMatcher = clang::ast_matchers::DeclarationMatcher;
@@ -65,7 +56,7 @@ public:
     };
 
     explicit Fetcher(Options options,
-                     const shared_ptr<CompilationDatabase> &compilationDatabase,
+                     const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                      tests::TestsMap &tests,
                      types::TypeMaps *types,
                      uint64_t *pointerSize,
@@ -89,10 +80,10 @@ private:
     uint64_t *const maximumAlignment;
     fs::path buildRootPath;
 
-    shared_ptr<FileToStringSet> structsToDeclare = std::make_shared<FileToStringSet>();
-    shared_ptr<FileToStringSet> structsDeclared = std::make_shared<FileToStringSet>();
+    std::shared_ptr<FileToStringSet> structsToDeclare = std::make_shared<FileToStringSet>();
+    std::shared_ptr<FileToStringSet> structsDeclared = std::make_shared<FileToStringSet>();
 public:
-    shared_ptr<FileToStringSet> getStructsToDeclare() const;
+    std::shared_ptr<FileToStringSet> getStructsToDeclare() const;
 private:
     // For functions
     bool fetchFunctionBodies;

@@ -1,7 +1,3 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script clears out all the unnecessary files from the release build
 
 # Need just clang-10, llvm-cov, llvm-profdata and cmake in $UTBOT_INSTALL_DIR/bin

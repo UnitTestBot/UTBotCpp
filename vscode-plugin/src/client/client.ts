@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 /* eslint-disable no-async-promise-executor */
 import * as grpc from 'grpc';
 import * as vs from 'vscode';
@@ -805,4 +801,3 @@ export class Client {
         }
     }
 }
-

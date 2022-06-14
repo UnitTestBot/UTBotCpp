@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SanitizerUtils.h"
 
 #include "CompilationUtils.h"
@@ -9,7 +5,7 @@
 
 namespace SanitizerUtils {
     // https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#available-checks
-    const vector<string> CLANG_SANITIZER_CHECKS = {
+    const std::vector<std::string> CLANG_SANITIZER_CHECKS = {
         "alignment",
         // "bool", provides unnecessary tests
         "builtin",
@@ -41,7 +37,7 @@ namespace SanitizerUtils {
     };
 
     // https://gcc.gnu.org/onlinedocs/gcc/Instrumentation-Options.html
-    const vector<string> GCC_SANITIZER_CHECKS = {
+    const std::vector<std::string> GCC_SANITIZER_CHECKS = {
         "shift",
         "shift-exponent",
         "integer-divide-by-zero",
@@ -65,13 +61,13 @@ namespace SanitizerUtils {
         "builtin"
     };
 
-    const string CLANG_SANITIZER_CHECKS_FLAG =
+    const std::string CLANG_SANITIZER_CHECKS_FLAG =
         "-fsanitize=" + StringUtils::joinWith(CLANG_SANITIZER_CHECKS, ",");
-    static const string GCC_SANITIZER_CHECKS_FLAG =
+    static const std::string GCC_SANITIZER_CHECKS_FLAG =
         "-fsanitize=" + StringUtils::joinWith(GCC_SANITIZER_CHECKS, ",");
-    static const string ADDRESS_SANITIZER_FLAG = "-fsanitize=address";
+    static const std::string ADDRESS_SANITIZER_FLAG = "-fsanitize=address";
 
-    static const string NO_SANITIZE_RECOVER = "-fno-sanitize-recover=all";
+    static const std::string NO_SANITIZE_RECOVER = "-fno-sanitize-recover=all";
 
     const std::string UBSAN_OPTIONS_NAME = "UBSAN_OPTIONS";
     const std::string UBSAN_OPTIONS_VALUE = "print_stacktrace=1,report_error_type=1";
@@ -79,7 +75,7 @@ namespace SanitizerUtils {
     const std::string ASAN_OPTIONS_VALUE = "debug=1,detect_odr_violation=1,"
                                            "detect_stack_use_after_return=1,detect_leaks=0";
 
-    std::vector<string>
+    std::vector<std::string>
     getSanitizeCompileFlags(CompilationUtils::CompilerName const &compilerName) {
         switch (compilerName) {
         case CompilationUtils::CompilerName::GCC:
@@ -95,7 +91,7 @@ namespace SanitizerUtils {
     }
 
 
-    string getSanitizeLinkFlags(CompilationUtils::CompilerName const &compilerName) {
+    std::string getSanitizeLinkFlags(CompilationUtils::CompilerName const &compilerName) {
         switch (compilerName) {
         case CompilationUtils::CompilerName::GCC:
         case CompilationUtils::CompilerName::GXX:
@@ -110,4 +106,4 @@ namespace SanitizerUtils {
             return "";
         }
     }
-};
+}

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "triangle.h"
 #include "point_2d.hpp"
 #include <cmath>

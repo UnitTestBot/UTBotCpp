@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 /**
  * A storage for some data of type In, that can be loaded via loadData method and stored as type Out.
  * Stored data can be retrived as Out via getLoadedData().

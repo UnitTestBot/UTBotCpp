@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FUNCTIONDECLSMATCHCALLBACK_H
 #define UNITTESTBOT_FUNCTIONDECLSMATCHCALLBACK_H
 
@@ -42,7 +38,7 @@ private:
     void addFunctionPointer(tests::Tests::MethodDescription::FPointerMap &functionPointers,
                        const clang::FunctionType *functionType,
                        const clang::QualType &qualType,
-                       const string &name,
+                       const std::string &name,
                        const clang::SourceManager &sourceManager,
                        const types::Type &type);
 };

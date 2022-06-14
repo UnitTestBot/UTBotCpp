@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "packed_structs.h"
 
 int get_sign_packedStruct1(struct PackedStruct1 st) {

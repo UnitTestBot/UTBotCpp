@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "struct_with_union.h"
 
 struct StructWithUnion struct_with_union_as_return_type(int t) {

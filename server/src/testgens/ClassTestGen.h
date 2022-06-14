@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_ClassTESTGEN_H
 #define UNITTESTBOT_ClassTESTGEN_H
 
@@ -16,7 +12,7 @@ public:
 
     ~ClassTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     bool needToAddPathFlag() override;
 };

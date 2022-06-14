@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PROJECTTARGETSWRITER_H
 #define UNITTESTBOT_PROJECTTARGETSWRITER_H
 
@@ -17,7 +13,7 @@ public:
     explicit ProjectTargetsWriter(testsgen::ProjectTargetsResponse *response);
 
     void writeResponse(const utbot::ProjectContext &projectContext,
-                       const vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets);
+                       const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets);
 };
 
 

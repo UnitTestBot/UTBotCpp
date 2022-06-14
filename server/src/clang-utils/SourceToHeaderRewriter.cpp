@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SourceToHeaderRewriter.h"
 
 #include "NameDecorator.h"
@@ -25,7 +21,7 @@ SourceToHeaderRewriter::SourceToHeaderRewriter(
       serverBuildDir(std::move(serverBuildDir)) {
 }
 
-unique_ptr<clang::tooling::FrontendActionFactory>
+std::unique_ptr<clang::tooling::FrontendActionFactory>
 SourceToHeaderRewriter::createFactory(llvm::raw_ostream *externalStream,
                                       llvm::raw_ostream *internalStream,
                                       llvm::raw_ostream *wrapperStream,
@@ -40,16 +36,16 @@ SourceToHeaderRewriter::createFactory(llvm::raw_ostream *externalStream,
 
 SourceToHeaderRewriter::SourceDeclarations
 SourceToHeaderRewriter::generateSourceDeclarations(const fs::path &sourceFilePath, bool forStubHeader) {
-    string externalDeclarations;
+    std::string externalDeclarations;
     llvm::raw_string_ostream externalStream(externalDeclarations);
-    string internalDeclarations;
+    std::string internalDeclarations;
     llvm::raw_string_ostream internalStream(internalDeclarations);
 
     auto factory = createFactory(&externalStream, &internalStream, nullptr, sourceFilePath, forStubHeader);
 
     if (CollectionUtils::containsKey(*structsToDeclare, sourceFilePath)) {
         std::stringstream newContentStream;
-        for (string const &structName : structsToDeclare->at(sourceFilePath)) {
+        for (std::string const &structName : structsToDeclare->at(sourceFilePath)) {
             newContentStream << StringUtils::stringFormat("struct %s;\n", structName);
         }
         std::ifstream oldFileStream(sourceFilePath);
@@ -133,7 +129,7 @@ std::string SourceToHeaderRewriter::generateWrapper(const fs::path &sourceFilePa
 
 void SourceToHeaderRewriter::generateTestHeaders(tests::TestsMap &tests,
                                              ProgressWriter const *progressWriter) {
-    string logMessage = "Generating headers for tests";
+    std::string logMessage = "Generating headers for tests";
     LOG_S(DEBUG) << logMessage;
     ExecUtils::doWorkWithProgress(tests, progressWriter, logMessage, [this](auto &it) {
         fs::path const &sourceFilePath = it.first;

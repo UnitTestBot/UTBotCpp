@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "simple_unions.h"
 
 int get_sign_union(union IntBytesUnion st) {

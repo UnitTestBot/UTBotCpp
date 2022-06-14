@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef SIMPLE_TEST_PROJECT_TYPES_2_H
 #define SIMPLE_TEST_PROJECT_TYPES_2_H
 #include <stdbool.h>

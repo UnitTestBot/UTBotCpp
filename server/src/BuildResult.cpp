@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BuildResult.h"
 
 BuildResult::Type operator|(BuildResult::Type a, BuildResult::Type b) {

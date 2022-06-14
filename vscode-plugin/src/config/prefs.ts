@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import * as vs from 'vscode';
 import { UTBotFoldersStorage } from "../explorer/utbotFoldersStorage";
@@ -32,7 +28,7 @@ export class Prefs {
     public static TESTS_DIR_PREF = 'unittestbot.paths.testsDirectory';
     public static SOURCE_DIRS_PREF = 'unittestbot.paths.sourceDirectories';
 
-    public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard";
+    public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.verboseFormatting";
 
     public static USE_STUBS_PREF = 'unittestbot.stubs.useStubs';
 

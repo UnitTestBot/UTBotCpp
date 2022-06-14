@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "StubGen.h"
 
 #include "FeaturesFilter.h"
@@ -27,7 +23,7 @@ CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
 };
 
 CollectionUtils::FileSet
-StubGen::findStubFilesBySignatures(const vector<tests::Tests::MethodDescription> &signatures) {
+StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescription> &signatures) {
     fs::path ccJsonDirPath =
         Paths::getTmpDir(testGen.projectContext.projectName) / "stubs_build_files";
     auto stubFiles =

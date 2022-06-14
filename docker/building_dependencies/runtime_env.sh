@@ -1,7 +1,3 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script is used to set environment variables inside developer environment
 
 # Common env

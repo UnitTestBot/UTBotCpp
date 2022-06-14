@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_VSCODESTUBSWRITER_H
 #define UNITTESTBOT_VSCODESTUBSWRITER_H
 
@@ -13,7 +9,7 @@ public:
         : StubsWriter(writer), synchronizeCode(synchronizeCode) {
     }
 
-    void writeResponse(const vector<Stubs> &synchronizedStubs,
+    void writeResponse(const std::vector<Stubs> &synchronizedStubs,
                        const fs::path &testDirPath) override;
 private:
     bool synchronizeCode;

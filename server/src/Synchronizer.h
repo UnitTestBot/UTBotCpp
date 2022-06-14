@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SYNCHRONIZER_H
 #define UNITTESTBOT_SYNCHRONIZER_H
 
@@ -38,7 +34,7 @@ class Synchronizer {
                           const types::TypesHandler &typesHandler);
     void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const;
 
-    shared_ptr<CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
         std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
         const fs::path &ccJsonStubDirPath) const;

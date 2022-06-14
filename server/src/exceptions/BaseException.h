@@ -1,16 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BASEEXCEPTION_H
 #define UNITTESTBOT_BASEEXCEPTION_H
 
 #include <string>
 
-using std::string;
-
 struct BaseException : public std::exception {
-    explicit BaseException(string message) : message(std::move(message)) {
+    explicit BaseException(std::string message) : message(std::move(message)) {
     }
 
     [[nodiscard]] virtual const char *what() const noexcept override {
@@ -21,7 +15,7 @@ struct BaseException : public std::exception {
     }
 
 protected:
-    string message;
+    std::string message;
 };
 
 #endif // UNITTESTBOT_BASEEXCEPTION_H

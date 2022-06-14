@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BORDERSFINDER_H
 #define UNITTESTBOT_BORDERSFINDER_H
 
@@ -17,15 +13,11 @@
 #include <string>
 #include <utility>
 
-using std::string;
-using std::unique_ptr;
-using std::shared_ptr;
-
 class BordersFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
     BordersFinder(const fs::path &filePath,
                   unsigned line,
-                  const shared_ptr<CompilationDatabase> &compilationDatabase,
+                  const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                   const fs::path &compileCommandsJsonPath);
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;

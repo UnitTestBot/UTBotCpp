@@ -1,8 +1,5 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-
-#  Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-
 import os
 import re
 import sys

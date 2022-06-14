@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "pointer_parameters.h"
 
 int c_strcmp(const char *a, const char *b) {

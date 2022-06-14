@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "inner_basic_functions.h"
 
 int sum_up_to(unsigned int n) {

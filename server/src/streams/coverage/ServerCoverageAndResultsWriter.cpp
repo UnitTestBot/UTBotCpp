@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #include "ServerCoverageAndResultsWriter.h"
 
 #include "../WriterUtils.h"
@@ -17,7 +12,7 @@ ServerCoverageAndResultsWriter::ServerCoverageAndResultsWriter(
 void ServerCoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                                    const Coverage::CoverageMap &coverageMap,
                                                   const nlohmann::json &totals,
-                                                   std::optional<string> errorMessage) {
+                                                   std::optional<std::string> errorMessage) {
     if (!hasStream()) {
         return;
     }

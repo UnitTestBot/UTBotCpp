@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ClassTestGen.h"
 
 ClassTestGen::ClassTestGen(const testsgen::ClassRequest &request,
@@ -10,7 +6,7 @@ ClassTestGen::ClassTestGen(const testsgen::ClassRequest &request,
     : LineTestGen(request.linerequest(), progressWriter, testMode, true) {
 }
 
-string ClassTestGen::toString() {
+std::string ClassTestGen::toString() {
     return LineTestGen::toString();
 }
 

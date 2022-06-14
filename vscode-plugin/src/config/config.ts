@@ -1,9 +1,5 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 export class Extension {
-    public static UTBotExtensionID = 'Huawei.unittestbot';
+    public static UTBotExtensionID = 'UnitTestBot.UTBotCpp';
 }
 
 
@@ -20,4 +16,3 @@ export const docSelectorCpp = {
     language: 'cpp',
     scheme: 'file',
 };
-

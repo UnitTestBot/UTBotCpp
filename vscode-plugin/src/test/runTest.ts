@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import { runTests } from '@vscode/test-electron';
 import { TestLogger } from "./testLogger";

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_VSCODETESTSWRITER_H
 #define UNITTESTBOT_VSCODETESTSWRITER_H
 
@@ -22,7 +18,7 @@ public:
                                 const fs::path &testDirPath,
                                 std::function<void(tests::Tests &)> &&functor) override;
 
-    void writeStubs(const vector<Stubs> &synchronizedStubs) override;
+    void writeStubs(const std::vector<Stubs> &synchronizedStubs) override;
 
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,

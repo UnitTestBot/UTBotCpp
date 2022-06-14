@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # The script provides bash functions that are commonly used in other scripts
 
 # Common functions

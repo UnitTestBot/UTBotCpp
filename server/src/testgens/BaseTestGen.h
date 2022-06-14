@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BASETESTGEN_H
 #define UNITTESTBOT_BASETESTGEN_H
 
@@ -20,9 +16,6 @@
 
 #include "utils/path/FileSystemPath.h"
 
-using std::shared_ptr;
-using std::vector;
-
 class BaseTestGen {
 public:
     const utbot::ProjectContext projectContext;
@@ -31,19 +24,19 @@ public:
     fs::path serverBuildDir;
 
     fs::path compileCommandsJsonPath;
-    shared_ptr<CompilationDatabase> compilationDatabase;
-    shared_ptr<BuildDatabase> buildDatabase;
+    std::shared_ptr<CompilationDatabase> compilationDatabase;
+    std::shared_ptr<BuildDatabase> buildDatabase;
 
     CollectionUtils::FileSet sourcePaths, testingMethodsSourcePaths;
     tests::TestsMap tests;
-    std::unordered_map<string, types::Type> methodNameToReturnTypeMap;
-    vector<Stubs> synchronizedStubs;
+    std::unordered_map<std::string, types::Type> methodNameToReturnTypeMap;
+    std::vector<Stubs> synchronizedStubs;
     types::TypeMaps types;
 
     std::optional<fs::path> targetPath;
     CollectionUtils::FileSet targetSources;
 
-    virtual string toString() = 0;
+    virtual std::string toString() = 0;
 
     bool needToBeMocked() const;
 

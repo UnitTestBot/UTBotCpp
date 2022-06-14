@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "IRParser.h"
 
 #include "utils/KleeUtils.h"
@@ -31,7 +27,7 @@ bool IRParser::parseModule(const fs::path &rootBitcode, tests::TestsMap &tests) 
                 test.isFilePresentedInArtifact = true;
                 for (const auto &[methodName, methodDescription] : test.methods) {
                     std::string entryPointFunction = KleeUtils::entryPointFunction(test, methodName, true);
-                    string methodDebugInfo =
+                    std::string methodDebugInfo =
                         StringUtils::stringFormat("Method: '%s', file: '%s'", methodName, sourceFile);
                     if (llvm::Function *pFunction = module->getFunction(entryPointFunction)) {
                         continue;

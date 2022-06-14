@@ -1,14 +1,10 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This is a base dockerfile for UTBot. It's image can be used as a development environment and as a first step in building UTBot, it's release build and integration tests.
 # This dockerfile installs grpc, cmake, llvm, uclibc, z3. Also it installs such packages as ssh, git, openssh-server, nodejs, python and others.
 # You need to build this dockerfile inside UnitTestBot/UTBotCpp/docker directory.
 
 ARG OPERATING_SYSTEM_TAG
 FROM ubuntu:$OPERATING_SYSTEM_TAG as base_env
-LABEL maintainer="Huawei UTBot cloud team"
+LABEL maintainer="UnitTestBot"
 SHELL ["/bin/bash", "--login", "-c"]
 
 ENV UTBOT_ALL=/utbot_distr

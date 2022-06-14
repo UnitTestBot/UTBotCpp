@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Fetcher.h"
 
 #include "ArraySubscriptFetcherMatchCallback.h"
@@ -25,7 +21,7 @@ using namespace llvm;
 using namespace Matchers;
 
 Fetcher::Fetcher(Options options,
-                 const shared_ptr<CompilationDatabase> &compilationDatabase,
+                 const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                  tests::TestsMap &tests,
                  types::TypeMaps *types,
                  uint64_t *pointerSize,

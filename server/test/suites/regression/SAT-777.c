@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 static char **file_list = 0;
 static char *stdin_argv[] = { (char *)"-", 0 };
 

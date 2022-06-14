@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FileTESTGEN_H
 #define UNITTESTBOT_FileTESTGEN_H
 
@@ -18,7 +14,7 @@ public:
 
     ~FileTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 };
 
 

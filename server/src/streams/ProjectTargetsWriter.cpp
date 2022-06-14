@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ProjectTargetsWriter.h"
 
 ProjectTargetsWriter::ProjectTargetsWriter(testsgen::ProjectTargetsResponse *response)
@@ -10,7 +6,7 @@ ProjectTargetsWriter::ProjectTargetsWriter(testsgen::ProjectTargetsResponse *res
 
 void ProjectTargetsWriter::writeResponse(
     const utbot::ProjectContext &projectContext,
-    const vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets) {
+    const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets) {
     if (!hasStream()) {
         return;
     }

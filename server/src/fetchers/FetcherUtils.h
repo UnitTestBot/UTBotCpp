@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FETCHERUTILS_H
 #define UNITTESTBOT_FETCHERUTILS_H
 
@@ -54,7 +50,7 @@ public:
 
     static std::shared_ptr<types::FunctionInfo> getFunctionPointerDeclaration(
         const clang::FunctionType* fType,
-        const string& fName,
+        const std::string &fName,
         const clang::SourceManager& mng,
         bool isArray);
 };

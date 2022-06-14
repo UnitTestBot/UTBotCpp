@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_library(char_test
-        char_literals_test.cpp)
+        char_literals_dot_c_test.cpp)
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory($ENV{UTBOT_ALL}/gtest

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestRunner.h"
 
 #include "GTestLogger.h"
@@ -14,8 +10,6 @@
 
 using grpc::ServerWriter;
 using grpc::Status;
-using std::string;
-using std::vector;
 
 TestRunner::TestRunner(utbot::ProjectContext projectContext,
                        std::string testFilePath,
@@ -59,14 +53,14 @@ std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
         LOG_S(WARNING) << "Running gtest with flag --gtest_list_tests returns empty output. Does file contain main function?";
         return {};
     }
-    vector<string> gtestListTestsOutput = StringUtils::split(out, '\n');
+    std::vector<std::string> gtestListTestsOutput = StringUtils::split(out, '\n');
     gtestListTestsOutput.erase(gtestListTestsOutput.begin()); //GTEST prints "Running main() from /opt/gtest/googletest/src/gtest_main.cc"
-    for (string &s : gtestListTestsOutput) {
+    for (std::string &s : gtestListTestsOutput) {
         StringUtils::trim(s);
     }
-    string testSuite;
-    vector<string> testsList;
-    for (const string &s : gtestListTestsOutput) {
+    std::string testSuite;
+    std::vector<std::string> testsList;
+    for (const std::string &s : gtestListTestsOutput) {
         if (s.back() == '.') {
             testSuite = s;
             testSuite.pop_back();
@@ -196,7 +190,7 @@ size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const
 testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
     auto res = command.run(projectContext.buildDir, true, true, testTimeout);
     GTestLogger::log(res.output);
-    if (StringUtils::contains(res.output, "[  PASSED  ]")) {
+    if (StringUtils::contains(res.output, "[  PASSED  ] 1 test")) {
         return testsgen::TEST_PASSED;
     }
     if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {

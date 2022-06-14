@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script is used to pull base docker image where klee and UTBot can be built.
 
 CONTAINER_NAME=$USER-utbot-dev

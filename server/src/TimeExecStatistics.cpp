@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TimeExecStatistics.h"
 
 #include "utils/CollectionUtils.h"
@@ -12,19 +8,19 @@
 #include <utility>
 
 static thread_local double maxDurationMs = 0;
-static const string SUMMARY_DELIMITER = " | ";
+static const std::string SUMMARY_DELIMITER = " | ";
 thread_local std::
     unordered_map<TimeExecStatistics::Caller, std::vector<double>, TimeExecStatistics::CallerHash>
         statistic;
-static const vector<string> HEADERS({ "Function", "% of overall", "Total time (ms)",
+static const std::vector<std::string> HEADERS({ "Function", "% of overall", "Total time (ms)",
                                       "Times called" });
 static const size_t COLUMNS_NUMBER = 4;
 
-TimeExecStatistics::Caller::Caller(string file, string function)
+TimeExecStatistics::Caller::Caller(std::string file, std::string function)
     : file(std::move(file)), function(std::move(function)) {
 }
 
-string TimeExecStatistics::Caller::get() const {
+std::string TimeExecStatistics::Caller::get() const {
     return file + " " + function;
 }
 
@@ -39,10 +35,10 @@ std::ostream &operator<<(std::ostream &os, const TimeExecStatistics::Caller &cal
 
 std::size_t
 TimeExecStatistics::CallerHash::operator()(const TimeExecStatistics::Caller &caller) const {
-    return std::hash<string>()(caller.get());
+    return std::hash<std::string>()(caller.get());
 }
 
-TimeExecStatistics::TimeExecStatistics(const fs::path &file, const string &function, uint32_t line)
+TimeExecStatistics::TimeExecStatistics(const fs::path &file, const std::string &function, uint32_t line)
     : currentCaller({ file.filename().string() + ":" + std::to_string(line), function }),
       begin(std::chrono::steady_clock::now()) {
 }
@@ -62,8 +58,8 @@ void TimeExecStatistics::clearStatistic() {
 }
 
 void TimeExecStatistics::printStatistic() {
-    vector<SummaryRowType> summaryTable;
-    vector<size_t> columnsWidth(COLUMNS_NUMBER);
+    std::vector<SummaryRowType> summaryTable;
+    std::vector<size_t> columnsWidth(COLUMNS_NUMBER);
     for (size_t i = 0; i < COLUMNS_NUMBER; i++) {
         columnsWidth[i] = HEADERS[i].size();
     }
@@ -133,7 +129,7 @@ TimeExecStatistics::getFunctionSummary(const Caller &function) {
 }
 
 void TimeExecStatistics::printRowDelimiter(std::stringstream &ss,
-                                           const vector<size_t> &columnsWidth) {
+                                           const std::vector<size_t> &columnsWidth) {
     ss << SUMMARY_DELIMITER;
     for (size_t i = 0; i < COLUMNS_NUMBER; i++) {
         ss << StringUtils::repeat("_", columnsWidth[i]);

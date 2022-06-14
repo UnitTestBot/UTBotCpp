@@ -1,16 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TimeUtils.h"
 #include "StringUtils.h"
 
 #include <algorithm>
 
 namespace TimeUtils {
-    using std::string;
-
-    string getDate() {
+    std::string getDate() {
         auto now = std::chrono::system_clock::now();
         auto time_t = std::chrono::system_clock::to_time_t(now);
         std::ostringstream ss;

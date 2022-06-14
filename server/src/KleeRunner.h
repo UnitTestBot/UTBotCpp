@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEERUNNER_H
 #define UNITTESTBOT_KLEERUNNER_H
 
@@ -34,7 +30,7 @@ public:
     void runKlee(const std::vector<tests::TestMethod> &testMethods,
                  tests::TestsMap &testsMap,
                  const std::shared_ptr<KleeGenerator>& generator,
-                 const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
+                 const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
                  bool isBatched,

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_ALIGNMENTFETCHER_H
 #define UNITTESTBOT_ALIGNMENTFETCHER_H
 

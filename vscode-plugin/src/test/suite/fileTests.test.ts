@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vs from 'vscode';
@@ -33,7 +29,7 @@ suite('"Generate Tests For Current File" Test Suite', () => {
 
     const targetName = 'liblib.a';
 
-    const lineNumber = 7;
+    const lineNumber = 3;
 
     async function checkAll(): Promise<void> {
         //TODO: get rid of the sleep once SAT-100 is done

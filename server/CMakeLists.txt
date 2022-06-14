@@ -1,5 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
-project(UnitTestBot)
+project(UnitTestBot DESCRIPTION "Tool that generates unit test by C/C++ source code, trying to reach all branches and maximize code coverage"
+        HOMEPAGE_URL "https://unittestbot.org")
+set(PROJECT_ORG "UnitTestBot")
+if (NOT CMAKE_PROJECT_VERSION)
+    set(CMAKE_PROJECT_VERSION "DevBuild")
+endif ()
+
+configure_file(config.h.in config.h @ONLY)
 
 if (UNIX)
     add_compile_definitions(_LINUX)
