@@ -236,7 +236,7 @@ namespace {
         static auto coverageAndResultsWriter =
             std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, true };
+        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, true, ::testsgen::ErrorMode::FAILING };
         coverageGenerator.generate(true, settingsContext);
         EXPECT_FALSE(coverageGenerator.hasExceptions());
     }

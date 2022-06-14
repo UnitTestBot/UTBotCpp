@@ -252,6 +252,8 @@ namespace Commands {
 
         [[nodiscard]] bool withStubs() const;
 
+        [[nodiscard]] ::testsgen::ErrorMode getErrorMode() const;
+
     private:
         CLI::Option_group *settingsContextOptions;
         bool generateForStaticFunctions = true;
@@ -260,6 +262,7 @@ namespace Commands {
         int32_t timeoutPerTest = 0;
         bool noDeterministicSearcher = false;
         bool noStubs = false;
+        ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING;
     };
 };
 

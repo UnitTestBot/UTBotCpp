@@ -60,7 +60,7 @@ namespace {
                                                   buildDirRelativePath };
             auto buildDatabase =
                 std::make_shared<BuildDatabase>(suite.buildPath, suite.buildPath, projectContext);
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, ::testsgen::ErrorMode::FAILING };
             KleeGenerator generator(std::move(projectContext),
                                     std::move(settingsContext), tmpDirPath,
                                     compilationDatabase, typesHandler, {}, buildDatabase);

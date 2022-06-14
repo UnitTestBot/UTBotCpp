@@ -53,6 +53,7 @@ namespace {
         fs::path symbolic_stdin_c = getTestFilePath("symbolic_stdin.c");
         fs::path multiple_classes_h = getTestFilePath("multiple_classes.h");
         fs::path multiple_classes_cpp = getTestFilePath("multiple_classes.cpp");
+        fs::path methods_with_exceptions = getTestFilePath("methods_with_exceptions.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -1237,13 +1238,13 @@ namespace {
         }
 
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,
-                                             bool withCoverage) {
+                                             bool withCoverage, ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING) {
             auto request = createCoverageAndResultsRequest(
                 projectName, suitePath, testDirPath, buildDirRelativePath, std::move(testFilter));
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, ::testsgen::ErrorMode::FAILING };
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1346,6 +1347,10 @@ namespace {
         testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
+    TEST_F(Server_Test, Exceptions_Test) {
+        auto testFilter = GrpcUtils::createTestFilterForFile();
+
+    }
 
     TEST_F(Server_Test, Halt_Test) {
         std::string suite = "halt";
@@ -1478,7 +1483,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ::testsgen::ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1551,7 +1556,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ::testsgen::ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());

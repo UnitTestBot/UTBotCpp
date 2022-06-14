@@ -56,7 +56,8 @@ namespace testUtils {
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const fs::path &filePath);
+                                                         const fs::path &filePath,
+                                                         ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
@@ -64,7 +65,8 @@ namespace testUtils {
                                                          const std::vector<fs::path> &srcPaths,
                                                          bool useStubs = false,
                                                          bool verbose = true,
-                                                         int kleeTimeout = 60);
+                                                         int kleeTimeout = 60,
+                                                         ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -72,7 +74,8 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    bool useStubs = false,
-                                                   bool verbose = true);
+                                                   bool verbose = true,
+                                                   ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -81,7 +84,8 @@ namespace testUtils {
                                                    const fs::path &filePath,
                                                    int line,
                                                    bool verbose = true,
-                                                   int kleeTimeout = 60);
+                                                   int kleeTimeout = 60,
+                                                   ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                     const fs::path &projectPath,
@@ -90,7 +94,8 @@ namespace testUtils {
                                                     const fs::path &filePath,
                                                     int line,
                                                     bool verbose = true,
-                                                    int kleeTimeout = 60);
+                                                    int kleeTimeout = 60,
+                                                     ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
