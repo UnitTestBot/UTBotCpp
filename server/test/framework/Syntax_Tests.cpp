@@ -2619,7 +2619,7 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(constructors_cpp).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                      return "false" == testCase.paramValues.front().view->getEntryValue();
                  },

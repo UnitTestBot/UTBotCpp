@@ -285,8 +285,8 @@ namespace printer {
         strTabIf(needTabs);
         std::vector<std::string> parameters;
         for (const auto &param : method.params) {
-            string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
-            string parameter = maybeAmpersand + param.name;
+            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
+            std::string parameter = maybeAmpersand + param.name;
             if (method.constructorInfo.isMoveConstructor) {
                 parameter = "std::move(" + parameter + ")";
             }

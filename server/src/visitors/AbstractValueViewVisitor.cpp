@@ -13,7 +13,7 @@ namespace visitor {
     void AbstractValueViewVisitor::visitAny(const types::Type &type,
                                             const std::string &name,
                                             const tests::AbstractValueView *view,
-                                            const string &access,
+                                            const std::string &access,
                                             int depth,
                                             tests::Tests::ConstructorInfo constructorInfo) {
         if (types::TypesHandler::isCStringType(type)) {
@@ -95,7 +95,7 @@ namespace visitor {
     void AbstractValueViewVisitor::visitStruct(const types::Type &type,
                                                const std::string &name,
                                                const tests::AbstractValueView *view,
-                                               const string &access,
+                                               const std::string &access,
                                                int depth,
                                                tests::Tests::ConstructorInfo constructorInfo) {
         auto structInfo = typesHandler->getStructInfo(type);
@@ -111,7 +111,7 @@ namespace visitor {
     void AbstractValueViewVisitor::visitUnion(const types::Type &type,
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
-                                              const string &access,
+                                              const std::string &access,
                                               int depth,
                                               tests::Tests::ConstructorInfo constructorInfo) {
         auto unionInfo = typesHandler->getUnionInfo(type);
@@ -131,7 +131,7 @@ namespace visitor {
     void AbstractValueViewVisitor::visitEnum(const types::Type &type,
                                              const std::string &name,
                                              const tests::AbstractValueView *view,
-                                             const string &access,
+                                             const std::string &access,
                                              int depth,
                                              tests::Tests::ConstructorInfo constructorInfo) {
         visitPrimitive(type, name, view, access, depth, constructorInfo);

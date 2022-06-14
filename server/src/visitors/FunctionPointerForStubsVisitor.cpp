@@ -35,7 +35,7 @@ namespace visitor {
     void FunctionPointerForStubsVisitor::visitStruct(const types::Type &type,
                                                      const std::string &name,
                                                      const tests::AbstractValueView *view,
-                                                     const string &access,
+                                                     const std::string &access,
                                                      int depth,
                                                      tests::Tests::ConstructorInfo constructorInfo) {
         auto [_, inserted] = used.insert(type.getId());
