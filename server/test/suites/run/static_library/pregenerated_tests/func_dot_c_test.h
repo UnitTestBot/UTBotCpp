@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 namespace UTBot {
 #define _Alignas(x)
 #define _Atomic(x) x

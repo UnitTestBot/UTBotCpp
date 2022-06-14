@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ParametrizedAssertsVisitor.h"
 #include "Tests.h"
 
@@ -24,7 +20,7 @@ namespace visitor {
                           : methodDescription.returnType;
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
                                                           false);
-        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(StringUtils::stringFormat(
                 "EXPECT_TRUE(%s)",
@@ -58,7 +54,7 @@ namespace visitor {
                                            additionalPointersCount);
                     printer->strDeclareArrayVar(
                         type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                        view->getEntryValue(), std::nullopt, true);
+                        view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
                 return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
@@ -83,6 +79,7 @@ namespace visitor {
                                                  const std::string &access,
                                                  int depth,
                                                  tests::Tests::ConstructorInfo constructorInfo) {
+        auto value = view->getEntryValue(printer);
         if (depth == 0) {
             std::optional<std::string> initValue = functionCall;
             if (constructorInfo.isMoveConstructor) {
@@ -93,11 +90,11 @@ namespace visitor {
                                    additionalPointersCount);
             if (!constructorInfo.isConstructor) {
                 printer->strDeclareVar(type.typeName(),
-                                       PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED),
-                                       view->getEntryValue());
+                                       PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
             }
+        } else {
+            printer->ss << value << NL;
         }
-        AbstractValueViewVisitor::visitStruct(type, name, view, access, depth, constructorInfo);
     }
 
     void ParametrizedAssertsVisitor::visitUnion(const types::Type &type,
@@ -112,10 +109,11 @@ namespace visitor {
                                    additionalPointersCount);
             if (!constructorInfo.isConstructor) {
                 printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED,
-                                       view->getEntryValue());
+                                       view->getEntryValue(printer));
             }
+        } else {
+           AbstractValueViewVisitor::visitUnion(type, name, view, access, depth, constructorInfo);
         }
-        AbstractValueViewVisitor::visitUnion(type, name, view, access, depth, constructorInfo);
     }
 
     void ParametrizedAssertsVisitor::visitPrimitive(const types::Type &type,
@@ -132,8 +130,8 @@ namespace visitor {
                                        PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                        additionalPointersCount);
                 const auto &gtestMacro = predicateMapping.at(predicate);
-                auto signature = processExpect(
-                    type, gtestMacro, { view->getEntryValue(), getDecorateActualVarName(access) });
+                auto signature =
+                        processExpect(type, gtestMacro, {view->getEntryValue(printer), getDecorateActualVarName(access)});
                 signature = changeSignatureToNullCheck(signature, type, view, access);
                 printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true,
                                          0, std::nullopt, inUnion);

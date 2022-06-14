@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { UTBotEventEmitter } from "../emitter/UTBotEventEmitter";
 import { } from "emittery";
 import { UTBotProjectTargetsList } from "./UTBotProjectTarget";

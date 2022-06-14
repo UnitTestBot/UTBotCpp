@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -198,23 +194,23 @@ namespace {
             methods.at("check_stubs").testCases,
             std::vector<TestCasePredicate>({
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "1";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "2";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "3";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "4";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "5";
                 }}),
             "check_stubs");
@@ -255,19 +251,19 @@ namespace {
             methods.at("check_stubs").testCases,
             std::vector<TestCasePredicate>({
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "1";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "2";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "3";
                 },
                 [](tests::Tests::MethodTestCase const &testCase) {
-                    auto result = testCase.returnValue.view->getEntryValue();
+                    auto result = testCase.returnValue.view->getEntryValue(nullptr);
                     return result == "4";
                 }}),
             "check_stubs");

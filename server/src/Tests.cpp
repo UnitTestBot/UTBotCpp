@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Tests.h"
 
 #include "NameDecorator.h"
@@ -294,9 +290,11 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                                                                const MapAddressName &fromAddressToName,
                                                                std::vector<InitReference> &initReferences) {
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
+    std::vector<std::string> fields;
     unsigned int curPos = offset;
 
     for (const auto &field: curStruct.fields) {
+        fields.push_back(field.name);
         size_t len = typesHandler.typeSize(field.type);
         unsigned int offsetField = field.offset;
         types::EnumInfo innerEnum;
@@ -373,9 +371,9 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     if(curStruct.hasUnnamedFields) {
         auto bytesType = types::Type::createSimpleTypeFromName("utbot_byte");
         const std::shared_ptr<AbstractValueView> rawDataView = arrayView(byteArray, bytesType, curStruct.size, offset, usage);
-        entryValue = PrinterUtils::convertBytesToUnion(curStruct.name, rawDataView->getEntryValue());
+        entryValue = PrinterUtils::convertBytesToUnion(curStruct.name, rawDataView->getEntryValue(nullptr));
     }
-    return std::make_shared<StructValueView>(subViews, entryValue);
+    return std::make_shared<StructValueView>(curStruct.isCLike, fields, subViews, entryValue);
 }
 
 std::string KTestObjectParser::primitiveCharView(const types::Type &type, std::string value) {
@@ -595,7 +593,7 @@ void KTestObjectParser::assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
                 { name, byteValue }, typeAndVarName,
                                                                                  PointerUsage::LAZY, testCase.lazyAddressToName,
                                                                                  testCase.lazyReferences, methodDescription);
-            LOG_S(MAX) << "Fetch lazy object: " << name << " = " << testParamView->getEntryValue();
+            LOG_S(MAX) << "Fetch lazy object: " << name << " = " << testParamView->getEntryValue(nullptr);
             curType.paramValue.lazyParams.emplace_back(paramType, name, std::nullopt);
             curType.paramValue.lazyValues.emplace_back(name, std::nullopt, testParamView);
         }
@@ -712,13 +710,13 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
             if (filterByLineFlag) {
                 auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
-                if (!view || view->getEntryValue() != "1") {
+                if (!view || view->getEntryValue(nullptr) != "1") {
                     continue;
                 }
             }
             auto const &predicateInfo = lineInfo ? lineInfo->predicateInfo : std::nullopt;
             if (predicateInfo.has_value() &&
-                !predicateMatch(testCaseDescription.returnValue.view->getEntryValue(), predicateInfo.value())) {
+                !predicateMatch(testCaseDescription.returnValue.view->getEntryValue(nullptr), predicateInfo.value())) {
                 continue;
             }
 
@@ -731,10 +729,10 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
 
             if (methodDescription.returnType.isObjectPointer() && !methodDescription.returnType.maybeArray
                 && testCaseDescription.functionReturnNotNullValue.view &&
-                testCaseDescription.functionReturnNotNullValue.view->getEntryValue() == "0") {
+                testCaseDescription.functionReturnNotNullValue.view->getEntryValue(nullptr) == "0") {
                 testCase.returnValue.view = std::make_shared<PrimitiveValueView>(PrinterUtils::C_NULL);
             }
-            traceStream << "\treturn: " << testCase.returnValue.view->getEntryValue();
+            traceStream << "\treturn: " << testCase.returnValue.view->getEntryValue(nullptr);
             LOG_S(MAX) << traceStream.str();
 
             assignTypeUnnamedVar(testCase, methodDescription);
@@ -906,7 +904,7 @@ void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseDescription &t
 void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription, std::vector<RawKleeParam> &rawKleeParams) {
     auto &&read = getKleeParamOrThrow(rawKleeParams, "stdin-read");
     std::string &&view = testParameterView(read, {types::Type::longlongType(), "stdin-read"}, types::PointerUsage::PARAMETER,
-                                      testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences)->getEntryValue();
+                                      testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences)->getEntryValue(nullptr);
     if (view == "0LL") {
         return;
     } else {
@@ -1132,7 +1130,7 @@ UnionValueView::UnionValueView(
     const std::shared_ptr<AbstractValueView> &rawDataView,
     std::vector<std::shared_ptr<AbstractValueView>, std::allocator<std::shared_ptr<AbstractValueView>>> subViews)
     : AbstractValueView(std::move(subViews)),
-      entryValue(PrinterUtils::convertBytesToUnion(typeName, rawDataView->getEntryValue())) {
+      entryValue(PrinterUtils::convertBytesToUnion(typeName, rawDataView->getEntryValue(nullptr))) {
 }
 
 TestMethod::TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename)

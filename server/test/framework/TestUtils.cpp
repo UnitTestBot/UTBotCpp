@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestUtils.h"
 
 #include "environment/EnvironmentPaths.h"
@@ -22,9 +18,9 @@ namespace testUtils {
         for (size_t i = 0; i < parameters.size(); i++) {
             ss << "\t\tParameters values: ";
             for (const auto &param : parameters[i]) {
-                ss << param->getEntryValue() << " ";
+                ss << param->getEntryValue(nullptr) << " ";
             }
-            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue() << "\n";
+            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue(nullptr) << "\n";
         }
         return ss.str();
     }
@@ -63,6 +59,11 @@ namespace testUtils {
             params.erase(params.begin() + ind);
             returnValues.erase(returnValues.begin() + ind);
         }
+    }
+
+    void checkRegexp(const std::string &value, const std::string &regexp) {
+       ASSERT_TRUE(std::regex_match(value.begin(), value.end(), std::regex(regexp)))
+            << "Value: " << value << "\nDon't correspond to: " << regexp << std::endl;
     }
 
     void checkCoverage(const Coverage::CoverageMap &coverageMap,

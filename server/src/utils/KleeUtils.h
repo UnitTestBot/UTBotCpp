@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef CORE_KLEEUTIL_H
 #define CORE_KLEEUTIL_H
 

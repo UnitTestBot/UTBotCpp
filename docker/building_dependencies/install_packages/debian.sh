@@ -1,7 +1,3 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script downloads debian packages.
 # It installs libc6-dev package (which is dev version of libc) into $UTBOT_ALL/debian-libc-dev-install and other packages into $UTBOT_ALL/debs-install
 

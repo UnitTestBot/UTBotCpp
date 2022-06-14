@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 import { showInfoMessage } from '../config/notificationMessages';
 import { Prefs } from '../config/prefs';
@@ -76,6 +72,3 @@ export class UTBotTargetsProvider implements vs.TreeDataProvider<UTBotExplorerTa
         return element;
     }
 }
-
-
-

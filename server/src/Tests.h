@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTS_H
 #define UNITTESTBOT_TESTS_H
 
@@ -22,6 +18,17 @@
 #include <utility>
 #include <queue>
 #include <optional>
+
+namespace tests {
+    class StructValueView;
+}
+
+namespace printer {
+    class TestsPrinter;
+    struct MultiLinePrinter {
+        static std::string print(TestsPrinter *printer, const tests::StructValueView *view);
+    };
+}
 
 namespace tests {
 
@@ -85,7 +92,7 @@ namespace tests {
         /**
          * Returns string representation of the value.
          */
-        [[nodiscard]] virtual std::string getEntryValue() const = 0;
+        [[nodiscard]] virtual std::string getEntryValue(printer::TestsPrinter *printer) const = 0;
 
         virtual bool containsFPSpecialValue() {
             return false;
@@ -98,12 +105,6 @@ namespace tests {
             return this->subViews;
         };
 
-        /**
-         * For StructValueView should return vector of string representations of its field values.
-         */
-        virtual std::vector<std::string> fieldEntryValues() {
-            return {};
-        }
 
     protected:
         explicit AbstractValueView(std::vector<std::shared_ptr<AbstractValueView>> subViews) : subViews(std::move(subViews)) {}
@@ -117,7 +118,7 @@ namespace tests {
     struct JustValueView : AbstractValueView {
         explicit JustValueView(std::string value) : AbstractValueView(), entryValue(std::move(value)) {}
 
-        [[nodiscard]] std::string getEntryValue() const override {
+        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
             return entryValue;
         }
 
@@ -135,7 +136,7 @@ namespace tests {
     struct VoidValueView : AbstractValueView {
         explicit VoidValueView() = default;
 
-        [[nodiscard]] std::string getEntryValue() const override {
+        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
             return "";
         }
 
@@ -182,10 +183,10 @@ namespace tests {
         explicit ArrayValueView(std::vector<std::shared_ptr<AbstractValueView>> &subViews)
             : AbstractValueView(subViews) {}
 
-        [[nodiscard]] std::string getEntryValue() const override {
+        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
             std::vector<std::string> entries;
             for (const auto &subView : subViews) {
-                entries.push_back(subView->getEntryValue());
+                entries.push_back(subView->getEntryValue(printer));
             }
 
             return "{" + StringUtils::joinWith(entries, ", ") + "}";
@@ -203,42 +204,36 @@ namespace tests {
 
     /**
      * Representation of struct value. It's value is stored as a string. Subviews of StructValueView are its fields.
-     * In order to get fields and subfields values (leaves in terms of trees) method fieldEntryValues().
      */
     struct StructValueView : AbstractValueView {
-        explicit StructValueView(std::vector<std::shared_ptr<AbstractValueView>> subViews,
+        explicit StructValueView(bool _isCLike,
+                                 std::vector<std::string> _fields,
+                                 std::vector<std::shared_ptr<AbstractValueView>> subViews,
                                  std::optional<std::string> entryValue)
-            : AbstractValueView(std::move(subViews)), entryValue(std::move(entryValue)) {
+            : AbstractValueView(std::move(subViews)), entryValue(std::move(entryValue)),
+              isCLike(_isCLike),
+              fields(std::move(_fields)){
         }
 
         [[nodiscard]] const std::vector<std::shared_ptr<AbstractValueView>> &getSubViews() const override {
             return this->subViews;
         }
 
-        [[nodiscard]] std::string getEntryValue() const override {
+        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
             if (entryValue.has_value()) {
                 return entryValue.value();
             }
 
+            if (printer != nullptr) {
+                return printer::MultiLinePrinter::print(printer, this);
+            }
+
             std::vector<std::string> entries;
             for (const auto &subView : subViews) {
-                entries.push_back(subView->getEntryValue());
+                entries.push_back(subView->getEntryValue(nullptr));
             }
 
             return "{" + StringUtils::joinWith(entries, ", ") + "}";
-        }
-
-        std::vector<std::string> fieldEntryValues() override {
-            std::vector<std::string> result;
-            for (const auto &subView : subViews) {
-                std::vector<std::string> subFieldEntryValues = subView->fieldEntryValues();
-                CollectionUtils::extend(result, subFieldEntryValues);
-                if (subFieldEntryValues.empty()) {
-                    result.push_back(subView->getEntryValue());
-                }
-            }
-
-            return result;
         }
 
         bool containsFPSpecialValue() override {
@@ -249,7 +244,22 @@ namespace tests {
             }
             return false;
         }
+
+        [[nodiscard]] std::string getFieldPrefix(int i) const {
+            std::string prefix = "." + fields[i] + " = ";
+            if (isCLike) {
+                return prefix;
+            }
+            // it is not C Struct-initialization, but C++ List-initialization.
+            // The `designation` isn't allowed.
+            // https://en.cppreference.com/w/c/language/struct_initialization
+            // https://en.cppreference.com/w/cpp/language/list_initialization
+            return  "/*" + prefix + "*/";
+        }
+
     private:
+        bool isCLike;
+        std::vector<std::string> fields;
         std::optional<std::string> entryValue;
     };
 
@@ -263,16 +273,12 @@ namespace tests {
                                 std::vector<std::shared_ptr<AbstractValueView>,
                                 std::allocator<std::shared_ptr<AbstractValueView>>> subViews);
 
-        [[nodiscard]] std::string getEntryValue() const override {
+        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
             return entryValue;
         }
 
         bool containsFPSpecialValue() override {
             return false;
-        }
-
-        std::vector<std::string> fieldEntryValues() override {
-            return { getEntryValue() };
         }
 
     private:

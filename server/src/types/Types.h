@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TYPES_H
 #define UNITTESTBOT_TYPES_H
 
@@ -289,6 +285,7 @@ namespace types {
 
         FPointerMap functionFields{};
         bool hasUnnamedFields;
+        bool isCLike;
     };
 
     struct UnionInfo: TypeInfo {

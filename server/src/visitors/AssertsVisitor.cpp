@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "AssertsVisitor.h"
 
 #include "VerboseAssertsVisitor.h"
@@ -52,7 +48,7 @@ namespace visitor {
                                                                                  const types::Type& type,
                                                                                  const tests::AbstractValueView *view,
                                                                                  const std::string &access) {
-        if (additionalPointersCount > 0 && view->getEntryValue() == PrinterUtils::C_NULL) {
+        if (additionalPointersCount > 0 && view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             return processExpect(type, "TRUE", {
                     PrinterUtils::fillVarName(access, PrinterUtils::ACTUAL) + " == " + PrinterUtils::C_NULL });
         }

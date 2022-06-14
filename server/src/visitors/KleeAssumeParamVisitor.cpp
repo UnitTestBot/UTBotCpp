@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "KleeAssumeParamVisitor.h"
 #include "utils/KleeUtils.h"
 #include "utils/PrinterUtils.h"

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -35,7 +31,7 @@ namespace {
     };
 
     TEST_F(Library_Test, sum) {
-        auto [testGen, status] = createTestForFunction(test_c, 7);
+        auto [testGen, status] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -43,15 +39,15 @@ namespace {
             testGen.tests.at(test_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                     return stoi(testCase.returnValue.view->getEntryValue()) == 1;
+                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                  },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue()) == -1;
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );
 
-        auto [testGen2, status2] = createTestForFunction(test_c, 7);
+        auto [testGen2, status2] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status2.ok()) << status2.error_message();
 
@@ -59,10 +55,10 @@ namespace {
             testGen2.tests.at(test_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValue.view->getEntryValue()) == 1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValue.view->getEntryValue()) == -1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );

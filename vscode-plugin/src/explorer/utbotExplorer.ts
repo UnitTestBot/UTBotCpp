@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 import { Commands } from '../config/commands';
 import { DefaultConfigValues } from "../config/defaultValues";
@@ -165,5 +161,4 @@ export class UTBotExplorer {
             UTBotFoldersStorage.instance.setFoldersFromConfiguration();
         }
     }
-
 }

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -15,7 +11,7 @@ export enum Compiler { Clang, Gcc }
 
 export async function activate(projectPath: string): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ext = vs.extensions.getExtension('huawei.unittestbot')!;
+    const ext = vs.extensions.getExtension('UnitTestBot.UTBotCpp')!;
     await ext.activate().then(api => api.setProjectPath(projectPath));
 }
 

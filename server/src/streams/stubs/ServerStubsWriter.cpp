@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ServerStubsWriter.h"
 
 #include "loguru.h"
@@ -25,5 +21,3 @@ void ServerStubsWriter::writeResponse(const std::vector<Stubs> &synchronizedStub
     response.set_allocated_progress(progress.release());
     writeMessage(response);
 }
-
-
