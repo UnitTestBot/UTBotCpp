@@ -120,7 +120,7 @@ void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const Constrai
         std::vector<std::string> charSizes(indexes.begin(), indexes.end() - 1);
         const auto charElement = constrMultiIndex(state.curElement, charSizes);
         ss << TAB_N() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
-        ss << TAB_N() << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::ASSIGN_OPERATOR << "'\\0'" << SCNL;
+        ss << TAB_N() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
         ss << TAB_N() << "break" << SCNL;
         ss << RB();
     }
