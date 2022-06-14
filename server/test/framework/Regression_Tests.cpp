@@ -238,4 +238,34 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
     }
+
+    TEST_F(Regression_Test, Hash_Of_String) {
+        fs::path source = getTestFilePath("GH215.c");
+        auto [testGen, status] = createTestForFunction(source, 2);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        auto predicate = [](const tests::Tests::MethodTestCase &testCase) {
+            auto s = testCase.paramValues[0].view->getEntryValue(nullptr);
+            s = s.substr(1, s.length() - 2);
+            auto actual = testCase.returnValue.view->getEntryValue(nullptr);
+            auto expected = std::to_string(std::accumulate(s.begin(), s.end(), 0));
+            return actual == expected;
+        };
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                { [&predicate](const tests::Tests::MethodTestCase &testCase) {
+                     // empty string
+                     return testCase.paramValues[0].view->getEntryValue(nullptr).length() == 2 &&
+                            predicate(testCase);
+                 },
+                  [&predicate](const tests::Tests::MethodTestCase &testCase) {
+                      // non-empty string
+                      return testCase.paramValues[0].view->getEntryValue(nullptr).length() > 2 &&
+                             predicate(testCase);
+                  } }),
+            "hash");
+    }
 }
