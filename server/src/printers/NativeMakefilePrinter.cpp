@@ -29,8 +29,35 @@ namespace printer {
     static const std::string SHARED_FLAG = "-shared";
     static const std::string RELOCATE_FLAG = "-r";
     static const std::string OPTIMIZATION_FLAG = "-O0";
-
-
+    static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE = {
+        // See https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
+        "-ansi",
+        "-fallow-parameterless-variadic-functions",
+        "-fallow-single-precision",
+        "-fcond-mismatch",
+        "-ffreestanding",
+        "-fgnu89-inline",
+        "-fhosted",
+        "-flax-vector-conversions",
+        "-fms-extensions",
+        "-fno-asm",
+        "-fno-builtin",
+        "-fno-builtin-function",
+        "-fgimple",
+        "-fopenacc",
+        "-fopenacc-dim",
+        "-fopenacc-kernels",
+        "-fopenmp",
+        "-fopenmp-simd",
+        "-fpermitted-flt-eval-methods",
+        "-fplan9-extensions",
+        "-fsigned-bitfields",
+        "-fsigned-char",
+        "-fsso-struct",
+        "-funsigned-bitfields",
+        "-funsigned-char",
+        "-std",
+    };
 
     static void eraseIfWlOnly(std::string &argument) {
         if (argument == "-Wl") {
@@ -257,7 +284,8 @@ namespace printer {
         auto testCompilationCommand = compilationUnitInfo->command;
         testCompilationCommand.setCompiler(primaryCxxCompiler);
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
-        testCompilationCommand.filterCFlags();
+        testCompilationCommand.removeCompilerFlagsAndOptions(
+            UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE);
         testCompilationCommand.removeIncludeFlags();
         testCompilationCommand.addFlagToBegin(stringFormat("-I%s", Paths::getGtestLibPath() / "googletest/include"));
         if (Paths::isCXXFile(sourcePath)) {
