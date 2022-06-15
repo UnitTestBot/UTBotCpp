@@ -23,7 +23,7 @@ namespace visitor {
                               const tests::AbstractValueView *view,
                               const std::string &access,
                               int depth,
-                              tests::Tests::ConstructorInfo constructorInfo = {false, false});
+                              tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
     protected:
         virtual void visitArrayElementAfter(const types::Type &type,
@@ -44,7 +44,7 @@ namespace visitor {
                                 const std::string &access,
                                 size_t size,
                                 int depth,
-                                tests::Tests::ConstructorInfo constructorInfo = {false, false});
+                                tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
         virtual void visitCString(const types::Type &type,
                                   const std::string &name,
@@ -57,28 +57,28 @@ namespace visitor {
                                  const tests::AbstractValueView *view,
                                  const std::string &access,
                                  int depth,
-                                 tests::Tests::ConstructorInfo constructorInfo = {false, false});
+                                 tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
         virtual void visitUnion(const types::Type &type,
                                 const std::string &name,
                                 const tests::AbstractValueView *view,
                                 const std::string &access,
                                 int depth,
-                                tests::Tests::ConstructorInfo constructorInfo = {false, false});
+                                tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
         virtual void visitEnum(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,
                                     const std::string &access,
                                     int depth,
-                                    tests::Tests::ConstructorInfo constructorInfo = {false, false});
+                                    tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
         virtual void visitPrimitive(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,
                                     const std::string &access,
                                     int depth,
-                                    tests::Tests::ConstructorInfo constructorInfo = {false, false}) = 0;
+                                    tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) = 0;
 
         virtual void visitPointerToFunction(const types::Type &type,
                                             const std::string &name,

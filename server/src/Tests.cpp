@@ -1165,4 +1165,12 @@ bool isUnnamed(char *name) {
 bool Tests::MethodTestCase::isError() const {
     return suiteName == ERROR_SUITE_NAME;
 }
+
+[[nodiscard]] bool Tests::isConstructor(Tests::ConstructorInfo constructorInfo) {
+    return (constructorInfo == Tests::ConstructorInfo::CONSTRUCTOR) || (constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR);
 }
+
+[[nodiscard]] bool Tests::isMoveConstructor(Tests::ConstructorInfo constructorInfo) {
+    return constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
+}
+} // tests

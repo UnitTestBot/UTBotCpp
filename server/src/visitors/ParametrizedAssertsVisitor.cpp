@@ -82,13 +82,13 @@ namespace visitor {
         auto value = view->getEntryValue(printer);
         if (depth == 0) {
             std::optional<std::string> initValue = functionCall;
-            if (constructorInfo.isMoveConstructor) {
+            if (constructorInfo == tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR) {
                 initValue = "std::move(" + functionCall +  ")";
             }
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
                                    PrinterUtils::ACTUAL, initValue, std::nullopt, true,
                                    additionalPointersCount);
-            if (!constructorInfo.isConstructor) {
+            if (!tests::Tests::isConstructor(constructorInfo)) {
                 printer->strDeclareVar(type.typeName(),
                                        PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
             }
@@ -107,7 +107,7 @@ namespace visitor {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
                                    PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                    additionalPointersCount);
-            if (!constructorInfo.isConstructor) {
+            if (!tests::Tests::isConstructor(constructorInfo)) {
                 printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED,
                                        view->getEntryValue(printer));
             }
@@ -142,7 +142,7 @@ namespace visitor {
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
             std::string expectedValue;
-            if (!constructorInfo.isConstructor) {
+            if (!tests::Tests::isConstructor(constructorInfo)) {
                 expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
             } else {
                 expectedValue = view->getEntryValue(printer);

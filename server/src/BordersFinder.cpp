@@ -40,7 +40,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         lineInfo.initialized = true;
         LOG_S(MAX) << "Class name: " << ST->getNameAsString();
         LOG_S(MAX) << "Class's borders: " << lineInfo.begin << ' ' << lineInfo.end;
-    } else if (const FunctionDecl *FS = ClangUtils::isFunctionOrConstructor(Result)) {
+    } else if (const FunctionDecl *FS = ClangUtils::getFunctionOrConstructor(Result)) {
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path path = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
                 ->tryGetRealPathName()

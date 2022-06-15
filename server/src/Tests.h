@@ -408,10 +408,15 @@ namespace tests {
             bool isInline;
         };
 
-        struct ConstructorInfo {
-            bool isConstructor = false;
-            bool isMoveConstructor = false;
+        enum ConstructorInfo {
+            NOT_A_CONSTRUCTOR,
+            CONSTRUCTOR,
+            MOVE_CONSTRUCTOR
         };
+
+        [[nodiscard]] static bool isConstructor(ConstructorInfo constructorInfo);
+
+        [[nodiscard]] static bool isMoveConstructor(ConstructorInfo constructorInfo);
 
         struct MethodDescription {
             std::optional<MethodParam> classObj;

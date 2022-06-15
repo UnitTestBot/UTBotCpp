@@ -25,7 +25,7 @@ namespace visitor {
                             const tests::AbstractValueView *view,
                             const std::string &access,
                             int depth,
-                            tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
+                            tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
 
         void visitArray(const types::Type &type,
                         const std::string &name,
@@ -33,7 +33,7 @@ namespace visitor {
                         const std::string &access,
                         size_t size,
                         int depth,
-                        tests::Tests::ConstructorInfo constructorInfo = {false, false}) override;
+                        tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
     };
 }
 

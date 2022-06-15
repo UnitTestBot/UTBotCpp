@@ -283,7 +283,7 @@ namespace printer {
         for (const auto &param : method.params) {
             std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
             std::string parameter = maybeAmpersand + param.name;
-            if (method.constructorInfo.isMoveConstructor) {
+            if (tests::Tests::isMoveConstructor(method.constructorInfo)) {
                 parameter = "std::move(" + parameter + ")";
             }
             parameters.push_back(parameter);

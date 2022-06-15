@@ -6,8 +6,8 @@
 
 namespace ClangUtils {
     bool isIncomplete(clang::QualType type);
-    const clang::CXXConstructorDecl *isConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result);
-    const clang::FunctionDecl *isFunctionOrConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result);
+    const clang::CXXConstructorDecl *getConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result);
+    const clang::FunctionDecl *getFunctionOrConstructor(const clang::ast_matchers::MatchFinder::MatchResult &Result);
     clang::QualType getReturnType(const clang::FunctionDecl *FS, const clang::ast_matchers::MatchFinder::MatchResult &Result);
 };
 

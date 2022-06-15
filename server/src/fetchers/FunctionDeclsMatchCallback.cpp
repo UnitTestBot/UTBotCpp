@@ -22,7 +22,7 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     ExecUtils::throwIfCancelled();
-    if (const FunctionDecl * FS = ClangUtils::isFunctionOrConstructor(Result)) {
+    if (const FunctionDecl * FS = ClangUtils::getFunctionOrConstructor(Result)) {
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
@@ -32,10 +32,10 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         std::string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
-        if (const CXXConstructorDecl *CS = ClangUtils::isConstructor(Result)) {
-            methodDescription.constructorInfo.isConstructor = true;
+        if (const CXXConstructorDecl *CS = ClangUtils::getConstructor(Result)) {
+            methodDescription.constructorInfo = tests::Tests::ConstructorInfo::CONSTRUCTOR;
             if (CS->isMoveConstructor()) {
-                methodDescription.constructorInfo.isMoveConstructor = true;
+                methodDescription.constructorInfo = tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
             }
         }
         if (onlyNames) {
@@ -63,7 +63,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
 
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
 
-        if (FS->isCXXClassMember() && !methodDescription.constructorInfo.isConstructor) {
+        if (FS->isCXXClassMember() && !tests::Tests::isConstructor(methodDescription.constructorInfo)) {
             std::string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
             auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);
