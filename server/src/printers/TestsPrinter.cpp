@@ -138,28 +138,33 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
+    std::string code = ss.str();
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
-
+    code = ss.str();
     printLazyVariables(methodDescription, testCase, true);
     ss << NL;
-
+    code = ss.str();
     printLazyReferences(methodDescription, testCase, true);
     ss << NL;
-
+    code = ss.str();
     if (!testCase.isError()) {
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
+        code = ss.str();
     }
     TestsPrinter::verboseFunctionCall(methodDescription, testCase);
+    code = ss.str();
     ss << NL;
     if (testCase.isError()) {
         ss << TAB_N()
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
            << SCNL;
+        code = ss.str();
     } else {
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
+        code = ss.str();
     }
     ss << RB() << NL;
 }
@@ -562,7 +567,8 @@ std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Te
             args.push_back(maybeAmpersand + param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
-        } else if (!testCase.paramValues[i].lazyValues.empty()) {
+        }
+        else if (!testCase.paramValues[i].lazyValues.empty()) {
             args.push_back(param.name);
         } else {
             args.push_back(testCase.paramValues[i].view->getEntryValue(this));
@@ -581,9 +587,12 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
             std::string qualifier = Printer::getConstQualifier(param.type);
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
+        } else if (param.type.isRValueReference()) {
+            args.push_back("std::move(" + param.name + ")");
+        } else if (param.type.maybeJustPointer()) {
+            args.push_back("&" + param.name);
         } else {
-            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
-            args.push_back(maybeAmpersand + param.name);
+            args.push_back(param.name);
         }
     }
     return args;
