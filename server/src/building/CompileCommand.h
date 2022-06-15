@@ -47,9 +47,7 @@ namespace utbot {
 
         void setOutput(fs::path output);
 
-        void removeGccFlags();
-
-        void filterCFlags();
+        void removeCompilerFlagsAndOptions(const std::unordered_set<std::string> &switchesToRemove);
 
         void removeIncludeFlags();
 

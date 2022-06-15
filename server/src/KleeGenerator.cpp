@@ -101,6 +101,28 @@ static std::string getUTBotClangCompilerPath(fs::path clientCompilerPath) {
     }
 }
 
+static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
+    "--coverage",
+    "-fbranch-target-load-optimize",
+    "-fcx-fortran-rules",
+    "-fipa-cp-clone",
+    "-fipa-cp-cloneclang-10",
+    "-fira-loop-pressure",
+    "-fno-forward-propagate",
+    "-fno-if-conversion",
+    "-fno-sched-interblock",
+    "-fno-sched-spec-insn-heuristic",
+    "-fno-tree-dominator-opts",
+    "-fno-tree-sink",
+    "-fno-tree-sinkclang-10",
+    "-fpredictive-commoning",
+    "-fprofile-dir",
+    "-freschedule-modulo-scheduled-loops",
+    "-fsched2-use-superblocks",
+    "-fsel-sched-reschedule-pipelined",
+    "-ftree-loop-distribute-patterns",
+};
+
 std::optional<utbot::CompileCommand>
 KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
                                         const CollectionUtils::FileSet &stubSources,
@@ -121,7 +143,7 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
     fs::create_directories(outFilePath.parent_path());
     command.setOutput(outFilePath);
     command.setOptimizationLevel("-O0");
-    command.removeGccFlags();
+    command.removeCompilerFlagsAndOptions(UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE);
     std::vector<std::string> extraFlags{ "-emit-llvm",
                                          "-c",
                                          "-Xclang",
