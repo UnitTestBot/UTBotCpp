@@ -30,7 +30,7 @@ namespace visitor {
         const auto &gtestMacro = predicateMapping.at(predicate);
         std::string expectedValue;
         if (constructorInfo.isConstructor) {
-            expectedValue = view->getEntryValue();
+            expectedValue = view->getEntryValue(printer);
         } else {
             expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
         }

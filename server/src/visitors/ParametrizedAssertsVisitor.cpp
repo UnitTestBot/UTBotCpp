@@ -145,7 +145,7 @@ namespace visitor {
             if (!constructorInfo.isConstructor) {
                 expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
             } else {
-                expectedValue = view->getEntryValue();
+                expectedValue = view->getEntryValue(printer);
             }
             auto signature = processExpect(type, gtestMacro,
                                            { getDecorateActualVarName(access), expectedValue });

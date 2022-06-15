@@ -2645,12 +2645,14 @@ namespace {
         checkTestCasePredicates(
             testGen.tests.at(constructors_cpp).methods.begin().value().testCases,
             std::vector<TestCasePredicate>(
-                { [](const tests::Tests::MethodTestCase &testCase) {
-                     return "false" == testCase.paramValues.front().view->getEntryValue();
+                {
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                     return "false" == testCase.paramValues.front().view->getEntryValue(nullptr);
                  },
                   [](const tests::Tests::MethodTestCase &testCase) {
-                      return "true" == testCase.paramValues.front().view->getEntryValue();
-                  } }));
+                      return "true" == testCase.paramValues.front().view->getEntryValue(nullptr);
+                  }
+                }));
     }
 
     TEST_F(Syntax_Test, void_ptr) {
