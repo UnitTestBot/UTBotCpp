@@ -84,7 +84,7 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Installation check
         run: |
-          cd $(find . -name utbot-release* -type d -print | head -n1)
+          cd $(find . -name utbot-* -type d -print | head -n1)
           chmod +x ./unpack_and_run_utbot.sh
           ../integration-tests/installation_checks/automated_install_checks.sh ./utbot_distr.tar.gz
           ../integration-tests/installation_checks/clean.sh
