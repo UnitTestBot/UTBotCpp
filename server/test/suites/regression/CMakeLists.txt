@@ -40,4 +40,10 @@ add_library(PR153 PR153.c)
 
 add_library(GH215 GH215.c)
 
+add_library(issue-276 issue-276.c)
+target_compile_definitions(issue-276 PUBLIC EXPORT1=)
+target_compile_definitions(issue-276 PUBLIC EXPORT2="")
+target_compile_definitions(issue-276 PUBLIC EXPORT3=4)
+target_compile_definitions(issue-276 PUBLIC EXPORT4="4")
+
 set_target_properties(regression PROPERTIES LINK_WHAT_YOU_USE TRUE)

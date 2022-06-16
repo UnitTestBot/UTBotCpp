@@ -268,4 +268,64 @@ namespace {
                   } }),
             "hash");
     }
+
+    TEST_F(Regression_Test, Export_Empty) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 2);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                        } }),
+                "f1");
+    }
+
+    TEST_F(Regression_Test, Export_Empty_String) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 6);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
+                        } }),
+                "f2");
+    }
+
+    TEST_F(Regression_Test, Export_Int) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 10);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "4";
+                        } }),
+                "f3");
+    }
+
+    TEST_F(Regression_Test, Export_String_Int) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 14);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "'4'";
+                        } }),
+                "f4");
+    }
 }
