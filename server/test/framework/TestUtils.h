@@ -74,14 +74,11 @@ namespace testUtils {
                                                    bool useStubs = false,
                                                    bool verbose = true);
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
-                                                   const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths,
-                                                   const fs::path &filePath,
-                                                   int line,
-                                                   bool verbose = true,
-                                                   int kleeTimeout = 60);
+                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
+                                                   int line, bool useStubs,
+                                                   bool verbose, int kleeTimeout);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                     const fs::path &projectPath,

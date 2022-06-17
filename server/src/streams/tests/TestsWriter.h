@@ -20,10 +20,6 @@ public:
                                         const fs::path &testDirPath,
                                         std::function<void(tests::Tests &)> &&functor) = 0;
 
-    virtual void writeStubs(const std::vector<Stubs> &synchronizedStubs) {
-        // Default implementation is empty.
-    }
-
 protected:
     void writeCompleted(tests::TestsMap const &testMap, int totalTestsCounter);
 

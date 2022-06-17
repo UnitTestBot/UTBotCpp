@@ -1005,7 +1005,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Line_Test1) {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         basic_functions_c, 17);
+                                         basic_functions_c, 17, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1022,7 +1022,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Line_Test2) {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         basic_functions_c, 17);
+                                         basic_functions_c, 17, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1085,7 +1085,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Function_Test) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 6);
+                                             basic_functions_c, 6, false, false, 0);
         auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
@@ -1113,7 +1113,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Integer) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 17);
+                                             basic_functions_c, 17, false, false, 0);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("36");
@@ -1136,7 +1136,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Str) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 32);
+                                             basic_functions_c, 32, false, false, 0);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("abacaba");
@@ -1160,7 +1160,7 @@ namespace {
     TEST_P(Parameterized_Server_Test, Symbolic_Stdin_Test) {
         auto request = std::make_unique<FunctionRequest>();
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             symbolic_stdin_c, 8);
+                                             symbolic_stdin_c, 8, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(symbolic_stdin_c);
@@ -1182,7 +1182,7 @@ namespace {
     TEST_P(Parameterized_Server_Test, Symbolic_Stdin_Long_Read) {
         auto request = std::make_unique<FunctionRequest>();
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             symbolic_stdin_c, 19);
+                                             symbolic_stdin_c, 19, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(symbolic_stdin_c);

@@ -114,8 +114,10 @@ void Synchronizer::synchronize(const types::TypesHandler &typesHandler) {
         return;
     }
     auto outdatedSourcePaths = getOutdatedSourcePaths();
-    auto outdatedStubs = getStubSetFromSources(outdatedSourcePaths);
-    synchronizeStubs(outdatedStubs, typesHandler);
+    if (testGen->settingsContext.useStubs) {
+        auto outdatedStubs = getStubSetFromSources(outdatedSourcePaths);
+        synchronizeStubs(outdatedStubs, typesHandler);
+    }
     synchronizeWrappers(outdatedSourcePaths);
 }
 
