@@ -42,7 +42,9 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
                                                  double percent,
                                                  bool isCompleted) const {
     fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;
-    FileSystemUtils::writeToFile(testFilePath, tests.code);
+    if (!tests.code.empty()) {
+        FileSystemUtils::writeToFile(testFilePath, tests.code);
+    }
     if (!hasStream()) {
         return false;
     }
