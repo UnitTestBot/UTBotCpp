@@ -1211,6 +1211,7 @@ namespace {
         fs::path simple_loop_uncovered_c;
         fs::path dependent_functions_c;
         fs::path simple_class_cpp;
+        fs::path methods_with_exceptions;
 
         fs::path dependent_functions_test_cpp;
 
@@ -1227,6 +1228,7 @@ namespace {
             simple_loop_uncovered_c = getTestFilePath("simple_loop_uncovered.c");
             dependent_functions_c = getTestFilePath("dependent_functions.c");
             simple_class_cpp = getTestFilePath("simple_class.cpp");
+            methods_with_exceptions = getTestFilePath("methods_with_exceptions.cpp");
 
             dependent_functions_test_cpp =
                 Paths::sourcePathToTestPath(*projectContext, dependent_functions_c);
@@ -1235,6 +1237,7 @@ namespace {
             generateFiles(simple_loop_uncovered_c, pregeneratedTestsRelativeDir);
             generateFiles(dependent_functions_c, pregeneratedTestsRelativeDir);
             generateFiles(simple_class_cpp, pregeneratedTestsRelativeDir);
+            generateFiles(methods_with_exceptions, pregeneratedTestsRelativeDir);
         }
 
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,
@@ -1244,7 +1247,7 @@ namespace {
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, ::testsgen::ErrorMode::FAILING };
+            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, errorMode};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1332,7 +1335,7 @@ namespace {
 
     TEST_P(TestRunner_Test, Status_Test) {
         auto testFilter = GrpcUtils::createTestFilterForProject();
-        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false);
+        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false, ::testsgen::ErrorMode::PASSING);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
@@ -1347,10 +1350,6 @@ namespace {
         testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
-    TEST_F(Server_Test, Exceptions_Test) {
-        auto testFilter = GrpcUtils::createTestFilterForFile();
-
-    }
 
     TEST_F(Server_Test, Halt_Test) {
         std::string suite = "halt";

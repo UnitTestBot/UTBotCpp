@@ -3,36 +3,59 @@
  */
 
 #include "exceptions.h"
-#include <exception>
+
 #include <stdexcept>
+#include <exception>
+#include <new>
+#include <typeinfo>
+#include <optional>
+#include <variant>
 
-int basicException(int x) {
-    if (x < 5) {
+int stdException(int a) {
+    if (a > 5) {
         throw std::exception();
-    }
-    return 42;
-}
-
-int customExceptionFromStd(int x) {
-    if (x % 3 == 1) {
-        throw std::exception();
-    } else if (x % 3 == 2) {
-        throw std::runtime_error("Error");
     } else {
-        return 42;
+        return 5;
     }
 }
 
-int customExceptionDerivedFromStdException(int x) {
-    if (x > 42) {
+int badAllocException(int a) {
+    if (a > 5) {
+        throw std::bad_alloc();
+    } else {
+        return 5;
+    }
+}
+
+int badCastException(int a) {
+    if (a > 5) {
+        throw std::bad_cast();
+    } else {
+        return 5;
+    }
+}
+
+int optionalException(int a) {
+    if (a > 5) {
+        throw std::bad_optional_access();
+    } else {
+        return 5;
+    }
+}
+
+int variantException(int a) {
+    if (a > 5) {
+        throw std::bad_variant_access();
+    } else {
+        return 5;
+    }
+}
+
+int customException(int a) {
+    if (a > 5) {
         throw MyException();
+    } else {
+        return 5;
     }
-    return 42;
 }
 
-int customExceptionDerivedFromRuntimeException(int x) {
-    if (x % 3 == 0) {
-        throw MyRuntimeException();
-    }
-    return 42;
-}
