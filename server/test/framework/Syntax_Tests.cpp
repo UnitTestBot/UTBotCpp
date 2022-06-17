@@ -2773,6 +2773,37 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 2);
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                               stoi(testCase.paramValues[1].view->getEntryValue(nullptr));
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <=
+                               stoi(testCase.paramValues[1].view->getEntryValue(nullptr));
+                    }
+                })
+        );
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return 2 * stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
+                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return 2 * stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) ==
+                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                    }
+                })
+        );
+
     }
 
     TEST_F(Syntax_Test, const_rvalue_reference) {
@@ -2781,6 +2812,38 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 3);
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                    }
+                })
+        );
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues.front().view->getEntryValue(nullptr)) % 3 == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues.front().view->getEntryValue(nullptr)) % 3 == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues.front().view->getEntryValue(nullptr)) % 3 == 2;
+                    }
+                })
+        );
     }
 
     TEST_F(Syntax_Test, return_and_get_params) {
@@ -2789,6 +2852,38 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 3);
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) % 5 == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) % 5 == 0;
+                    }
+                })
+        );
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
+                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) ==
+                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) + stoi(testCase.paramValues[1].view->getEntryValue(nullptr))==
+                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                    }
+                })
+        );
     }
 
     TEST_F(Syntax_Test, rvalue_struct_param) {
@@ -2797,6 +2892,19 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 4);
+
+        checkTestCasePredicates(
+            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                    }
+                })
+        );
     }
 
     TEST_F(Syntax_Test, simple_getc) {
