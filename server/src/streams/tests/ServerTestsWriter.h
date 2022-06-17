@@ -18,8 +18,6 @@ public:
                                 const fs::path &testDirPath,
                                 std::function<void(tests::Tests &)> &&functor) override;
 
-    void writeStubs(const std::vector<Stubs> &synchronizedStubs) override;
-
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,
                                                         const fs::path &testDirPath,

@@ -209,10 +209,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         Synchronizer synchronizer(&testGen, &stubGen, &sizeContext);
         synchronizer.synchronize(typesHandler);
 
-        if(testGen.settingsContext.useStubs) {
-            testsWriter->writeStubs(testGen.synchronizedStubs);
-        }
-
         std::shared_ptr<LineInfo> lineInfo = nullptr;
         auto lineTestGen = dynamic_cast<LineTestGen *>(&testGen);
 

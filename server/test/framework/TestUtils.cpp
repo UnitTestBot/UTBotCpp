@@ -207,16 +207,13 @@ namespace testUtils {
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
-                                                   const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths,
-                                                   const fs::path &filePath,
-                                                   int line,
-                                                   bool verbose,
-                                                   int kleeTimeout) {
+                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
+                                                   int line, bool useStubs,
+                                                   bool verbose, int kleeTimeout) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, false, verbose, kleeTimeout);
+                                                   srcPaths, useStubs, verbose, kleeTimeout);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
@@ -230,7 +227,7 @@ namespace testUtils {
                                                    bool verbose,
                                                    int kleeTimeout) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, verbose, kleeTimeout);
+                                             srcPaths, filePath, line, false, verbose, kleeTimeout);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 

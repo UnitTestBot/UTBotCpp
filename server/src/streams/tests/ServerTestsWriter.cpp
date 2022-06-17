@@ -23,19 +23,6 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
     writeCompleted(testMap, totalTestsCounter);
 }
 
-void ServerTestsWriter::writeStubs(const std::vector<Stubs> &synchronizedStubs) {
-    testsgen::TestsResponse response;
-    auto stubsResponse = std::make_unique<testsgen::StubsResponse>();
-    for (auto const &synchronizedStub : synchronizedStubs) {
-        auto sData = stubsResponse->add_stubsources();
-        sData->set_filepath(synchronizedStub.filePath);
-        if (synchronizeCode) {
-            sData->set_code(synchronizedStub.code);
-        }
-    }
-    response.set_allocated_stubs(stubsResponse.release());
-}
-
 bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
                                                  const fs::path &testDirPath,
                                                  const std::string &message,
