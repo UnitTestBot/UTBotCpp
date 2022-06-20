@@ -1331,15 +1331,15 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
+        ASSERT_FALSE(resultMap.empty());
 
-        testUtils::checkStatuses(statusMap, tests);
+        testUtils::checkStatuses(resultMap, tests);
 
         StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 25}};
-        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
 
@@ -1479,16 +1479,16 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
-        EXPECT_GT(statusMap.getNumberOfTests(), 2);
+        ASSERT_FALSE(resultMap.empty());
+        EXPECT_GT(resultMap.getNumberOfTests(), 2);
 
-        testUtils::checkStatuses(statusMap, tests);
+        testUtils::checkStatuses(resultMap, tests);
 
         StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
-        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
     struct ProjectInfo {
@@ -1552,20 +1552,20 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
-        EXPECT_EQ(this->numberOfTests, statusMap.getNumberOfTests());
+        ASSERT_FALSE(resultMap.empty());
+        EXPECT_EQ(this->numberOfTests, resultMap.getNumberOfTests());
         if (timeout) {
             EXPECT_EQ(testsgen::TestStatus::TEST_INTERRUPTED,
-                      statusMap.begin()->second.begin()->second);
+                      resultMap.begin()->second.begin()->second.status());
         } else {
-            testUtils::checkStatuses(statusMap, tests);
+            testUtils::checkStatuses(resultMap, tests);
 
             StatusCountMap expectedStatusCountMap{
                 {testsgen::TEST_PASSED, 3}};
-            testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
+            testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
         }
     }
 

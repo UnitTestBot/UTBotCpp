@@ -4,6 +4,7 @@
 #include "Paths.h"
 #include "TimeExecStatistics.h"
 #include "utils/FileSystemUtils.h"
+#include "utils/JsonUtils.h"
 #include "utils/StringUtils.h"
 
 #include "loguru.h"
@@ -38,7 +39,7 @@ TestRunner::TestRunner(
 
 std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
                                                        const fs::path &testFilePath) {
-    auto cmdGetAllTests = MakefileUtils::makefileCommand(projectContext, makefile, "run", "--gtest_list_tests", {"GTEST_FILTER=*"});
+    auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile, "run", "--gtest_list_tests", {"GTEST_FILTER=*"});
     auto [out, status, _] = cmdGetAllTests.run(projectContext.buildDir, false);
     if (status != 0) {
         auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.buildDir, true);
@@ -129,21 +130,25 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
     MEASURE_FUNCTION_EXECUTION_TIME
     ExecUtils::throwIfCancelled();
 
+    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
     const auto buildRunCommands = coverageTool->getBuildRunCommands(testsToLaunch, withCoverage);
     ExecUtils::doWorkWithProgress(buildRunCommands, progressWriter, "Running tests",
                               [this, testTimeout] (BuildRunCommand const &buildRunCommand) {
                                   auto const &[unitTest, buildCommand, runCommand] =
                                       buildRunCommand;
                                   try {
-                                      auto status = runTest(runCommand, testTimeout);
-                                      testStatusMap[unitTest.testFilePath][unitTest.testname] = status;
+                                      auto status = runTest(buildRunCommand, testTimeout);
+                                      testResultMap[unitTest.testFilePath][unitTest.testname] = status;
                                       ExecUtils::throwIfCancelled();
                                   } catch (ExecutionProcessException const &e) {
-                                      testStatusMap[unitTest.testFilePath][unitTest.testname] = testsgen::TEST_FAILED;
+                                      testsgen::TestResultObject testRes;
+                                      testRes.set_testfilepath(unitTest.testFilePath);
+                                      testRes.set_testname(unitTest.testname);
+                                      testRes.set_status(testsgen::TEST_FAILED);
+                                      testResultMap[unitTest.testFilePath][unitTest.testname] = testRes;
                                       exceptions.emplace_back(e);
                                   }
                               });
-
     LOG_S(DEBUG) << "All run commands were executed";
     return Status::OK;
 }
@@ -166,7 +171,7 @@ bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs
     ExecUtils::throwIfCancelled();
     fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
     if (fs::exists(makefile)) {
-        auto command = MakefileUtils::makefileCommand(projectContext, makefile, "build", "", {});
+        auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "build", "", {});
         LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
         auto[out, status, logFilePath] = command.run(projectContext.buildDir, true);
         if (status != 0) {
@@ -187,23 +192,38 @@ size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const
     return fail_count;
 }
 
-testsgen::TestStatus TestRunner::runTest(const MakefileUtils::MakefileCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
-    auto res = command.run(projectContext.buildDir, true, true, testTimeout);
+testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
+    auto res = command.runCommand.run(projectContext.buildDir, true, true, testTimeout);
     GTestLogger::log(res.output);
-    if (StringUtils::contains(res.output, "[  PASSED  ] 1 test")) {
-        return testsgen::TEST_PASSED;
-    }
-    if (StringUtils::contains(res.output, "[  FAILED  ] 1 test")) {
-        return testsgen::TEST_FAILED;
-    }
+
+    testsgen::TestResultObject testRes;
+    testRes.set_testfilepath(command.unitTest.testFilePath);
+    testRes.set_testname(command.unitTest.testname);
+    *testRes.mutable_executiontime() = google::protobuf::util::TimeUtil::NanosecondsToDuration(0);
+
     if (BaseForkTask::wasInterrupted(res.status)) {
-        return testsgen::TEST_INTERRUPTED;
+        testRes.set_status(testsgen::TEST_INTERRUPTED);
+        return testRes;
     }
-    return testsgen::TEST_DEATH;
+    if (!fs::exists(Paths::getGTestResultsJsonPath(projectContext))) {
+        testRes.set_status(testsgen::TEST_DEATH);
+        return testRes;
+    }
+    nlohmann::json gtestResultsJson = JsonUtils::getJsonFromFile(Paths::getGTestResultsJsonPath(projectContext));
+    if (!google::protobuf::util::TimeUtil::FromString(gtestResultsJson["time"], testRes.mutable_executiontime())) {
+        LOG_S(WARNING) << "Cannot parse duration of test execution";
+    }
+    if (gtestResultsJson["failures"] != 0) {
+        testRes.set_status(testsgen::TEST_FAILED);
+    } else {
+        testRes.set_status(testsgen::TEST_PASSED);
+    }
+    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
+    return testRes;
 }
 
-const Coverage::TestStatusMap &TestRunner::getTestStatusMap() const {
-    return testStatusMap;
+const Coverage::TestResultMap &TestRunner::getTestResultMap() const {
+    return testResultMap;
 }
 
 bool TestRunner::hasExceptions() const {

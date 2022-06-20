@@ -3,6 +3,7 @@ syntax = "proto3";
 package testsgen;
 
 import "util.proto";
+import "google/protobuf/duration.proto";
 
 service TestsGenService {
     rpc Handshake(DummyRequest) returns(DummyResponse) {}
@@ -188,6 +189,7 @@ message TestResultObject {
     string testname = 2;
     TestStatus status = 3;
     string output = 4;
+    google.protobuf.Duration executionTime = 5;
 }
 
 message CoverageAndResultsResponse {

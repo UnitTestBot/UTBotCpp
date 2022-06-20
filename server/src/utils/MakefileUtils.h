@@ -24,8 +24,8 @@ namespace MakefileUtils {
         MakefileCommand(const utbot::ProjectContext &projectContext,
                         fs::path makefile,
                         std::string target,
-                        const std::string &gtestFlags,
-                        std::vector<std::string> env);
+                        const std::string &gtestFlags = "",
+                        std::vector<std::string> env = {});
 
         [[nodiscard]] ExecUtils::ExecutionResult run(const fs::path &buildPath = "",
                                                  bool redirectStderr = true,
@@ -34,12 +34,6 @@ namespace MakefileUtils {
 
         [[nodiscard]] std::string getFailedCommand() const;
     };
-
-    MakefileCommand makefileCommand(utbot::ProjectContext const &projectContext,
-                                    const fs::path &makefile,
-                                    const std::string &target,
-                                    const std::string &gtestFlags = "",
-                                    const std::vector <std::string> &env = {});
 
     std::vector<std::string> getMakeCommand(std::string makefile, std::string target, bool nested);
 

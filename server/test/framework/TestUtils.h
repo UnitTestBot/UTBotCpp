@@ -41,9 +41,9 @@ namespace testUtils {
                        const CoverageLines &expectedLinesUncovered,
                        const CoverageLines &expectedLinesNone);
 
-    void checkStatuses(const Coverage::TestStatusMap &testStatusMap, const std::vector<UnitTest> &tests);
+    void checkStatuses(const Coverage::TestResultMap &testResultMap, const std::vector<UnitTest> &tests);
 
-    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+    void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap);
 

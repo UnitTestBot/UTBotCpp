@@ -130,20 +130,20 @@ namespace testUtils {
         }
     }
 
-    void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
+    void checkStatuses(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests) {
         for (auto const &[filename, suitename, testname] : tests) {
             if (suitename == tests::Tests::ERROR_SUITE_NAME) {
                 continue;
             }
-            const auto status = testStatusMap.at(filename).at(testname);
+            const auto status = testResultMap.at(filename).at(testname).status();
             EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
             (testsgen::TestStatus::TEST_DEATH == status));
         }
     }
 
 
-    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+    void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests,
                        const StatusCountMap &expectedStatusCountMap) {
         StatusCountMap actualStatusCountMap;
@@ -151,7 +151,7 @@ namespace testUtils {
             if (suitename == tests::Tests::ERROR_SUITE_NAME) {
                 continue;
             }
-            const auto status = testStatusMap.at(filename).at(testname);
+            const auto status = testResultMap.at(filename).at(testname).status();
             actualStatusCountMap[status]++;
         }
         for (const auto& [status, count] : actualStatusCountMap) {

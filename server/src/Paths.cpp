@@ -183,6 +183,9 @@ namespace Paths {
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext) {
         return projectContext.buildDir / "utbot";
     }
+    fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext) {
+        return getArtifactsRootDir(projectContext) / "gtest-results.json";
+    }
     fs::path getFlagsDir(const utbot::ProjectContext &projectContext) {
         return getArtifactsRootDir(projectContext) / "flags";
     }

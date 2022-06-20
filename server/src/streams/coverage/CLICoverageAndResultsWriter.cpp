@@ -2,6 +2,7 @@
 
 #include "utils/FileSystemUtils.h"
 #include "utils/TimeUtils.h"
+#include <printers/CoverageAndResultsStatisticsPrinter.h>
 
 #include "loguru.h"
 
@@ -22,17 +23,18 @@ std::string statusToString(testsgen::TestStatus status) {
     return it == description.end() ? "UNKNOWN" : it->second;
 }
 
-void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &testsStatusMap,
+void CLICoverageAndResultsWriter::writeResponse(const utbot::ProjectContext &projectContext,
+                                                const Coverage::TestResultMap &testsResultMap,
                                                 const Coverage::CoverageMap &coverageMap,
                                                 const nlohmann::json &totals,
                                                 std::optional<std::string> errorMessage) {
     std::stringstream ss;
 
     ss << "Test results summary." << std::endl;
-    for (const auto &[filepath, fileTestsStatus] : testsStatusMap) {
+    for (const auto &[filepath, fileTestsResult] : testsResultMap) {
         ss << "==== Tests in " << filepath << std::endl;
-        for (const auto &[testName, status] : fileTestsStatus) {
-            ss << "======== " << testName << " -> " << statusToString(status) << std::endl;
+        for (const auto &[testName, result] : fileTestsResult) {
+            ss << "======== " << testName << " -> " << statusToString(result.status()) << std::endl;
         }
     }
 
@@ -52,7 +54,9 @@ void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &t
     }
     ss << "Totals:\n";
     ss << totals;
-    fs::path resultsFilePath = resultsDirectory / (TimeUtils::getDate() + ".log");
+    fs::path resultsFilePath = resultsDirectory / "tests-result.log";
     FileSystemUtils::writeToFile(resultsFilePath, ss.str());
     LOG_S(INFO) << ss.str();
+    printer::CoverageAndResultsStatisticsPrinter statsPrinter = printer::CoverageAndResultsStatisticsPrinter(resultsDirectory);
+    statsPrinter.write(projectContext, testsResultMap, coverageMap);
 }

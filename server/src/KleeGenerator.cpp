@@ -57,7 +57,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
     fs::path makefile = projectTmpPath / "GenerationCompileMakefile.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto command = MakefileUtils::makefileCommand(projectContext, makefile, "all");
+    auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "all");
     ExecUtils::ExecutionResult res = command.run();
     if (res.status != 0) {
         LOG_S(ERROR) << StringUtils::stringFormat("Make for \"%s\" failed.\nCommand: \"%s\"\n%s\n",
