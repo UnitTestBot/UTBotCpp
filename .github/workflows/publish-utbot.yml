@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - '[0-9][0-9][0-9][0-9].[0-1][0-9].[0-9]+'
-      - '[0-9][0-9][0-9][0-9].[0-1][0-9]'
     branches:
       - main
 
@@ -28,9 +27,6 @@ jobs:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
     runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
     env:
-      # Environment for the job and for the container is, sadly, duplicated
-      # https://github.com/docker/compose/issues/1837
-      VERSION: ${{ format('1.0.{0}', github.run_number) }}
       ARTIFACT_DIR: utbot-artifact
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
@@ -54,13 +50,13 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
       - name: build UTBot
         run: |
-          re="^[0-9]{4}\.[0-1][0-9](\.[0-9]+){0,1}$"
+          re="^[0-9]{4}\.[0-1][0-9]\.[0-9]+$"
           if [[ $GITHUB_REF_NAME =~ $re ]]; then 
-            export PROJECT_VERSION=$GITHUB_REF_NAME
-            echo "ARTIFACT_NAME=release-$PROJECT_VERSION" >> $GITHUB_ENV
+            export VERSION=$GITHUB_REF_NAME
+            echo "ARTIFACT_NAME=release-$VERSION" >> $GITHUB_ENV
           else
-            export PROJECT_VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
-            echo "ARTIFACT_NAME=dev-$PROJECT_VERSION" >> $GITHUB_ENV
+            export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+            echo "ARTIFACT_NAME=dev-$VERSION" >> $GITHUB_ENV
           fi
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           chmod +x docker/action-scripts/build-utbot.sh
