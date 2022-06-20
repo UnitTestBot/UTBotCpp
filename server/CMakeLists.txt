@@ -1,7 +1,23 @@
 cmake_minimum_required(VERSION 3.12)
 
+if (NOT DEFINED VERSION)
+    if (DEFINED ENV{VERSION})
+        set(VERSION $ENV{VERSION})
+    else ()
+        set(VERSION "0.0.1")
+    endif ()
+endif ()
+
+if (NOT DEFINED RUN_INFO)
+    if (DEFINED ENV{RUN_INFO})
+        set(RUN_INFO $ENV{RUN_INFO})
+    else ()
+        set(RUN_INFO "local")
+    endif ()
+endif ()
+
 project(UTBotCpp DESCRIPTION "Tool that generates unit test by C/C++ source code, trying to reach all branches and maximize code coverage"
-        HOMEPAGE_URL "https://unittestbot.org" VERSION ${PROJECT_VERSION})
+        HOMEPAGE_URL "https://unittestbot.org" VERSION ${VERSION})
 set(PROJECT_ORG "UnitTestBot")
 
 message("Project: ${PROJECT_NAME}")

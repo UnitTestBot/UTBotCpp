@@ -44,7 +44,7 @@ jobs:
           submodules: recursive
       - name: Build UTBot
         run: |
-          export PROJECT_VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+          export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           echo $RUN_INFO
           chmod +x docker/action-scripts/build-utbot.sh
@@ -84,7 +84,7 @@ jobs:
 
       - name: build UTBot
         run: |
-          export PROJECT_VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+          export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           chmod +x docker/action-scripts/build-utbot.sh
           ./docker/action-scripts/build-utbot.sh
