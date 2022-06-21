@@ -15,7 +15,7 @@ namespace sarif {
     private:
         const fs::path sourcePath;
 
-        void deleteExternalFilesFromResult(json &result, const fs::path &projectRoot);
+        void deleteExternalFilesFromResult(json &result, const fs::path &projectRoot, bool);
         json &getUriFromLocation(json &location);
         void addResultToSarif(const json &result);
         void addCodeFlowWithoutExternal(json &result, const fs::path &projectRoot);

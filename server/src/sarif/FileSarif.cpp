@@ -3,8 +3,61 @@
 #include "utils/JsonUtils.h"
 #include "Paths.h"
 #include "loguru.h"
+#include "utils/StringUtils.h"
 
 namespace sarif {
+
+namespace {
+    [[nodiscard]] fs::path getUtbotDir() {
+        return fs::current_path().parent_path().parent_path();
+    }
+
+    [[nodiscard]] fs::path getKleeDir() {
+        fs::path utbotDir = getUtbotDir();
+        fs::path kleeDir = utbotDir / "submodules" / "klee";
+        if (!fs::exists(kleeDir)) {
+            LOG_S(ERROR) << "Klee directory is not " << kleeDir;
+            return "/";
+        }
+        return kleeDir;
+    }
+
+    [[nodiscard]] fs::path getKleeRuntimeDir() {
+        return getKleeDir() / "runtime";
+    }
+
+    [[nodiscard]] bool inKleeRuntimeDir(const fs::path &path) {
+        if (fs::exists(path)) {
+            return Paths::isSubPathOf(getKleeRuntimeDir(), path);
+        }
+        if (StringUtils::startsWith(path.c_str(), "runtime")) {
+            fs::path absPath = getKleeRuntimeDir().parent_path() / path;
+            return fs::exists(absPath);
+        } else {
+            return false;
+        }
+    }
+
+    [[nodiscard]] bool inKleeTmpDir(const fs::path &path) {
+        return fs::exists(Paths::tmpPath / path);
+    }
+
+    [[nodiscard]] std::optional<fs::path> isRelevant(const fs::path &path) {
+        if (inKleeTmpDir(path)) {
+            return std::nullopt;
+        }
+        if (inKleeRuntimeDir(path)) {
+            fs::path relativePath = fs::relative(getKleeRuntimeDir().parent_path() / path,
+                                                 getKleeRuntimeDir());
+            bool b = (relativePath.string().find("lib") != std::string::npos);
+            if (b) {
+                return getKleeRuntimeDir().parent_path() / path;
+            }
+            return std::nullopt;
+        }
+        return path;
+    }
+}
 
     FileSarif::FileSarif(const tests::Tests &tests, bool writeFlag) : ProjectSarif(tests.sourceFileNameNoExt,
                                                                                    tests.relativeFileDir, writeFlag),
@@ -41,14 +94,20 @@ namespace sarif {
     }
 
     void FileSarif::addCodeFlowWithoutExternal(json &result, const fs::path &projectRoot) {
-        json newResult = result;
-        deleteExternalFilesFromResult(newResult.at("codeFlows").at(0).at("threadFlows").at(0),
-                                      projectRoot);
-        newResult.at("codeFlows").push_back(result.at("codeFlows").at(0));
-        result = newResult;
+        json resultWithAbs = result;
+        json &locationsWithAbs = resultWithAbs.at("codeFlows").at(0).at("threadFlows").at(0);
+        deleteExternalFilesFromResult(locationsWithAbs,
+                                      projectRoot, true);
+        result = resultWithAbs;
+        json &locations = result.at("codeFlows").at(0).at("threadFlows").at(0);
+        deleteExternalFilesFromResult(locations,
+                                      projectRoot, false);
+        if (locationsWithAbs.at("locations").size() != locations.at("locations").size()) {
+            result.at("codeFlows").push_back(resultWithAbs.at("codeFlows").at(0));
+        }
     }
 
-    void FileSarif::deleteExternalFilesFromResult(json &result, const fs::path &projectRoot) {
+    void FileSarif::deleteExternalFilesFromResult(json &result, const fs::path &projectRoot, bool leaveFromLib) {
         for (int i = 0; i < result.at("locations").size(); ++i) {
             json &location = result.at("locations").at(i).at("location");
             string location_path = fs::path((string) getUriFromLocation(location));
@@ -58,8 +117,18 @@ namespace sarif {
         }
         auto it = std::remove_if(result.at("locations").begin(), result.at("locations").end(),
                                  [&](json &location) {
-                                     return !fs::exists(
-                                             projectRoot / (string) getUriFromLocation(location.at("location")));
+                                        if (leaveFromLib) {
+                                            auto opt = isRelevant(
+                                                    (string) getUriFromLocation(location.at("location")));
+                                            if (!opt.has_value()) {
+                                                return true;
+                                            }
+                                            getUriFromLocation(location.at("location")) = opt.value().string();
+                                            return false;
+                                        } else {
+                                            return StringUtils::startsWith(
+                                                    (string) getUriFromLocation(location.at("location")), "/");
+                                        }
                                  });
         result.at("locations").erase(it, result.at("locations").end());
     }
