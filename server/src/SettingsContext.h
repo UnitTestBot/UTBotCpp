@@ -22,6 +22,13 @@ namespace utbot {
                         int32_t timeoutPerFunction,
                         int32_t timeoutPerTest,
                         bool useDeterministicSearcher,
+                        bool useStubs);
+
+        SettingsContext(bool generateForStaticFunctions,
+                        bool verbose,
+                        int32_t timeoutPerFunction,
+                        int32_t timeoutPerTest,
+                        bool useDeterministicSearcher,
                         bool useStubs,
                         bool genSarif);
 

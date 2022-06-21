@@ -8,6 +8,19 @@
 
 namespace utbot {
     SettingsContext::SettingsContext(bool generateForStaticFunctions,
+                    bool verbose,
+                    int32_t timeoutPerFunction,
+                    int32_t timeoutPerTest,
+                    bool useDeterministicSearcher,
+                    bool useStubs) : SettingsContext(generateForStaticFunctions,
+                                                     verbose,
+                                                     timeoutPerFunction,
+                                                     timeoutPerTest,
+                                                     useDeterministicSearcher,
+                                                     useStubs,
+                                                     false) {}
+
+    SettingsContext::SettingsContext(bool generateForStaticFunctions,
                                      bool verbose,
                                      int32_t timeoutPerFunction,
                                      int32_t timeoutPerTest,
