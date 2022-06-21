@@ -75,8 +75,16 @@ namespace {
                 }
                 fs::path jsonPath = testCase.errorDescriptionInJson.value();
                 json testCaseJson = JsonUtils::getJsonFromFile(jsonPath);
-                string errorLocationStr = getUriFromLocation(testCaseJson.at("locations").at(0));
+                if (testCaseJson.at("locations").size() != 1) {
+                    LOG_S(WARNING) << "Sarif locations have not 1, but " << testCaseJson.at("locations").size() << " objects";
+                    continue;
+                }
                 addCodeFlowWithoutExternal(testCaseJson, projectPath);
+                if (testCaseJson.at("codeFlows").at(0).
+                        at("threadFlows").at(0).at("locations").empty()) {
+                    LOG_S(WARNING) << "Sarif stack trace is empty";
+                    continue;
+                }
                 testCaseJson.at("locations").at(0) = testCaseJson.at("codeFlows").at(0).
                         at("threadFlows").at(0).at("locations").back().at("location");
                 addResultToSarif(testCaseJson);
