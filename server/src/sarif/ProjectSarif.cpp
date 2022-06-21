@@ -23,18 +23,27 @@ namespace sarif {
 
     ProjectSarif::ProjectSarif(bool writeFlag) : ProjectSarif(sarif_default_name, "", writeFlag) {}
 
-    void ProjectSarif::writeSarifFile(const fs::path &projectPath) {
+    void ProjectSarif::writeSarifFileToTmp(const fs::path &tmpPath) {
         if (writeFileFlag) {
-            fs::path sarifPath = projectPath / outputPath / sarifName;
+            fs::path sarifPath = tmpPath / outputPath / sarifName;
             LOG_S(INFO) << "Create FileSarif " << sarifPath;
             FileSystemUtils::writeToFile(sarifPath, sarifJson.dump(4));
         }
     }
 
-    void ProjectSarif::joinSarifFiles(const fs::path &projectPath) {
-        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(projectPath / outputPath);
+    void ProjectSarif::writeCodeAnalysisFolder(const fs::path &tmpPath, const fs::path &projectPath) {
+        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(tmpPath / default_output_dir_name);
         for (const auto &file : allFiles) {
-            if (file.filename_without_extension() != sarifName + default_output_suffix) {
+            fs::path relativePath = fs::relative(file, tmpPath);
+            json sarif = JsonUtils::getJsonFromFile(file);
+            FileSystemUtils::writeToFile(projectPath / relativePath, sarif.dump(4));
+        }
+    }
+
+    void ProjectSarif::joinSarifFiles(const fs::path &tmpPath) {
+        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(tmpPath / outputPath);
+        for (const auto &file : allFiles) {
+            if (file.filename_without_extension() != sarif_default_name + default_output_suffix) {
                 addResultsFromFile(file);
             }
         }

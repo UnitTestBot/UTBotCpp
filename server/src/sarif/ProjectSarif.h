@@ -13,9 +13,9 @@ namespace sarif {
         void addResultsFromFile(const fs::path &);
 
     protected:
-        const std::string defaultVersion = "2.1.0";
-        const std::string defaultToolName = "utbotSARIF";
-        const std::string defaultScheme = "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json";
+        const static inline std::string defaultVersion = "2.1.0";
+        const static inline std::string defaultToolName = "utbotSARIF";
+        const static inline std::string defaultScheme = "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.4.json";
         const static inline std::string default_output_dir_name = "codeAnalysis";
         const static inline std::string default_output_suffix = "_analysis";
         const static inline std::string sarif_default_extension = ".sarif";
@@ -30,11 +30,13 @@ namespace sarif {
         explicit ProjectSarif(bool);
         ProjectSarif(const std::string &, const fs::path &, bool);
 
-        void writeSarifFile(const fs::path &);
+        void writeSarifFileToTmp(const fs::path &);
 
         void joinSarifFiles(const fs::path &);
 
         void addSarifResult(const ProjectSarif &);
+
+        static void writeCodeAnalysisFolder(const fs::path &, const fs::path &);
     };
 }
 
