@@ -12,7 +12,7 @@
 #include "streams/ServerWriter.h"
 #include "stubs/Stubs.h"
 #include "utils/ExecUtils.h"
-
+#include "SettingsContext.h"
 #include <protobuf/testgen.grpc.pb.h>
 
 class TestsWriter : public utbot::ServerWriter<testsgen::TestsResponse> {
@@ -22,7 +22,9 @@ public:
     virtual void writeTestsWithProgress(tests::TestsMap &testMap,
                                         std::string const &message,
                                         const fs::path &testDirPath,
-                                        std::function<void(tests::Tests &)> &&functor) = 0;
+                                        std::function<void(tests::Tests &)> &&functor,
+                                        const utbot::ProjectContext &projectContext,
+                                        const utbot::SettingsContext &settingsContext) = 0;
 
     virtual void writeStubs(const std::vector<Stubs> &synchronizedStubs) {
         // Default implementation is empty.

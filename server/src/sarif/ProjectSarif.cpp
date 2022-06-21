@@ -1,6 +1,7 @@
 #include "ProjectSarif.h"
 #include "loguru.h"
 #include "Paths.h"
+#include "utils/FileSystemUtils.h"
 
 namespace sarif {
 
@@ -26,7 +27,7 @@ namespace sarif {
         if (writeFileFlag) {
             fs::path sarifPath = projectPath / outputPath / sarifName;
             LOG_S(INFO) << "Create FileSarif " << sarifPath;
-            JsonUtils::writeJsonToFile(sarifPath, sarifJson);
+            FileSystemUtils::writeToFile(sarifPath, sarifJson.dump(4));
         }
     }
 
@@ -50,4 +51,9 @@ namespace sarif {
         }
     }
 
+    void ProjectSarif::addSarifResult(const ProjectSarif &sarif) {
+        for (auto &result : sarif.sarifJson.at("runs").at(0).at("results")) {
+            sarifJson.at("runs").at(0).at("results").push_back(result);
+        }
+    }
 }

@@ -26,7 +26,7 @@ namespace sarif {
         const static inline std::string prefix_for_json_path = "// THIS LINE SHOULDN'T BE AT END, path of klee-sarif: ";
 
         explicit FileSarif(const tests::Tests &tests, bool);
-        int generateSarifForFunction(const tests::Tests::MethodDescription &methodDescription, const fs::path &projectRoot);
+        int generateSarifForFunction(tests::Tests::MethodDescription &methodDescription, const fs::path &projectRoot);
     };
 }
 

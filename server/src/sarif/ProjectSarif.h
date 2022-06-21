@@ -34,6 +34,7 @@ namespace sarif {
 
         void joinSarifFiles(const fs::path &);
 
+        void addSarifResult(const ProjectSarif &);
     };
 }
 

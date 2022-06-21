@@ -10,10 +10,10 @@ namespace sarif {
                                                                                    tests.relativeFileDir, writeFlag),
                                                                       sourcePath(tests.sourceFilePath) {}
 
-    int FileSarif::generateSarifForFunction(const tests::Tests::MethodDescription &methodDescription,
+    int FileSarif::generateSarifForFunction(tests::Tests::MethodDescription &methodDescription,
                                             const fs::path &projectPath) {
         int errorTestCases = 0;
-        for (const auto &testCase: methodDescription.testCases) {
+        for (auto &testCase: methodDescription.testCases) {
             if (testCase.isError()) {
                 errorTestCases++;
                 if (!testCase.errorDescriptionInJson.has_value()) {
@@ -27,6 +27,7 @@ namespace sarif {
                 testCaseJson.at("locations").at(0) = testCaseJson.at("codeFlows").at(0).
                         at("threadFlows").at(0).at("locations").back().at("location");
                 addResultToSarif(testCaseJson);
+                testCase.sarif = this;
             }
         }
         LOG_S(INFO)

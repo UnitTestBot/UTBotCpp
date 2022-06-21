@@ -3,14 +3,16 @@
  */
 
 #include "ServerTestsWriter.h"
-
+#include "sarif/FileSarif.h"
 #include <utils/FileSystemUtils.h>
 
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                                std::string const &message,
                                                const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor) {
+                                               std::function<void(tests::Tests &)> &&functor,
+                                               const utbot::ProjectContext &projectContext,
+                                               const utbot::SettingsContext &settingsContext) {
 
     size_t size = testMap.size();
     writeProgress(message);
@@ -19,6 +21,15 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
         tests::Tests &tests = it.value();
         ExecUtils::throwIfCancelled();
         functor(tests);
+        sarif::FileSarif fileSarif(tests, settingsContext.genSarif);
+        for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
+            tests::Tests::MethodDescription &methodDescription = it.value();
+            fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
+        }
+        fileSarif.writeSarifFile(projectContext.projectPath);
+        sarif::ProjectSarif projectSarif(settingsContext.genSarif);
+        projectSarif.addSarifResult(fileSarif);
+        projectSarif.writeSarifFile(projectContext.projectPath);
         if (writeFileAndSendResponse(tests, testDirPath, message, 100.0 / size, false)) {
             totalTestsCounter += 1;
         }

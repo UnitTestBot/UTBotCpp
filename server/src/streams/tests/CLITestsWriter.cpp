@@ -12,7 +12,9 @@
 void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                             const string &message,
                                             const fs::path &testDirPath,
-                                            std::function<void(tests::Tests &)> &&functor) {
+                                            std::function<void(tests::Tests &)> &&functor,
+                                            const utbot::ProjectContext &projectContext,
+                                            const utbot::SettingsContext &settingsContext) {
     size_t size = testMap.size();
     std::cout << message << std::endl;
     int totalTestsCounter = 0;
