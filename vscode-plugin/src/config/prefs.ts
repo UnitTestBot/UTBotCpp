@@ -32,6 +32,8 @@ export class Prefs {
 
     public static USE_STUBS_PREF = 'unittestbot.stubs.useStubs';
 
+    public static GEN_SARIF_PREF = 'unittestbot.analysis.genSarif';
+
     public static FUNC_TIMEOUT_PREF = 'unittestbot.advanced.timeoutPerFunction';
 
     public static TEST_TIMEOUT_PREF = 'unittestbot.advanced.timeoutPerTest';
@@ -73,7 +75,8 @@ export class Prefs {
         .setTimeoutperfunction(Prefs.timeoutPerFunction())
         .setTimeoutpertest(Prefs.timeoutPerTest())
         .setUsedeterministicsearcher(Prefs.useDeterministicSearcher())
-        .setUsestubs(Prefs.useStubs());
+        .setUsestubs(Prefs.useStubs())
+        .setGensarif(Prefs.genSarif());
         return settingsContext;
     }
 
@@ -368,6 +371,10 @@ export class Prefs {
 
     public static useStubs(): boolean {
         return this.getAssetBase(Prefs.USE_STUBS_PREF, true);
+    }
+
+    public static genSarif(): boolean {
+        return this.getAssetBase(Prefs.GEN_SARIF_PREF, true);
     }
 
     public static timeoutPerFunction(): number {

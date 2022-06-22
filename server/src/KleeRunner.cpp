@@ -9,10 +9,12 @@
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
 #include "TimeExecStatistics.h"
+#include "sarif/FileSarif.h"
 
 #include "loguru.h"
 
 #include <utility>
+#include <fstream>
 
 using namespace tests;
 
@@ -86,10 +88,24 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         }
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
                                           settingsContext.verbose);
+        sarif::FileSarif fileSarif(tests, settingsContext.genSarif);
+        for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
+            tests::Tests::MethodDescription &methodDescription = it.value();
+            fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
+        }
+        fileSarif.writeSarifFileToTmp(projectTmpPath);
+        sarif::ProjectSarif projectSarif(settingsContext.genSarif);
+        projectSarif.joinSarifFiles(projectTmpPath);
+        projectSarif.writeSarifFileToTmp(projectTmpPath);
+        if (settingsContext.genSarif) {
+            sarif::ProjectSarif::writeCodeAnalysisFolder(projectTmpPath, projectContext.projectPath);
+        }
     };
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
                                         std::move(writeFunctor));
+
+
 }
 
 fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {
@@ -128,7 +144,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
     if (testMethod.sourceFilePath != tests.sourceFilePath) {
         std::string message = StringUtils::stringFormat(
                 "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n", 
+                "from another source file: %s. This can cause invalid generation.\n",
                 tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
         LOG_S(WARNING) << message;
     }
@@ -194,11 +210,17 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
 
                     std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
-                        kTestObjects, [](const ConcretizedObject &kTestObject) {
-                            return UTBotKTestObject{ kTestObject };
-                        });
-
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                            kTestObjects, [](const ConcretizedObject &kTestObject) {
+                                return UTBotKTestObject{kTestObject};
+                            });
+                    fs::path tmp = path.filename();
+                    if (status == tests::UTBotKTest::Status::FAILED) {
+                        fs::path sarifOutput = path.parent_path() / fs::path(sarif::FileSarif::sarif_klee_prefix +
+                                                                             path.filename_without_extension() + sarif::FileSarif::sarif_klee_extension);
+                        ktestChunk[testMethod].emplace_back(objects, status, sarifOutput);
+                    } else {
+                        ktestChunk[testMethod].emplace_back(objects, status);
+                    }
                 }
             }
         }
@@ -238,7 +260,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         if (method.sourceFilePath != tests.sourceFilePath) {
             std::string message = StringUtils::stringFormat(
                 "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n", 
+                "from another source file: %s. This can cause invalid generation.\n",
                 tests.sourceFilePath, method.methodName, method.sourceFilePath);
             LOG_S(WARNING) << message;
         }
@@ -336,8 +358,14 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                             kTestObjects, [](const ConcretizedObject &kTestObject) {
                               return UTBotKTestObject{ kTestObject };
                             });
-
-                        ktestChunk[method].emplace_back(objects, status);
+                        if (status == tests::UTBotKTest::Status::FAILED) {
+                            fs::path sarifOutput = path.parent_path() / fs::path(sarif::FileSarif::sarif_klee_prefix +
+                                                                                 path.filename_without_extension() + sarif::FileSarif::sarif_klee_extension);
+                            ktestChunk[method].emplace_back(objects, status, sarifOutput);
+                        } else {
+                            ktestChunk[method].emplace_back(objects, status);
+                        }
+//                        ktestChunk[method].emplace_back(objects, status);
                     }
                 }
             }

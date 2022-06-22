@@ -4,11 +4,25 @@
 
 namespace utbot {
     SettingsContext::SettingsContext(bool generateForStaticFunctions,
+                    bool verbose,
+                    int32_t timeoutPerFunction,
+                    int32_t timeoutPerTest,
+                    bool useDeterministicSearcher,
+                    bool useStubs) : SettingsContext(generateForStaticFunctions,
+                                                     verbose,
+                                                     timeoutPerFunction,
+                                                     timeoutPerTest,
+                                                     useDeterministicSearcher,
+                                                     useStubs,
+                                                     false) {}
+
+    SettingsContext::SettingsContext(bool generateForStaticFunctions,
                                      bool verbose,
                                      int32_t timeoutPerFunction,
                                      int32_t timeoutPerTest,
                                      bool useDeterministicSearcher,
-                                     bool useStubs)
+                                     bool useStubs,
+                                     bool genSarif)
         : generateForStaticFunctions(generateForStaticFunctions),
           verbose(verbose),
           timeoutPerFunction(timeoutPerFunction > 0
@@ -17,7 +31,7 @@ namespace utbot {
          timeoutPerTest(timeoutPerTest > 0
          ? std::make_optional(std::chrono::seconds{ timeoutPerTest })
          : std::nullopt),
-          useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs) {
+          useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs), genSarif(genSarif) {
     }
     SettingsContext::SettingsContext(const testsgen::SettingsContext &settingsContext)
         : SettingsContext(settingsContext.generateforstaticfunctions(),
@@ -25,6 +39,7 @@ namespace utbot {
                           settingsContext.timeoutperfunction(),
                           settingsContext.timeoutpertest(),
                           settingsContext.usedeterministicsearcher(),
-                          settingsContext.usestubs()) {
+                          settingsContext.usestubs(),
+                          settingsContext.gensarif()) {
     }
 }

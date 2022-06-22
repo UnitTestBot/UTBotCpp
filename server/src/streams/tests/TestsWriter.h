@@ -8,7 +8,7 @@
 #include "streams/ServerWriter.h"
 #include "stubs/Stubs.h"
 #include "utils/ExecUtils.h"
-
+#include "SettingsContext.h"
 #include <protobuf/testgen.grpc.pb.h>
 
 class TestsWriter : public utbot::ServerWriter<testsgen::TestsResponse> {

@@ -6,10 +6,12 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
+#include "loguru.h"
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include "json.hpp"
+#include <sarif/ProjectSarif.h>
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 
@@ -60,9 +62,16 @@ namespace tests {
         };
         std::vector<UTBotKTestObject> objects;
         Status status;
+        std::optional<fs::path> errorDescriptionInJson;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
             : objects(std::move(objects)), status(status) {
+        }
+        UTBotKTest(const std::vector<UTBotKTestObject> &objects, const Status &status, fs::path errorJson) :
+            objects(objects), status(status), errorDescriptionInJson(std::move(errorJson)) {
+            if (!exists(errorDescriptionInJson.value())) {
+                LOG_S(ERROR) << "Sarif file not found";
+            }
         }
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
@@ -398,6 +407,8 @@ namespace tests {
             TestCaseParamValue returnValue;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            std::optional<fs::path> errorDescriptionInJson;
+            sarif::ProjectSarif *sarif = nullptr;
 
             [[nodiscard]] bool isError() const;
         };

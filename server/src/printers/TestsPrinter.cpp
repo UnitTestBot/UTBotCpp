@@ -1,8 +1,10 @@
 #include "TestsPrinter.h"
 
 #include "Paths.h"
+#include "sarif/FileSarif.h"
 #include "utils/ArgumentsUtils.h"
 #include "utils/Copyright.h"
+#include "utils/JsonUtils.h"
 #include "visitors/ParametrizedAssertsVisitor.h"
 #include "visitors/VerboseAssertsParamVisitor.h"
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
@@ -11,6 +13,8 @@
 
 #include "loguru.h"
 
+
+using json = nlohmann::json;
 using printer::TestsPrinter;
 
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
@@ -59,7 +63,47 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
-    tests.code = ss.str();
+    printFinalCodeAndAlterJson(tests);
+}
+
+void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
+    int line_count = 0;
+    std::string line;
+    while (getline(ss, line)) {
+        if (line.rfind(sarif::FileSarif::prefix_for_json_path, 0) == 0) {
+            fs::path json_path = line.substr(sarif::FileSarif::prefix_for_json_path.size());
+            if (!exists(json_path)) {
+                LOG_S(ERROR) << "Json from klee not found";
+                continue;
+            }
+            json location = R"(
+                {
+                    "location" : {
+                        "physicalLocation" : {
+                            "artifactLocation" : {
+                                "uri" : {}
+                            },
+                            "region" : {
+                                "startLine" : {}
+                            }
+                        }
+                    }
+                }
+            )"_json;
+            location.at("location").at("physicalLocation").at("artifactLocation").at("uri") =
+                    tests.testSourceFilePath;
+            location.at("location").at("physicalLocation").at("region").at("startLine") = line_count;
+            json sarifResultFromFile = JsonUtils::getJsonFromFile(json_path);
+            auto &arr = sarifResultFromFile.at("codeFlows").at(0).at("threadFlows").at(0).
+                at("locations");
+            arr.insert(arr.begin(), location);
+            JsonUtils::writeJsonToFile(json_path, sarifResultFromFile);
+        } else {
+            tests.code.append(line);
+            tests.code.append("\n");
+            line_count++;
+        }
+    }
 }
 
 std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods) {
@@ -540,6 +584,7 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
+    printJsonPathFromKlee(testCase);
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
@@ -547,8 +592,15 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
     }
 }
 
+void TestsPrinter::printJsonPathFromKlee(const Tests::MethodTestCase &testCase) {
+    if (!testCase.errorDescriptionInJson) {
+        return;
+    }
+    ss << sarif::FileSarif::prefix_for_json_path << testCase.errorDescriptionInJson.value().string() << NL;
+}
+
 std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,
-                                                                        const Tests::MethodTestCase &testCase) {
+                                                                   const Tests::MethodTestCase &testCase) {
     std::vector<std::string> args;
     for (size_t i = 0; i < methodDescription.params.size(); ++i) {
         Tests::MethodParam const &param = methodDescription.params[i];

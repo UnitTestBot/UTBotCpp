@@ -708,6 +708,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             std::swap(testCase.objects, testCaseDescription.objects);
             std::swap(testCase.lazyAddressToName, testCaseDescription.lazyAddressToName);
             std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+            testCase.errorDescriptionInJson = case_.errorDescriptionInJson;
             if (filterByLineFlag) {
                 auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
                 if (!view || view->getEntryValue(nullptr) != "1") {

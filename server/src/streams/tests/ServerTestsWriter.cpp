@@ -1,6 +1,8 @@
 #include "ServerTestsWriter.h"
 
 #include "utils/FileSystemUtils.h"
+#include "sarif/FileSarif.h"
+#include <utils/FileSystemUtils.h>
 
 #include "loguru.h"
 
