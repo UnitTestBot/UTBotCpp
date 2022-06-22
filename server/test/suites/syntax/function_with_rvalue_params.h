@@ -1,7 +1,3 @@
-/*
-* Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FUNCTION_WITH_RVALUE_PARAMS_H
 #define UNITTESTBOT_FUNCTION_WITH_RVALUE_PARAMS_H
 
