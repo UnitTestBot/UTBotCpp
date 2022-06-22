@@ -138,33 +138,25 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
-    std::string code = ss.str();
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
-    code = ss.str();
     printLazyVariables(methodDescription, testCase, true);
     ss << NL;
-    code = ss.str();
     printLazyReferences(methodDescription, testCase, true);
     ss << NL;
-    code = ss.str();
     if (!testCase.isError()) {
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
-        code = ss.str();
     }
     TestsPrinter::verboseFunctionCall(methodDescription, testCase);
-    code = ss.str();
     ss << NL;
     if (testCase.isError()) {
         ss << TAB_N()
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
            << SCNL;
-        code = ss.str();
     } else {
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
-        code = ss.str();
     }
     ss << RB() << NL;
 }
