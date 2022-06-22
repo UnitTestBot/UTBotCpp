@@ -559,8 +559,7 @@ std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Te
             args.push_back(maybeAmpersand + param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
-        }
-        else if (!testCase.paramValues[i].lazyValues.empty()) {
+        } else if (!testCase.paramValues[i].lazyValues.empty()) {
             args.push_back(param.name);
         } else {
             args.push_back(testCase.paramValues[i].view->getEntryValue(this));
