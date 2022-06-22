@@ -93,6 +93,7 @@ message SettingsContext {
     int32 timeoutPerTest = 4;
     bool useDeterministicSearcher = 5;
     bool useStubs = 6;
+    bool genSarif = 7;
 }
 
 message SnippetRequest {

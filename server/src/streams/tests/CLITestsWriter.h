@@ -17,7 +17,9 @@ public:
     void writeTestsWithProgress(tests::TestsMap &testMap,
                                 std::string const &message,
                                 const fs::path &testDirPath,
-                                std::function<void(tests::Tests &)> &&functor) override;
+                                std::function<void(tests::Tests &)> &&functor,
+                                const utbot::ProjectContext &projectContext,
+                                const utbot::SettingsContext &settingsContext) override;
 
 private:
     static bool writeTestFile(const tests::Tests &tests, const fs::path &testDirPath);

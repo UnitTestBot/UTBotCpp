@@ -1,6 +1,7 @@
 #include "ProjectSarif.h"
 #include "loguru.h"
 #include "Paths.h"
+#include "utils/FileSystemUtils.h"
 
 namespace sarif {
 
@@ -13,23 +14,36 @@ namespace sarif {
         sarifJson["runs"][0]["results"] = json::array();
     }
 
-    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path) :
-        sarifName(name  + default_output_suffix + sarif_default_extension), outputPath(default_output_dir_name / path) {
+    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path, bool writeFlag) :
+        sarifName(name  + default_output_suffix + sarif_default_extension),
+        outputPath(default_output_dir_name / path),
+        writeFileFlag(writeFlag) {
         init();
     }
 
-    ProjectSarif::ProjectSarif() : ProjectSarif(sarif_default_name, "") {}
+    ProjectSarif::ProjectSarif(bool writeFlag) : ProjectSarif(sarif_default_name, "", writeFlag) {}
 
-    void ProjectSarif::writeSarifFile(const fs::path &projectPath) {
-        fs::path sarifPath = projectPath / outputPath / sarifName;
-        LOG_S(INFO) << "Create FileSarif " << sarifPath;
-        JsonUtils::writeJsonToFile(sarifPath, sarifJson);
+    void ProjectSarif::writeSarifFileToTmp(const fs::path &tmpPath) {
+        if (writeFileFlag) {
+            fs::path sarifPath = tmpPath / outputPath / sarifName;
+            LOG_S(INFO) << "Create FileSarif " << sarifPath;
+            FileSystemUtils::writeToFile(sarifPath, sarifJson.dump(4));
+        }
     }
 
-    void ProjectSarif::joinSarifFiles(const fs::path &projectPath) {
-        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(projectPath / outputPath);
+    void ProjectSarif::writeCodeAnalysisFolder(const fs::path &tmpPath, const fs::path &projectPath) {
+        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(tmpPath / default_output_dir_name);
         for (const auto &file : allFiles) {
-            if (file.parent_path() != projectPath / outputPath) {
+            fs::path relativePath = fs::relative(file, tmpPath);
+            json sarif = JsonUtils::getJsonFromFile(file);
+            FileSystemUtils::writeToFile(projectPath / relativePath, sarif.dump(4));
+        }
+    }
+
+    void ProjectSarif::joinSarifFiles(const fs::path &tmpPath) {
+        CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(tmpPath / outputPath);
+        for (const auto &file : allFiles) {
+            if (file.filename_without_extension() != sarif_default_name + default_output_suffix) {
                 addResultsFromFile(file);
             }
         }
@@ -46,4 +60,9 @@ namespace sarif {
         }
     }
 
+    void ProjectSarif::addSarifResult(const ProjectSarif &sarif) {
+        for (auto &result : sarif.sarifJson.at("runs").at(0).at("results")) {
+            sarifJson.at("runs").at(0).at("results").push_back(result);
+        }
+    }
 }

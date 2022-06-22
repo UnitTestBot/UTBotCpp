@@ -3,14 +3,16 @@
  */
 
 #include "ServerTestsWriter.h"
-
+#include "sarif/FileSarif.h"
 #include <utils/FileSystemUtils.h>
 
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                                std::string const &message,
                                                const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor) {
+                                               std::function<void(tests::Tests &)> &&functor,
+                                               const utbot::ProjectContext &projectContext,
+                                               const utbot::SettingsContext &settingsContext) {
 
     size_t size = testMap.size();
     writeProgress(message);

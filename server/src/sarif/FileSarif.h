@@ -15,17 +15,18 @@ namespace sarif {
     private:
         const fs::path sourcePath;
 
-        void deleteExternalFilesFromResult(json &result, const fs::path &projectRoot);
+        void deleteExternalFilesFromResult(json &result, const fs::path &projectRoot, bool);
         json &getUriFromLocation(json &location);
         void addResultToSarif(const json &result);
+        void addCodeFlowWithoutExternal(json &result, const fs::path &projectRoot);
 
     public:
         const static inline std::string sarif_klee_prefix = "__sarif_";
         const static inline std::string sarif_klee_extension = ".json";
         const static inline std::string prefix_for_json_path = "// THIS LINE SHOULDN'T BE AT END, path of klee-sarif: ";
 
-        explicit FileSarif(const tests::Tests &tests);
-        int generateSarifForFunction(const tests::Tests::MethodDescription &methodDescription, const fs::path &projectRoot);
+        explicit FileSarif(const tests::Tests &tests, bool);
+        int generateSarifForFunction(tests::Tests::MethodDescription &methodDescription, const fs::path &projectRoot);
     };
 }
 

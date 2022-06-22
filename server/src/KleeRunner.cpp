@@ -86,22 +86,24 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         }
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
                                           settingsContext.verbose);
+        sarif::FileSarif fileSarif(tests, settingsContext.genSarif);
+        for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
+            tests::Tests::MethodDescription &methodDescription = it.value();
+            fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
+        }
+        fileSarif.writeSarifFileToTmp(projectTmpPath);
+        sarif::ProjectSarif projectSarif(settingsContext.genSarif);
+        projectSarif.joinSarifFiles(projectTmpPath);
+        projectSarif.writeSarifFileToTmp(projectTmpPath);
+        if (settingsContext.genSarif) {
+            sarif::ProjectSarif::writeCodeAnalysisFolder(projectTmpPath, projectContext.projectPath);
+        }
     };
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
-                                        std::move(writeFunctor));
-    for (auto it = testsMap.begin(); it != testsMap.end(); it++) {
-        tests::Tests &tests = it.value();
-        sarif::FileSarif fileSarif(tests);
-        for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
-            Tests::MethodDescription &methodDescription = it.value();
-            fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
-        }
-        fileSarif.writeSarifFile(projectContext.projectPath);
-    }
-    sarif::ProjectSarif projectSarif;
-    projectSarif.joinSarifFiles(projectContext.projectPath);
-    projectSarif.writeSarifFile(projectContext.projectPath);
+                                        std::move(writeFunctor), projectContext, settingsContext);
+
+
 }
 
 fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {

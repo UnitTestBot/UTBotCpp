@@ -514,6 +514,11 @@
 					"default": true,
 					"markdownDescription": "%unittestbot.stubs.useStubs.description%"
 				},
+				"unittestbot.analysis.genSarif": {
+					"type": "boolean",
+					"default": true,
+					"markdownDescription": "%unittestbot.analysis.genSarif.description%"
+				},
 				"unittestbot.advanced.enableDeveloperMode": {
 					"type": "boolean",
 					"default": false,

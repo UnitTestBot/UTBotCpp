@@ -14,6 +14,7 @@
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include "json.hpp"
+#include <sarif/ProjectSarif.h>
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 
@@ -391,6 +392,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             std::optional<fs::path> errorDescriptionInJson;
+            sarif::ProjectSarif *sarif = nullptr;
 
             bool isError() const;
         };

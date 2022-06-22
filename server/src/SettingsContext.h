@@ -24,11 +24,20 @@ namespace utbot {
                         bool useDeterministicSearcher,
                         bool useStubs);
 
+        SettingsContext(bool generateForStaticFunctions,
+                        bool verbose,
+                        int32_t timeoutPerFunction,
+                        int32_t timeoutPerTest,
+                        bool useDeterministicSearcher,
+                        bool useStubs,
+                        bool genSarif);
+
         const bool generateForStaticFunctions;
         const bool verbose;
         const std::optional<std::chrono::seconds> timeoutPerFunction, timeoutPerTest;
         const bool useDeterministicSearcher;
         const bool useStubs;
+        const bool genSarif = false;
     };
 }
 
