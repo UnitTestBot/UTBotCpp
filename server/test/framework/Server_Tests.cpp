@@ -53,7 +53,6 @@ namespace {
         fs::path symbolic_stdin_c = getTestFilePath("symbolic_stdin.c");
         fs::path multiple_classes_h = getTestFilePath("multiple_classes.h");
         fs::path multiple_classes_cpp = getTestFilePath("multiple_classes.cpp");
-        fs::path methods_with_exceptions = getTestFilePath("methods_with_exceptions.cpp");
 
         void SetUp() override {
             clearEnv();
@@ -1211,7 +1210,8 @@ namespace {
         fs::path simple_loop_uncovered_c;
         fs::path dependent_functions_c;
         fs::path simple_class_cpp;
-        fs::path methods_with_exceptions;
+        fs::path methods_with_exceptions_cpp;
+        fs::path methods_with_asserts_cpp;
 
         fs::path dependent_functions_test_cpp;
 
@@ -1228,7 +1228,8 @@ namespace {
             simple_loop_uncovered_c = getTestFilePath("simple_loop_uncovered.c");
             dependent_functions_c = getTestFilePath("dependent_functions.c");
             simple_class_cpp = getTestFilePath("simple_class.cpp");
-            methods_with_exceptions = getTestFilePath("methods_with_exceptions.cpp");
+            methods_with_exceptions_cpp = getTestFilePath("methods_with_exceptions.cpp");
+            methods_with_asserts_cpp = getTestFilePath("methods_with_asserts.cpp");
 
             dependent_functions_test_cpp =
                 Paths::sourcePathToTestPath(*projectContext, dependent_functions_c);
@@ -1237,7 +1238,8 @@ namespace {
             generateFiles(simple_loop_uncovered_c, pregeneratedTestsRelativeDir);
             generateFiles(dependent_functions_c, pregeneratedTestsRelativeDir);
             generateFiles(simple_class_cpp, pregeneratedTestsRelativeDir);
-            generateFiles(methods_with_exceptions, pregeneratedTestsRelativeDir);
+            generateFiles(methods_with_exceptions_cpp, pregeneratedTestsRelativeDir);
+            generateFiles(methods_with_asserts_cpp, pregeneratedTestsRelativeDir);
         }
 
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,

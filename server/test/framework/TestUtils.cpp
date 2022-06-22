@@ -155,6 +155,7 @@ namespace testUtils {
             actualStatusCountMap[status]++;
         }
         for (const auto& [status, count] : actualStatusCountMap) {
+            int my_count = count;
             ASSERT_GE(count, expectedStatusCountMap.at(status));
         }
     }
