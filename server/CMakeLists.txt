@@ -121,7 +121,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 find_package(run_klee REQUIRED)
 
-add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES} src/sarif/ProjectSarif.cpp src/sarif/ProjectSarif.h)
+add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
 target_include_directories(UnitTestBotLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         resources
