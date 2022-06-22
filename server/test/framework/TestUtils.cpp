@@ -130,9 +130,9 @@ namespace testUtils {
     }
 
     void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
-                       const std::vector<UnitTest> &tests) {
+                       const std::vector<UnitTest> &tests, ::testsgen::ErrorMode errorMode) {
         for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
                 continue;
             }
             const auto status = testStatusMap.at(filename).at(testname);
@@ -144,10 +144,11 @@ namespace testUtils {
 
     void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
                        const std::vector<UnitTest> &tests,
-                       const StatusCountMap &expectedStatusCountMap) {
+                       const StatusCountMap &expectedStatusCountMap,
+                            ::testsgen::ErrorMode errorMode) {
         StatusCountMap actualStatusCountMap;
         for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
                 continue;
             }
             const auto status = testStatusMap.at(filename).at(testname);

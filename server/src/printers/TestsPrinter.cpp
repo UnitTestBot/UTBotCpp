@@ -167,7 +167,7 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
            << SCNL;
-    } else {
+    } else if (!testCase.isError()) {
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
     }
     ss << RB() << NL;

@@ -1333,9 +1333,9 @@ namespace {
         testUtils::checkCoverage(coverageMap, linesCovered, linesUncovered, linesNone);
     }
 
-    TEST_P(TestRunner_Test, Status_Test) {
+    TEST_P(TestRunner_Test, Status_Test_with_failing_error_mode) {
         auto testFilter = GrpcUtils::createTestFilterForProject();
-        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false, ::testsgen::ErrorMode::PASSING);
+        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
@@ -1350,6 +1350,23 @@ namespace {
         testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
     }
 
+
+    TEST_P(TestRunner_Test, Status_Test_with_passing_error_mode) {
+        auto testFilter = GrpcUtils::createTestFilterForProject();
+        CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), false, ::testsgen::ErrorMode::PASSING);
+
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        ASSERT_FALSE(statusMap.empty());
+
+        testUtils::checkStatuses(statusMap, tests, ::testsgen::ErrorMode::PASSING);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 62}};
+        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap, ::testsgen::ErrorMode::PASSING);
+    }
 
     TEST_F(Server_Test, Halt_Test) {
         std::string suite = "halt";
