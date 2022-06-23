@@ -205,7 +205,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     fs::path makefile = projectTmpPath / "BCForKLEE.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto makefileCommand = MakefileUtils::makefileCommand(projectContext, makefile, "build");
+    auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "build");
     auto [out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"
