@@ -37,15 +37,17 @@ grpc::Status CoverageAndResultsGenerator::generate(bool withCoverage,
         }
     } catch (CoverageGenerationException &e) {
         showErrors();
+        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status(StatusCode::FAILED_PRECONDITION, e.what());
     } catch (ExecutionProcessException &e) {
         exceptions.emplace_back(e);
         showErrors();
+        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status(StatusCode::FAILED_PRECONDITION, e.what());
     } catch (CancellationException &e) {
+        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status::CANCELLED;
     }
-
     showErrors();
     return Status::OK;
 }
@@ -65,7 +67,7 @@ void CoverageAndResultsGenerator::showErrors() const {
         errorMessage = message;
     }
 
-    coverageAndResultsWriter->writeResponse(testStatusMap, coverageMap, totals, errorMessage);
+    coverageAndResultsWriter->writeResponse(projectContext, testResultMap, coverageMap, totals, errorMessage);
 }
 
 Coverage::CoverageMap const &CoverageAndResultsGenerator::getCoverageMap() {
@@ -83,7 +85,7 @@ void CoverageAndResultsGenerator::collectCoverage() {
     }
     std::vector<ShellExecTask> coverageCommands = coverageTool->getCoverageCommands(
         CollectionUtils::filterToVector(testsToLaunch, [this](const UnitTest &testToLaunch) {
-            return testStatusMap[testToLaunch.testFilePath][testToLaunch.testname] !=
+            return testResultMap[testToLaunch.testFilePath][testToLaunch.testname].status() !=
                    testsgen::TEST_INTERRUPTED;
         }));
     if (coverageCommands.empty()) {

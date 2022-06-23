@@ -364,7 +364,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     FileSystemUtils::writeToFile(linkMakefile, bitcodeLinkMakefilePrinter.ss.str());
 
     auto command =
-        MakefileUtils::makefileCommand(testGen.projectContext, linkMakefile, targetBitcode);
+        MakefileUtils::MakefileCommand(testGen.projectContext, linkMakefile, targetBitcode);
     auto [out, status, logFilePath] = command.run(testGen.serverBuildDir);
     if (status != 0) {
         std::string errorMessage =
@@ -477,7 +477,7 @@ Result<utbot::Void> Linker::linkWithStubsIfNeeded(const fs::path &linkMakefile, 
         return errorMessage;
     }
 
-    auto command = MakefileUtils::makefileCommand(testGen.projectContext, linkMakefile, "all");
+    auto command = MakefileUtils::MakefileCommand(testGen.projectContext, linkMakefile, "all");
     auto [out, status, _] = command.run(testGen.serverBuildDir);
     if (status != 0) {
         std::string errorMessage =

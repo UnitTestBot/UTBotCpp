@@ -24,7 +24,7 @@ using Coverage::FileCoverage;
 
 GcovCoverageTool::GcovCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
-    : CoverageTool(progressWriter), projectContext(std::move(projectContext)) {
+    : CoverageTool(std::move(projectContext), progressWriter) {
 }
 
 std::vector<BuildRunCommand>
@@ -38,11 +38,11 @@ GcovCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch
             auto makefile = Paths::getMakefilePathFromSourceFilePath(
                 projectContext,
                 Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath));
-            auto gtestFlags = getTestFilter(testToLaunch);
+            auto gtestFlags = getGTestFlags(testToLaunch);
             auto buildCommand =
-                MakefileUtils::makefileCommand(projectContext, makefile, "build", gtestFlags);
+                MakefileUtils::MakefileCommand(projectContext, makefile, "build", gtestFlags);
             auto runCommand =
-                MakefileUtils::makefileCommand(projectContext, makefile, "run", gtestFlags);
+                MakefileUtils::MakefileCommand(projectContext, makefile, "run", gtestFlags);
             result.push_back({ testToLaunch, buildCommand, runCommand });
         });
     return result;

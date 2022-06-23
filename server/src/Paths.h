@@ -273,6 +273,8 @@ namespace Paths {
 
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext);
 
+    fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext);
+
     fs::path getFlagsDir(const utbot::ProjectContext &projectContext);
 
     fs::path getTestExecDir(const utbot::ProjectContext &projectContext);

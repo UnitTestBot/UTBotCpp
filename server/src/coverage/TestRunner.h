@@ -24,7 +24,7 @@ protected:
 
     std::unique_ptr<CoverageTool> coverageTool{};
     std::vector<UnitTest> testsToLaunch{};
-    Coverage::TestStatusMap testStatusMap{};
+    Coverage::TestResultMap testResultMap{};
 
     std::vector<ExecutionProcessException> exceptions;
 
@@ -48,7 +48,7 @@ public:
 
     std::vector<UnitTest> getTestsToLaunch();
 
-    const Coverage::TestStatusMap &getTestStatusMap() const;
+    const Coverage::TestResultMap &getTestResultMap() const;
 
     bool hasExceptions() const;
 
@@ -68,8 +68,8 @@ private:
     std::vector<UnitTest> getTestsFromMakefile(const fs::path &makefile,
                                                const fs::path &testFilePath);
 
-    testsgen::TestStatus runTest(const MakefileUtils::MakefileCommand &command,
-                                 const std::optional<std::chrono::seconds> &testTimeout);
+    testsgen::TestResultObject runTest(const BuildRunCommand &command,
+                                       const std::optional<std::chrono::seconds> &testTimeout);
 
     ServerCoverageAndResultsWriter writer{ nullptr };
 

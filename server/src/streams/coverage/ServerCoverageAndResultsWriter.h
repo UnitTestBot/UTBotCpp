@@ -15,7 +15,8 @@ public:
     explicit ServerCoverageAndResultsWriter(
         grpc::ServerWriter<testsgen::CoverageAndResultsResponse> *writer);
 
-    virtual void writeResponse(const Coverage::TestStatusMap &testsStatusMap,
+    virtual void writeResponse(const utbot::ProjectContext &projectContext,
+                               const Coverage::TestResultMap &testResultMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
                                std::optional<std::string> errorMessage) override;

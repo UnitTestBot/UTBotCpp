@@ -17,7 +17,6 @@ public:
     [[nodiscard]] nlohmann::json getTotals() const override;
     void cleanCoverage() const override;
 private:
-    const utbot::ProjectContext projectContext;
     void countLineCoverage(Coverage::CoverageMap& coverageMap, const std::string& filename) const;
     void checkLineForPartial(Coverage::FileCoverage::SourceLine line, Coverage::FileCoverage& fileCoverage) const;
 };

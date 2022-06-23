@@ -57,7 +57,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
     fs::path makefile = projectTmpPath / "GenerationCompileMakefile.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto command = MakefileUtils::makefileCommand(projectContext, makefile, "all");
+    auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "all");
     ExecUtils::ExecutionResult res = command.run();
     if (res.status != 0) {
         LOG_S(ERROR) << StringUtils::stringFormat("Make for \"%s\" failed.\nCommand: \"%s\"\n%s\n",
@@ -205,7 +205,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     fs::path makefile = projectTmpPath / "BCForKLEE.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto makefileCommand = MakefileUtils::makefileCommand(projectContext, makefile, "build");
+    auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "build");
     auto [out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"

@@ -23,8 +23,6 @@ public:
     void cleanCoverage() const override;
 
 private:
-    const utbot::ProjectContext projectContext;
-
     std::vector<fs::path> getGcdaFiles() const;
 };
 

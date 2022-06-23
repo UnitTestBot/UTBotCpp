@@ -91,7 +91,7 @@ namespace {
         void checkCoverageDirectory() {
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath /
                                                                           resultsDirectoryName);
-            EXPECT_EQ(directoryIterator.size(), 1);
+            EXPECT_EQ(directoryIterator.size(), 2);
             for (auto &&it : directoryIterator) {
                 EXPECT_TRUE(it.is_regular_file());
             }

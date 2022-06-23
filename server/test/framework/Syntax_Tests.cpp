@@ -2181,11 +2181,11 @@ namespace {
         EXPECT_FALSE(coverageGenerator.hasExceptions());
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultsMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
         // TODO: add checkStatusesCount after linkedlist fix
-        testUtils::checkStatuses(statusMap, tests);
+        testUtils::checkStatuses(resultsMap, tests);
     }
 
     TEST_F(Syntax_Test, Run_Tests_For_Tree) {
@@ -2214,15 +2214,15 @@ namespace {
         EXPECT_FALSE(coverageGenerator.hasExceptions());
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        testUtils::checkStatuses(statusMap, tests);
+        testUtils::checkStatuses(resultMap, tests);
 
         StatusCountMap expectedStatusCountMap{
             {testsgen::TEST_DEATH, 4},
             {testsgen::TEST_PASSED, 6}};
-        testUtils::checkStatusesCount(statusMap, tests, expectedStatusCountMap);
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
     TEST_F(Syntax_Test, Simple_parameter_cpp) {
