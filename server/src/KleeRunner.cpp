@@ -40,6 +40,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         FileSystemUtils::removeAll(kleeOutDir);
     }
     fs::create_directories(kleeOutDir);
+    sarif::ProjectSarif::createTmpFolder(projectTmpPath);
     CollectionUtils::MapFileTo<std::vector<TestMethod>> fileToMethods;
     for (const auto &method : testMethods) {
         fileToMethods[method.sourceFilePath].push_back(method);
@@ -365,7 +366,6 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                         } else {
                             ktestChunk[method].emplace_back(objects, status);
                         }
-//                        ktestChunk[method].emplace_back(objects, status);
                     }
                 }
             }

@@ -65,4 +65,12 @@ namespace sarif {
             sarifJson.at("runs").at(0).at("results").push_back(result);
         }
     }
+
+    void ProjectSarif::createTmpFolder(const fs::path &tmpDir) {
+        fs::path dir = tmpDir / default_output_dir_name;
+        if (fs::exists(dir)) {
+            FileSystemUtils::removeAll(dir);
+        }
+        fs::create_directories(dir);
+    }
 }
