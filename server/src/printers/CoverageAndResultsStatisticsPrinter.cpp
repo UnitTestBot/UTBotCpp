@@ -38,9 +38,9 @@ namespace printer {
         return os;
     }
 
-    void CoverageAndResultsStatisticsPrinter::write(const utbot::ProjectContext &projectContext,
-                                                    const Coverage::TestResultMap &testsResultMap,
-                                                    const Coverage::CoverageMap &coverageMap) {
+    std::stringstream CoverageAndResultsStatisticsPrinter::write(const utbot::ProjectContext &projectContext,
+                                                                 const Coverage::TestResultMap &testsResultMap,
+                                                                 const Coverage::CoverageMap &coverageMap) {
         for (auto const &[testPath, testsResult]: testsResultMap) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testPath);
             Coverage::FileCoverage fileCoverage = CollectionUtils::getOrDefault(coverageMap,
@@ -65,9 +65,7 @@ namespace printer {
             ss << statistics << '\n';
         }
         ss << "Total," << total << '\n';
-        fs::path resultsFilePath = resultsDirectory / "coverage-and-results.csv";
-        FileSystemUtils::writeToFile(resultsFilePath, ss.str());
-        LOG_S(INFO) << StringUtils::stringFormat("See statistics info here: %s", resultsFilePath);
+        return ss;
     }
 
     FileCoverageAndResultsStatistics::FileCoverageAndResultsStatistics(

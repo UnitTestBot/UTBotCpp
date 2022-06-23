@@ -36,9 +36,10 @@ namespace printer {
 
     class CoverageAndResultsStatisticsPrinter : CollectionUtils::MapFileTo<FileCoverageAndResultsStatistics> {
     public:
-        explicit CoverageAndResultsStatisticsPrinter(fs::path resultsDirectory) :
-            resultsDirectory(std::move(resultsDirectory)) {};
-        void write(const utbot::ProjectContext &, const Coverage::TestResultMap &, const Coverage::CoverageMap &);
+        CoverageAndResultsStatisticsPrinter() = default;
+        std::stringstream write(const utbot::ProjectContext &projectContext,
+                                const Coverage::TestResultMap &testsResultMap,
+                                const Coverage::CoverageMap &coverageMap);
 
     private:
         fs::path resultsDirectory;

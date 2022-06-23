@@ -7,6 +7,7 @@
 #include "loguru.h"
 
 #include <fstream>
+#include <utils/StringFormat.h>
 
 CLICoverageAndResultsWriter::CLICoverageAndResultsWriter(const fs::path &resultsDirectory)
     : resultsDirectory(resultsDirectory), CoverageAndResultsWriter(nullptr) {
@@ -57,6 +58,10 @@ void CLICoverageAndResultsWriter::writeResponse(const utbot::ProjectContext &pro
     fs::path resultsFilePath = resultsDirectory / "tests-result.log";
     FileSystemUtils::writeToFile(resultsFilePath, ss.str());
     LOG_S(INFO) << ss.str();
-    printer::CoverageAndResultsStatisticsPrinter statsPrinter = printer::CoverageAndResultsStatisticsPrinter(resultsDirectory);
-    statsPrinter.write(projectContext, testsResultMap, coverageMap);
+    
+    printer::CoverageAndResultsStatisticsPrinter statsPrinter = printer::CoverageAndResultsStatisticsPrinter();
+    std::stringstream statsStringStream = statsPrinter.write(projectContext, testsResultMap, coverageMap);
+    fs::path statsResultsFilePath = resultsDirectory / "coverage-and-results.csv";
+    FileSystemUtils::writeToFile(statsResultsFilePath, statsStringStream.str());
+    LOG_S(INFO) << StringUtils::stringFormat("See coverage and results statistics info here: %s", statsResultsFilePath);
 }
