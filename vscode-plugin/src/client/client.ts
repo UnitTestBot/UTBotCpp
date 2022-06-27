@@ -30,7 +30,8 @@ import {
     TestFilter,
     TestsResponse,
     FileTargetsRequest,
-    ProjectTargetsRequest
+    ProjectTargetsRequest,
+    VersionInfo
 } from '../proto-ts/testgen_pb';
 import { SourceCode, SourceInfo, ValidationType } from '../proto-ts/util_pb';
 import { RequestCoverageAndResultParams, RequestTestsParams } from '../requests/params';
@@ -149,8 +150,8 @@ export class Client {
         });
 
         this.events.onDidHandshakeSuccessEventEmitter.on(response => {
-            logger.info(`Handshake successfull`);
-            logger.debug(`Handshake successfull response: ${response}`);
+            logger.info(`Handshake successful`);
+            logger.debug(`Handshake successful response: ${response}`);
         });
     }
 
@@ -349,7 +350,8 @@ export class Client {
     }
 
     async makeHandshakeRequest(): Promise<string> {
-        const dummyRequest = new DummyRequest();
+        const versionInfo = new VersionInfo();
+        versionInfo.setVersion("Client");
         let resolved = false;
         logger.info(`Sending handshake request`);
         setTimeout(() => {
@@ -358,7 +360,7 @@ export class Client {
             }
         }, this.DEFAULT_TIMEOUT);
         return new Promise<string>((resolve, reject) => {
-            this.testsService.handshake(dummyRequest, async (err, response) => {
+            this.testsService.handshake(versionInfo, async (err, response) => {
                 if (err) {
                     await this.events.onDidHandshakeFailureEventEmitter.fire(err.message);
                     reject(err);

@@ -3,130 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UTBot: Quickstart</title>
-    
-    <link href="{{stylesUri}}" rel="stylesheet">
+
     <link href="{{vscodeUri}}" rel="stylesheet">
+    <link href="{{stylesUri}}" rel="stylesheet">
 
-    
+    <title>UTBot: Quickstart</title>
 </head>
-
 <body>
-    <div class="utbot-vars" os="{{os}}" ></div>
-    <div class="utbot-modal">
-        <article class="content-wrapper">
-            <span class="utbot-modal__close-button" onclick="closeModal()"></span>
-            <header class="utbot-modal__header modal-header">
-                <h2>❌ Server is unreachable!</h2>
-            </header>
-            <div class="utbot-modal__content content">
-              <p>
-              UTBot failed to establish connection with specified server.
-              If you wish to continue anyway, press "Continue" button.
-              </p>
-              <p> In any case, you will need to specify correct port and host of UTBot server to use the extension.
-              You can do it via Visual Studio Code Settings. </p>  
-            </div>
-            <footer class="utbot-modal__footer modal-footer">
-                <button 
-                    class="utbot-modal__footer_action-button cancel-button" 
-                    onclick="closeModal();this.blur();">Cancel</button>
-                <button 
+<div class="utbot-vars"
+     os="{{os}}"
+     projectDir="{{projectDir}}"
+     defaultPort="{{defaultPort}}"
+     sftpHost="{{sftpHost}}"
+     sftpDir="{{sftpDir}}"
+></div>
+<div class="utbot-modal">
+    <article class="content-wrapper">
+        <span class="utbot-modal__close-button" onclick="closeModal()"></span>
+        <header class="utbot-modal__header modal-header">
+            <h2>❌ Server is unreachable!</h2>
+        </header>
+        <div class="utbot-modal__content content">
+            <p>
+                UTBot failed to establish connection with specified server.
+                If you wish to continue anyway, press "Continue" button.
+            </p>
+            <p> In any case, you will need to specify correct port and host of UTBot server to use the extension.
+                You can do it via Visual Studio Code Settings. </p>
+        </div>
+        <footer class="utbot-modal__footer modal-footer">
+            <button
+                    class="utbot-modal__footer_action-button cancel-button"
+                    onclick="closeModal();this.blur();">Cancel
+            </button>
+            <button
                     class="utbot-modal__footer_action-button continue-button"
-                    onclick="closeModalAndGoToNextStep();this.blur();">Continue</button>
-            </footer>
-        </article>
-    </div>
+                    onclick="closeModalAndGoToNextStep();this.blur();">Continue
+            </button>
+        </footer>
+    </article>
+</div>
 
 <form id="utbotForm" class="utbot-form" action="">
     <h1>UTBot: Quickstart</h1>
 
-
     <div class="utbot-form__tab">
-        <h2>👋Welcome to "UTBot: Quickstart" Wizard! </h2>
+        <h2>👋 Welcome to "UTBot: Quickstart" Wizard! </h2>
         <p> UTBot discovered that this is the first time you use it with this project.
-        The Wizard will help you to configure the extension appropriatly.
-        In case you don't wish to proceed, you can close this wizard at any time. </p>
-        <p> In order to learn more about UTBot C/C++, please, refer to this <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>. </p>
+            The Wizard will help you to configure the extension appropriatly.
+            In case you don't wish to proceed, you can close this wizard at any time. </p>
+        <p> In order to learn more about UTBot C/C++, please, refer to this
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>. </p>
     </div>
 
     <div class="utbot-form__tab installer-tab">
-        <h2>🖥️Server Installation</h2>
-        <p> If you are working on remote machine you can start UTBot Server installation
-            right from here. Otherwise, please do it manually. </p>
-        <p> In order to learn more about UTBot Server Installation process, please, refer to the <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">installation manual</a>. </p>
+        <div><b>🖥️ Server Installation</b></div>
+        <div>
+            If you are working on remote machine you can start UTBot Server installation
+            right from here. Otherwise, please do it manually. <br>
+            In order to learn more about UTBot Server Installation process, please, refer to the
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">installation manual</a>.
+        </div>
         <div class="utbot-form__tab_item utbot-form__tab_installer">
             <button type="button"
-                class="utbot-form__tab_installer_button" 
-                id="runInstallerBtn"
-                onclick="this.blur();runInstallator();">Install</button>
-            <div class="utbot-form__tab_installer_message">Please, continue the process in the opened terminal below. When you are finished, return here. </div>
+                    class="utbot-form__tab_installer_button"
+                    id="runInstallerBtn"
+                    onclick="this.blur();runInstallator();">Install
+            </button>
+            <div class="utbot-form__tab_installer_message">Please, continue the process in the opened terminal below.
+                When you are finished, return here.
+            </div>
         </div>
     </div>
 
-    <div class="utbot-form__tab connection-tab" vs-message-callback="sendPortAndHost()">
-        <h2>📶Connection</h2>
-        <p>Fill the parameters below accordingly to the ones specified during the 
-        <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">UTBot Server installation</a>.</p>
-        
-        <div class="utbot-form__tab_item"> 
-            <label class="utbot-form__tab_label" for="hostInput">Host</label> 
-            <input class="utbot-form__tab_input" id="hostInput" value="{{predictedHost}}" >
+    <div class="utbot-form__tab connection-tab" vs-message-callback="sendServerSetup()">
+        <h2>🖥️ Server Setup</h2>
+        <div id="useLocalHostSetup">
+            <input type="checkbox" id="useLocalHost" onclick="setupLocalHost();">
+            <label for="useLocalHost">Default server configuration on <b><code>localhost</code></b> (or WSL2)</label>
         </div>
+        <br>
 
+        <span style="display: grid; grid-template-columns: auto auto">
+            <b>📶 Connection</b>
+            <span>
+                <span id="connection_loader">⏳ Connecting...</span>
+                <span id="connection_success">✔️Successfully pinged server! </span>
+                <span id="connection_warning" format="⚠️Warning! Versions are different: "></span>
+                <span id="connection_failure">❌ Failed to establish connection! </span>
+             </span>
+        </span>
+        <div>
+            Fill the parameters below accordingly to the ones specified during the
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">UTBot Server installation</a>.
+            Please make sure that in case of remote host the SFTP plugin
+            has a consistent <a href="about:SFTP host" onclick="openSFTPSettings('host');">host</a>.
+        </div>
+        <div class="utbot-form__tab_item" style="display: grid; grid-template-columns: auto 1fr">
+            <label class="utbot-form__tab_label"
+                   for="hostInput">Host</label>
+            <input class="utbot-form__tab_input"
+                   id="hostInput"
+                   value="{{predictedHost}}"
+                   placeholder="Ex. localhost"
+                   oninput="restartCheckingConnection();"
+                   onchange="restartCheckingConnection();">
+        </div>
         <div class="utbot-form__tab_item">
-            <label class="utbot-form__tab_label" for="portInput">Port</label> 
-            <input class="utbot-form__tab_input" type="number" min="0", max="65535" id="portInput" value="{{predictedPort}}">
+            <label class="utbot-form__tab_label"
+                   for="portInput">GRPC port</label>
+            <input class="utbot-form__tab_input"
+                   style="width: auto; display: inline;"
+                   type="number"
+                   width="5"
+                   min="0" max="65535"
+                   id="portInput"
+                   value="{{predictedPort}}"
+                   placeholder="Ex. 2121"
+                   oninput="restartCheckingConnection();"
+                   onchange="restartCheckingConnection();">
         </div>
-    
-        <div class="utbot-form__tab_item utbot-form__tab_connection">
-            
-            <button type="button"
-                class="utbot-form__tab_connection_test-button" 
-                id="testConnectionBtn"
-                onclick="this.blur();testConnection();">Test Connection</button>
-            <div class="utbot-form__tab_connection_loader"> </div>
-            <div class="utbot-form__tab_connection_success">✔️ Succesfully pinged server! </div>
-            <div class="utbot-form__tab_connection_failure">❌ Failed to establish connection! </div>
-        </div>
-    </div>
+        <br>
 
-    <div class="utbot-form__tab" vs-message-callback="sendMappingPath()">
-        <h2>📁Remote Path</h2>
-        <p>Remote path configuration specifies the path to the project on a remote host.</p>
-        <label class="utbot-form__tab_label" for="mappingInput">Remote Path</label> 
-        <input class="utbot-form__tab_input" id="mappingInput" value="{{predictedRemotePath}}" >
+        <span style="display: grid; grid-template-columns: auto auto">
+            <span><b>📁 Project Path On Server</b></span>
+            <span>
+                <!--                <span class="utbot-form__tab_connection_loader">Checking...</span>-->
+                <!--                <span class="utbot-form__tab_connection_success">🟢️ The path contains CMakeList.txt</span>-->
+                <!--                <span class="utbot-form__tab_connection_failure">🟡 The path does not contain CMakeList.txt</span>-->
+                <!--                <span class="utbot-form__tab_connection_failure">🔴 The path does not exists</span>-->
+             </span>
+        </span>
+        <div>
+            Project path on server specifies the path to the project on a server host.
+            <b>On the remote server</b> the path need to be synchronized with the project path on the client (local) by
+            <a href="https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp">SFTP plugin</a>.
+            Please make sure that the SFTP plugin has a consistent <a href="about:SFTP remote path" onclick="openSFTPSettings('remotePath');">remotePath</a>.
+            <b>The <code>localhost</code> server</b> don't need the synchronization.
+        </div>
+        <div>
+            <label class="utbot-form__tab_label" for="mappingInput">Project Path On Server</label>
+            <input class="utbot-form__tab_input"
+                   id="mappingInput"
+                   value="{{predictedRemotePath}}"
+             placeholder="/tmp/XXXX">
+        </div>
     </div>
 
     <div class="utbot-form__tab" vs-message-callback="sendBuildInfo()">
-        <h2>🏗️Build Directory</h2>
-        <p>Relative path to the build directory. Files compile_commands.json and link_commands.json should be located in this directory. </p>
-        <label class="utbot-form__tab_label" for="buildDirectory">Build Directory</label> 
-        <input class="utbot-form__tab_input" id="buildDirectory" value="{{predictedBuildDirectory}}" >
-        <h2>🎌CMake Options</h2>
-        <p>Options passed to CMake command. </p>
-        <label class="utbot-form__tab_label" for="cmakeOptions">CMake options</label>
-        <textarea class="utbot-form__tab_input" id="cmakeOptions" placeholder="{{cmakeOptions}}"></textarea>
+        <h2>📑️ Project Setup</h2>
+        <div><b>🏗️ Build Directory</b></div>
+        <div>Relative path to the build directory. Files compile_commands.json and link_commands.json should be located
+            in this directory.
+        </div>
+        <div>
+            <label class="utbot-form__tab_label" for="buildDirectory">Build Directory</label>
+            <input class="utbot-form__tab_input" id="buildDirectory" value="{{predictedBuildDirectory}}"
+             placeholder="build">
+        </div>
+        <br>
 
+        <div><b>🎌 CMake Options</b></div>
+        <div>Options passed to CMake command.</div>
+        <div>
+            <label class="utbot-form__tab_label" for="cmakeOptions">CMake options</label>
+            <textarea class="utbot-form__tab_input" id="cmakeOptions"
+             placeholder="{{cmakeOptions}}">{{cmakeOptions}}</textarea>
+        </div>
     </div>
 
     <div class="utbot-form__tab">
-        <h2>🎉Success!</h2>
-        <p> UTBot extension was successfully configured, and now you are ready to use all its functionality. </p>
-        <p> If you want to learn more about UTBot C/C++ or  you have ay questions related to its usage, please, refer to this 
-        <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>.</p>
-        <p> 
+        <div><b>🎉Success!</b></div>
+        <div>
+            UTBot extension was successfully configured, and now you are ready to use all its functionality.<br>
+            If you want to learn more about UTBot C/C++ or you have ay questions related to its usage, please,
+            refer to this
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>.
+        </div>
     </div>
 
     <div class="utbot-form__navigation">
         <button type="button"
-                class="button_previous utbot-form__navigation_button" 
-                id="prevBtn" 
-                onclick="prevButtonHandler();this.blur();">Previous</button>
-        <button type="button" 
-                class="button_next utbot-form__navigation_button" 
+                class="button_previous utbot-form__navigation_button"
+                id="prevBtn"
+                onclick="prevButtonHandler();this.blur();">Previous
+        </button>
+        <button type="button"
+                class="button_next utbot-form__navigation_button"
                 id="nextBtn"
-                onclick="nextButtonHandler();this.blur();">Next</button>
+                onclick="nextButtonHandler();this.blur();">Next
+        </button>
     </div>
 
     <div class="utbot-form__steps">
@@ -135,10 +201,8 @@
         <span class="utbot-form__steps_step"></span>
         <span class="utbot-form__steps_step"></span>
         <span class="utbot-form__steps_step"></span>
-        <span class="utbot-form__steps_step"></span>
     </div>
-
 </form>
-<script src="{{scriptUri}}"></script>
 </body>
+<script src="{{scriptUri}}"></script>
 </html>

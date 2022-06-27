@@ -6,7 +6,7 @@ import "util.proto";
 import "google/protobuf/duration.proto";
 
 service TestsGenService {
-    rpc Handshake(DummyRequest) returns(DummyResponse) {}
+    rpc Handshake(VersionInfo) returns(VersionInfo) {}
 
     rpc Heartbeat(DummyRequest) returns(HeartbeatResponse) {}
 
@@ -58,6 +58,10 @@ service TestsGenService {
 message DummyRequest {}
 
 message DummyResponse {}
+
+message VersionInfo {
+    string version = 1;
+}
 
 message RegisterClientRequest {
     string clientId = 1;

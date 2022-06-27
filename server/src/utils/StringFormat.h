@@ -38,7 +38,7 @@ namespace StringUtils {
         }
         formatBuffer.resize(std::max(formatBuffer.size(), size));
         snprintf(formatBuffer.data(), size, format.c_str(), internal::extractCString(std::forward<Args>(args))...);
-        return std::string(formatBuffer.begin(), formatBuffer.begin() + size - 1); // We don't want the '\0' inside
+        return {formatBuffer.begin(), formatBuffer.begin() + size - 1}; // We don't want the '\0' inside
     }
 }
 

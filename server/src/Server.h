@@ -65,8 +65,8 @@ public:
         explicit TestsGenServiceImpl(bool testMode);
 
         Status Handshake(ServerContext *context,
-                         const DummyRequest *request,
-                         DummyResponse *response) override;
+                         const VersionInfo *request,
+                         VersionInfo *response) override;
 
         Status OpenLogChannel(ServerContext *context,
                               const LogChannelRequest *request,
