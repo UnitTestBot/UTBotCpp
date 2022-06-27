@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #ifndef UNITTESTBOT_CLICOVERAGEANDRESULTSWRITER_H
 #define UNITTESTBOT_CLICOVERAGEANDRESULTSWRITER_H
 
@@ -15,7 +10,7 @@ public:
     virtual void writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
-                               std::optional<string> errorMessage) override;
+                               std::optional<std::string> errorMessage) override;
 
 
 private:

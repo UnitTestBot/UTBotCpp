@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "StubsPrinter.h"
 
 #include "Paths.h"
@@ -57,7 +53,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
         }
 
         if (!typesHandler.omitMakeSymbolic(methodCopy.returnType)) {
-            string stubSymbolicVarName = getStubSymbolicVarName(method.name);
+            std::string stubSymbolicVarName = getStubSymbolicVarName(method.name);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -66,7 +62,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
             strFunctionDecl(methodCopy, " ");
             ss << methodCopy.sourceBody.value() << NL;
         } else {
-            strStubForMethod(methodCopy, typesHandler, "", "");
+            strStubForMethod(methodCopy, typesHandler, "", "", "", methodCopy.name);
         };
         ss << NL;
     }

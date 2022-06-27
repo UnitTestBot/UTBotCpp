@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include <Paths.h>
 #include <FeaturesFilter.h>
 #include <algorithm>
@@ -22,8 +18,8 @@ namespace printer {
     using namespace DynamicLibraryUtils;
     using StringUtils::stringFormat;
 
-    static const string STUB_OBJECT_FILES_NAME = "STUB_OBJECT_FILES";
-    static const string STUB_OBJECT_FILES = "$(STUB_OBJECT_FILES)";
+    static const std::string STUB_OBJECT_FILES_NAME = "STUB_OBJECT_FILES";
+    static const std::string STUB_OBJECT_FILES = "$(STUB_OBJECT_FILES)";
 
     static const std::string FPIC_FLAG = "-fPIC";
     static const std::vector<std::string> SANITIZER_NEEDED_FLAGS = {
@@ -33,18 +29,45 @@ namespace printer {
     static const std::string SHARED_FLAG = "-shared";
     static const std::string RELOCATE_FLAG = "-r";
     static const std::string OPTIMIZATION_FLAG = "-O0";
+    static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE = {
+        // See https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
+        "-ansi",
+        "-fallow-parameterless-variadic-functions",
+        "-fallow-single-precision",
+        "-fcond-mismatch",
+        "-ffreestanding",
+        "-fgnu89-inline",
+        "-fhosted",
+        "-flax-vector-conversions",
+        "-fms-extensions",
+        "-fno-asm",
+        "-fno-builtin",
+        "-fno-builtin-function",
+        "-fgimple",
+        "-fopenacc",
+        "-fopenacc-dim",
+        "-fopenacc-kernels",
+        "-fopenmp",
+        "-fopenmp-simd",
+        "-fpermitted-flt-eval-methods",
+        "-fplan9-extensions",
+        "-fsigned-bitfields",
+        "-fsigned-char",
+        "-fsso-struct",
+        "-funsigned-bitfields",
+        "-funsigned-char",
+        "-std",
+    };
 
-    static const std::string FORCE = ".FORCE";
-
-
-    static void eraseIfWlOnly(string &argument) {
+    static void eraseIfWlOnly(std::string &argument) {
         if (argument == "-Wl") {
             argument = "";
         }
     }
-    static void removeLinkerFlag(string &argument, string const &flag) {
+
+    static void removeLinkerFlag(std::string &argument, std::string const &flag) {
         auto options = StringUtils::split(argument, ',');
-        size_t erased = CollectionUtils::erase_if(options, [&flag](string const &option) {
+        size_t erased = CollectionUtils::erase_if(options, [&flag](std::string const &option) {
             return StringUtils::startsWith(option, flag);
         });
         if (erased == 0) {
@@ -54,15 +77,29 @@ namespace printer {
         eraseIfWlOnly(argument);
     }
 
-    static void removeScriptFlag(string &argument) {
+    // transforms -Wl,<arg>,<arg2>... to <arg> <arg2>...
+    // https://clang.llvm.org/docs/ClangCommandLineReference.html#cmdoption-clang-wl-arg-arg2
+    static void transformCompilerFlagsToLinkerFlags(std::string &argument) {
+        auto options = StringUtils::split(argument, ',');
+        if (options.empty()) {
+            return;
+        }
+        if (options.front() != "-Wl") {
+            return;
+        }
+        CollectionUtils::erase(options, options.front());
+        argument = StringUtils::joinWith(options, " ");
+    }
+
+    static void removeScriptFlag(std::string &argument) {
         removeLinkerFlag(argument, "--version-script");
     }
 
-    static void removeSonameFlag(string &argument) {
+    static void removeSonameFlag(std::string &argument) {
         auto options = StringUtils::split(argument, ',');
         bool isSonameNext = false;
         std::vector<std::string> result;
-        for (string const &option : options) {
+        for (std::string const &option : options) {
             if (option == "-soname") {
                 isSonameNext = true;
                 continue;
@@ -79,8 +116,8 @@ namespace printer {
 
     NativeMakefilePrinter::NativeMakefilePrinter(
         utbot::ProjectContext projectContext,
-        shared_ptr<BuildDatabase> buildDatabase,
-        fs::path const& rootPath,
+        std::shared_ptr<BuildDatabase> buildDatabase,
+        fs::path const &rootPath,
         fs::path primaryCompiler,
         CollectionUtils::FileSet const *stubSources)
         : projectContext(std::move(projectContext)), buildDatabase(buildDatabase), rootPath(std::move(rootPath)),
@@ -110,7 +147,7 @@ namespace printer {
         fs::path gtestBuildDirectory = buildDirectory / "googletest";
 
         fs::path defaultPath = "default.c";
-        std::vector<string> defaultGtestCompileCommandLine{ primaryCxxCompiler, "-c", "-std=c++11",
+        std::vector<std::string> defaultGtestCompileCommandLine{ primaryCxxCompiler, "-c", "-std=c++11",
                                                             FPIC_FLAG, defaultPath };
         utbot::CompileCommand defaultGtestCompileCommand{ defaultGtestCompileCommandLine,
                                                           buildDirectory, defaultPath };
@@ -125,7 +162,8 @@ namespace printer {
               testGen.projectContext,
               testGen.buildDatabase,
               testGen.getTargetPath(),
-              CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(CompilationUtils::detectBuildCompilerPath(testGen.compilationDatabase))),
+              CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
+                  testGen.compilationDatabase->getBuildCompilerPath())),
               stubSources) {
     }
 
@@ -202,11 +240,11 @@ namespace printer {
         compileCommand.addFlagToBegin(
             stringFormat("-MT $@ -MMD -MP -MF %s", temporaryDependencyFile));
         compileCommand.addFlagToBegin(
-            stringFormat("-I%s", compilationUnitInfo.getSourcePath().parent_path()));
+            stringFormat("-iquote%s", compilationUnitInfo.getSourcePath().parent_path()));
 
-        string makingDependencyDirectory =
+        std::string makingDependencyDirectory =
             stringFormat("mkdir -p %s", dependencyFile.parent_path());
-        string postCompileAction =
+        std::string postCompileAction =
             stringFormat("mv -f %s %s", temporaryDependencyFile, dependencyFile);
         declareTarget(output, { sourcePath, dependencyFile },
                       { makingDependencyDirectory, compileCommand.toStringWithChangingDirectory(),
@@ -246,7 +284,8 @@ namespace printer {
         auto testCompilationCommand = compilationUnitInfo->command;
         testCompilationCommand.setCompiler(primaryCxxCompiler);
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
-        testCompilationCommand.filterCFlags();
+        testCompilationCommand.removeCompilerFlagsAndOptions(
+            UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE);
         testCompilationCommand.removeIncludeFlags();
         testCompilationCommand.addFlagToBegin(stringFormat("-I%s", Paths::getGtestLibPath() / "googletest/include"));
         if (Paths::isCXXFile(sourcePath)) {
@@ -354,7 +393,13 @@ namespace printer {
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
-        declareTarget("bin", { FORCE }, { stringFormat("echo %s", sharedOutput.value()) });
+
+        fs::path coverageInfoBinary = sharedOutput.value();
+        if (!Paths::isLibraryFile(coverageInfoBinary)) {
+            coverageInfoBinary = testExecutablePath.string();
+        }
+
+        declareTarget("bin", { FORCE }, { stringFormat("echo %s", coverageInfoBinary) });
 
         utbot::RunCommand testRunCommand{ { testExecutablePath.string(), "$(GTEST_FLAGS)" },
                                           buildDirectory };
@@ -368,7 +413,7 @@ namespace printer {
                                               SanitizerUtils::ASAN_OPTIONS_VALUE);
 
         declareTarget("build", { testExecutablePath }, {});
-        declareTarget("run", { FORCE, "build" },
+        declareTarget("run", { "build" },
                       { testRunCommand.toStringWithChangingDirectory() });
 
         close();
@@ -377,7 +422,8 @@ namespace printer {
     BuildResult
     NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
                                                     const std::string &suffixForParentOfStubs,
-                                                    bool hasParent) {
+                                                    bool hasParent,
+                                                    bool transformExeToLib) {
         if (CollectionUtils::contains(buildResults, unitFile)) {
             return buildResults.at(unitFile);
         }
@@ -392,7 +438,7 @@ namespace printer {
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
             linkUnitInfo->files, [&](fs::path const &dependency) {
                 BuildResult buildResult =
-                    addLinkTargetRecursively(dependency, suffixForParentOfStubs, true);
+                    addLinkTargetRecursively(dependency, suffixForParentOfStubs, true, transformExeToLib);
                 unitType |= buildResult.type;
                 fileMapping[dependency] = buildResult.output;
                 return buildResult;
@@ -405,11 +451,11 @@ namespace printer {
 
         fs::path recompiledFile =
             Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
-        if (isExecutable) {
-            recompiledFile = Paths::isObjectFile(Paths::addExtension(recompiledFile, ".o")) ?
+        if (isExecutable && !transformExeToLib) {
+            recompiledFile = Paths::isObjectFile(recompiledFile) ?
                              recompiledFile : Paths::addExtension(recompiledFile, ".o");
-        } else if (Paths::isSharedLibraryFile(unitFile)) {
-            recompiledFile = getSharedLibrary(linkUnitInfo->getOutput());
+        } else if (Paths::isSharedLibraryFile(unitFile) || isExecutable) {
+            recompiledFile = getSharedLibrary(recompiledFile);
         }
         recompiledFile = LinkerUtils::applySuffix(recompiledFile, unitType, suffixForParentOfStubs);
 
@@ -427,8 +473,11 @@ namespace printer {
                     }
                 }
                 if (!linkCommand.isArchiveCommand()) {
-                    if (isExecutable) {
+                    if (isExecutable && !transformExeToLib) {
                         linkCommand.setLinker(Paths::getLd());
+                        for (std::string &argument : linkCommand.getCommandLine()) {
+                            transformCompilerFlagsToLinkerFlags(argument);
+                        }
                     } else {
                         linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
                                 CompilationUtils::getCompilerName(linkCommand.getLinker())));
@@ -444,13 +493,13 @@ namespace printer {
                             if (Paths::isSubPathOf(projectContext.buildDir, absolutePath)) {
                                 fs::path recompiledDir =
                                         Paths::getRecompiledFile(projectContext, absolutePath);
-                                string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
+                                std::string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
                                 libraryDirectoriesFlags.push_back(directoryFlag);
                             }
                         }
                     }
                     linkCommand.addFlagsToBegin(libraryDirectoriesFlags);
-                    if (!isExecutable) {
+                    if (!isExecutable || transformExeToLib) {
                         linkCommand.addFlagsToBegin({"-Wl,--allow-multiple-definition",
                                                      coverageLinkFlags, sanitizerLinkFlags, "-Wl,--whole-archive"});
                         if (linkCommand.isSharedLibraryCommand()) {
@@ -462,13 +511,15 @@ namespace printer {
                     }
                     linkCommand.addFlagToBegin("$(LDFLAGS)");
                     if (isExecutable) {
-                        linkCommand.addFlagToBegin(RELOCATE_FLAG);
+                        linkCommand.addFlagToBegin(transformExeToLib ? SHARED_FLAG : RELOCATE_FLAG);
                     }
                 }
-                return isExecutable ? stringFormat("%s && objcopy --redefine-sym main=old_main %s",
-                                                   linkCommand.toStringWithChangingDirectory(),
-                                                   linkCommand.getOutput().string()) :
-                                      linkCommand.toStringWithChangingDirectory();
+                if (isExecutable && !transformExeToLib) {
+                    return stringFormat("%s && objcopy --redefine-sym main=main__ %s",
+                                        linkCommand.toStringWithChangingDirectory(),
+                                        linkCommand.getOutput().string());
+                }
+                return linkCommand.toStringWithChangingDirectory();
             });
         std::string removeAction = stringFormat("rm -f %s", recompiledFile);
         std::vector<std::string> actions{ removeAction };
@@ -481,10 +532,12 @@ namespace printer {
         if (!hasParent && Paths::isStaticLibraryFile(unitFile)) {
             sharedOutput = LinkerUtils::applySuffix(getSharedLibrary(linkUnitInfo->getOutput()), unitType, suffixForParentOfStubs);
             std::vector<std::string> sharedLinkCommandLine{
-                primaryCompiler,         "$(LDFLAGS)",   SHARED_FLAG,           coverageLinkFlags,
-                sanitizerLinkFlags,      "-o",           sharedOutput.value(),
-                "-Wl,--whole-archive",   recompiledFile, STUB_OBJECT_FILES,
-                "-Wl,--no-whole-archive"
+                primaryCompiler,      "$(LDFLAGS)",
+                SHARED_FLAG,          coverageLinkFlags,
+                sanitizerLinkFlags,   "-o",
+                sharedOutput.value(), "-Wl,--whole-archive",
+                recompiledFile,       "-Wl,--allow-multiple-definition",
+                STUB_OBJECT_FILES,    "-Wl,--no-whole-archive"
             };
             utbot::LinkCommand sharedLinkCommand{ sharedLinkCommandLine, buildDirectory };
             declareTarget(sharedOutput.value(), { recompiledFile, STUB_OBJECT_FILES },
@@ -533,9 +586,9 @@ namespace printer {
         ss << "\n";
     }
 
-    BuildResult
-    NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
-                                                    const string &suffixForParentOfStubs) {
-        return addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false);
+    void NativeMakefilePrinter::addLinkTargetRecursively(const fs::path &unitFile,
+                                                         const std::string &suffixForParentOfStubs,
+                                                         bool exeToLib) {
+        addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false, exeToLib);
     }
 }

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BaseTestGen.h"
 
 #include "FileTestGen.h"
@@ -33,11 +29,10 @@ bool BaseTestGen::isBatched() const {
 
 void BaseTestGen::setInitializedTestsMap() {
     tests.clear();
-    for (fs::path &sourcePath : testingMethodsSourcePaths) {
+    for (const fs::path & sourcePath : testingMethodsSourcePaths) {
         tests::Tests testsSuite;
-        sourcePath = fs::weakly_canonical(sourcePath);
         testsSuite.sourceFilePath = sourcePath;
-        testsSuite.sourceFileNameNoExt = sourcePath.stem().string();
+        testsSuite.sourceFileNameNoExt = testsSuite.sourceFilePath.stem().string();
         testsSuite.relativeFileDir =
             Paths::getRelativeDirPath(projectContext, testsSuite.sourceFilePath);
         testsSuite.testFilename = Paths::sourcePathToTestName(testsSuite.sourceFilePath);

@@ -1,15 +1,11 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #include "CLICoverageAndResultsWriter.h"
+
+#include "utils/FileSystemUtils.h"
+#include "utils/TimeUtils.h"
 
 #include "loguru.h"
 
 #include <fstream>
-#include <utils/FileSystemUtils.h>
-#include <utils/TimeUtils.h>
 
 CLICoverageAndResultsWriter::CLICoverageAndResultsWriter(const fs::path &resultsDirectory)
     : resultsDirectory(resultsDirectory), CoverageAndResultsWriter(nullptr) {
@@ -29,7 +25,7 @@ std::string statusToString(testsgen::TestStatus status) {
 void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &testsStatusMap,
                                                 const Coverage::CoverageMap &coverageMap,
                                                 const nlohmann::json &totals,
-                                                std::optional<string> errorMessage) {
+                                                std::optional<std::string> errorMessage) {
     std::stringstream ss;
 
     ss << "Test results summary." << std::endl;

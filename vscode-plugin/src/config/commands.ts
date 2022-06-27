@@ -1,13 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 export class Commands {
 
     /**
      * Commands for project configuration
      */
     public static ConfigureProject = 'unittestbot.configureProject';
+    public static ReConfigureProject = 'unittestbot.reConfigureProject';
 
     /**
      * Commands for tests generation
@@ -56,7 +53,6 @@ export class Commands {
     public static UpdateVerboseTestFlag = 'unittestbot.updateVerboseTestFlag';
     // public static ReconnectToServer = 'unittestbot.reconnectToServer';
 
-
     /**
      * Commands related to 'UTBot Targets' view
      */
@@ -69,6 +65,7 @@ export class Commands {
         Commands.AddUTBotTarget,
         Commands.AddUTBotTargetPath
     ];
+
     /**
      * Commands related to 'UTBot Folders' view
      */
@@ -86,7 +83,6 @@ export class Commands {
      * Commands related to UTBot Wizard
      */
     public static InitWizardWebview = 'unittestbot.wizard.init';
-
 
     /**
      * Developer mode commands

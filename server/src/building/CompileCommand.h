@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COMPILECOMMAND_H
 #define UNITTESTBOT_COMPILECOMMAND_H
 
@@ -51,9 +47,7 @@ namespace utbot {
 
         void setOutput(fs::path output);
 
-        void removeGccFlags();
-
-        void filterCFlags();
+        void removeCompilerFlagsAndOptions(const std::unordered_set<std::string> &switchesToRemove);
 
         void removeIncludeFlags();
 

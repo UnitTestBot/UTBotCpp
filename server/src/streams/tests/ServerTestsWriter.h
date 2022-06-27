@@ -1,15 +1,9 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_VSCODETESTSWRITER_H
 #define UNITTESTBOT_VSCODETESTSWRITER_H
 
 #include "Tests.h"
 #include "TestsWriter.h"
 #include "streams/IStreamWriter.h"
-
-#include "loguru.h"
 
 #include <utils/FileSystemUtils.h>
 
@@ -22,11 +16,7 @@ public:
     void writeTestsWithProgress(tests::TestsMap &testMap,
                                 std::string const &message,
                                 const fs::path &testDirPath,
-                                std::function<void(tests::Tests &)> &&functor,
-                                const utbot::ProjectContext &projectContext,
-                                const utbot::SettingsContext &settingsContext) override;
-
-    void writeStubs(const vector<Stubs> &synchronizedStubs) override;
+                                std::function<void(tests::Tests &)> &&functor) override;
 
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,

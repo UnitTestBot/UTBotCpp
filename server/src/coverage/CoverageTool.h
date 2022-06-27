@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COVERAGETOOL_H
 #define UNITTESTBOT_COVERAGETOOL_H
 
@@ -31,10 +27,10 @@ public:
     explicit CoverageTool(ProgressWriter const *progressWriter);
 
     [[nodiscard]] virtual std::vector<BuildRunCommand>
-    getBuildRunCommands(const vector<UnitTest> &testsToLaunch, bool withCoverage) = 0;
+    getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) = 0;
 
     [[nodiscard]] virtual std::vector<ShellExecTask>
-    getCoverageCommands(const vector<UnitTest> &testsToLaunch) = 0;
+    getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) = 0;
 
     [[nodiscard]] virtual Coverage::CoverageMap getCoverageInfo() const = 0;
 

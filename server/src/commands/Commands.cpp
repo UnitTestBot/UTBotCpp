@@ -1,13 +1,21 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Commands.h"
 
-#include <utils/StringUtils.h>
-Commands::MainCommands::MainCommands(CLI::App &app) {
+#include "utils/StringUtils.h"
+#include "utils/CLIUtils.h"
+#include "config.h"
 
+uint32_t Commands::threadsPerUser = 0;
+uint32_t Commands::kleeProcessNumber = 0;
+
+Commands::MainCommands::MainCommands(CLI::App &app) {
     app.set_help_all_flag("--help-all", "Expand all help");
+    app.add_flag_function("--version", [](int count){
+        std::cout << PROJECT_NAME << " " << PROJECT_VERSION << std::endl;
+        if (strlen(RUN_INFO)) {
+            std::cout << "Build by " << RUN_INFO << std::endl;
+        }
+        exit(0);
+    }, "Get UTBotCpp version and build detail");
     serverCommand = app.add_subcommand("server", "Launch UTBot server.");
     generateCommand =
         app.add_subcommand("generate", "Generate unit tests and/or stubs.")->require_subcommand();
@@ -43,6 +51,8 @@ Commands::ServerCommandOptions::ServerCommandOptions(CLI::App *command) {
         ->type_name(" ENUM:value in {" +
                     StringUtils::joinWith(CollectionUtils::getKeys(verbosityMap), "|") + "}")
         ->transform(CLI::CheckedTransformer(verbosityMap, CLI::ignore_case));
+    command->add_option("--klee-process-number", kleeProcessNumber,
+                        "Number of threads for KLEE in interactive mode");
 }
 
 fs::path Commands::ServerCommandOptions::getLogPath() {
@@ -63,6 +73,10 @@ loguru::NamedVerbosity Commands::ServerCommandOptions::getVerbosity() {
 
 unsigned int Commands::ServerCommandOptions::getThreadsPerUser() {
     return threadsPerUser;
+}
+
+unsigned int Commands::ServerCommandOptions::getKleeProcessNumber() {
+    return kleeProcessNumber;
 }
 
 const std::map<std::string, loguru::NamedVerbosity> Commands::ServerCommandOptions::verbosityMap = {
@@ -362,7 +376,7 @@ Commands::SettingsContextOptionGroup::SettingsContextOptionGroup(CLI::App *comma
         "-g,--generate-for-static", generateForStaticFunctions,
         "True, if you want UTBot to generate tests for static functions.");
     settingsContextOptions->add_flag("-v,--verbose", verbose,
-                                     "Set if Huawei's five rule standard is required.");
+                                     "Set if is required.");
     settingsContextOptions->add_option("--function-timeout", timeoutPerFunction,
                                        "Maximum time (in seconds) is allowed for generation tests "
                                        "per function. Set to non-positive number to disable it.",

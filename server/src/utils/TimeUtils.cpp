@@ -1,16 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TimeUtils.h"
 #include "StringUtils.h"
 
 #include <algorithm>
 
 namespace TimeUtils {
-    using std::string;
-
-    string getDate() {
+    std::string getDate() {
         auto now = std::chrono::system_clock::now();
         auto time_t = std::chrono::system_clock::to_time_t(now);
         std::ostringstream ss;
@@ -35,5 +29,13 @@ namespace TimeUtils {
 
     systemClockTimePoint convertFileToSystemClock(const fs::file_time_type &fTime) {
         return std::chrono::system_clock::from_time_t(to_time_t(fTime));
+    }
+
+    std::string getCurrentTimeStr() {
+        time_t t = std::time(nullptr);
+        tm tm = *std::localtime(&t);
+        std::ostringstream oss;
+        oss << std::put_time(&tm, "%Y%m%d%H%M%S");
+        return oss.str();
     }
 }

@@ -35,4 +35,6 @@ add_executable(syntax1
         different_parameters.cpp
         simple_class.cpp
         inner_unnamed.c
-        array_sort.c)
+        array_sort.c
+        stubs.c
+        namespace.cpp)

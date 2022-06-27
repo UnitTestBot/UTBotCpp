@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CoverageAndResultsGenerator.h"
 
 #include "TimeExecStatistics.h"
@@ -12,13 +8,11 @@
 
 using grpc::Status;
 using grpc::StatusCode;
-using std::string;
-using std::vector;
 
 CoverageAndResultsGenerator::CoverageAndResultsGenerator(
     testsgen::CoverageAndResultsRequest const *coverageAndResultsRequest,
     CoverageAndResultsWriter *coverageAndResultsWriter)
-    : TestRunner(coverageAndResultsRequest->projectcontext(),
+    : TestRunner(utbot::ProjectContext(coverageAndResultsRequest->projectcontext()),
                  coverageAndResultsRequest->testfilter().testfilepath(),
                  coverageAndResultsRequest->testfilter().testsuite(),
                  coverageAndResultsRequest->testfilter().testname(),

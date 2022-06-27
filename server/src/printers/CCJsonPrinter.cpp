@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CCJsonPrinter.h"
 
 #include "Paths.h"
@@ -11,9 +7,9 @@
 
 using printer::CCJsonPrinter;
 
-const string CCJsonPrinter::DEFAULT_BUILD_FLAGS = " -c -g -O0";
+const std::string CCJsonPrinter::DEFAULT_BUILD_FLAGS = " -c -g -O0";
 
-void printer::CCJsonPrinter::createDummyBuildDB(const vector<fs::path> &filePaths,
+void printer::CCJsonPrinter::createDummyBuildDB(const CollectionUtils::FileSet &filePaths,
                                                 const fs::path &tmpDirPath) {
     fs::create_directories(tmpDirPath);
     json compileJson = json::array(), linkJson = json::array();
@@ -38,14 +34,14 @@ void printer::CCJsonPrinter::createDummyBuildDB(const vector<fs::path> &filePath
     JsonUtils::writeJsonToFile(tmpDirPath / "link_commands.json", linkJson);
 }
 
-void printer::CCJsonPrinter::createCDb(const vector<utbot::CompileCommand> &compileCommands,
+void printer::CCJsonPrinter::createCDb(const std::vector<utbot::CompileCommand> &compileCommands,
                                        const fs::path &tmpDirPath) {
     fs::create_directories(tmpDirPath);
     json compileJson = json::array();
-    for (size_t i = 0; i < compileCommands.size(); i++) {
-        auto commandLine = compileCommands[i].getCommandLine();
+    for (const auto & compileCommand : compileCommands) {
+        auto commandLine = compileCommand.getCommandLine();
         auto compileUnit = getUnit({ commandLine.begin(), commandLine.end() }, tmpDirPath,
-                                   { compileCommands[i].getSourcePath() }, false);
+                                   { compileCommand.getSourcePath() }, false);
         compileJson.push_back(compileUnit);
     }
     JsonUtils::writeJsonToFile(tmpDirPath / "compile_commands.json", compileJson);
@@ -53,8 +49,8 @@ void printer::CCJsonPrinter::createCDb(const vector<utbot::CompileCommand> &comp
     auto defaultCompiler =
         CompilationUtils::getDefaultCompilerForSourceFile(compileCommands[0].getSourcePath());
     auto compiler = compileCommands.empty() ? Paths::getUTBotClang().string() : defaultCompiler;
-    vector<string> linkArgs = { compiler, "-o", tmpDirPath / "executable" };
-    vector<fs::path> objectFiles;
+    std::vector<std::string> linkArgs = { compiler, "-o", tmpDirPath / "executable" };
+    std::vector<fs::path> objectFiles;
     objectFiles.reserve(compileCommands.size());
     for (const auto &compileCommand : compileCommands) {
         fs::path path = Paths::replaceExtension(compileCommand.getSourcePath(), ".o");
@@ -67,9 +63,9 @@ void printer::CCJsonPrinter::createCDb(const vector<utbot::CompileCommand> &comp
     JsonUtils::writeJsonToFile(tmpDirPath / "link_commands.json", linkJson);
 }
 
-json printer::CCJsonPrinter::getUnit(const vector<string> &command,
+json printer::CCJsonPrinter::getUnit(const std::vector<std::string> &command,
                                      const fs::path &directory,
-                                     const vector<fs::path> &sourceFiles,
+                                     const std::vector<fs::path> &sourceFiles,
                                      bool forLinkJson) {
     json j;
     j["directory"] = directory;

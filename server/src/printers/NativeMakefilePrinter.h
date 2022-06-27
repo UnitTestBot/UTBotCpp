@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_NATIVEMAKEFILEPRINTER_H
 #define UNITTESTBOT_NATIVEMAKEFILEPRINTER_H
 
@@ -13,10 +9,12 @@
 #include <vector>
 
 namespace printer {
+    static const std::string FORCE = ".FORCE";
+
     class NativeMakefilePrinter : public DefaultMakefilePrinter {
     private:
         const utbot::ProjectContext projectContext;
-        shared_ptr<BuildDatabase> buildDatabase;
+        std::shared_ptr<BuildDatabase> buildDatabase;
         fs::path rootPath;
 
         fs::path primaryCompiler;
@@ -25,9 +23,9 @@ namespace printer {
         CompilationUtils::CompilerName primaryCxxCompilerName;
         fs::path cxxLinker;
 
-        string pthreadFlag;
-        string coverageLinkFlags;
-        string sanitizerLinkFlags;
+        std::string pthreadFlag;
+        std::string coverageLinkFlags;
+        std::string sanitizerLinkFlags;
 
         fs::path buildDirectory, dependencyDirectory;
 
@@ -58,15 +56,18 @@ namespace printer {
         void addCompileTarget(const fs::path &sourcePath,
                               const fs::path &output,
                               const BuildDatabase::ObjectFileInfo &compilationUnitInfo);
+
         fs::path getTestExecutablePath(const fs::path &sourcePath) const;
 
         BuildResult addLinkTargetRecursively(const fs::path &unitFile,
                                              const std::string &suffixForParentOfStubs,
-                                             bool hasParent);
+                                             bool hasParent,
+                                             bool transformExeToLib);
+
     public:
         NativeMakefilePrinter(utbot::ProjectContext projectContext,
-                              shared_ptr<BuildDatabase> buildDatabase,
-                              fs::path const& rootPath,
+                              std::shared_ptr<BuildDatabase> buildDatabase,
+                              fs::path const &rootPath,
                               fs::path primaryCompiler,
                               CollectionUtils::FileSet const *stubSources);
 
@@ -80,8 +81,9 @@ namespace printer {
 
         void close();
 
-        BuildResult addLinkTargetRecursively(const fs::path &unitFile,
-                                             const string &suffixForParentOfStubs);
+        void addLinkTargetRecursively(const fs::path &unitFile,
+                                      const std::string &suffixForParentOfStubs,
+                                      bool exeToLib = true);
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
     };

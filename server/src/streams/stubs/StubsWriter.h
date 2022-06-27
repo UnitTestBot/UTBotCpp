@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_STUBSWRITER_H
 #define UNITTESTBOT_STUBSWRITER_H
 
@@ -16,9 +12,9 @@ class StubsWriter : public utbot::ServerWriter<testsgen::StubsResponse> {
 public:
     explicit StubsWriter(grpc::ServerWriter<testsgen::StubsResponse> *writer);
 
-    virtual void writeResponse(const vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) = 0;
+    virtual void writeResponse(const std::vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) = 0;
 
-    static void writeStubsFilesOnServer(const vector<Stubs> &stubs, const fs::path &testDirPath);
+    static void writeStubsFilesOnServer(const std::vector<Stubs> &stubs, const fs::path &testDirPath);
 
 };
 

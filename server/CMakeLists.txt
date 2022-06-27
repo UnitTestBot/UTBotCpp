@@ -1,5 +1,32 @@
-cmake_minimum_required(VERSION 3.10)
-project(UnitTestBot)
+cmake_minimum_required(VERSION 3.12)
+
+if (NOT DEFINED VERSION)
+    if (DEFINED ENV{VERSION})
+        set(VERSION $ENV{VERSION})
+    else ()
+        set(VERSION "0.0.1")
+    endif ()
+endif ()
+
+if (NOT DEFINED RUN_INFO)
+    if (DEFINED ENV{RUN_INFO})
+        set(RUN_INFO $ENV{RUN_INFO})
+    else ()
+        set(RUN_INFO "local")
+    endif ()
+endif ()
+
+project(UTBotCpp DESCRIPTION "Tool that generates unit test by C/C++ source code, trying to reach all branches and maximize code coverage"
+        HOMEPAGE_URL "https://unittestbot.org" VERSION ${VERSION})
+set(PROJECT_ORG "UnitTestBot")
+
+message("Project: ${PROJECT_NAME}")
+message("Organisation: ${PROJECT_ORG}")
+message("Homepage: ${CMAKE_PROJECT_HOMEPAGE_URL}")
+message("Version: ${CMAKE_PROJECT_VERSION}")
+message("Run from: ${RUN_INFO}")
+
+configure_file(config.h.in config.h @ONLY)
 
 if (UNIX)
     add_compile_definitions(_LINUX)
@@ -121,22 +148,38 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}")
 
 find_package(run_klee REQUIRED)
 
-add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES} src/sarif/ProjectSarif.cpp src/sarif/ProjectSarif.h)
-target_include_directories(UnitTestBotLib PUBLIC
+option(ENABLE_PRECOMPILED_HEADERS "Enable precompiled headers" ON)
+
+if (ENABLE_PRECOMPILED_HEADERS)
+    set_source_files_properties(${ALL_PROTO_GENERATED_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+endif ()
+
+################################################################################
+# Library
+################################################################################
+add_library(UTBotCppLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
+target_include_directories(UTBotCppLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         resources
         thirdparty/ordered-map)
 
-target_link_libraries(UnitTestBotLib PUBLIC clangTooling clangBasic clangASTMatchers clangRewriteFrontend
+target_link_libraries(UTBotCppLib PUBLIC clangTooling clangBasic clangASTMatchers clangRewriteFrontend
         gRPC::grpc++_reflection
         gRPC::grpc++
         protobuf::libprotobuf
         loguru
         kleeRunner
         )
+if (ENABLE_PRECOMPILED_HEADERS)
+    target_precompile_headers(UTBotCppLib PUBLIC pch.h)
+endif ()
+
+################################################################################
+# Executable
+################################################################################
 add_llvm_executable(utbot main.cpp)
 target_link_libraries(utbot PUBLIC
-        UnitTestBotLib
+        UTBotCppLib
         loguru
         )
 
@@ -163,9 +206,13 @@ if (ENABLE_UNIT_TESTS)
     target_link_libraries(
             UTBot_UnitTests
             PUBLIC
-            gtest_main
-            UnitTestBotLib
+            gtest
+            UTBotCppLib
     )
+
+    if (ENABLE_PRECOMPILED_HEADERS)
+        target_precompile_headers(UTBot_UnitTests PRIVATE [["gtest/gtest.h"]])
+    endif ()
 
     add_test(NAME test COMMAND UTBot_UnitTests)
 else ()

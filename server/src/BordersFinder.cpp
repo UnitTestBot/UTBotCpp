@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BordersFinder.h"
 
 #include "Paths.h"
@@ -15,11 +11,10 @@
 using namespace clang;
 using namespace llvm;
 using namespace clang::ast_matchers;
-using namespace clang::tooling;
 
 BordersFinder::BordersFinder(const fs::path &filePath,
                              unsigned line,
-                             const shared_ptr<CompilationDatabase> &compilationDatabase,
+                             const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                              const fs::path &compileCommandsJsonPath)
         : line(line), classBorder(std::nullopt), clangToolRunner(compilationDatabase) {
     buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(), CompilationUtils::MOUNTED_CC_JSON_DIR_NAME);
@@ -94,7 +89,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         lineInfo.initialized = true;
 
-        string strRepresentation = ASTPrinter::getSourceText(currentStmt->getSourceRange(), sourceManager);
+        std::string strRepresentation = ASTPrinter::getSourceText(currentStmt->getSourceRange(), sourceManager);
         auto parents = Result.Context->getParents(*currentStmt);
         const int MAX_ITERATIONS = 50;
         // if more than MAX_ITERATIONS happen, something is wrong
@@ -153,12 +148,14 @@ bool BordersFinder::containsLine(BordersFinder::Borders b) const {
 void BordersFinder::findFunction() {
     MatchFinder finder;
     finder.addMatcher(Matchers::functionDefinitionMatcher, this);
-    clangToolRunner.run(lineInfo.filePath, newFrontendActionFactory(&finder).get());
+    auto factory = clang::tooling::newFrontendActionFactory(&finder);
+    clangToolRunner.run(lineInfo.filePath, factory.get());
 }
 
 void BordersFinder::findClass() {
     MatchFinder finder;
     finder.addMatcher(Matchers::classJustDeclMatcher, this);
     finder.addMatcher(Matchers::structJustDeclMatcher, this);
-    clangToolRunner.run(lineInfo.filePath, newFrontendActionFactory(&finder).get(), false, std::nullopt, false);
+    auto factory = clang::tooling::newFrontendActionFactory(&finder);
+    clangToolRunner.run(lineInfo.filePath, factory.get(), false, std::nullopt, false);
 }

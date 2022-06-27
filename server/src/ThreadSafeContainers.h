@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_THREADSAFECONTAINERS_H
 #define UNITTESTBOT_THREADSAFECONTAINERS_H
 
@@ -11,7 +7,6 @@
 #include "json.hpp"
 
 #include "utils/path/FileSystemPath.h"
-#include <fstream>
 #include <mutex>
 #include <unordered_set>
 

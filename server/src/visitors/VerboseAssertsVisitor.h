@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_VERBOSEASSERTSVISITOR_H
 #define UNITTESTBOT_VERBOSEASSERTSVISITOR_H
 
@@ -19,10 +15,11 @@ namespace visitor {
                                        const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
+
         void visitArray(const types::Type &type,
                         const std::string &name,
                         const tests::AbstractValueView *view,

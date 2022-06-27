@@ -3,7 +3,10 @@ name: Publish UTBot as an archive
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    tags:
+      - '[0-9][0-9][0-9][0-9].[0-1][0-9].[0-9]+'
+    branches:
+      - main
 
 jobs:
   matrix-prep:
@@ -11,9 +14,10 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Read config from matrix.json
+      - name: Checkout repository
         uses: actions/checkout@v2
       - id: set-matrix
+        name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
           echo "::set-output name=matrix::$TASKS"
@@ -24,9 +28,6 @@ jobs:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
     runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
     env:
-      # Environment for the job and for the container is, sadly, duplicated
-      # https://github.com/docker/compose/issues/1837
-      VERSION: ${{ format('1.0.{0}', github.run_number) }}
       ARTIFACT_DIR: utbot-artifact
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
@@ -38,7 +39,6 @@ jobs:
         UTBOT_INSTALL_DIR: /utbot_distr/install
         GRPC_PATH: /utbot_distr/install
         CLI_PATH: /utbot_distr/cli
-        VERSION: ${{ format('1.0.{0}', github.run_number) }}
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
@@ -51,6 +51,15 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
       - name: build UTBot
         run: |
+          re="^[0-9]{4}\.[0-1][0-9]\.[0-9]+$"
+          if [[ $GITHUB_REF_NAME =~ $re ]]; then 
+            export VERSION=$GITHUB_REF_NAME
+            echo "ARTIFACT_NAME=release-$VERSION" >> $GITHUB_ENV
+          else
+            export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+            echo "ARTIFACT_NAME=dev-$VERSION" >> $GITHUB_ENV
+          fi
+          export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           chmod +x docker/action-scripts/build-utbot.sh
           ./docker/action-scripts/build-utbot.sh
         shell: bash
@@ -60,7 +69,7 @@ jobs:
           ./docker/action-scripts/prepare-ubuntu-release.sh
       - uses: actions/upload-artifact@v2
         with:
-          name: utbot-release-${{ env.VERSION }}
+          name: utbot-${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_DIR }}
 
   auto_installation_check:
@@ -73,7 +82,7 @@ jobs:
         uses: actions/download-artifact@v2
       - name: Installation check
         run: |
-          cd $(find . -name utbot-release* -type d -print | head -n1)
+          cd $(find . -name utbot-* -type d -print | head -n1)
           chmod +x ./unpack_and_run_utbot.sh
           ../integration-tests/installation_checks/automated_install_checks.sh ./utbot_distr.tar.gz
           ../integration-tests/installation_checks/clean.sh

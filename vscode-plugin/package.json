@@ -1,7 +1,7 @@
 {
-	"name": "unittestbot",
+	"name": "UTBotCpp",
 	"displayName": "UnitTestBot for C/C++",
-	"publisher": "Huawei",
+	"publisher": "UnitTestBot",
 	"repository": "https://github.com/UnitTestBot/UTBotCpp",
 	"description": "Provides instruments for auto generating regression tests in C/C++ projects.",
 	"version": "0.0.1",
@@ -130,6 +130,10 @@
 			{
 				"command": "unittestbot.configureProject",
 				"title": "%unittestbot.configureProject.title%"
+			},
+			{
+				"command": "unittestbot.reConfigureProject",
+				"title": "%unittestbot.reConfigureProject.title%"
 			},
 			{
 				"command": "unittestbot.generateIsolatedFileTests",
@@ -494,10 +498,10 @@
 					"default": "",
 					"markdownDescription": "%unittestbot.paths.sourceDirectories.description%"
 				},
-				"unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard": {
+				"unittestbot.testsGeneration.verboseFormatting": {
 					"type": "boolean",
 					"default": false,
-					"markdownDescription": "%unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard.description%"
+					"markdownDescription": "%unittestbot.testsGeneration.verboseFormatting.description%"
 				},
 				"unittestbot.testsGeneration.generateForStaticFunctions": {
 					"type": "boolean",
@@ -577,7 +581,7 @@
 		"grpc": "npm:@grpc/grpc-js@1.5.5",
 		"grpc-tools": "1.11.2",
 		"grpc_tools_node_protoc_ts": "5.3.2",
-		"log4js": "6.3.0",
+		"log4js": "6.5.2",
 		"randomstring": "1.2.2",
 		"source-map-support": "0.5.21",
 		"typescript": "3.9.4"

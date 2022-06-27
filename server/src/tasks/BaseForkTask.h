@@ -1,19 +1,13 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BASEFORKTASK_H
 #define UNITTESTBOT_BASEFORKTASK_H
 
 #include "utils/LogUtils.h"
 #include "utils/ExecutionResult.h"
 
-#include "loguru.h"
 #include <protobuf/testgen.grpc.pb.h>
 #include <run_klee/run_klee.h>
 
 #include <fcntl.h>
-#include <fstream>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -163,6 +157,7 @@ protected:
      */
     static const int LOG_FAIL_CODE = 8;
     static const int TIMEOUT_CODE = 9;
+    static const int SETPGID_FAIL_CODE = 10;
 
     /**
      * Throws if the watched child process is absent.

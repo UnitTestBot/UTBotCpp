@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { Client } from "../client/client";
 import { Prefs } from "../config/prefs";
 import { CoverageAndResultsResponse, ProjectConfigResponse, StubsResponse, TestsResponse } from "../proto-ts/testgen_pb";
@@ -53,7 +49,6 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                 const testfile = vs.Uri.file(localPath);
                 
                 if (isTestFileSourceFile(testfile)) {
-                    const codeText = test.getCode();
                     const testsNumberInErrorSuite = test.getErrormethodsnumber();
                     const testsNumberInRegressionSuite = test.getRegressionmethodsnumber();
                     logger.info(`Generated test file ${localPath} with ${testsNumberInRegressionSuite} tests in regression suite and ${testsNumberInErrorSuite} tests in error suite`);

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TypesResolver.h"
 
 #include "Paths.h"
@@ -12,13 +8,15 @@
 
 #include <clang/AST/ASTContext.h>
 
+#include "loguru.h"
+
 #include "utils/path/FileSystemPath.h"
 #include <vector>
 
 TypesResolver::TypesResolver(const Fetcher *parent) : parent(parent) {
 }
 
-static bool canBeReplaced(const string &nameInMap, const string &name) {
+static bool canBeReplaced(const std::string &nameInMap, const std::string &name) {
     return nameInMap.empty() && !name.empty();
 }
 
@@ -60,6 +58,25 @@ static void addInfo(uint64_t id, std::unordered_map<uint64_t, Info> &someMap, In
     }
 }
 
+std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
+                                       uint64_t id, const fs::path &sourceFilePath) {
+    auto pp = clang::PrintingPolicy(clang::LangOptions());
+    pp.SuppressTagKeyword = true;
+    std::string currentStructName = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
+    fullname.insert(std::make_pair(id, currentStructName));
+
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
+        if (const clang::RecordDecl *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
+            clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
+            uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
+            if (!fullname[parentID].empty()) {
+                fullname[id] = fullname[parentID] + "::" + fullname[id];
+            }
+        }
+    }
+    return fullname[id];
+}
+
 void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string &name) {
     clang::ASTContext const &context = D->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
@@ -69,13 +86,21 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     if (!isCandidateToReplace(id, parent->projectTypes->structs, name)) {
         return;
     }
+
     types::StructInfo structInfo;
     fs::path filename =
             sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
-    structInfo.name = name;
+    structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasUnnamedFields = false;
-
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
+        const clang::CXXRecordDecl *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        structInfo.isCLike = cppD != nullptr && cppD->isCLike();
+    }
+    else {
+        structInfo.isCLike = true;
+    }
 
     if (Paths::isGtest(structInfo.filePath)) {
         return;
@@ -86,8 +111,10 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     ss << "Struct: " << structInfo.name << "\n"
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         types::Field field;
         field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
@@ -98,7 +125,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
                     field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
             if (returnType->isPointerType() && returnType->getPointeeType()->isStructureType()) {
-                string structName =
+                std::string structName =
                         returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
                                                   structName)) {
@@ -148,9 +175,9 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     LOG_S(DEBUG) << ss.str();
 }
 
-static std::optional<string> getAccess(const clang::Decl *decl) {
+static std::optional<std::string> getAccess(const clang::Decl *decl) {
     const clang::DeclContext *pContext = decl->getDeclContext();
-    std::vector<string> result;
+    std::vector<std::string> result;
     while (pContext != nullptr) {
         if (auto pNamedDecl = llvm::dyn_cast<clang::NamedDecl>(pContext)) {
             auto name = pNamedDecl->getNameAsString();
@@ -168,7 +195,7 @@ static std::optional<string> getAccess(const clang::Decl *decl) {
     return StringUtils::joinWith(llvm::reverse(result), "::");
 }
 
-void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
+void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &name) {
     clang::ASTContext const &context = EN->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
 
@@ -177,8 +204,10 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
     if (!isCandidateToReplace(id, parent->projectTypes->enums, name)) {
         return;
     }
+
     types::EnumInfo enumInfo;
-    enumInfo.name = name;
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    enumInfo.name = getFullname(EN, canonicalType, id, sourceFilePath);
     enumInfo.filePath = Paths::getCCJsonFileFullPath(
         sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
     clang::QualType promotionType = EN->getPromotionType();
@@ -188,7 +217,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const string &name) {
 
     for (auto it = EN->enumerator_begin(); it != EN->enumerator_end(); ++it) {
         types::EnumInfo::EnumEntry enumEntry;
-        string entryName = it->getNameAsString();
+        std::string entryName = it->getNameAsString();
         enumEntry.name = entryName;
         enumEntry.value = std::to_string(it->getInitVal().getSExtValue());
         enumInfo.valuesToEntries[enumEntry.value] = enumEntry;
@@ -221,10 +250,12 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     if (!isCandidateToReplace(id, parent->projectTypes->unions, name)) {
         return;
     }
+
     types::UnionInfo unionInfo;
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     unionInfo.filePath = Paths::getCCJsonFileFullPath(
         sourceManager.getFilename(D->getLocation()).str(), parent->buildRootPath.string());
-    unionInfo.name = name;
+    unionInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
 
     if (Paths::isGtest(unionInfo.filePath)) {
         return;
@@ -237,8 +268,11 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     std::vector<types::Field> fields;
     unionInfo.hasUnnamedFields = false;
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         types::Field field;
-        string fieldName = F->getNameAsString();
+        std::string fieldName = F->getNameAsString();
         field.name = fieldName;
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
@@ -266,7 +300,7 @@ void TypesResolver::resolve(const clang::QualType &type) {
     if (tagDecl == nullptr) {
         return;
     }
-    string name = tagDecl->getNameAsString();
+    std::string name = tagDecl->getNameAsString();
     if (auto enumDecl = llvm::dyn_cast<clang::EnumDecl>(tagDecl)) {
         resolveEnum(enumDecl, name);
     }

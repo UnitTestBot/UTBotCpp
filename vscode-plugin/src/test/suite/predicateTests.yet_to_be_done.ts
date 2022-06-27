@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as assert from 'assert';
 import * as path from 'path';
 import { Commands } from '../../config/commands';
@@ -14,7 +10,7 @@ import {
 } from '../helper';
 
 suite('"Generate Tests For Project" Test Suite', () => {
-    const projectName = 'c-example';
+    const projectName = 'c-example-mini';
     const projectPath = path.resolve(__dirname, 
             '../../../../', 'integration-tests', projectName);
 

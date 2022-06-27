@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 window.addEventListener('message', event => {
 
     const message = event.data; // The JSON data our extension sent

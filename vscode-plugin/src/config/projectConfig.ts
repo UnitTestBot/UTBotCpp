@@ -1,16 +1,12 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
-import { Client } from '../client/client';
+import {Client} from '../client/client';
 import * as messages from '../config/notificationMessages';
-import { Prefs } from '../config/prefs';
-import { DummyResponseHandler } from '../responses/responseHandler';
-import { utbotUI } from '../interface/utbotUI';
-import { ExtensionLogger } from '../logger';
-import { ConfigMode, ProjectConfigResponse, ProjectConfigStatus } from '../proto-ts/testgen_pb';
-import { ProjectConfigEventsEmitter } from './projectConfigEventsEmitter';
+import {Prefs} from '../config/prefs';
+import {DummyResponseHandler} from '../responses/responseHandler';
+import {utbotUI} from '../interface/utbotUI';
+import {ExtensionLogger} from '../logger';
+import {ConfigMode, ProjectConfigResponse, ProjectConfigStatus} from '../proto-ts/testgen_pb';
+import {ProjectConfigEventsEmitter} from './projectConfigEventsEmitter';
 
 const { logger } = ExtensionLogger;
 
@@ -28,7 +24,15 @@ export class ProjectConfig {
         this.cmakeOptions = Prefs.getCmakeOptions();
     }
 
-    public async configure(): Promise<boolean> {
+    private createBuildDirFailed(resp: string): boolean {
+        const message = `Build folder creation failed with the following message:` + resp;
+        logger.warn(message);
+        messages.showWarningMessage(`${message}. 
+                                            Please, follow the [guilde](${ProjectConfig.guideUri}) to configure project.`);
+        return false;
+    }
+
+    public async configure(configMode: ConfigMode): Promise<boolean> {
         logger.debug('Configure project');
 
         if (this.client.isConnectionNotEstablished() || this.client.newClient) {
@@ -39,7 +43,7 @@ export class ProjectConfig {
             }
         }
 
-        const response = await this.checkProjectConfiguration(ConfigMode.CHECK);
+        const response = await this.checkProjectConfiguration(configMode);
         logger.debug(`Received response: ${response}`);
         switch (response.getType()) {
             case ProjectConfigStatus.IS_OK: {
@@ -56,6 +60,16 @@ export class ProjectConfig {
             case ProjectConfigStatus.COMPILE_COMMANDS_JSON_NOT_FOUND:
             case ProjectConfigStatus.LINK_COMMANDS_JSON_NOT_FOUND: {
                 return this.handleJsonFilesNotFound(response.getType());
+            }
+            case ProjectConfigStatus.BUILD_DIR_CREATION_FAILED: {
+                return this.createBuildDirFailed(response.getMessage());
+            }
+            case ProjectConfigStatus.BUILD_DIR_SAME_AS_PROJECT: { 
+                const message = response.getMessage();
+                logger.warn(message);
+                messages.showWarningMessage(`${message}. 
+                                                    Please, follow the [guilde](${ProjectConfig.guideUri}) to configure project.`);
+                return false;           
             }
             default: {
                 this.handleUnexpectedResponse();
@@ -98,19 +112,16 @@ export class ProjectConfig {
 
         const response = await this.checkProjectConfiguration(ConfigMode.CREATE_BUILD_DIR);
         logger.debug(`Received response: ${response}`);
+
         switch (response.getType()) {
             case ProjectConfigStatus.IS_OK: {
                 const message = 'Build folder is created successfully';
                 logger.info(message);
                 messages.showInfoMessage(`${message}. Now continuing project configure.`);
-                return this.configure();
+                return this.configure(ConfigMode.CHECK);
             }
             case ProjectConfigStatus.BUILD_DIR_CREATION_FAILED: {
-                const message = `Build folder creation failed with the following message: "${response.getMessage()}"`;
-                logger.warn(message);
-                messages.showWarningMessage(`${message}. 
-                                            Please, follow the [guilde](${ProjectConfig.guideUri}) to configure project.`);
-                return false;
+                return this.createBuildDirFailed(response.getMessage());
             }
             default: {
                 this.handleUnexpectedResponse();

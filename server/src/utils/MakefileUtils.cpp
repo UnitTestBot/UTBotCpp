@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "MakefileUtils.h"
 
 #include "CLIUtils.h"
@@ -18,27 +14,36 @@
 #include <thread>
 
 namespace MakefileUtils {
-    using std::string;
+    std::vector<std::string> getMakeCommand(std::string makefile, std::string target, bool nested) {
+        std::vector<std::string> command;
+        if (nested) {
+            command.emplace_back("$(MAKE)");
+        } else {
+            command.emplace_back(Paths::getMake());
+            command.emplace_back(threadFlag());
+            command.emplace_back("-s");
+        }
+        command.emplace_back("-f");
+        command.emplace_back(makefile);
+        command.emplace_back(target);
+        return command;
+    }
 
     MakefileCommand::MakefileCommand(const utbot::ProjectContext &projectContext,
                                      fs::path makefile,
-                                     string target,
+                                     std::string target,
                                      const std::string &gtestFlags,
                                      std::vector<std::string> env)
-        : makefile(std::move(makefile)), target(std::move(target)),
-          projectName(projectContext.projectName) {
+            : makefile(std::move(makefile)), target(std::move(target)),
+              projectName(projectContext.projectName) {
         this->makefile = this->makefile.lexically_normal();
         fs::path logDir = Paths::getLogDir(projectContext.projectName);
         logFile = logDir / "makefile.log";
         fs::create_directories(logDir);
-        std::vector<string> argv = std::move(env);
-        argv.emplace_back(string("GTEST_FLAGS=\"") + gtestFlags + "\"");
-        argv.emplace_back(Paths::getMake());
-        argv.emplace_back(threadFlag());
-        argv.emplace_back("-s");
-        argv.emplace_back("-f");
-        argv.emplace_back(this->makefile);
-        argv.emplace_back(this->target);
+        std::vector<std::string> argv = std::move(env);
+        argv.emplace_back(std::string("GTEST_FLAGS=\"") + gtestFlags + "\"");
+        std::vector<std::string> makeCommand = getMakeCommand(this->makefile, this->target, false);
+        argv.insert(argv.begin(), makeCommand.begin(), makeCommand.end());
         runCommand = ShellExecTask::ExecutionParameters("env", argv);
         printCommand = ShellExecTask::ExecutionParameters("env", argv);
         printCommand.argv.emplace_back("-n");
@@ -62,14 +67,14 @@ namespace MakefileUtils {
             return echo;
         }
         auto exec = ShellExecTask::runShellCommandTask(
-            runCommand, buildPath, projectName, redirectStderr, false, ignoreErrors, timeout);
+                runCommand, buildPath, projectName, redirectStderr, false, ignoreErrors, timeout);
         if (exec.status != 0) {
             failedCommand = &runCommand;
         }
         return exec;
     }
 
-    string MakefileCommand::getFailedCommand() const {
+    std::string MakefileCommand::getFailedCommand() const {
         if (failedCommand) {
             return failedCommand->toString();
         } else {
@@ -87,7 +92,7 @@ namespace MakefileUtils {
         return MakefileCommand(projectContext, makefile, target, gtestFlags, env);
     }
 
-    string threadFlag() {
+    std::string threadFlag() {
         if (Commands::threadsPerUser != 0) {
             return "-j" + std::to_string(Commands::threadsPerUser);
         }

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CLITestsWriter.h"
 
 #include "loguru.h"
@@ -10,11 +6,9 @@
 
 
 void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                            const string &message,
+                                            const std::string &message,
                                             const fs::path &testDirPath,
-                                            std::function<void(tests::Tests &)> &&functor,
-                                            const utbot::ProjectContext &projectContext,
-                                            const utbot::SettingsContext &settingsContext) {
+                                            std::function<void(tests::Tests &)> &&functor) {
     size_t size = testMap.size();
     std::cout << message << std::endl;
     int totalTestsCounter = 0;

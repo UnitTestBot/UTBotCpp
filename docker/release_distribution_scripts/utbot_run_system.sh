@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script can launch server, cli and tests
 #arguments - add MODE (server | cli | test)
 
@@ -29,9 +25,6 @@ then
   echo "Wrong UTBOT_MODE: expected cli|server|test"
   exit 1
 fi
-
-#set UTBot release flag
-export UTBOT_RELEASE=true
 
 # Retrieving path to $UTBOT_ALL from absolute path to current script
 export UTBOT_ALL=$CURRENT_FOLDER
@@ -119,18 +112,18 @@ then
 
   #Server-specific parameters
   UTBOT_EXECUTABLE_PATH=$UTBOT_BINARIES_FOLDER/$UTBOT_PROCESS_PATTERN
-  UTBOT_STDOUT_LOG_FILE=$UTBOT_LOGS_FOLDER/logs/$UTBOT_PROCESS_PATTERN-$(now).log
   UTBOT_SERVER_OPTIONS="$UTBOT_MODE --port $UTBOT_PORT --log=$UTBOT_LOGS_FOLDER --tmp=$UTBOT_ALL"
+  UTBOT_STDOUT_LOG_FILE=$UTBOT_LOGS_FOLDER/logs/"latest.log"
 
   log "Starting a new server process; logs are written into [$UTBOT_LOGS_FOLDER] folder"
-  start_process $UTBOT_PROCESS_PATTERN $UTBOT_EXECUTABLE_PATH "$UTBOT_SERVER_OPTIONS" $UTBOT_STDOUT_LOG_FILE $UTBOT_PID_FILE
+  start_process "$UTBOT_PROCESS_PATTERN" "$UTBOT_EXECUTABLE_PATH" "$UTBOT_SERVER_OPTIONS" "$UTBOT_STDOUT_LOG_FILE" "$UTBOT_PID_FILE"
   repeats=0
-  while [ $repeats -le 20 ] && [ $(wc -l < $UTBOT_STDOUT_LOG_FILE) -lt 5 ]
+  while [ $repeats -le 20 ] && [ $(wc -l < $UTBOT_STDOUT_LOG_FILE) -lt 6 ]
   do
     sleep 0.1
     repeats=$(( repeats + 1 ))
   done
-  head $UTBOT_STDOUT_LOG_FILE -n 5
+  head $UTBOT_STDOUT_LOG_FILE -n 6
 fi
 
 if [ "$1" = "cli" ]

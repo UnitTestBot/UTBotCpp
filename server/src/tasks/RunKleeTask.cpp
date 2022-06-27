@@ -1,15 +1,12 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "RunKleeTask.h"
 
 #include "TimeExecStatistics.h"
 #include "utils/ExecUtils.h"
 
-#include <thread>
+#include "loguru.h"
 
-using namespace std::chrono_literals;
+#include <thread>
+#include <fstream>
 
 void RunKleeTask::timeoutMessage() const {
     LOG_S(WARNING) << "Time is up (" << timeout->count() << "s). Stop executing.";

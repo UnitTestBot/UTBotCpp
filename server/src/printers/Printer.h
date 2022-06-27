@@ -1,24 +1,14 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PRINTER_H
 #define UNITTESTBOT_PRINTER_H
 
 #include "Language.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "stubs/Stubs.h"
+#include "utils/path/FileSystemPath.h"
 #include "types/Types.h"
 
-#include "loguru.h"
-
 #include <cstdio>
-#include "utils/path/FileSystemPath.h"
-#include <fstream>
-#include <iostream>
-#include <regex>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -31,18 +21,12 @@
 #define TAB "    "
 
 namespace printer {
-    using std::string;
-    using std::vector;
-    using std::unordered_map;
-    using std::cout;
-    using std::endl;
-
     using tests::Tests;
 
     class Printer {
     public:
-        typedef const string &SRef;
-        typedef const vector<string> &VSRef;
+        typedef const std::string &SRef;
+        typedef const std::vector<std::string> &VSRef;
         typedef std::stringstream &Stream;
 
         std::stringstream ss;
@@ -61,11 +45,11 @@ namespace printer {
 
         void resetStream();
 
-        string LB(bool startsWithSpace = true);
+        std::string LB(bool startsWithSpace = true);
 
-        string RB(bool needSC = false);
+        std::string RB(bool needSC = false);
 
-        inline string TAB_N() const {
+        inline std::string TAB_N() const {
             return StringUtils::repeat(TAB, tabsDepth);
         }
 
@@ -102,14 +86,14 @@ namespace printer {
 
         Stream strAssignVar(std::string_view name, std::string_view value);
 
-        std::stringstream& checkOverflowStubArray(const string &cntCall);
+        std::stringstream& checkOverflowStubArray(const std::string &cntCall);
 
         Stream strTabIf(bool needTabs);
 
         Stream strFunctionDecl(
             SRef returnType,
             SRef functionName,
-            vector<types::Type> const& paramTypes = {},
+            std::vector<types::Type> const& paramTypes = {},
             VSRef paramValues = {},
             SRef end = SCNL,
             VSRef modifiers = {},
@@ -121,9 +105,9 @@ namespace printer {
                                VSRef modifiers = {});
 
         Stream strFunctionCall(std::string_view functionName,
-                               const vector<string> &args,
-                               const string &end = SCNL,
-                               const std::optional<string> &classObj = std::nullopt,
+                               const std::vector<std::string> &args,
+                               const std::string &end = SCNL,
+                               const std::optional<std::string> &classObj = std::nullopt,
                                bool needTabs = true,
                                size_t retPointers = 0,
                                std::optional<types::Type> castType = std::nullopt,
@@ -131,7 +115,7 @@ namespace printer {
 
         Stream strFunctionCall(const Tests::MethodDescription &method,
                                size_t returnPointers,
-                               const string &end = SCNL,
+                               const std::string &end = SCNL,
                                bool needTabs = true);
 
         Stream writeCodeLine(std::string_view str);
@@ -144,35 +128,34 @@ namespace printer {
 
         Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
 
-        std::vector<string> printForLoopsAndReturnLoopIterators(SRef objectName,
-                                                                const std::vector<size_t> &bounds);
+        std::vector<std::string> printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds);
 
-        static string constrIndex(SRef arrayName, SRef ind);
+        static std::string constrIndex(SRef arrayName, SRef ind);
 
-        static string constrIndex(SRef arrayName, int ind);
+        static std::string constrIndex(SRef arrayName, int ind);
 
-        static string constrMultiIndex(SRef arrayName, const std::vector<size_t> &indexes);
+        static std::string constrMultiIndex(SRef arrayName, const std::vector<size_t> &indexes);
 
-        static string constrMultiIndex(SRef arrayName, const std::vector<string> &indexes);
+        static std::string constrMultiIndex(SRef arrayName, const std::vector<std::string> &indexes);
 
-        static string constrMultiIndex(const std::vector<string> &indexes);
+        static std::string constrMultiIndex(const std::vector<std::string> &indexes);
 
-        string constrFunctionCall(const string &functionName,
-                                  const vector<string> &args,
-                                  const string &end = "",
-                                  const std::optional<string> &classObjName = std::nullopt,
-                                  bool needTabs = true,
-                                  size_t retPointers = 0,
-                                  std::optional<types::Type> castType = std::nullopt);
+        std::string constrFunctionCall(const std::string &functionName,
+                                       const std::vector<std::string> &args,
+                                       const std::string &end = "",
+                                       const std::optional<std::string> &classObjName = std::nullopt,
+                                       bool needTabs = true,
+                                       size_t retPointers = 0,
+                                       std::optional<types::Type> castType = std::nullopt);
 
         template<typename... Args>
-        static string concat(Args&&... args) {
+        static std::string concat(Args&&... args) {
             std::stringstream cc_ss;
             (cc_ss << ... << args);
             return cc_ss.str();
         }
 
-        [[nodiscard]] string recursiveIteratorName(SRef prefix) const;
+        [[nodiscard]] std::string recursiveIteratorName(SRef prefix) const;
 
         Stream strMemcpy(std::string_view dest,
                          std::string_view src,
@@ -180,39 +163,41 @@ namespace printer {
 
         Stream strReturn(std::string_view value);
 
-        Stream strTypedefFunctionPointer(const types::FunctionInfo& method, const string& name);
+        Stream strTypedefFunctionPointer(const types::FunctionInfo &method, const std::string &name);
 
-        Stream strDeclareArrayOfFunctionPointerVar(const string&arrayType, const string& arrayName,
-                                                   const string& stubFunctionName);
+        Stream strDeclareArrayOfFunctionPointerVar(const std::string &arrayType, const std::string &arrayName,
+                                                   const std::string &stubFunctionName);
 
-        Stream strStubForMethod(const Tests::MethodDescription& method,
-                                const types::TypesHandler&typesHandler,
-                                const string& prefix,
-                                const string& suffix,
+        Stream strStubForMethod(const Tests::MethodDescription &method,
+                                const types::TypesHandler &typesHandler,
+                                const std::string &prefix,
+                                const std::string &suffix,
+                                const std::string &methodName,
+                                const std::string &nameForStub,
                                 bool makeStatic = false);
 
-        static string getStubSymbolicVarName(const string& methodName);
+        static std::string getStubSymbolicVarName(const std::string &methodName);
 
         Stream strKleeMakeSymbolic(SRef varName, bool needAmpersand, SRef pseudoName);
 
-        static inline std::string getTypedefFunctionPointer(const string& parentFunctionName,
-                                                            const string& name,
+        static inline std::string getTypedefFunctionPointer(const std::string &parentFunctionName,
+                                                            const std::string &name,
                                                             bool isArray) {
-            string parentFNameCopy = parentFunctionName;
+            std::string parentFNameCopy = parentFunctionName;
             if (!parentFNameCopy.empty() && parentFNameCopy[0] == '&') {
                 parentFNameCopy = parentFNameCopy.substr(1);
             }
             return StringUtils::stringFormat("%s_%s_arg%s", parentFNameCopy, name, isArray ? "_arr" : "");
         }
 
-        string constrFunctionCall(const Tests::MethodDescription &method,
-                                  size_t returnPointers,
-                                  const string &end = "",
-                                  bool needTabs = true);
+        std::string constrFunctionCall(const Tests::MethodDescription &method,
+                                       size_t returnPointers,
+                                       const std::string &end = "",
+                                       bool needTabs = true);
 
         std::stringstream &strFunctionDeclWithParamString(const Tests::MethodDescription &method,
-                                                          const string &end ,
-                                                          const vector<string> &modifiers = {});
+                                                          const std::string &end ,
+                                                          const std::vector<std::string> &modifiers = {});
 
         void writeStubsForFunctionParams(const types::TypesHandler* typesHandler,
                                          const Tests::MethodDescription& testMethod,
@@ -222,20 +207,22 @@ namespace printer {
 
         void writeStubsForStructureFields(const Tests &tests);
 
+        void writeStubsForParameters(const Tests &tests);
+
         void writeStubForParam(const types::TypesHandler* typesHandler,
                                const std::shared_ptr<types::FunctionInfo> &fInfo,
-                               const string& name,
-                               const string& stubName, bool needToTypedef, bool makeStatic);
+                               const std::string &methodName,
+                               const std::string &stubName, bool needToTypedef, bool makeStatic);
 
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
 
-        void genStubForStructFunctionPointer(const string& structName,
-                                             const string& fieldName,
-                                             const string& stubName);
+        void genStubForStructFunctionPointer(const std::string &structName,
+                                             const std::string &fieldName,
+                                             const std::string &stubName);
 
-        void genStubForStructFunctionPointerArray(const string& structName,
-                                                  const string& fieldName,
-                                                  const string& stubName);
+        void genStubForStructFunctionPointerArray(const std::string &structName,
+                                                  const std::string &fieldName,
+                                                  const std::string &stubName);
 
         static std::string getConstQualifier(const types::Type& type);
 

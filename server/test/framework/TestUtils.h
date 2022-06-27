@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTUTILS_H
 #define UNITTESTBOT_TESTUTILS_H
 
@@ -18,33 +14,38 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <regex>
 
-using Params = const std::vector<shared_ptr<tests::AbstractValueView>> &;
+using Params = const std::vector<std::shared_ptr<tests::AbstractValueView>> &;
 using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
 using TestCasePredicate = std::function<bool(tests::Tests::MethodTestCase)>;
 using CoverageLines = CollectionUtils::MapFileTo<std::set<int>>;
+using StatusCountMap = std::unordered_map<testsgen::TestStatus, int>;
 
 namespace testUtils {
-    using std::function;
-    using std::string;
-    using std::vector;
-
     enum BuildCommandsTool {
         BEAR_BUILD_COMMANDS_TOOL,
         CMAKE_BUILD_COMMANDS_TOOL,
         MAKE_BUILD_COMMANDS_TOOL
     };
 
-    void checkTestCasePredicates(const vector<tests::Tests::MethodTestCase> &testCases,
-                                 const vector<TestCasePredicate> &predicates,
-                                 const string& functionName = "");
+    void checkTestCasePredicates(const std::vector<tests::Tests::MethodTestCase> &testCases,
+                                 const std::vector<TestCasePredicate> &predicates,
+                                 const std::string &functionName = "");
+
+    void checkRegexp(const std::string &value,
+                     const std::string &regexp);
 
     void checkCoverage(const Coverage::CoverageMap &coverageMap,
                        const CoverageLines &expectedLinesCovered,
                        const CoverageLines &expectedLinesUncovered,
                        const CoverageLines &expectedLinesNone);
 
-    void checkStatuses(const Coverage::TestStatusMap &testStatusMap, const vector<UnitTest> &tests);
+    void checkStatuses(const Coverage::TestStatusMap &testStatusMap, const std::vector<UnitTest> &tests);
+
+    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+                            const std::vector<UnitTest> &tests,
+                            const StatusCountMap &expectedStatusCountMap);
 
     int getNumberOfTests(const tests::TestsMap &tests);
 
@@ -59,7 +60,7 @@ namespace testUtils {
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const string &buildDirRelativePath,
+                                                         const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
                                                          bool useStubs = false,
                                                          bool verbose = true,
@@ -67,24 +68,21 @@ namespace testUtils {
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const string &buildDirRelativePath,
+                                                   const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    bool useStubs = false,
                                                    bool verbose = true);
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
-                                                   const fs::path &projectPath,
-                                                   const string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths,
-                                                   const fs::path &filePath,
-                                                   int line,
-                                                   bool verbose = true,
-                                                   int kleeTimeout = 60);
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
+                                                   const std::string &buildDirRelativePath,
+                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
+                                                   int line, bool useStubs,
+                                                   bool verbose, int kleeTimeout);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                     const fs::path &projectPath,
-                                                    const string &buildDirRelativePath,
+                                                    const std::string &buildDirRelativePath,
                                                     const std::vector<fs::path> &srcPaths,
                                                     const fs::path &filePath,
                                                     int line,
@@ -111,13 +109,15 @@ namespace testUtils {
             CompilationUtils::CompilerName compilerName = CompilationUtils::CompilerName::CLANG,
             BuildCommandsTool buildCommandsTool = CMAKE_BUILD_COMMANDS_TOOL, bool build = true);
 
-    fs::path getRelativeTestSuitePath(const string &suiteName);
+    fs::path getRelativeTestSuitePath(const std::string &suiteName);
 
-    string fileNotExistsMessage(const fs::path &filePath);
+    std::string fileNotExistsMessage(const fs::path &filePath);
 
-    string unexpectedFileMessage(const fs::path &filePath);
+    std::string unexpectedFileMessage(const fs::path &filePath);
 
     std::vector<char*> createArgvVector(const std::vector<std::string> &args);
+
+    void setTargetForFirstSource(ProjectTestGen &testGen);
 }
 
 #endif // UNITTESTBOT_TESTUTILS_H

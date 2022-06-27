@@ -1,14 +1,9 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_RUNCOMMAND_H
 #define UNITTESTBOT_RUNCOMMAND_H
 
 #include "BaseCommand.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace utbot {

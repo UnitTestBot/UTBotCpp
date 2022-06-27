@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEERUNNER_H
 #define UNITTESTBOT_KLEERUNNER_H
 
@@ -34,19 +30,25 @@ public:
     void runKlee(const std::vector<tests::TestMethod> &testMethods,
                  tests::TestsMap &testsMap,
                  const std::shared_ptr<KleeGenerator>& generator,
-                 const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
+                 const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
-                 bool isBatched);
+                 bool isBatched,
+                 bool interactiveMode);
 
 private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
-    const ProgressWriter *progressWriter;
-    void processBatch(tests::MethodKtests &ktestChunk,
-                      const tests::TestMethod &testMethod,
-                      tests::Tests &tests);
+
+
+    void processBatchWithoutInteractive(tests::MethodKtests &ktestChunk,
+                                        const tests::TestMethod &testMethod,
+                                        tests::Tests &tests);
+
+    void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                     tests::Tests &tests,
+                                     std::vector<tests::MethodKtests> &ktests);
     fs::path getKleeMethodOutFile(const tests::TestMethod &method);
 };
 

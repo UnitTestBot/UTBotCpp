@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PRINTERUTILS_H
 #define UNITTESTBOT_PRINTERUTILS_H
 
@@ -70,7 +66,14 @@ namespace PrinterUtils {
     std::string getDereferencePointer(const std::string& name, const size_t depth);
     std::string getExpectedVarName(const std::string& varName);
 
-    std::string initializePointer(const std::string &type, const std::string &value);
+    std::string initializePointer(const std::string &type,
+                                  const std::string &value,
+                                  size_t additionalPointersCount);
+
+    std::string initializePointerToVar(const std::string &type,
+                                       const std::string &varName,
+                                       size_t additionalPointersCount);
+
     std::string generateNewVar(int cnt);
 
     const std::string LAZYRENAME = "utbotInnerVar";
@@ -78,6 +81,7 @@ namespace PrinterUtils {
     extern const std::string TEST_NAMESPACE;
     extern const std::string DEFINES_FOR_C_KEYWORDS;
     extern const std::string UNDEFS_FOR_C_KEYWORDS;
+    extern const std::string KNOWN_IMPLICIT_RECORD_DECLS_CODE;
     extern const std::string C_NULL;
     extern const std::unordered_map <int, std::string> escapeSequences;
 

@@ -37,6 +37,8 @@ namespace sarif {
         void addSarifResult(const ProjectSarif &);
 
         static void writeCodeAnalysisFolder(const fs::path &, const fs::path &);
+
+        static void createTmpFolder(const fs::path &);
     };
 }
 

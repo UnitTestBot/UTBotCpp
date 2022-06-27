@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ServerUtils.h"
 
 #include <sys/socket.h>
@@ -17,14 +13,15 @@
 
 #include "loguru.h"
 
+#include <fstream>
+
 namespace ServerUtils {
     using json = nlohmann::json;
-    using std::vector;
 
     void setThreadOptions(grpc::ServerContext *context, bool testMode) {
         if (!CollectionUtils::containsKey(context->client_metadata(), "clientid")) {
             if (testMode) {
-                string client = LogUtils::TEST_CLIENT;
+                std::string client = LogUtils::TEST_CLIENT;
                 RequestEnvironment::setClientId(client);
                 RequestEnvironment::setServerContext(nullptr);
                 loguru::set_thread_name(client.c_str());
@@ -34,13 +31,13 @@ namespace ServerUtils {
             throw CancellationException();
         }
         auto &ref = context->client_metadata().find("clientid")->second;
-        string id{ref.begin(), ref.end()};
+        std::string id{ref.begin(), ref.end()};
         RequestEnvironment::setClientId(id);
         RequestEnvironment::setServerContext(context);
         loguru::set_thread_name(id.c_str());
     }
 
-    void registerClient(concurrent_set<string> &clients, string client) {
+    void registerClient(concurrent_set<std::string> &clients, std::string client) {
         if (!client.empty()) {
             if (!clients.in(client)) {
                 LOG_S(INFO)
@@ -58,14 +55,14 @@ namespace ServerUtils {
         clients.writeToJson();
     }
 
-    void loadClientsData(concurrent_set<string> &result) {
+    void loadClientsData(concurrent_set<std::string> &result) {
         fs::path jsonPath = Paths::getClientsJsonPath();
         if (!fs::exists(jsonPath) || fs::is_empty(jsonPath)) {
             return;
         }
         std::ifstream stream(jsonPath);
         json j = json::parse(stream);
-        auto clients = j.get<vector<string>>();
+        auto clients = j.get<std::vector<std::string>>();
         for (const auto &client : clients) {
             auto logDir = Paths::getClientLogDir(client);
             if (fs::exists(logDir)) {

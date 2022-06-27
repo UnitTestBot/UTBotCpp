@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "KleePrinter.h"
 
 #include "KleeConstraintsPrinter.h"
@@ -18,11 +14,17 @@
 #include "loguru.h"
 
 #include <unordered_set>
+#include <fstream>
 
 using namespace types;
 using printer::KleePrinter;
 
 static const std::string KLEE_GLOBAL_VAR_H = "klee_global_var.h";
+static const std::string CALLOC_DECLARATION = "extern\n"
+                                              "#ifdef __cplusplus\n"
+                                              "\"C\"\n"
+                                              "#endif\n"
+                                              "void* calloc(size_t num, size_t size);\n";
 
 printer::KleePrinter::KleePrinter(const types::TypesHandler *typesHandler,
                                   std::shared_ptr<BuildDatabase> buildDatabase,
@@ -32,11 +34,11 @@ printer::KleePrinter::KleePrinter(const types::TypesHandler *typesHandler,
 
 fs::path KleePrinter::writeTmpKleeFile(
     const Tests &tests,
-    const string &buildDir,
+    const std::string &buildDir,
     const PathSubstitution &pathSubstitution,
     const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const string &testedMethod,
-    const std::optional<string> &testedClass,
+    const std::string &testedMethod,
+    const std::optional<std::string> &testedClass,
     bool onlyForOneFunction,
     bool onlyForOneClass,
     const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter) {
@@ -46,7 +48,7 @@ fs::path KleePrinter::writeTmpKleeFile(
 
     bool onlyForOneEntity = onlyForOneFunction || onlyForOneClass;
     auto unitInfo = buildDatabase->getClientCompilationUnitInfo(tests.sourceFilePath);
-    string kleeFilePath = unitInfo->kleeFilesInfo->getKleeFile(testedMethod);
+    std::string kleeFilePath = unitInfo->kleeFilesInfo->getKleeFile(testedMethod);
 
     LOG_S(DEBUG) << "Writing tmpKleeFile for " << testedMethod << " inside " << tests.sourceFilePath;
 
@@ -75,9 +77,8 @@ fs::path KleePrinter::writeTmpKleeFile(
         strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG, "0");
     }
 
-    strInclude("klee/klee.h");
-    strInclude("stdlib.h", true);
-    ss << NL;
+    strInclude("klee/klee.h") << NL;
+    ss << CALLOC_DECLARATION << NL;
     writeStubsForStructureFields(tests);
 
     writeAccessPrivateMacros(typesHandler, tests, false);
@@ -121,7 +122,7 @@ fs::path KleePrinter::writeTmpKleeFile(
 
 void KleePrinter::declTestEntryPoint(const Tests &tests,
                                      const Tests::MethodDescription &testMethod) {
-    string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.name);
+    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.name);
     auto argvType = types::Type::createSimpleTypeFromName("char", 2);
     // if change args in next line also change cpp mangledPath in kleeUtils.cpp
     strFunctionDecl("int", entryPoint, {types::Type::intType(), argvType, argvType}, {"utbot_argc", "utbot_argv", "utbot_envp"}, "") << LB();
@@ -206,12 +207,12 @@ void KleePrinter::genPostAssumes(const Tests::MethodParam &param, bool visitGlob
     }
 }
 
-string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
-                                    bool needAssertion,
-                                    const utbot::ProjectContext &projectContext) {
+std::string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
+                                         bool needAssertion,
+                                         const utbot::ProjectContext &projectContext) {
     resetStream();
     std::ifstream is(lineInfo->filePath);
-    string currentLine;
+    std::string currentLine;
     unsigned lineCounter = 1;
     strInclude(KLEE_GLOBAL_VAR_H);
     while (std::getline(is, currentLine)) {
@@ -253,18 +254,18 @@ string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
 }
 
 void KleePrinter::genVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
-                                  const std::optional<PredInfo> &predicateInfo,
-                                  const string &testedMethod,
-                                  bool onlyForOneEntity) {
+                                         const std::optional<PredInfo> &predicateInfo,
+                                         const std::string &testedMethod,
+                                         bool onlyForOneEntity) {
     genKleePathSymbolicIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
     strFunctionCall(testMethod, testMethod.returnType.countReturnPointers(), SCNL, false);
     genKleePathSymbolicAssumeIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
 }
 
 void KleePrinter::genNonVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
-                                     const std::optional<PredInfo> &predicateInfo,
-                                     const string &testedMethod,
-                                     bool onlyForOneEntity) {
+                                            const std::optional<PredInfo> &predicateInfo,
+                                            const std::string &testedMethod,
+                                            bool onlyForOneEntity) {
     genKleePathSymbolicIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
     genReturnDeclaration(testMethod, predicateInfo);
     genParamsKleeAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
@@ -321,7 +322,7 @@ void KleePrinter::genParamsDeclarations(const Tests::MethodDescription &testMeth
 
 bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod,
                                       const Tests::MethodParam &param) {
-    string stubFunctionName =
+    std::string stubFunctionName =
         PrinterUtils::getFunctionPointerStubName(testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
                                                  testMethod.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
@@ -394,17 +395,17 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
 void KleePrinter::genParamsKleeAssumes(
     const Tests::MethodDescription &testMethod,
     const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const string &testedMethod,
+    const std::string &testedMethod,
     bool onlyForOneEntity) {
     visitor::KleeAssumeReturnValueVisitor(typesHandler, this).visit(testMethod, predicateInfo);
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
-        string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR, PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
+        std::string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR, PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
                                    PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, PrinterUtils::EQ_OPERATOR, "1)");
         strFunctionCall(PrinterUtils::KLEE_ASSUME, { assumption });
     }
 }
 
-void KleePrinter::genConstraints(const Tests::MethodParam &param, const string& methodName) {
+void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::string &methodName) {
     KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
     constraintsPrinter.setTabsDepth(tabsDepth);
     const auto constraintsBlock = constraintsPrinter.genConstraints(param).str();
@@ -413,7 +414,7 @@ void KleePrinter::genConstraints(const Tests::MethodParam &param, const string& 
 
 void KleePrinter::genKleePathSymbolicIfNeeded(
     const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const string &testedMethod,
+    const std::string &testedMethod,
     bool onlyForOneEntity) {
     if (!predicateInfo.has_value() && !onlyForOneEntity && !testedMethod.empty()) {
         strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC);
@@ -421,7 +422,7 @@ void KleePrinter::genKleePathSymbolicIfNeeded(
     }
 }
 
-[[maybe_unused]] void KleePrinter::addHeaderIncludeIfNecessary(std::unordered_set<string> &headers,
+[[maybe_unused]] void KleePrinter::addHeaderIncludeIfNecessary(std::unordered_set<std::string> &headers,
                                                                const types::Type &type) {
     const types::Type baseType = type.baseTypeObj();
     if (typesHandler->isStruct(baseType)) {
@@ -437,7 +438,7 @@ void KleePrinter::genKleePathSymbolicIfNeeded(
     }
 }
 
-KleePrinter::Stream KleePrinter::strKleeMakeSymbolic(const string &varName, bool needAmpersand) {
+KleePrinter::Stream KleePrinter::strKleeMakeSymbolic(const std::string &varName, bool needAmpersand) {
     return Printer::strKleeMakeSymbolic(varName, needAmpersand, varName);
 }
 
@@ -460,7 +461,7 @@ KleePrinter::strKleeMakeSymbolic(const types::Type &type, SRef varName, bool nee
 }
 
 void KleePrinter::genKleePathSymbolicAssumeIfNeeded(const std::optional<PredInfo> &predicateInfo,
-                                                    const string &testedMethod,
+                                                    const std::string &testedMethod,
                                                     bool onlyForOneEntity) {
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
         strFunctionCall(PrinterUtils::KLEE_ASSUME, { concat("(", PrinterUtils::KLEE_PATH_FLAG,

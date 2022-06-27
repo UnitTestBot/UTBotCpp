@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 export class GTestInfo {
     constructor(public readonly filePath: string,
                 public readonly testSuite: string,  

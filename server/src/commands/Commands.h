@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COMMANDS_H
 #define UNITTESTBOT_COMMANDS_H
 
@@ -17,7 +13,8 @@
 
 
 namespace Commands {
-    static unsigned int threadsPerUser = 0;
+    extern uint32_t threadsPerUser;
+    extern uint32_t kleeProcessNumber;
 
     struct MainCommands {
         explicit MainCommands(CLI::App &app);
@@ -51,6 +48,7 @@ namespace Commands {
 
         unsigned int getThreadsPerUser();
 
+        unsigned int getKleeProcessNumber();
     private:
         unsigned int port = 0;
         fs::path logPath, tmpPath;

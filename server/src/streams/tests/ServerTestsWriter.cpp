@@ -1,18 +1,15 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ServerTestsWriter.h"
+
+#include "utils/FileSystemUtils.h"
 #include "sarif/FileSarif.h"
 #include <utils/FileSystemUtils.h>
 
+#include "loguru.h"
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                                std::string const &message,
                                                const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor,
-                                               const utbot::ProjectContext &projectContext,
-                                               const utbot::SettingsContext &settingsContext) {
+                                               std::function<void(tests::Tests &)> &&functor) {
 
     size_t size = testMap.size();
     writeProgress(message);
@@ -28,26 +25,15 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
     writeCompleted(testMap, totalTestsCounter);
 }
 
-void ServerTestsWriter::writeStubs(const vector<Stubs> &synchronizedStubs) {
-    testsgen::TestsResponse response;
-    auto stubsResponse = std::make_unique<testsgen::StubsResponse>();
-    for (auto const &synchronizedStub : synchronizedStubs) {
-        auto sData = stubsResponse->add_stubsources();
-        sData->set_filepath(synchronizedStub.filePath);
-        if (synchronizeCode) {
-            sData->set_code(synchronizedStub.code);
-        }
-    }
-    response.set_allocated_stubs(stubsResponse.release());
-}
-
 bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
                                                  const fs::path &testDirPath,
-                                                 const string &message,
+                                                 const std::string &message,
                                                  double percent,
                                                  bool isCompleted) const {
     fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;
-    FileSystemUtils::writeToFile(testFilePath, tests.code);
+    if (!tests.code.empty()) {
+        FileSystemUtils::writeToFile(testFilePath, tests.code);
+    }
     if (!hasStream()) {
         return false;
     }
