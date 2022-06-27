@@ -25,6 +25,7 @@ message("Organisation: ${PROJECT_ORG}")
 message("Homepage: ${CMAKE_PROJECT_HOMEPAGE_URL}")
 message("Version: ${CMAKE_PROJECT_VERSION}")
 message("Run from: ${RUN_INFO}")
+include_directories(${PROJECT_BINARY_BIN})
 
 configure_file(config.h.in config.h @ONLY)
 

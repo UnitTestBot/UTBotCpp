@@ -40,7 +40,7 @@ const std::string Server::logPrefix = "logTo";
 const std::string Server::gtestLogPrefix = "gtestLogTo";
 
 void Server::run(uint16_t customPort) {
-    LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_NUMBER;
+    LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_VERSION;
     LOG_S(INFO) << "Logs directory: " << Paths::logPath;
     LOG_S(INFO) << "Latest log path: " << Paths::getUtbotLogAllFilePath();
     LOG_S(INFO) << "Tmp directory path: " << Paths::tmpPath;
@@ -157,9 +157,10 @@ Status Server::TestsGenServiceImpl::GeneratePredicateTests(ServerContext *contex
 }
 
 Status Server::TestsGenServiceImpl::Handshake(ServerContext *context,
-                                              const DummyRequest *request,
-                                              DummyResponse *response) {
-    LOG_S(INFO) << "Handshake complete";
+                                              const VersionInfo *request,
+                                              VersionInfo *response) {
+    LOG_S(INFO) << "Handshake complete. Client version: " << request->version();
+    response->set_version(UTBOT_BUILD_VERSION);
     return Status::OK;
 }
 

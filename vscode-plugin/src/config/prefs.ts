@@ -43,9 +43,13 @@ export class Prefs {
     public static SHOW_TEST_RESULTS_PREF = 'unittestbot.visual.showTestResults';
 
 
-    public static isRemoteScenario(): boolean {
+    public static isLocalHost(): boolean {
         const host = Prefs.getAsset(Prefs.HOST_PREF);
-        return !(host === '127.0.0.1' || host === 'localhost') || isWin32();
+        return host === '127.0.0.1' || host === 'localhost';
+    }
+
+    public static isRemoteScenario(): boolean {
+        return !this.isLocalHost() || isWin32();
     }
 
     /**

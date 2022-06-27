@@ -1,4 +1,4 @@
-import { DummyResponse, HeartbeatResponse } from "../proto-ts/testgen_pb";
+import {HeartbeatResponse, VersionInfo} from "../proto-ts/testgen_pb";
 import { UTBotEventEmitter } from "../emitter/UTBotEventEmitter";
 
 type ErrorMessage = string;
@@ -23,7 +23,7 @@ export class ClientEventsEmitter {
     readonly onDidHeartbeatSuccessEventEmitter: UTBotEventEmitter<HeartbeatResponse> =
         new UTBotEventEmitter();
 
-    readonly onDidHandshakeSuccessEventEmitter: UTBotEventEmitter<DummyResponse> =
+    readonly onDidHandshakeSuccessEventEmitter: UTBotEventEmitter<VersionInfo> =
         new UTBotEventEmitter();
 
     readonly onDidHandshakeFailureEventEmitter: UTBotEventEmitter<ErrorMessage> =
