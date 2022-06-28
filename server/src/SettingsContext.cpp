@@ -14,7 +14,7 @@ namespace utbot {
                                                      timeoutPerTest,
                                                      useDeterministicSearcher,
                                                      useStubs,
-                                                     false) {}
+                                                     true) {}
 
     SettingsContext::SettingsContext(bool generateForStaticFunctions,
                                      bool verbose,
