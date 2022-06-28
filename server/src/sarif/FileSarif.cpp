@@ -7,58 +7,6 @@
 
 namespace sarif {
 
-namespace {
-    [[nodiscard]] fs::path getUtbotDir() {
-        return fs::current_path().parent_path().parent_path();
-    }
-
-    [[nodiscard]] fs::path getKleeDir() {
-        fs::path utbotDir = getUtbotDir();
-        fs::path kleeDir = utbotDir / "submodules" / "klee";
-        if (!fs::exists(kleeDir)) {
-            LOG_S(ERROR) << "Klee directory is not " << kleeDir;
-            return "/";
-        }
-        return kleeDir;
-    }
-
-    [[nodiscard]] fs::path getKleeRuntimeDir() {
-        return getKleeDir() / "runtime";
-    }
-
-    [[nodiscard]] bool inKleeRuntimeDir(const fs::path &path) {
-        if (fs::exists(path)) {
-            return Paths::isSubPathOf(getKleeRuntimeDir(), path);
-        }
-        if (StringUtils::startsWith(path.c_str(), "runtime")) {
-            fs::path absPath = getKleeRuntimeDir().parent_path() / path;
-            return fs::exists(absPath);
-        } else {
-            return false;
-        }
-    }
-
-    [[nodiscard]] bool inKleeTmpDir(const fs::path &path) {
-        return fs::exists(Paths::tmpPath / path);
-    }
-
-    [[nodiscard]] std::optional<fs::path> isRelevant(const fs::path &path) {
-        if (inKleeTmpDir(path)) {
-            return std::nullopt;
-        }
-        if (inKleeRuntimeDir(path)) {
-            fs::path relativePath = fs::relative(getKleeRuntimeDir().parent_path() / path,
-                                                 getKleeRuntimeDir());
-            bool b = (relativePath.string().find("lib") != std::string::npos);
-            if (b) {
-                return getKleeRuntimeDir().parent_path() / path;
-            }
-            return std::nullopt;
-        }
-        return path;
-    }
-}
-
     FileSarif::FileSarif(const tests::Tests &tests, bool writeFlag) : ProjectSarif(tests.sourceFileNameNoExt,
                                                                                    tests.relativeFileDir, writeFlag),
                                                                       sourcePath(tests.sourceFilePath) {}
