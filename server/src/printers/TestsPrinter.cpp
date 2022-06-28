@@ -160,6 +160,21 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
     }
+    if (testCase.assertInfo.failedAssert) {
+        if (testCase.assertInfo.assertBody.has_value()) {
+            ss << TAB_N() << "/*" << testCase.assertInfo.assertBody.value() << NL;
+        }
+        if (testCase.assertInfo.fileWithFailedAssert.has_value()) {
+            ss << TAB_N() << testCase.assertInfo.fileWithFailedAssert.value() << NL;
+        }
+        if (testCase.assertInfo.lineWithFailedAssert.has_value()) {
+            ss << TAB_N() << testCase.assertInfo.lineWithFailedAssert.value();
+        }
+        if (testCase.assertInfo.assertBody.has_value()) {
+            ss << "*/" << NL;
+        }
+
+    }
     TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
     ss << NL;
     if (testCase.isError() && errorMode == ::testsgen::ErrorMode::FAILING) {

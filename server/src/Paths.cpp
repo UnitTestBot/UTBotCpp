@@ -7,11 +7,11 @@
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
 #include "utils/CLIUtils.h"
-
 #include "loguru.h"
 
 #include <pwd.h>
 #include <unistd.h>
+#include <utils/AssertInfo.h>
 
 namespace Paths {
     static fs::path getHomeDir() {
@@ -150,6 +150,20 @@ namespace Paths {
         return fileWithError;
     }
 
+    static std::string getLineErrorFound(const fs::path& errorFilePath) {
+        std::ifstream input;
+        std::string typeOfError;
+        std::string fileWithError;
+        std::string lineWithError;
+        input.open(errorFilePath.string(), std::ios::in);
+        if (input) {
+            getline(input, typeOfError);
+            getline(input, fileWithError);
+            getline(input, lineWithError);
+        }
+        return lineWithError;
+    }
+
     static bool isPointerOutOfBound(const std::string& typeofError) {
         return typeofError == "Error: memory error: out of bound pointer";
     }
@@ -176,11 +190,16 @@ namespace Paths {
         return false;
     }
 
-    bool hasFailedAssert(const fs::path& path) {
+    AssertInfo hasFailedAssert(const fs::path& path) {
+        AssertInfo assertInfo;
         if (errorFileExists(path, "assert")) {
-            return true;
+            assertInfo.failedAssert = true;
+            fs::path errorFilePath = replaceExtension(path, ".assert.err");
+            assertInfo.assertBody = getTypeOfError(errorFilePath);
+            assertInfo.fileWithFailedAssert = getFileErrorFound(errorFilePath);
+            assertInfo.lineWithFailedAssert = getLineErrorFound(errorFilePath);
         }
-        return false;
+        return assertInfo;
     }
 
 

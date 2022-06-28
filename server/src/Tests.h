@@ -10,12 +10,14 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
+#include "utils/AssertInfo.h"
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include "json.hpp"
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
+#include "Paths.h"
 
 #include <iterator>
 #include <memory>
@@ -54,16 +56,16 @@ namespace tests {
         std::vector<UTBotKTestObject> objects;
         Status status;
         bool uncaughtException = false;
-        bool failedAssert = false;
+        AssertInfo assertInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
             : objects(std::move(objects)), status(status) {
         }
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status, bool uncaughtException,
-                   bool failedAssert)
+                    AssertInfo assertInfo_)
             : objects(std::move(objects)), status(status), uncaughtException(uncaughtException),
-            failedAssert(failedAssert) {
+            assertInfo(std::move(assertInfo_)) {
         }
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
@@ -378,7 +380,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             bool hasUncaughtException = false;
-            bool hasFailedAssert = false;
+            AssertInfo assertInfo;
         };
 
         struct MethodTestCase {
@@ -403,7 +405,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             bool hasUncaughtException = false;
-            bool hasFailedAssert = false;
+            AssertInfo assertInfo;
 
             [[nodiscard]] bool isError() const;
         };
@@ -807,5 +809,5 @@ namespace tests {
                                         const std::string &typeName,
                                         unsigned int offset,
                                         unsigned int len);
-}
+} // tests
 #endif // UNITTESTBOT_TESTS_H

@@ -196,10 +196,10 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                     UTBotKTest::Status status = Paths::hasError(path) ? UTBotKTest::Status::FAILED
                                                                       : UTBotKTest::Status::SUCCESS;
                     bool uncaughtException = false;
-                    bool failedAssert = false;
+                    AssertInfo assertInfo;
                     if (status == UTBotKTest::Status::FAILED) {
                         uncaughtException = Paths::hasUncaughtException(path);
-                        failedAssert = Paths::hasFailedAssert(path);
+                        assertInfo = Paths::hasFailedAssert(path);
                     }
                     std::vector<ConcretizedObject> kTestObjects(
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
@@ -209,7 +209,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[testMethod].emplace_back(objects, status, uncaughtException, failedAssert);
+                    ktestChunk[testMethod].emplace_back(objects, status, uncaughtException, assertInfo);
                 }
             }
         }
@@ -341,10 +341,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                                                     ? UTBotKTest::Status::FAILED
                                                     : UTBotKTest::Status::SUCCESS;
                         bool uncaughtException = false;
-                        bool failedAssert = false;
+                        AssertInfo assertInfo;
                         if (status == UTBotKTest::Status::FAILED) {
                             uncaughtException = Paths::hasUncaughtException(path);
-                            failedAssert = Paths::hasFailedAssert(path);
+                            assertInfo = Paths::hasFailedAssert(path);
                         }
                         std::vector<ConcretizedObject> kTestObjects(
                             ktestData->objects, ktestData->objects + ktestData->n_objects);
@@ -354,7 +354,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                               return UTBotKTestObject{ kTestObject };
                             });
 
-                        ktestChunk[method].emplace_back(objects, status, uncaughtException, failedAssert);
+                        ktestChunk[method].emplace_back(objects, status, uncaughtException, assertInfo);
                     }
                 }
             }

@@ -16,6 +16,7 @@
 #include "utils/path/FileSystemPath.h"
 #include <optional>
 #include <unordered_set>
+#include <utils/AssertInfo.h>
 
 namespace Paths {
     extern fs::path logPath, tmpPath;
@@ -364,11 +365,11 @@ namespace Paths {
 
     bool hasUncaughtException(const fs::path &path);
 
-    bool hasFailedAssert(const fs::path& path);
+    AssertInfo hasFailedAssert(const fs::path &path);
 
-        //endregion
+    //endregion
 
     bool isHeadersEqual(const fs::path& srcPath, const fs::path& headerPath);
-}
+} // Paths
 
 #endif //UNITTESTBOT_PATHS_H
