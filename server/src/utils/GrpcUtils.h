@@ -27,7 +27,7 @@ namespace GrpcUtils {
                           int32_t timeoutPerTest,
                           bool useDeterministicSearcher,
                           bool useStubs,
-                          bool genSarif);
+                          bool genSarif = true);
 
     std::unique_ptr<testsgen::SnippetRequest>
     createSnippetRequest(std::unique_ptr<testsgen::ProjectContext> projectContext,
