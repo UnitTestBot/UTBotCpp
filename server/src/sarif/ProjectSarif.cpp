@@ -14,14 +14,16 @@ namespace sarif {
         sarifJson["runs"][0]["results"] = json::array();
     }
 
-    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path, bool writeFlag) :
+    ProjectSarif::ProjectSarif(const std::string &name, const fs::path &path, const fs::path &projectPath, bool writeFlag) :
         sarifName(name  + default_output_suffix + sarif_default_extension),
         outputPath(default_output_dir_name / path),
+        projectPath(projectPath),
         writeFileFlag(writeFlag) {
         init();
     }
 
-    ProjectSarif::ProjectSarif(bool writeFlag) : ProjectSarif(sarif_default_name, "", writeFlag) {}
+    ProjectSarif::ProjectSarif(const fs::path &projectPath, bool writeFlag) :
+        ProjectSarif(sarif_default_name, "", projectPath, writeFlag) {}
 
     void ProjectSarif::writeSarifFileToTmp(const fs::path &tmpPath) {
         if (writeFileFlag) {
@@ -56,7 +58,60 @@ namespace sarif {
         }
         json sarif = JsonUtils::getJsonFromFile(path);
         for (auto &result : sarif.at("runs").at(0).at("results")) {
-            sarifJson.at("runs").at(0).at("results").push_back(result);
+            deleteExternalFilesFromResult(result);
+            result.at("locations").at(0) = result.at("codeFlows").at(0).
+                    at("threadFlows").at(0).at("locations").back().at("location");
+
+            addResultToSarif(result);
+        }
+    }
+
+    namespace {
+        [[nodiscard]] int getErrorLineFromResult(const json& result) {
+            return result.at("locations").at(0).at("physicalLocation")
+                    .at("region").at("startLine");
+        }
+
+        [[nodiscard]] std::string getErrorFileFromResult(const json& result) {
+            return result.at("locations").at(0).at("physicalLocation")
+                    .at("artifactLocation").at("uri");
+        }
+    }
+
+    void ProjectSarif::addResultToSarif(const json &newResult) {
+        json &all = sarifJson.at("runs").at(0).at("results");
+        for (json &result : all) {
+            if (getErrorFileFromResult(result) == getErrorFileFromResult(newResult) &&
+                getErrorLineFromResult(result) == getErrorLineFromResult(newResult)) {
+                result.at("codeFlows").push_back(newResult.at("codeFlows").at(0));
+                return;
+            }
+        }
+        sarifJson.at("runs").at(0).at("results").push_back(newResult);
+    }
+
+    json &ProjectSarif::getUriFromLocation(json &location) {
+        return location.at("physicalLocation").at("artifactLocation").at("uri");
+    }
+
+    void ProjectSarif::deleteExternalFilesFromResult(json &result) {
+        for (json &codeFlow : result.at("codeFlows")) {
+            for (json &threadFlow : codeFlow.at("threadFlows")) {
+                for (int i = 0; i < threadFlow.at("locations").size(); ++i) {
+                    json &location = threadFlow.at("locations").at(i).at("location");
+                    std::string location_path = fs::path((std::string) getUriFromLocation(location));
+                    if (Paths::isSubPathOf(projectPath, location_path)) {
+                        getUriFromLocation(location) = location_path.substr(projectPath.string().size() + 1);
+                    }
+                }
+                auto it = std::remove_if(threadFlow.at("locations").begin(), threadFlow.at("locations").end(),
+                                         [&](json &location) {
+                                             return !fs::exists(projectPath /
+                                                                (std::string) getUriFromLocation(
+                                                                        location.at("location")));
+                                         });
+                threadFlow.at("locations").erase(it, threadFlow.at("locations").end());
+            }
         }
     }
 

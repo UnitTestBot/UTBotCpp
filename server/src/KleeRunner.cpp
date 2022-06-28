@@ -95,17 +95,17 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
             fileSarif.generateSarifForFunction(methodDescription, projectContext.projectPath);
         }
         fileSarif.writeSarifFileToTmp(projectTmpPath);
-        sarif::ProjectSarif projectSarif(settingsContext.genSarif);
-        projectSarif.joinSarifFiles(projectTmpPath);
-        projectSarif.writeSarifFileToTmp(projectTmpPath);
-        if (settingsContext.genSarif) {
-            sarif::ProjectSarif::writeCodeAnalysisFolder(projectTmpPath, projectContext.projectPath);
-        }
     };
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
                                         std::move(writeFunctor));
 
+    sarif::ProjectSarif projectSarif(projectContext.projectPath, settingsContext.genSarif);
+    projectSarif.joinSarifFiles(projectTmpPath);
+    projectSarif.writeSarifFileToTmp(projectTmpPath);
+    if (settingsContext.genSarif) {
+        sarif::ProjectSarif::writeCodeAnalysisFolder(projectTmpPath, projectContext.projectPath);
+    }
 
 }
 
