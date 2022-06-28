@@ -24,11 +24,11 @@ namespace sarif {
     ProjectSarif::ProjectSarif(bool writeFlag) : ProjectSarif(sarif_default_name, "", writeFlag) {}
 
     void ProjectSarif::writeSarifFileToTmp(const fs::path &tmpPath) {
-//        if (writeFileFlag) {
+        if (writeFileFlag) {
             fs::path sarifPath = tmpPath / outputPath / sarifName;
             LOG_S(INFO) << "Create FileSarif " << sarifPath;
             FileSystemUtils::writeToFile(sarifPath, sarifJson.dump(4));
-//        }
+        }
     }
 
     void ProjectSarif::writeCodeAnalysisFolder(const fs::path &tmpPath, const fs::path &projectPath) {
