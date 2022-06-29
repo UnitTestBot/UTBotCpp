@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "MakefileUtils.h"
 
 #include "CLIUtils.h"
@@ -41,11 +37,12 @@ namespace MakefileUtils {
             : makefile(std::move(makefile)), target(std::move(target)),
               projectName(projectContext.projectName) {
         this->makefile = this->makefile.lexically_normal();
+        this->makefile = this->makefile.lexically_normal();
         fs::path logDir = Paths::getLogDir(projectContext.projectName);
         logFile = logDir / "makefile.log";
         fs::create_directories(logDir);
         std::vector<std::string> argv = std::move(env);
-        argv.emplace_back(std::string("GTEST_FLAGS=\"") + gtestFlags + "\"");
+        argv.emplace_back(std::string("GTEST_FLAGS=") + gtestFlags);
         std::vector<std::string> makeCommand = getMakeCommand(this->makefile, this->target, false);
         argv.insert(argv.begin(), makeCommand.begin(), makeCommand.end());
         runCommand = ShellExecTask::ExecutionParameters("env", argv);
@@ -85,15 +82,6 @@ namespace MakefileUtils {
             LOG_S(ERROR) << "No command failed";
             return "";
         }
-    }
-
-
-    MakefileCommand makefileCommand(utbot::ProjectContext const &projectContext,
-                                    const fs::path &makefile,
-                                    const std::string &target,
-                                    const std::string &gtestFlags,
-                                    const std::vector<std::string> &env) {
-        return MakefileCommand(projectContext, makefile, target, gtestFlags, env);
     }
 
     std::string threadFlag() {

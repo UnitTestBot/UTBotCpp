@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ExecutionProcessException.h"
 
 ExecutionProcessException::ExecutionProcessException(std::string cmd, fs::path logFilePath) : cmd(std::move(cmd)), logFilePath(std::move(logFilePath)) {}

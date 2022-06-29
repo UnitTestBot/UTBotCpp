@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PATHS_H
 #define UNITTESTBOT_PATHS_H
 
@@ -278,6 +274,8 @@ namespace Paths {
     fs::path createTemporaryObjectFile(const fs::path &output, const fs::path &sourcePath);
 
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext);
+
+    fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext);
 
     fs::path getFlagsDir(const utbot::ProjectContext &projectContext);
 

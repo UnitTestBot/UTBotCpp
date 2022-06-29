@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COVERAGETOOL_H
 #define UNITTESTBOT_COVERAGETOOL_H
 
@@ -24,11 +20,12 @@ struct BuildRunCommand {
 class CoverageTool {
 protected:
     ProgressWriter const *progressWriter;
+    const utbot::ProjectContext projectContext;
 
-    [[nodiscard]] std::string getTestFilter(UnitTest const &unitTest) const;
+    [[nodiscard]] std::string getGTestFlags(const UnitTest &unitTest) const;
 
 public:
-    explicit CoverageTool(ProgressWriter const *progressWriter);
+    CoverageTool(utbot::ProjectContext projectContext, ProgressWriter const *progressWriter);
 
     [[nodiscard]] virtual std::vector<BuildRunCommand>
     getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) = 0;

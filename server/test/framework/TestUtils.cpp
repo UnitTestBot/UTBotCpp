@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestUtils.h"
 
 #include "environment/EnvironmentPaths.h"
@@ -22,9 +18,9 @@ namespace testUtils {
         for (size_t i = 0; i < parameters.size(); i++) {
             ss << "\t\tParameters values: ";
             for (const auto &param : parameters[i]) {
-                ss << param->getEntryValue() << " ";
+                ss << param->getEntryValue(nullptr) << " ";
             }
-            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue() << "\n";
+            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue(nullptr) << "\n";
         }
         return ss.str();
     }
@@ -63,6 +59,11 @@ namespace testUtils {
             params.erase(params.begin() + ind);
             returnValues.erase(returnValues.begin() + ind);
         }
+    }
+
+    void checkRegexp(const std::string &value, const std::string &regexp) {
+       ASSERT_TRUE(std::regex_match(value.begin(), value.end(), std::regex(regexp)))
+            << "Value: " << value << "\nDon't correspond to: " << regexp << std::endl;
     }
 
     void checkCoverage(const Coverage::CoverageMap &coverageMap,
@@ -129,20 +130,20 @@ namespace testUtils {
         }
     }
 
-    void checkStatuses(const Coverage::TestStatusMap &testStatusMap,
+    void checkStatuses(const Coverage::TestStatusMap &testResultMap,
                        const std::vector<UnitTest> &tests, ::testsgen::ErrorMode errorMode) {
         for (auto const &[filename, suitename, testname] : tests) {
             if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
                 continue;
             }
-            const auto status = testStatusMap.at(filename).at(testname);
+            const auto status = testResultMap.at(filename).at(testname).status();
             EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
             (testsgen::TestStatus::TEST_DEATH == status));
         }
     }
 
 
-    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+    void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests,
                        const StatusCountMap &expectedStatusCountMap,
                             ::testsgen::ErrorMode errorMode) {
@@ -151,7 +152,7 @@ namespace testUtils {
             if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
                 continue;
             }
-            const auto status = testStatusMap.at(filename).at(testname);
+            const auto status = testResultMap.at(filename).at(testname).status();
             actualStatusCountMap[status]++;
         }
         for (const auto& [status, count] : actualStatusCountMap) {
@@ -209,17 +210,17 @@ namespace testUtils {
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
-                                                   const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
+                                                   bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout,
                                                    ::testsgen::ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, false, verbose, kleeTimeout, errorMode);
+                                                   srcPaths, useStubs, verbose, kleeTimeout, errorMode);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
@@ -234,7 +235,7 @@ namespace testUtils {
                                                    int kleeTimeout,
                                                    ::testsgen::ErrorMode errorMode) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, verbose, kleeTimeout, errorMode);
+                                             srcPaths, filePath, line, false, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 

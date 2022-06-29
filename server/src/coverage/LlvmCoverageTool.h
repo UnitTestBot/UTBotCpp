@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_LLVMCOVERAGETOOL_H
 #define UNITTESTBOT_LLVMCOVERAGETOOL_H
 
@@ -21,7 +17,6 @@ public:
     [[nodiscard]] nlohmann::json getTotals() const override;
     void cleanCoverage() const override;
 private:
-    const utbot::ProjectContext projectContext;
     void countLineCoverage(Coverage::CoverageMap& coverageMap, const std::string& filename) const;
     void checkLineForPartial(Coverage::FileCoverage::SourceLine line, Coverage::FileCoverage& fileCoverage) const;
 };

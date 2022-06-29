@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 import { Commands } from '../config/commands';
 import { Prefs } from '../config/prefs';
@@ -11,8 +7,8 @@ import { Progress } from '../requests/params';
 export namespace utbotUI {
  
     export namespace titles {
-        export const FIVE_RULES_ON = '$(check) UTBot: Five Rules';
-        export const FIVE_RULES_OFF = '$(chrome-close) UTBot: Five Rules';
+        export const FIVE_RULES_ON = '$(check) UTBot: Verbose Formatting';
+        export const FIVE_RULES_OFF = '$(chrome-close) UTBot: Verbose Formatting';
         export const CONNECTION_ALIVE = '$(remote) UTBot: Server Connection';
         export const CONNECTION_DEAD = '$(error) UTBot: Server Connection';
         export const CONNECTION_SYNC = '$(sync~spin) UTBot: Server Connection';

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Synchronizer.h"
 
 #include "clang-utils/SourceToHeaderRewriter.h"
@@ -118,8 +114,10 @@ void Synchronizer::synchronize(const types::TypesHandler &typesHandler) {
         return;
     }
     auto outdatedSourcePaths = getOutdatedSourcePaths();
-    auto outdatedStubs = getStubSetFromSources(outdatedSourcePaths);
-    synchronizeStubs(outdatedStubs, typesHandler);
+    if (testGen->settingsContext.useStubs) {
+        auto outdatedStubs = getStubSetFromSources(outdatedSourcePaths);
+        synchronizeStubs(outdatedStubs, typesHandler);
+    }
     synchronizeWrappers(outdatedSourcePaths);
 }
 

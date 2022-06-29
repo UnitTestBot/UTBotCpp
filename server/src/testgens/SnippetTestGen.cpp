@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SnippetTestGen.h"
 
 #include "printers/CCJsonPrinter.h"
@@ -35,4 +31,3 @@ void SnippetTestGen::setTargetForSource(const fs::path &sourcePath) {
     fs::path root = serverBuildDir / "executable";
     setTargetPath(root);
 }
-

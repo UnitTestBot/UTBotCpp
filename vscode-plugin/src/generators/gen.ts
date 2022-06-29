@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 /* eslint-disable no-case-declarations */
 import * as vs from 'vscode';
 import { Client } from '../client/client';

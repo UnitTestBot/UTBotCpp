@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { ExtensionLogger } from '../logger';
 import { ITestsGenServiceClient } from '../proto-ts/testgen_grpc_pb';
 import { DummyRequest } from '../proto-ts/testgen_pb';

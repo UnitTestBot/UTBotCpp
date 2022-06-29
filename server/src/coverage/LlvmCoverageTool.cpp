@@ -1,8 +1,6 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "LlvmCoverageTool.h"
+
+#include <utility>
 
 #include "Coverage.h"
 #include "Paths.h"
@@ -24,7 +22,7 @@ using Coverage::FileCoverage;
 
 LlvmCoverageTool::LlvmCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
-    : CoverageTool(progressWriter), projectContext(projectContext) {
+    : CoverageTool(std::move(projectContext), progressWriter) {
 }
 
 std::vector<BuildRunCommand>
@@ -34,15 +32,15 @@ LlvmCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch
             Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath);
         auto makefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
         auto testName = testToLaunch.testname;
-        auto gtestFlags = getTestFilter(testToLaunch);
+        auto gtestFlags = getGTestFlags(testToLaunch);
         std::vector<std::string> profileEnv;
         if (withCoverage) {
             auto profrawFilePath = Paths::getProfrawFilePath(projectContext, testName);
             profileEnv = { StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath) };
         }
-        auto buildCommand = MakefileUtils::makefileCommand(projectContext, makefilePath, "build",
+        auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath, "build",
                                                            gtestFlags, profileEnv);
-        auto runCommand = MakefileUtils::makefileCommand(projectContext, makefilePath, "run",
+        auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath, "run",
                                                          gtestFlags, profileEnv);
         return BuildRunCommand{ testToLaunch, buildCommand, runCommand };
     });
@@ -77,7 +75,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
             fs::path makefile =
                 Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-            auto makefileCommand = MakefileUtils::makefileCommand(projectContext, makefile, "bin");
+            auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "bin");
             auto res = makefileCommand.run();
             if (res.status == 0) {
                 if (res.output.empty()) {

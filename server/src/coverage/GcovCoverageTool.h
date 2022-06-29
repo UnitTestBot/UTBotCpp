@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_GCOVCOVERAGETOOL_H
 #define UNITTESTBOT_GCOVCOVERAGETOOL_H
 
@@ -27,8 +23,6 @@ public:
     void cleanCoverage() const override;
 
 private:
-    const utbot::ProjectContext projectContext;
-
     std::vector<fs::path> getGcdaFiles() const;
 };
 

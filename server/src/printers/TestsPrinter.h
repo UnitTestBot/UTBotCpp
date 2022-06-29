@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTSPRINTER_H
 #define UNITTESTBOT_TESTSPRINTER_H
 
@@ -100,7 +96,7 @@ namespace printer {
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                  ::testsgen::ErrorMode errorMode);
 
-        static std::vector<std::string>
+        std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
                                          const Tests::MethodTestCase &testCase);
 

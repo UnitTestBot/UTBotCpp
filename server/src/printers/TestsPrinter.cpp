@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestsPrinter.h"
 
 #include "Paths.h"
@@ -205,7 +201,7 @@ void TestsPrinter::printLazyVariables(const std::vector<Tests::MethodParam> &laz
                                       const std::vector<Tests::TestCaseParamValue> &lazyValues) {
     for (size_t i = 0; i < lazyParams.size(); ++i) {
         printLazyVariables(lazyValues[i].lazyParams, lazyValues[i].lazyValues);
-        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name, lazyValues[i].view->getEntryValue(),
+        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name, lazyValues[i].view->getEntryValue(this),
                           std::nullopt, true, lazyParams[i].type.getDimension());
     }
 }
@@ -230,7 +226,7 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
         types::Type stubType = testCase.stubParamTypes[i].type;
         std::string bufferSuffix = "_buffer";
         std::string buffer = stub.name + bufferSuffix;
-        strDeclareArrayVar(stubType, buffer, types::PointerUsage::PARAMETER, stub.view->getEntryValue());
+        strDeclareArrayVar(stubType, buffer, types::PointerUsage::PARAMETER, stub.view->getEntryValue(this));
         strMemcpy(stub.name, buffer, false);
     }
 }
@@ -417,7 +413,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
                types::TypesHandler::isArrayOfPointersToFunction(methodDescription.returnType)) {
         strComment("No output variable check for function returning pointer to function");
     } else if (methodDescription.returnType.isObjectPointer() &&
-               testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
+               testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
         strComment("No output variable check for function returning null");
     } else {
         visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
@@ -437,7 +433,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
     std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true, errorMode);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
         size_t returnPointersCount = 0;
-        if (testCase.returnValue.view->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             returnPointersCount = methodDescription.returnType.countReturnPointers(true);
         }
         auto type = Printer::getConstQualifier(expectedType) + expectedType.usedType();
@@ -542,17 +538,17 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
                 methodDescription.getClassTypeName(), methodDescription.name, param.name);
             strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
         } else if (types::TypesHandler::isCStringType(param.type)) {
-            strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER, value.view->getEntryValue(), param.alignment);
+            strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER, value.view->getEntryValue(this), param.alignment);
         } else if (param.type.isObjectPointer() || param.type.isArray()) {
             auto arrayType = types::TypesHandler::isVoid(param.type.baseTypeObj())
                 ? types::Type::minimalScalarPointerType(param.type.arraysSizes(types::PointerUsage::PARAMETER).size())
                 : param.type;
             if (param.type.maybeJustPointer()) {
-                strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(), param.alignment);
+                strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(this), param.alignment);
             } else {
                 auto paramName = param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
                 strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
-                                   value.view->getEntryValue(), param.alignment, true);
+                                   value.view->getEntryValue(this), param.alignment, true);
             }
         }
         if (param.type.isTwoDimensionalPointer()) {
@@ -592,7 +588,7 @@ std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Te
         } else if (!testCase.paramValues[i].lazyValues.empty()) {
             args.push_back(param.name);
         } else {
-            args.push_back(testCase.paramValues[i].view->getEntryValue());
+            args.push_back(testCase.paramValues[i].view->getEntryValue(this));
         }
     }
     return args;
@@ -631,7 +627,7 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     }
     auto classObjName = methodDescription.getClassName();
     size_t returnPointersCount = 0;
-    if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue() != PrinterUtils::C_NULL) {
+    if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
     std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
@@ -667,6 +663,27 @@ void printer::TestsPrinter::parametrizedInitializeSymbolicStubs(const Tests::Met
         const auto &value = testCase.stubValues[i];
         verboseParameter(methodDescription, param, value, false);
     }
+}
+
+std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
+                                             const tests::StructValueView *view) {
+    auto subViews = view->getSubViews();
+    std::stringstream structuredValuesWithPrefixes;
+    structuredValuesWithPrefixes << "{" << NL;
+    ++printer->tabsDepth;
+    int i = 0;
+    for (const auto &sview : subViews) {
+        if (i != 0) {
+            structuredValuesWithPrefixes << "," << NL;
+        }
+        structuredValuesWithPrefixes << printer->TAB_N() << view->getFieldPrefix(i)
+                                     << sview->getEntryValue(printer);
+        ++i;
+    }
+    --printer->tabsDepth;
+    structuredValuesWithPrefixes << "}";
+
+    return structuredValuesWithPrefixes.str();
 }
 
 Tests::MethodParam printer::TestsPrinter::getValueParam(const Tests::MethodParam &param) {

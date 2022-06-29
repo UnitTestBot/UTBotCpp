@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -96,7 +91,7 @@ namespace {
         void checkCoverageDirectory() {
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath /
                                                                           resultsDirectoryName);
-            EXPECT_EQ(directoryIterator.size(), 1);
+            EXPECT_EQ(directoryIterator.size(), 2);
             for (auto &&it : directoryIterator) {
                 EXPECT_TRUE(it.is_regular_file());
             }
@@ -125,28 +120,28 @@ namespace {
     TEST_F(CLI_Test, Generate_Function_Tests) {
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "function", "--file-path",
-                         suitePath / "complex_structs.c", "--line-number", "43" });
+                         suitePath / "complex_structs.c", "--line-number", "39" });
         checkTestDirectory({ complex_structs_test_cpp, complex_structs_test_h });
     }
 
     TEST_F(CLI_Test, Generate_Line_Tests) {
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "function", "--file-path",
-                         suitePath / "basic_functions.c", "--line-number", "28" });
+                         suitePath / "basic_functions.c", "--line-number", "24" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
     }
 
     TEST_F(CLI_Test, Generate_Assertion_Tests) {
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "assertion", "--file-path",
-                         suitePath / "assertion_failures.c", "--line-number", "8" });
+                         suitePath / "assertion_failures.c", "--line-number", "4" });
         checkTestDirectory({ assertion_failures_test_cpp, assertion_failures_test_h });
     }
 
     TEST_F(CLI_Test, Generate_Predicate_Tests) {
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "predicate", "--file-path",
-                         suitePath / "basic_functions.c", "--line-number", "9", "--validation-type",
+                         suitePath / "basic_functions.c", "--line-number", "5", "--validation-type",
                          "int64", "--predicate", "==", "--return-value", "8" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
     }

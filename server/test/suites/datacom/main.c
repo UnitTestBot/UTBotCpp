@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #define __STDC_WANT_LIB_EXT1__ 1
 #include "stdbool.h"
 #include "string.h"

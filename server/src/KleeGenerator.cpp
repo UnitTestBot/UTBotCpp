@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "KleeGenerator.h"
 
 #include "environment/EnvironmentPaths.h"
@@ -61,7 +57,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
     fs::path makefile = projectTmpPath / "GenerationCompileMakefile.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto command = MakefileUtils::makefileCommand(projectContext, makefile, "all");
+    auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "all");
     ExecUtils::ExecutionResult res = command.run();
     if (res.status != 0) {
         LOG_S(ERROR) << StringUtils::stringFormat("Make for \"%s\" failed.\nCommand: \"%s\"\n%s\n",
@@ -105,6 +101,28 @@ static std::string getUTBotClangCompilerPath(fs::path clientCompilerPath) {
     }
 }
 
+static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
+    "--coverage",
+    "-fbranch-target-load-optimize",
+    "-fcx-fortran-rules",
+    "-fipa-cp-clone",
+    "-fipa-cp-cloneclang-10",
+    "-fira-loop-pressure",
+    "-fno-forward-propagate",
+    "-fno-if-conversion",
+    "-fno-sched-interblock",
+    "-fno-sched-spec-insn-heuristic",
+    "-fno-tree-dominator-opts",
+    "-fno-tree-sink",
+    "-fno-tree-sinkclang-10",
+    "-fpredictive-commoning",
+    "-fprofile-dir",
+    "-freschedule-modulo-scheduled-loops",
+    "-fsched2-use-superblocks",
+    "-fsel-sched-reschedule-pipelined",
+    "-ftree-loop-distribute-patterns",
+};
+
 std::optional<utbot::CompileCommand>
 KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
                                         const CollectionUtils::FileSet &stubSources,
@@ -125,7 +143,7 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
     fs::create_directories(outFilePath.parent_path());
     command.setOutput(outFilePath);
     command.setOptimizationLevel("-O0");
-    command.removeGccFlags();
+    command.removeCompilerFlagsAndOptions(UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE);
     std::vector<std::string> extraFlags{ "-emit-llvm",
                                          "-c",
                                          "-Xclang",
@@ -181,7 +199,14 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     auto &command = optionalCommand.value();
     command.setSourcePath(sourceFilePath);
     command.setOutput(bitcodeFilePath);
-    auto [out, status, _] = ShellExecTask::executeUtbotCommand(command, buildDirPath, projectContext.projectName);
+
+    printer::DefaultMakefilePrinter makefilePrinter;
+    makefilePrinter.declareTarget("build", {command.getSourcePath()}, {command.toStringWithChangingDirectory()});
+    fs::path makefile = projectTmpPath / "BCForKLEE.mk";
+    FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
+
+    auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "build");
+    auto [out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"
                      << "Command: \"" << command.toString() << "\"\n"

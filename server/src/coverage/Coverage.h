@@ -1,13 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COVERAGE_H
 #define UNITTESTBOT_COVERAGE_H
 
 #include "utils/CollectionUtils.h"
 
 #include <protobuf/testgen.grpc.pb.h>
+#include <google/protobuf/util/time_util.h>
 
 #include <unordered_map>
 #include <vector>
@@ -41,11 +38,11 @@ namespace Coverage {
     class FileTestsStatus : public std::unordered_map<std::string, testsgen::TestStatus> {
     };
 
-    class TestStatusMap : public CollectionUtils::MapFileTo<FileTestsStatus> {
+    using FileTestsResult = std::unordered_map<std::string, testsgen::TestResultObject>;
+    class TestResultMap : public CollectionUtils::MapFileTo<FileTestsResult> {
     public:
         int getNumberOfTests();
     };
-
 }
 
 #endif //UNITTESTBOT_COVERAGE_H

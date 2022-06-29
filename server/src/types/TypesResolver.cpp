@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TypesResolver.h"
 
 #include "Paths.h"
@@ -98,6 +94,13 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasUnnamedFields = false;
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
+        const clang::CXXRecordDecl *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        structInfo.isCLike = cppD != nullptr && cppD->isCLike();
+    }
+    else {
+        structInfo.isCLike = true;
+    }
 
     if (Paths::isGtest(structInfo.filePath)) {
         return;

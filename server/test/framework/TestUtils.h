@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTUTILS_H
 #define UNITTESTBOT_TESTUTILS_H
 
@@ -18,6 +14,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <regex>
 
 using Params = const std::vector<std::shared_ptr<tests::AbstractValueView>> &;
 using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
@@ -36,15 +33,18 @@ namespace testUtils {
                                  const std::vector<TestCasePredicate> &predicates,
                                  const std::string &functionName = "");
 
+    void checkRegexp(const std::string &value,
+                     const std::string &regexp);
+
     void checkCoverage(const Coverage::CoverageMap &coverageMap,
                        const CoverageLines &expectedLinesCovered,
                        const CoverageLines &expectedLinesUncovered,
                        const CoverageLines &expectedLinesNone);
 
-    void checkStatuses(const Coverage::TestStatusMap &testStatusMap, const std::vector<UnitTest> &tests,
+    void checkStatuses(const Coverage::TestStatusMap &testResultMap, const std::vector<UnitTest> &tests,
                        ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
-    void checkStatusesCount(const Coverage::TestStatusMap &testStatusMap,
+  void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap,
                             ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
@@ -79,14 +79,14 @@ namespace testUtils {
                                                    bool verbose = true,
                                                    ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
-                                                   const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   bool verbose = true,
-                                                   int kleeTimeout = 60,
+                                                   bool useStubs
+                                                   bool verbose,
+                                                   int kleeTimeout,
                                                    ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
