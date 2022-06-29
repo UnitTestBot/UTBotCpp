@@ -6,6 +6,8 @@
 
 #include "utils/path/FileSystemPath.h"
 
+using namespace ::testsgen;
+
 namespace {
     using testsgen::TestsResponse;
 
@@ -56,7 +58,7 @@ namespace {
                                                   buildDirRelativePath };
             auto buildDatabase =
                 std::make_shared<BuildDatabase>(suite.buildPath, suite.buildPath, projectContext);
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, ::testsgen::ErrorMode::FAILING };
+            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false, ErrorMode::FAILING };
             KleeGenerator generator(std::move(projectContext),
                                     std::move(settingsContext), tmpDirPath,
                                     compilationDatabase, typesHandler, {}, buildDatabase);

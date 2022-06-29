@@ -7,7 +7,7 @@
 
 #include <pwd.h>
 #include <unistd.h>
-#include <utils/AssertInfo.h>
+#include <utils/ErrorInfo.h>
 
 namespace Paths {
     static fs::path getHomeDir() {
@@ -118,84 +118,10 @@ namespace Paths {
 
     //region klee
 
-    static bool errorFileExists(const fs::path &path, std::string const& suffix) {
+     bool errorFileExists(const fs::path &path, std::string const& suffix) {
         fs::path file = replaceExtension(
             path, StringUtils::stringFormat(".%s.err", suffix));
         return fs::exists(file);
-    }
-
-    static std::string getTypeOfError(const fs::path& errorFilePath) {
-        std::ifstream input;
-        std::string typeOfError;
-        input.open(errorFilePath.string(), std::ios::in);
-        if (input) {
-            getline(input, typeOfError);
-        }
-        return typeOfError;
-    }
-
-    static std::string getFileErrorFound(const fs::path& errorFilePath) {
-        std::ifstream input;
-        std::string typeOfError;
-        std::string fileWithError;
-        input.open(errorFilePath.string(), std::ios::in);
-        if (input) {
-            getline(input, typeOfError);
-            getline(input, fileWithError);
-        }
-        return fileWithError;
-    }
-
-    static std::string getLineErrorFound(const fs::path& errorFilePath) {
-        std::ifstream input;
-        std::string typeOfError;
-        std::string fileWithError;
-        std::string lineWithError;
-        input.open(errorFilePath.string(), std::ios::in);
-        if (input) {
-            getline(input, typeOfError);
-            getline(input, fileWithError);
-            getline(input, lineWithError);
-        }
-        return lineWithError;
-    }
-
-    static bool isPointerOutOfBound(const std::string& typeofError) {
-        return typeofError == "Error: memory error: out of bound pointer";
-    }
-
-    static bool errorInExceptionHeader(const std::string& fileWhereErrorFound) {
-        return fileWhereErrorFound.find("exception.h") != std::string::npos;
-    }
-
-    bool hasUncaughtException(const fs::path &path) {
-        if (errorFileExists(path, "uncaught_exception") ||
-            errorFileExists(path, "unexpected_exception")) {
-            return true;
-        }
-        if (errorFileExists(path, "ptr")) {
-            fs::path errorFilePath = replaceExtension(path, ".ptr.err");
-            std::string typeOfError = getTypeOfError(errorFilePath);
-            std::string fileWhereErrorFound = getFileErrorFound(errorFilePath);
-            if (isPointerOutOfBound(typeOfError) && errorInExceptionHeader(fileWhereErrorFound)) {
-                // TODO: add other check that exception wah thrown: now klee generates "pointer out
-                //  of bound in exception.h" instead of "exception was thrown"
-                return true;
-            }
-        }
-        return false;
-    }
-
-    AssertInfo hasFailedAssert(const fs::path& path) {
-        AssertInfo assertInfo;
-        if (errorFileExists(path, "assert")) {
-            assertInfo.failedAssert = true;
-            fs::path errorFilePath = replaceExtension(path, ".assert.err");
-            assertInfo.assertBody = getTypeOfError(errorFilePath);
-            assertInfo.fileWithFailedAssert = getFileErrorFound(errorFilePath);
-            assertInfo.lineWithFailedAssert = getLineErrorFound(errorFilePath);
-        }
-        return assertInfo;
     }
 
 

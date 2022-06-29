@@ -1,4 +1,5 @@
 #include "ParametrizedAssertsVisitor.h"
+using namespace ::testsgen;
 
 namespace visitor {
     ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(const types::TypesHandler *typesHandler,
@@ -12,7 +13,7 @@ namespace visitor {
 
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
-                                           ::testsgen::ErrorMode errorMode) {
+                                           ErrorMode errorMode) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;

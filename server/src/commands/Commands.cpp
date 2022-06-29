@@ -421,7 +421,7 @@ bool Commands::SettingsContextOptionGroup::withStubs() const {
     return !noStubs;
 }
 
-::testsgen::ErrorMode Commands::SettingsContextOptionGroup::getErrorMode() const {
+ErrorMode Commands::SettingsContextOptionGroup::getErrorMode() const {
     return errorMode;
 }
 

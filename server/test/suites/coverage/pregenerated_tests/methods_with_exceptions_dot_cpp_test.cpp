@@ -1,7 +1,3 @@
-/*
-* Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-*/
-
 #include "methods_with_exceptions_dot_cpp_test.h"
 
 #include "gtest/gtest.h"

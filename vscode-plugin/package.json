@@ -512,7 +512,7 @@
 					"type": "string",
 					"enum": [
 						"Failing",
-						"Errors failing if only they occured in target",
+						"Auto",
 						"Passing"
 					],
 					"default": "Failing",

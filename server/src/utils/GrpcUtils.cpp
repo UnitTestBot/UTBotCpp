@@ -36,7 +36,7 @@ namespace GrpcUtils {
                           int32_t timeoutPerTest,
                           bool useDeterministicSearcher,
                           bool useStubs,
-                          ::testsgen::ErrorMode errorMode) {
+                          ErrorMode errorMode) {
         auto result = std::make_unique<testsgen::SettingsContext>();
         result->set_generateforstaticfunctions(generateForStaticFunctions);
         result->set_verbose(verbose);

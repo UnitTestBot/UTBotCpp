@@ -35,7 +35,7 @@ public:
                  TestsWriter *testsWriter,
                  bool isBatched,
                  bool interactiveMode,
-                 ::testsgen::ErrorMode errorMode);
+                 ErrorMode errorMode);
 
 private:
     const utbot::ProjectContext projectContext;

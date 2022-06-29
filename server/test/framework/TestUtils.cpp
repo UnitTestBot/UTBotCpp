@@ -131,9 +131,9 @@ namespace testUtils {
     }
 
     void checkStatuses(const Coverage::TestResultMap &testResultMap,
-                       const std::vector<UnitTest> &tests, ::testsgen::ErrorMode errorMode) {
+                       const std::vector<UnitTest> &tests, ErrorMode errorMode) {
         for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ErrorMode::FAILING) {
                 continue;
             }
             const auto status = testResultMap.at(filename).at(testname).status();
@@ -146,10 +146,10 @@ namespace testUtils {
     void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests,
                        const StatusCountMap &expectedStatusCountMap,
-                            ::testsgen::ErrorMode errorMode) {
+                            ErrorMode errorMode) {
         StatusCountMap actualStatusCountMap;
         for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ErrorMode::FAILING) {
                 continue;
             }
             const auto status = testResultMap.at(filename).at(testname).status();
@@ -189,7 +189,7 @@ namespace testUtils {
                                                          bool useStubs,
                                                          bool verbose,
                                                          int kleeTimeout,
-                                                         ::testsgen::ErrorMode errorMode) {
+                                                         ErrorMode errorMode) {
         auto projectContext = GrpcUtils::createProjectContext(
             projectName, projectPath, projectPath / "tests", buildDirRelativePath);
         auto settingsContext = GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode);
@@ -204,7 +204,7 @@ namespace testUtils {
                                                    const fs::path &filePath,
                                                    bool useStubs,
                                                    bool verbose,
-                                                   ::testsgen::ErrorMode errorMode) {
+                                                   ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
                                                    srcPaths, useStubs, verbose, errorMode);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
@@ -218,7 +218,7 @@ namespace testUtils {
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout,
-                                                   ::testsgen::ErrorMode errorMode) {
+                                                   ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
                                                    srcPaths, useStubs, verbose, kleeTimeout, errorMode);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
@@ -233,7 +233,7 @@ namespace testUtils {
                                                    int line,
                                                    bool verbose,
                                                    int kleeTimeout,
-                                                   ::testsgen::ErrorMode errorMode) {
+                                                   ErrorMode errorMode) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
                                              srcPaths, filePath, line, false, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
@@ -242,7 +242,7 @@ namespace testUtils {
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
                                                          const fs::path &filePath,
-                                                         ::testsgen::ErrorMode errorMode) {
+                                                         ErrorMode errorMode) {
         auto projectContext =
             GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "");
         // we actually don't pass all parameters except test directory and project name on client

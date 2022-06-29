@@ -21,6 +21,7 @@ using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
 using TestCasePredicate = std::function<bool(tests::Tests::MethodTestCase)>;
 using CoverageLines = CollectionUtils::MapFileTo<std::set<int>>;
 using StatusCountMap = std::unordered_map<testsgen::TestStatus, int>;
+using namespace ::testsgen;
 
 namespace testUtils {
     enum BuildCommandsTool {
@@ -42,12 +43,12 @@ namespace testUtils {
                        const CoverageLines &expectedLinesNone);
 
     void checkStatuses(const Coverage::TestResultMap &testResultMap, const std::vector<UnitTest> &tests,
-                       ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                       ErrorMode errorMode = ErrorMode::FAILING);
 
   void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap,
-                            ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                            ErrorMode errorMode = ErrorMode::FAILING);
 
     int getNumberOfTests(const tests::TestsMap &tests);
 
@@ -59,7 +60,7 @@ namespace testUtils {
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
                                                          const fs::path &filePath,
-                                                         ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                                                         ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
@@ -68,7 +69,7 @@ namespace testUtils {
                                                          bool useStubs = false,
                                                          bool verbose = true,
                                                          int kleeTimeout = 60,
-                                                         ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                                                         ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -77,7 +78,7 @@ namespace testUtils {
                                                    const fs::path &filePath,
                                                    bool useStubs = false,
                                                    bool verbose = true,
-                                                   ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                                                   ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
@@ -87,7 +88,7 @@ namespace testUtils {
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout,
-                                                   ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                                                   ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                     const fs::path &projectPath,
@@ -97,7 +98,7 @@ namespace testUtils {
                                                     int line,
                                                     bool verbose = true,
                                                     int kleeTimeout = 60,
-                                                     ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                                                     ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,

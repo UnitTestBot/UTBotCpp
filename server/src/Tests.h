@@ -6,7 +6,7 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
-#include "utils/AssertInfo.h"
+#include "utils/ErrorInfo.h"
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
@@ -62,17 +62,16 @@ namespace tests {
         };
         std::vector<UTBotKTestObject> objects;
         Status status;
-        bool uncaughtException = false;
-        AssertInfo assertInfo;
+        ErrorInfo errorInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
             : objects(std::move(objects)), status(status) {
         }
 
-        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status, bool uncaughtException,
-                    AssertInfo assertInfo_)
-            : objects(std::move(objects)), status(status), uncaughtException(uncaughtException),
-            assertInfo(std::move(assertInfo_)) {
+        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status,
+                    ErrorInfo errorInfo_)
+            : objects(std::move(objects)), status(status),
+            errorInfo(std::move(errorInfo_)) {
         }
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
@@ -385,8 +384,7 @@ namespace tests {
             std::optional <TestCaseParamValue> stdinValue = std::nullopt;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
-            bool hasUncaughtException = false;
-            AssertInfo assertInfo;
+            ErrorInfo errorInfo;
         };
 
         struct MethodTestCase {
@@ -410,8 +408,7 @@ namespace tests {
             TestCaseParamValue returnValue;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
-            bool hasUncaughtException = false;
-            AssertInfo assertInfo;
+            ErrorInfo errorInfo;
 
             [[nodiscard]] bool isError() const;
         };

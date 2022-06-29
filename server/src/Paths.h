@@ -12,7 +12,7 @@
 #include "utils/path/FileSystemPath.h"
 #include <optional>
 #include <unordered_set>
-#include <utils/AssertInfo.h>
+#include <utils/ErrorInfo.h>
 
 namespace Paths {
     extern fs::path logPath, tmpPath;
@@ -34,6 +34,8 @@ namespace Paths {
     filterPathsByDirNames(const CollectionUtils::FileSet &path,
                           const std::vector<fs::path> &dirNames,
                           const std::function<bool(const fs::path &path)> &filter);
+
+    bool errorFileExists(const fs::path &path, std::string const& suffix);
 
     static inline void setOptPath(fs::path &path, const std::string &value) {
         path = fs::path(value);
@@ -360,10 +362,6 @@ namespace Paths {
     static inline fs::path getStubsRelativeDirPath(const fs::path &relativeTestDirPath) {
         return "stubs" / relativeTestDirPath;
     }
-
-    bool hasUncaughtException(const fs::path &path);
-
-    AssertInfo hasFailedAssert(const fs::path &path);
 
     //endregion
 

@@ -8,6 +8,5 @@
     },
     // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
     "typescript.tsc.autoDetect": "off",
-    "git.ignoreLimitWarning": true,
-    "unittestbot.paths.sourceDirectories": "../../../../../../c:/Users/mWX1153800/Desktop/work/UTBotCpp/vscode-plugin,../../../../../../c:/Users/mWX1153800/Desktop/work/UTBotCpp/vscode-plugin/app_images,../../../../../../c:/Users/mWX1153800/Desktop/work/UTBotCpp/vscode-plugin/icons,../../../../../../c:/Users/mWX1153800/Desktop/work/UTBotCpp/vscode-plugin/media,../../../../../../c:/Users/mWX1153800/Desktop/work/UTBotCpp/vscode-plugin/src,src/cache,src/client,src/codelens,src/config,src/dataloader,src/emitter,src/explorer,src/generators,src/interface,src/requests,src/responses,src/runner,src/test,src/utils,src/validators,src/visualizers,src/wizard,src/test/suite"
+    "git.ignoreLimitWarning": true
 }

@@ -22,6 +22,7 @@
 #include <string>
 
 using json = nlohmann::json;
+using namespace ::testsgen;
 
 /**
  * @brief Contains methods for generating files for KLEE and build them.
@@ -127,7 +128,7 @@ public:
                            const std::vector<MethodKtests> &kleeOutput,
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false,
-                           ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                           ErrorMode errorMode = ErrorMode::FAILING);
 
     [[nodiscard]] std::shared_ptr<BuildDatabase> getBuildDatabase() const;
 

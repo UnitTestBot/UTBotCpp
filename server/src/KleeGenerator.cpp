@@ -15,6 +15,7 @@
 #include "loguru.h"
 
 using namespace tests;
+using namespace ::testsgen;
 
 KleeGenerator::KleeGenerator(
     utbot::ProjectContext projectContext,
@@ -321,7 +322,7 @@ void KleeGenerator::parseKTestsToFinalCode(
     const std::vector<MethodKtests> &kleeOutput,
     const std::shared_ptr<LineInfo> &lineInfo,
     bool verbose,
-    ::testsgen::ErrorMode errorMode) {
+    ErrorMode errorMode) {
     for (const auto &batch : kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());

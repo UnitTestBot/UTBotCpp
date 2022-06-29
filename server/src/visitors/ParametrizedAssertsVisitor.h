@@ -3,6 +3,8 @@
 
 #include "AssertsVisitor.h"
 
+using namespace ::testsgen;
+
 namespace visitor {
     class ParametrizedAssertsVisitor : public AssertsVisitor {
     private:
@@ -15,7 +17,7 @@ namespace visitor {
 
         void visit(const Tests::MethodDescription &methodDescription,
                    const Tests::MethodTestCase &testCase,
-                   ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
+                   ErrorMode errorMode = ErrorMode::FAILING);
 
     protected:
         void visitPointer(const types::Type &type,
