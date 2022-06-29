@@ -15,10 +15,12 @@ class TestsWriter : public utbot::ServerWriter<testsgen::TestsResponse> {
 public:
     explicit TestsWriter(grpc::ServerWriter<testsgen::TestsResponse> *writer);
 
-    virtual void writeTestsWithProgress(tests::TestsMap &testMap,
-                                        std::string const &message,
+    virtual void writeTestsWithProgress(tests::TestsMap &testMap, std::string const &message,
                                         const fs::path &testDirPath,
-                                        std::function<void(tests::Tests &)> &&functor) = 0;
+                                        std::function<void(tests::Tests &)> &&functor,
+                                        std::function<void(bool)> &&joinAndWriteSarif) = 0;
+
+    virtual void writeCodeAnylisisFolder(const fs::path &projectPath) const = 0;
 
 protected:
     void writeCompleted(tests::TestsMap const &testMap, int totalTestsCounter);

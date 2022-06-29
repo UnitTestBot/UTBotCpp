@@ -34,6 +34,7 @@ namespace sarif {
     }
 
     void ProjectSarif::writeCodeAnalysisFolder(const fs::path &tmpPath, const fs::path &projectPath) {
+        FileSystemUtils::removeAll(projectPath / default_output_dir_name);
         CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(tmpPath / default_output_dir_name);
         for (const auto &file : allFiles) {
             fs::path relativePath = fs::relative(file, tmpPath);

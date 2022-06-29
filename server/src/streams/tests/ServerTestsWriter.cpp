@@ -6,10 +6,10 @@
 
 #include "loguru.h"
 
-void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                               std::string const &message,
+void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap, std::string const &message,
                                                const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor) {
+                                               std::function<void(tests::Tests &)> &&functor,
+                                               std::function<void(bool)> &&joinAndWriteSarif) {
 
     size_t size = testMap.size();
     writeProgress(message);
@@ -22,6 +22,7 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
             totalTestsCounter += 1;
         }
     }
+    joinAndWriteSarif(true);
     writeCompleted(testMap, totalTestsCounter);
 }
 
@@ -61,4 +62,22 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
     response.set_allocated_progress(progress.release());
     writeMessage(response);
     return isAnyTestsGenerated;
+}
+
+void ServerTestsWriter::writeCodeAnylisisFolder(const fs::path &projectCodeAnalysisPath) const {
+    testsgen::TestsResponse response;
+    LOG_S(DEBUG) << "Writing code analysis folder";
+    CollectionUtils::FileSet allFiles = Paths::findFilesInFolder(projectCodeAnalysisPath);
+    for (const auto &file : allFiles) {
+        auto testSource = response.add_testsources();
+        testSource->set_filepath(file);
+        if (synchronizeCode) {
+            json sarif = JsonUtils::getJsonFromFile(file);
+            testSource->set_code(sarif.dump(4));
+        }
+    }
+    LOG_S(INFO) << "Sent all SARIF files";
+    auto progress = GrpcUtils::createProgress("testing", 100, false);
+    response.set_allocated_progress(progress.release());
+    writeMessage(response);
 }

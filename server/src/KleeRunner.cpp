@@ -97,16 +97,19 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         fileSarif.writeSarifFileToTmp(projectTmpPath);
     };
 
-    testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
-                                        std::move(writeFunctor));
-
-    sarif::ProjectSarif projectSarif(projectContext.projectPath, settingsContext.genSarif);
-    projectSarif.joinSarifFiles(projectTmpPath);
-    projectSarif.writeSarifFileToTmp(projectTmpPath);
-    if (settingsContext.genSarif) {
+    std::function<void(bool)> writeSARIFFunctor = [&](bool isRemote) {
+        sarif::ProjectSarif projectSarif(projectContext.projectPath, settingsContext.genSarif);
+        projectSarif.joinSarifFiles(projectTmpPath);
+        projectSarif.writeSarifFileToTmp(projectTmpPath);
         sarif::ProjectSarif::writeCodeAnalysisFolder(projectTmpPath, projectContext.projectPath);
-    }
+        if (isRemote) {
+            testsWriter->writeCodeAnylisisFolder(
+                    projectContext.projectPath / sarif::ProjectSarif::default_output_dir_name);
+        }
+    };
 
+    testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
+                                        std::move(writeFunctor), std::move(writeSARIFFunctor));
 }
 
 fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {

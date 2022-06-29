@@ -5,10 +5,10 @@
 #include <utils/FileSystemUtils.h>
 
 
-void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                            const std::string &message,
+void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap, std::string const &message,
                                             const fs::path &testDirPath,
-                                            std::function<void(tests::Tests &)> &&functor) {
+                                            std::function<void(tests::Tests &)> &&functor,
+                                            std::function<void(bool)> &&joinAndWriteSarif) {
     size_t size = testMap.size();
     std::cout << message << std::endl;
     int totalTestsCounter = 0;
@@ -21,6 +21,7 @@ void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
             LOG_S(INFO) << generatedMessage;
         }
     }
+    joinAndWriteSarif(false);
     std::string finalMessage;
     if (totalTestsCounter == 1) {
         finalMessage = StringUtils::stringFormat("%d test file generated.", totalTestsCounter);
@@ -35,3 +36,9 @@ bool CLITestsWriter::writeTestFile(const tests::Tests &tests, const fs::path &te
     FileSystemUtils::writeToFile(testFilePath, tests.code);
     return !tests.code.empty();
 }
+
+void CLITestsWriter::writeCodeAnylisisFolder(const fs::path &projectPath) const {
+
+}
+
+

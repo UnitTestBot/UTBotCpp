@@ -13,10 +13,10 @@ public:
                                bool synchronizeCode)
         : TestsWriter(writer), synchronizeCode(synchronizeCode)  {};
 
-    void writeTestsWithProgress(tests::TestsMap &testMap,
-                                std::string const &message,
+    void writeTestsWithProgress(tests::TestsMap &testMap, std::string const &message,
                                 const fs::path &testDirPath,
-                                std::function<void(tests::Tests &)> &&functor) override;
+                                std::function<void(tests::Tests &)> &&functor,
+                                std::function<void(bool)> &&joinAndWriteSarif) override;
 
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,
@@ -24,6 +24,8 @@ private:
                                                         const std::string &message,
                                                         double percent,
                                                         bool isCompleted) const;
+
+    void writeCodeAnylisisFolder(const fs::path &projectPath) const override;
 
     bool synchronizeCode;
 };
