@@ -1235,8 +1235,6 @@ namespace {
             generateFiles(simple_loop_uncovered_c, pregeneratedTestsRelativeDir);
             generateFiles(dependent_functions_c, pregeneratedTestsRelativeDir);
             generateFiles(simple_class_cpp, pregeneratedTestsRelativeDir);
-            generateFiles(methods_with_exceptions_cpp, pregeneratedTestsRelativeDir);
-            generateFiles(methods_with_asserts_cpp, pregeneratedTestsRelativeDir);
         }
 
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,
@@ -1246,7 +1244,7 @@ namespace {
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 25, 0, true, false, errorMode};
+            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;

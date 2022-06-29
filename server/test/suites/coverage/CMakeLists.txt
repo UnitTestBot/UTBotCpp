@@ -10,6 +10,4 @@ add_library(coverage1
         basic_functions.c
         simple_loop_uncovered.c
         dependent_functions.c
-        simple_class.cpp
-        methods_with_exceptions.cpp
-        methods_with_asserts.cpp)
+        simple_class.cpp)
