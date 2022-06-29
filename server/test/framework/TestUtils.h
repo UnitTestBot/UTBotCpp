@@ -41,7 +41,7 @@ namespace testUtils {
                        const CoverageLines &expectedLinesUncovered,
                        const CoverageLines &expectedLinesNone);
 
-    void checkStatuses(const Coverage::TestStatusMap &testResultMap, const std::vector<UnitTest> &tests,
+    void checkStatuses(const Coverage::TestResultMap &testResultMap, const std::vector<UnitTest> &tests,
                        ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);
 
   void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
@@ -84,7 +84,7 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   bool useStubs
+                                                   bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout,
                                                    ::testsgen::ErrorMode errorMode = ::testsgen::ErrorMode::FAILING);

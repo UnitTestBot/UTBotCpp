@@ -1355,7 +1355,7 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto statusMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
         ASSERT_FALSE(statusMap.empty());

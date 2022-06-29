@@ -130,7 +130,7 @@ namespace testUtils {
         }
     }
 
-    void checkStatuses(const Coverage::TestStatusMap &testResultMap,
+    void checkStatuses(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests, ::testsgen::ErrorMode errorMode) {
         for (auto const &[filename, suitename, testname] : tests) {
             if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ::testsgen::ErrorMode::FAILING) {
