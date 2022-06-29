@@ -277,7 +277,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode, /*errorMode */ testGen.settingsContext.errorMode);
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode, testGen.settingsContext.errorMode);
         auto finish_time = std::chrono::steady_clock::now();
         LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
     } catch (const ExecutionProcessException &e) {

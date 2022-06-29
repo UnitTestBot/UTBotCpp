@@ -1,6 +1,6 @@
-//
-// Created by mWX1153800 on 6/28/2022.
-//
+/*
+* Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
+*/
 
 #ifndef UNITTESTBOT_ASSERTINFO_H
 #define UNITTESTBOT_ASSERTINFO_H

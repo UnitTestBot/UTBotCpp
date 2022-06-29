@@ -199,7 +199,6 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &sourceFilePath,
 }
 
 
-
 fs::path KleeGenerator::writeKleeFile(
     printer::KleePrinter &kleePrinter,
     Tests const &tests,

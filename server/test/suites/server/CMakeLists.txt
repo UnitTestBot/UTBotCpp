@@ -29,5 +29,4 @@ add_executable(server
         alignment.c
         symbolic_stdin.c
         multiple_classes.cpp
-        methods_with_exceptions.cpp
         )
