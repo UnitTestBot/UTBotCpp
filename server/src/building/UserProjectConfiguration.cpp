@@ -56,7 +56,7 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
 
         std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
         for (const std::string &op : cmakeOptions) {
-            if (op.find("_USE_RESPONSE_FILE_FOR_LIBRARIES") == std::string::npos) {
+            if (op.find("_USE_RESPONSE_FILE_FOR_") == std::string::npos) {
                 cmakeOptionsWithMandatory.emplace_back(op);
             }
         }
