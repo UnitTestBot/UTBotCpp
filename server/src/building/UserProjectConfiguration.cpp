@@ -4,8 +4,8 @@
 #include "environment/EnvironmentPaths.h"
 #include "tasks/ShellExecTask.h"
 #include "utils/Copyright.h"
-#include "utils/FileSystemUtils.h"
 #include "utils/ExecUtils.h"
+#include "utils/FileSystemUtils.h"
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
@@ -32,6 +32,19 @@ Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &build
     return Status::OK;
 }
 
+static const std::vector<std::string> CMAKE_MANDATORY_OPTIONS = {
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+};
 
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
@@ -40,8 +53,16 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
                                                           ProjectConfigWriter const &writer) {
     try {
         fs::path bearShPath = createBearShScript(buildDirPath);
-        cmakeOptions.emplace_back("..");
-        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptions);
+
+        std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
+        for (const std::string &op : cmakeOptions) {
+            if (op.find("_USE_RESPONSE_FILE_FOR_LIBRARIES") == std::string::npos) {
+                cmakeOptionsWithMandatory.emplace_back(op);
+            }
+        }
+        cmakeOptionsWithMandatory.emplace_back("..");
+
+        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptionsWithMandatory);
         ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(),
                                                           {Paths::getMake(), MakefileUtils::threadFlag()});
 
