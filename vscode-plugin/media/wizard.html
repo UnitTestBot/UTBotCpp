@@ -77,19 +77,19 @@
     </div>
 
     <div class="utbot-form__tab connection-tab" vs-message-callback="sendServerSetup()">
-        <h2>🖥️ Server Setup</h2>
+        <h2>🖥️  Server Setup</h2>
         <div id="useLocalHostSetup">
-            <input type="checkbox" id="useLocalHost" onclick="setupLocalHost();">
+            <input type="checkbox" id="useLocalHost" onclick="handleOnOffDefaultConfigurationOnLocalhost();">
             <label for="useLocalHost">Default server configuration on <b><code>localhost</code></b> (or WSL2)</label>
         </div>
         <br>
 
         <span style="display: grid; grid-template-columns: auto auto">
-            <b>📶 Connection</b>
+            <b>📶  Connection</b>
             <span>
                 <span id="connection_loader">⏳ Connecting...</span>
-                <span id="connection_success">✔️Successfully pinged server! </span>
-                <span id="connection_warning" format="⚠️Warning! Versions are different: "></span>
+                <span id="connection_success">✔️ Successfully pinged server! </span>
+                <span id="connection_warning" format="⚠️ Warning! Versions are different: "></span>
                 <span id="connection_failure">❌ Failed to establish connection! </span>
              </span>
         </span>
@@ -173,7 +173,7 @@
     </div>
 
     <div class="utbot-form__tab">
-        <div><b>🎉Success!</b></div>
+        <div><b>🎉 Success!</b></div>
         <div>
             UTBot extension was successfully configured, and now you are ready to use all its functionality.<br>
             If you want to learn more about UTBot C/C++ or you have ay questions related to its usage, please,

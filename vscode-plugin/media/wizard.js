@@ -30,10 +30,10 @@ function $(id) {
  */
 const vscode = acquireVsCodeApi();
 function DbgMessage(message) {
-     // vscode.postMessage({
-     //     command: 'dbg_message',
-     //     message: message
-     // });
+     vscode.postMessage({
+         command: 'dbg_message',
+         message: message
+     });
 }
 
 const os = getVarValue("os");
@@ -288,7 +288,7 @@ function removeElementByClassName(className) {
     }
 }
 
-function setupLocalHost() {
+function handleOnOffDefaultConfigurationOnLocalhost() {
     const mappingInput = $('mappingInput');
     const hostInput = $('hostInput');
     const portInput = $('portInput');

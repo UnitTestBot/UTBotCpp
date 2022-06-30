@@ -49,7 +49,8 @@ export class Prefs {
     }
 
     public static isRemoteScenario(): boolean {
-        return !this.isLocalHost() || isWin32();
+        return !(this.isLocalHost() && this.getRemotePath() === vsUtils.getProjectDirByOpenedFile().fsPath)
+            || isWin32();
     }
 
     /**
