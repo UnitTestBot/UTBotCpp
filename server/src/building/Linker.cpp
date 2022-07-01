@@ -141,9 +141,6 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     CollectionUtils::FileSet siblingObjectsToBuild;
     for (const fs::path &objectFile : siblings) {
         auto objectInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
-        if (CollectionUtils::contains(stubSources, objectInfo->getSourcePath())) {
-            continue;
-        }
         bool insideFolder = true;
         if (auto folderTestGen = dynamic_cast<FolderTestGen *>(&testGen)) {
             fs::path folderGen = folderTestGen->folderPath;
@@ -154,12 +151,11 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
         if (testGen.buildDatabase->isFirstObjectFileForSource(objectFile) &&
             !CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) &&
             insideFolder) {
-            filesToLink.insert(
-                { objectFile, objectInfo->kleeFilesInfo->getKleeBitcodeFile() });
+            filesToLink.emplace(objectFile, objectInfo->kleeFilesInfo->getKleeBitcodeFile());
         } else {
             siblingObjectsToBuild.insert(objectInfo->getOutputFile());
             fs::path bitcodeFile =
-                testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
+                    testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
             filesToLink.emplace(objectFile, bitcodeFile);
         }
     }

@@ -17,6 +17,9 @@ add_executable(
         SAT-777.c
         main.c)
 
+add_subdirectory(ISSUE-140)
+target_link_libraries(regression issue-140)
+
 add_library(
         SAT-760
         SAT-760/SAT-760_1.c

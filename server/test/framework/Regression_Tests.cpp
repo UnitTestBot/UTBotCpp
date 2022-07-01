@@ -27,7 +27,7 @@ namespace {
 
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, bool verbose = true) {
-            auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
+            auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
                                                  srcPaths, pathToFile, lineNum, false, verbose, 0);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
@@ -35,6 +35,18 @@ namespace {
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return { testGen, status };
+        }
+
+        std::pair<FolderTestGen, Status>
+        createTestForFolder(const fs::path &pathToFolder, bool useStubs = true, bool verbose = true) {
+            auto folderRequest = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
+                                                                srcPaths, useStubs, verbose, 0);
+            auto request = GrpcUtils::createFolderRequest(std::move(folderRequest), pathToFolder);
+            auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
+            testGen.setTargetPath(GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+
+            Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            return {testGen, status};
         }
     };
 
@@ -327,5 +339,12 @@ namespace {
                             return testCase.returnValue.view->getEntryValue(nullptr) == "'4'";
                         } }),
                 "f4");
+    }
+
+    TEST_F(Regression_Test, Generate_Folder) {
+        fs::path folderPath = getTestFilePath("ISSUE-140");
+        auto [testGen, status] = createTestForFolder(folderPath, true, true);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
 }
