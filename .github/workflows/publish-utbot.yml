@@ -3,7 +3,7 @@ name: Publish UTBot as an archive
 on:
   push:
     tags:
-      - '[0-9][0-9][0-9][0-9].[0-1][0-9].[0-9]+'
+      - '[1-9][0-9][0-9][0-9].[1]?[0-9].[0-9]+'
     branches:
       - main
 
@@ -44,21 +44,25 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: recursive
+      - name: set version
+        run: |
+          re="^[1-9][0-9]{3}\.[1]?[0-9]\.[1-9][0-9]*$"
+          if [[ $GITHUB_REF_NAME =~ $re ]]; then 
+            export VERSION=$GITHUB_REF_NAME
+            echo "ARTIFACT_NAME=release-$VERSION" >> $GITHUB_ENV
+          else
+            export VERSION=$(date '+%Y.%-m').$GITHUB_RUN_NUMBER
+            echo "ARTIFACT_NAME=dev-$VERSION" >> $GITHUB_ENV
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          echo "RUN_INFO=RUN_INFO" >> $GITHUB_ENV
       - name: build VSCode plugin
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
           ./docker/action-scripts/build-vsix.sh
       - name: build UTBot
         run: |
-          re="^[0-9]{4}\.[0-1][0-9]\.[0-9]+$"
-          if [[ $GITHUB_REF_NAME =~ $re ]]; then 
-            export VERSION=$GITHUB_REF_NAME
-            echo "ARTIFACT_NAME=release-$VERSION" >> $GITHUB_ENV
-          else
-            export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
-            echo "ARTIFACT_NAME=dev-$VERSION" >> $GITHUB_ENV
-          fi
-          export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           chmod +x docker/action-scripts/build-utbot.sh
           ./docker/action-scripts/build-utbot.sh
         shell: bash
