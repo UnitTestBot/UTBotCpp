@@ -34,3 +34,5 @@ export CPATH=$CPATH:$UTBOT_ALL/klee/include
 export LD_LIBRARY_PATH=$UTBOT_INSTALL_DIR/lib
 export LDFLAGS='-fuse-ld=gold'
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin
+
+export VERSION=$(date '+%Y.%-m').0

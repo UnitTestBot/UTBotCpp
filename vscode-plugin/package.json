@@ -4,7 +4,7 @@
 	"publisher": "UnitTestBot",
 	"repository": "https://github.com/UnitTestBot/UTBotCpp",
 	"description": "Provides instruments for auto generating regression tests in C/C++ projects.",
-	"version": "0.0.1",
+	"version": "2022.7.0",
 	"engines": {
 		"vscode": "^1.50.0"
 	},
