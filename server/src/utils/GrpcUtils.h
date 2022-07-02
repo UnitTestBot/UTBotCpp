@@ -11,6 +11,8 @@
 #include <memory>
 #include <utility>
 
+using namespace ::testsgen;
+
 namespace GrpcUtils {
     extern const std::string UTBOT_AUTO_TARGET_PATH;
 
@@ -26,7 +28,8 @@ namespace GrpcUtils {
                           int32_t timeoutPerFunction,
                           int32_t timeoutPerTest,
                           bool useDeterministicSearcher,
-                          bool useStubs);
+                          bool useStubs,
+                          ErrorMode errorMode);
 
     std::unique_ptr<testsgen::SnippetRequest>
     createSnippetRequest(std::unique_ptr<testsgen::ProjectContext> projectContext,

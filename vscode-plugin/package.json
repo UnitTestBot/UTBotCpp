@@ -508,6 +508,17 @@
 					"default": true,
 					"markdownDescription": "%unittestbot.testsGeneration.generateForStaticFunctions.description%"
 				},
+				"unittestbot.testsGeneration.errorMode" : {
+					"type": "string",
+					"enum": [
+						"Failing",
+						"Auto",
+						"Passing"
+					],
+					"default": "Failing",
+					"markdownDescription": "%unittestbot.testsGeneration.errorMode.description%",
+					"scope": "window"
+				},
 				"unittestbot.visual.showTestResults": {
 					"type": "boolean",
 					"default": true,

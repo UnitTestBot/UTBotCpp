@@ -3,11 +3,11 @@
 #include "ProjectContext.h"
 #include "utils/StringUtils.h"
 #include "utils/CLIUtils.h"
-
 #include "loguru.h"
 
 #include <pwd.h>
 #include <unistd.h>
+#include <utils/ErrorInfo.h>
 
 namespace Paths {
     static fs::path getHomeDir() {
@@ -118,11 +118,12 @@ namespace Paths {
 
     //region klee
 
-    static bool errorFileExists(const fs::path &path, std::string const& suffix) {
+     bool errorFileExists(const fs::path &path, std::string const& suffix) {
         fs::path file = replaceExtension(
             path, StringUtils::stringFormat(".%s.err", suffix));
         return fs::exists(file);
     }
+
 
     bool hasInternalError(const fs::path &path) {
         static const auto internalErrorSuffixes = {

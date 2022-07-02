@@ -16,6 +16,7 @@
 #include <vector>
 
 using tests::Tests;
+using namespace ::testsgen;
 
 namespace printer {
     class TestsPrinter : public Printer {
@@ -26,7 +27,8 @@ namespace printer {
 
         void genCode(Tests::MethodDescription &methodDescription,
                      const std::optional<LineInfo::PredicateInfo>& predicateInfo = {},
-                     bool verbose = false);
+                     bool verbose = false,
+                     ErrorMode errorMode = ErrorMode::FAILING);
 
         void joinToFinalCode(Tests &tests, const fs::path &generatedHeaderPath);
 
@@ -36,11 +38,13 @@ namespace printer {
 
         void genParametrizedTestCase(const tests::Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
-                                     const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                                     const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                     ErrorMode errorMode);
 
         void genVerboseTestCase(const tests::Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase,
-                                const std::optional<LineInfo::PredicateInfo> &predicateInfo);
+                                const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+                                ErrorMode errorMode);
 
         void testHeader(const std::string &scopeName,
                         const tests::Tests::MethodDescription &methodDescription,
@@ -69,7 +73,8 @@ namespace printer {
                                    const Tests::MethodTestCase &testCase);
 
         void verboseFunctionCall(const tests::Tests::MethodDescription &methodDescription,
-                                 const Tests::MethodTestCase &testCase);
+                                 const Tests::MethodTestCase &testCase,
+                                 ErrorMode errorMode);
 
         void verboseAsserts(const tests::Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase,
@@ -89,7 +94,8 @@ namespace printer {
 
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
-                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                 ErrorMode errorMode);
 
         std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
@@ -102,7 +108,8 @@ namespace printer {
 
         std::string constrVisitorFunctionCall(const tests::Tests::MethodDescription &methodDescription,
                                               const Tests::MethodTestCase &testCase,
-                                              bool verboseMode);
+                                              bool verboseMode,
+                                              ErrorMode errorMode);
 
         struct FunctionSignature {
             std::string name;
@@ -140,7 +147,8 @@ namespace printer {
                                 Tests::MethodDescription &methodDescription,
                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                 bool verbose,
-                                int &testNum);
+                                int &testNum,
+                                ErrorMode errorMode);
 
         std::uint32_t printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods);
     };

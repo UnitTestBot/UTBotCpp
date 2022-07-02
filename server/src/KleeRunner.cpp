@@ -9,12 +9,14 @@
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
 #include "TimeExecStatistics.h"
+#include "utils/TraceUtils.h"
 
 #include "loguru.h"
 
 #include <utility>
 
 using namespace tests;
+using namespace ::testsgen;
 
 KleeRunner::KleeRunner(utbot::ProjectContext projectContext,
                        utbot::SettingsContext settingsContext,
@@ -30,7 +32,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          const std::shared_ptr<LineInfo> &lineInfo,
                          TestsWriter *testsWriter,
                          bool isBatched,
-                         bool interactiveMode) {
+                         bool interactiveMode,
+                         ErrorMode errorMode) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
@@ -85,7 +88,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
           }
         }
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
-                                          settingsContext.verbose);
+                                          settingsContext.verbose, errorMode);
     };
 
     testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
@@ -190,15 +193,20 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                     }
                     UTBotKTest::Status status = Paths::hasError(path) ? UTBotKTest::Status::FAILED
                                                                       : UTBotKTest::Status::SUCCESS;
+                    ErrorInfo errorInfo;
+                    if (status == UTBotKTest::Status::FAILED) {
+                        errorInfo = getErrorInfo(path);
+                    }
                     std::vector<ConcretizedObject> kTestObjects(
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
+                    
 
                     std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
                         kTestObjects, [](const ConcretizedObject &kTestObject) {
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                    ktestChunk[testMethod].emplace_back(objects, status, errorInfo);
                 }
             }
         }
@@ -329,6 +337,10 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                         UTBotKTest::Status status = Paths::hasError(path)
                                                     ? UTBotKTest::Status::FAILED
                                                     : UTBotKTest::Status::SUCCESS;
+                        ErrorInfo errorInfo;
+                        if (status == UTBotKTest::Status::FAILED) {
+                            errorInfo = getErrorInfo(path);
+                        }
                         std::vector<ConcretizedObject> kTestObjects(
                             ktestData->objects, ktestData->objects + ktestData->n_objects);
 
@@ -337,7 +349,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
                               return UTBotKTestObject{ kTestObject };
                             });
 
-                        ktestChunk[method].emplace_back(objects, status);
+                        ktestChunk[method].emplace_back(objects, status, errorInfo);
                     }
                 }
             }

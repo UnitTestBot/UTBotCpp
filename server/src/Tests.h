@@ -6,12 +6,14 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
+#include "utils/ErrorInfo.h"
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include "json.hpp"
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
+#include "Paths.h"
 
 #include <iterator>
 #include <memory>
@@ -60,9 +62,16 @@ namespace tests {
         };
         std::vector<UTBotKTestObject> objects;
         Status status;
+        ErrorInfo errorInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
             : objects(std::move(objects)), status(status) {
+        }
+
+        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status,
+                    ErrorInfo errorInfo_)
+            : objects(std::move(objects)), status(status),
+            errorInfo(std::move(errorInfo_)) {
         }
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
@@ -375,6 +384,7 @@ namespace tests {
             std::optional <TestCaseParamValue> stdinValue = std::nullopt;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            ErrorInfo errorInfo;
         };
 
         struct MethodTestCase {
@@ -398,6 +408,7 @@ namespace tests {
             TestCaseParamValue returnValue;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            ErrorInfo errorInfo;
 
             [[nodiscard]] bool isError() const;
         };
@@ -801,5 +812,5 @@ namespace tests {
                                         const std::string &typeName,
                                         unsigned int offset,
                                         unsigned int len);
-}
+} // tests
 #endif // UNITTESTBOT_TESTS_H

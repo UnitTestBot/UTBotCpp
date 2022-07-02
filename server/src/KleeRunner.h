@@ -34,7 +34,8 @@ public:
                  const std::shared_ptr<LineInfo> &lineInfo,
                  TestsWriter *testsWriter,
                  bool isBatched,
-                 bool interactiveMode);
+                 bool interactiveMode,
+                 ErrorMode errorMode);
 
 private:
     const utbot::ProjectContext projectContext;

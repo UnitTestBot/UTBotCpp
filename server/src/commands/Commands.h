@@ -10,7 +10,7 @@
 #include <CLI11.hpp>
 #include <string>
 
-
+using namespace ::testsgen;
 
 namespace Commands {
     extern uint32_t threadsPerUser;
@@ -248,6 +248,8 @@ namespace Commands {
 
         [[nodiscard]] bool withStubs() const;
 
+        [[nodiscard]] ErrorMode getErrorMode() const;
+
     private:
         CLI::Option_group *settingsContextOptions;
         bool generateForStaticFunctions = true;
@@ -256,6 +258,7 @@ namespace Commands {
         int32_t timeoutPerTest = 0;
         bool noDeterministicSearcher = false;
         bool noStubs = false;
+        ErrorMode errorMode = ErrorMode::FAILING;
     };
 };
 
