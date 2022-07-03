@@ -1369,7 +1369,7 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        EXPECT_EQ(0, testUtils::getNumberOfTests(testGen.tests));
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
 
     TEST_F(Server_Test, Memory_Test) {
