@@ -46,7 +46,7 @@ jobs:
           submodules: recursive
       - name: set version
         run: |
-          re="^[1-9][0-9]{3}\.[1]?[0-9]\.[1-9][0-9]*$"
+          re="^[1-9][0-9]{3}\.[1]?[0-9]\.(0|[1-9][0-9]*)$"
           if [[ $GITHUB_REF_NAME =~ $re ]]; then 
             export VERSION=$GITHUB_REF_NAME
             echo "ARTIFACT_NAME=release-$VERSION" >> $GITHUB_ENV
@@ -57,6 +57,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           echo "RUN_INFO=RUN_INFO" >> $GITHUB_ENV
+          echo ${{ env.ARTIFACT_NAME }}
       - name: build VSCode plugin
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
