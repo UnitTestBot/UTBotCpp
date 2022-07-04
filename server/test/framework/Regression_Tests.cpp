@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -31,8 +27,8 @@ namespace {
 
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, bool verbose = true) {
-            auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, verbose);
+            auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
+                                                 srcPaths, pathToFile, lineNum, false, verbose, 0);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
@@ -40,21 +36,33 @@ namespace {
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return { testGen, status };
         }
+
+        std::pair<FolderTestGen, Status>
+        createTestForFolder(const fs::path &pathToFolder, bool useStubs = true, bool verbose = true) {
+            auto folderRequest = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
+                                                                srcPaths, useStubs, verbose, 0);
+            auto request = GrpcUtils::createFolderRequest(std::move(folderRequest), pathToFolder);
+            auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
+            testGen.setTargetPath(GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+
+            Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            return {testGen, status};
+        }
     };
 
     // uint_32t parameters/return values and call external printf
     TEST_F(Regression_Test, SAT_372_Printf_Symbolic_Parameter) {
         fs::path helloworld_c = getTestFilePath("helloworld.c");
 
-        auto [testGen, status] = createTestForFunction(helloworld_c, 14);
+        auto [testGen, status] = createTestForFunction(helloworld_c, 10);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(helloworld_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                int ret = stoi(testCase.returnValueView->getEntryValue());
-                int param = stoi(testCase.paramValues[0].view->getEntryValue());
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                int ret = stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                int param = stoi(testCase.paramValues[0].view->getEntryValue(nullptr));
                 return ret == param + 1;
             } }),
             "helloworld");
@@ -64,14 +72,14 @@ namespace {
         fs::path source = getTestFilePath("SAT-752.c");
 
         for (bool verbose : { false, true }) {
-            auto [testGen, status] = createTestForFunction(source, 11, verbose);
+            auto [testGen, status] = createTestForFunction(source, 7, verbose);
 
             ASSERT_TRUE(status.ok()) << status.error_message();
 
             checkTestCasePredicates(
                 testGen.tests.at(source).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
-                    return testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL;
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                    return testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL;
                 } }),
                 "byword");
         }
@@ -100,7 +108,7 @@ namespace {
         {
             checkTestCasePredicates(
                 testGen.tests.at(source1).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
                   return true;
@@ -110,7 +118,7 @@ namespace {
         {
             checkTestCasePredicates(
                 testGen.tests.at(source2).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+                std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                     EXPECT_EQ(0, testCase.globalPreValues.size());
                     EXPECT_EQ(0, testCase.globalPostValues.size());
                     return true;
@@ -123,13 +131,13 @@ namespace {
     TEST_F(Regression_Test, Global_Char_Array) {
         fs::path source = getTestFilePath("SAT-766.c");
 
-        auto [testGen, status] = createTestForFunction(source, 8);
+        auto [testGen, status] = createTestForFunction(source, 4);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
+            std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
               EXPECT_EQ(1, testCase.globalPreValues.size());
               EXPECT_EQ(1, testCase.globalPostValues.size());
               return !testCase.isError();
@@ -140,14 +148,14 @@ namespace {
     // Index array into array of struct
     TEST_F(Regression_Test, Index_Out_Of_Bounds) {
         fs::path source = getTestFilePath("SAT-767.c");
-        auto [testGen, status] = createTestForFunction(source, 12);
+        auto [testGen, status] = createTestForFunction(source, 8);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
@@ -159,14 +167,14 @@ namespace {
     // null pointer
     TEST_F(Regression_Test, Global_Array_Of_Pointers) {
         fs::path source = getTestFilePath("SAT-777.c");
-        auto [testGen, status] = createTestForFunction(source, 9);
+        auto [testGen, status] = createTestForFunction(source, 5);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                   EXPECT_EQ(1, testCase.globalPreValues.size());
                   EXPECT_EQ(1, testCase.globalPostValues.size());
@@ -177,13 +185,13 @@ namespace {
 
     TEST_F(Regression_Test, Return_Pointer_Argument_GNU_90) {
         fs::path source = getTestFilePath("PR120.c");
-        auto [testGen, status] = createTestForFunction(source, 6);
+        auto [testGen, status] = createTestForFunction(source, 2);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -192,13 +200,13 @@ namespace {
 
     TEST_F(Regression_Test, Unnamed_Bit_Field) {
         fs::path source = getTestFilePath("PR124.c");
-        auto [testGen, status] = createTestForFunction(source, 12);
+        auto [testGen, status] = createTestForFunction(source, 8);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -207,13 +215,13 @@ namespace {
 
     TEST_F(Regression_Test, VaList_In_Function_Pointer_Type) {
         fs::path source = getTestFilePath("PR123.c");
-        auto [testGen, status] = createTestForFunction(source, 11);
+        auto [testGen, status] = createTestForFunction(source, 7);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return !testCase.isError();
                 } }),
@@ -222,16 +230,121 @@ namespace {
 
     TEST_F(Regression_Test, Unused_Function_Pointer_Parameter) {
         fs::path source = getTestFilePath("PR153.c");
-        auto [testGen, status] = createTestForFunction(source, 9);
+        auto [testGen, status] = createTestForFunction(source, 5);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
             testGen.tests.at(source).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](const tests::Tests::MethodTestCase &testCase) {
                     return testCase.isError();
                 } }),
             "unused");
+    }
+
+    TEST_F(Regression_Test, No_Such_Type_Exception) {
+        fs::path folderPath = suitePath / "PR-200";
+        fs::path source = folderPath / "PR-200.c";
+        auto [testGen, status] = createTestForFunction(source, 10);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+    }
+
+    TEST_F(Regression_Test, Hash_Of_String) {
+        fs::path source = getTestFilePath("GH215.c");
+        auto [testGen, status] = createTestForFunction(source, 2);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        auto predicate = [](const tests::Tests::MethodTestCase &testCase) {
+            auto s = testCase.paramValues[0].view->getEntryValue(nullptr);
+            s = s.substr(1, s.length() - 2);
+            auto actual = testCase.returnValue.view->getEntryValue(nullptr);
+            auto expected = std::to_string(std::accumulate(s.begin(), s.end(), 0));
+            return actual == expected;
+        };
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                { [&predicate](const tests::Tests::MethodTestCase &testCase) {
+                     // empty string
+                     return testCase.paramValues[0].view->getEntryValue(nullptr).length() == 2 &&
+                            predicate(testCase);
+                 },
+                  [&predicate](const tests::Tests::MethodTestCase &testCase) {
+                      // non-empty string
+                      return testCase.paramValues[0].view->getEntryValue(nullptr).length() > 2 &&
+                             predicate(testCase);
+                  } }),
+            "hash");
+    }
+
+    TEST_F(Regression_Test, Export_Empty) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 2);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                        } }),
+                "f1");
+    }
+
+    TEST_F(Regression_Test, Export_Empty_String) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 6);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
+                        } }),
+                "f2");
+    }
+
+    TEST_F(Regression_Test, Export_Int) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 10);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "4";
+                        } }),
+                "f3");
+    }
+
+    TEST_F(Regression_Test, Export_String_Int) {
+        fs::path source = getTestFilePath("issue-276.c");
+        auto [testGen, status] = createTestForFunction(source, 14);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+                testGen.tests.at(source).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        { [](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "'4'";
+                        } }),
+                "f4");
+    }
+
+    TEST_F(Regression_Test, Generate_Folder) {
+        fs::path folderPath = getTestFilePath("ISSUE-140");
+        auto [testGen, status] = createTestForFolder(folderPath, true, true);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
 }

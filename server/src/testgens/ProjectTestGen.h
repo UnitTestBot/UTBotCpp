@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PROJECTTESTGEN_H
 #define UNITTESTBOT_PROJECTTESTGEN_H
 
@@ -19,7 +15,7 @@ public:
 
     ~ProjectTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     const testsgen::ProjectRequest *getRequest() const;
     
@@ -28,7 +24,7 @@ public:
 private:
     testsgen::ProjectRequest const *const request;
 
-    vector<fs::path> getRequestSourcePaths() const;
+    std::vector<fs::path> getRequestSourcePaths() const;
 
     void autoDetectSourcePathsIfNotEmpty();
 };

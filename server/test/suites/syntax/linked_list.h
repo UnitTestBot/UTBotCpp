@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_LINKED_LIST_H
 #define UNITTESTBOT_LINKED_LIST_H
 
@@ -48,5 +44,19 @@ int len_bound(struct Node *head, int bound);
 int sort_list(struct Node *head);
 
 int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int));
+
+struct EmptyNode {
+    void *data;
+    struct EmptyNode *next;
+};
+
+int length_of_empty_list(struct EmptyNode *head);
+
+struct DataNode {
+    void *data;
+    int flag;
+};
+
+int content_of_void_ptr(struct DataNode *node);
 
 #endif

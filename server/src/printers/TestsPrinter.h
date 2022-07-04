@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TESTSPRINTER_H
 #define UNITTESTBOT_TESTSPRINTER_H
 
@@ -18,12 +14,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-using std::string;
-using std::vector;
-using std::unordered_map;
-using std::cout;
-using std::endl;
 
 using tests::Tests;
 
@@ -52,7 +42,7 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase,
                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
-        void testHeader(const string &scopeName,
+        void testHeader(const std::string &scopeName,
                         const tests::Tests::MethodDescription &methodDescription,
                         int testNum);
 
@@ -73,7 +63,7 @@ namespace printer {
 
         void printFunctionParameters(const tests::Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
-                                     bool onlyLValue = false);
+                                     bool all);
 
         void verboseOutputVariable(const tests::Tests::MethodDescription &methodDescription,
                                    const Tests::MethodTestCase &testCase);
@@ -101,18 +91,18 @@ namespace printer {
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo);
 
-        static std::vector<string>
+        std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,
-                             const Tests::MethodTestCase &testCase);
+                                         const Tests::MethodTestCase &testCase);
 
-        static std::vector<string>
+        static std::vector<std::string>
         methodParametersListVerbose(const tests::Tests::MethodDescription &methodDescription,
                                     const Tests::MethodTestCase &testCase);
 
 
-        string constrVisitorFunctionCall(const tests::Tests::MethodDescription &methodDescription,
-                                         const Tests::MethodTestCase &testCase,
-                                         bool verboseMode);
+        std::string constrVisitorFunctionCall(const tests::Tests::MethodDescription &methodDescription,
+                                              const Tests::MethodTestCase &testCase,
+                                              bool verboseMode);
 
         struct FunctionSignature {
             std::string name;
@@ -131,23 +121,28 @@ namespace printer {
                                             const Tests::MethodTestCase &testCase);
 
         void printLazyVariables(const Tests::MethodDescription &methodDescription,
-                                const Tests::MethodTestCase &testCase);
+                                const Tests::MethodTestCase &testCase,
+                                bool verbose);
+
+        void printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
+                                const std::vector<Tests::TestCaseParamValue> &lazyValues);
 
         void printLazyReferences(const Tests::MethodDescription &methodDescription,
-                                 const Tests::MethodTestCase &testCase);
+                                 const Tests::MethodTestCase &testCase,
+                                 bool verbose);
 
         void printStubVariables(const Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase);
 
         static Tests::MethodParam getValueParam(const Tests::MethodParam &param);
 
-        void genCodeBySuiteName(const string &targetSuiteName,
+        void genCodeBySuiteName(const std::string &targetSuiteName,
                                 Tests::MethodDescription &methodDescription,
                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                 bool verbose,
-                                int& testNum);
+                                int &testNum);
 
-        std::uint32_t printSuiteAndReturnMethodsCount(const string &suiteName, const Tests::MethodsMap &methods);
+        std::uint32_t printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

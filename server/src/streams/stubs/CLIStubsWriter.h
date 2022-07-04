@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_CLISTUBSWRITER_H
 #define UNITTESTBOT_CLISTUBSWRITER_H
 
@@ -12,7 +8,7 @@ class CLIStubsWriter : public StubsWriter {
 public:
     explicit CLIStubsWriter(): StubsWriter(nullptr) {};
 
-    void writeResponse(const vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) override;
+    void writeResponse(const std::vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) override;
 
 };
 

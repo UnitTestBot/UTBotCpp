@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Server.h"
 
 #include "BordersFinder.h"
@@ -40,11 +36,11 @@
 
 using TypeUtils::isSameType;
 
-const string Server::logPrefix = "logTo";
-const string Server::gtestLogPrefix = "gtestLogTo";
+const std::string Server::logPrefix = "logTo";
+const std::string Server::gtestLogPrefix = "gtestLogTo";
 
 void Server::run(uint16_t customPort) {
-    LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_NUMBER;
+    LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_VERSION;
     LOG_S(INFO) << "Logs directory: " << Paths::logPath;
     LOG_S(INFO) << "Latest log path: " << Paths::getUtbotLogAllFilePath();
     LOG_S(INFO) << "Tmp directory path: " << Paths::tmpPath;
@@ -56,7 +52,7 @@ void Server::run(uint16_t customPort) {
     } else {
         port = getPort();
     }
-    string address = host + ":" + std::to_string(port);
+    std::string address = host + ":" + std::to_string(port);
 
 
     ServerBuilder builder;
@@ -161,9 +157,10 @@ Status Server::TestsGenServiceImpl::GeneratePredicateTests(ServerContext *contex
 }
 
 Status Server::TestsGenServiceImpl::Handshake(ServerContext *context,
-                                              const DummyRequest *request,
-                                              DummyResponse *response) {
-    LOG_S(INFO) << "Handshake complete";
+                                              const VersionInfo *request,
+                                              VersionInfo *response) {
+    LOG_S(INFO) << "Handshake complete. Client version: " << request->version();
+    response->set_version(UTBOT_BUILD_VERSION);
     return Status::OK;
 }
 
@@ -213,11 +210,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         Synchronizer synchronizer(&testGen, &stubGen, &sizeContext);
         synchronizer.synchronize(typesHandler);
 
-        if(testGen.settingsContext.useStubs) {
-            testsWriter->writeStubs(testGen.synchronizedStubs);
-        }
-
-        shared_ptr<LineInfo> lineInfo = nullptr;
+        std::shared_ptr<LineInfo> lineInfo = nullptr;
         auto lineTestGen = dynamic_cast<LineTestGen *>(&testGen);
 
         if (lineTestGen != nullptr) {
@@ -271,7 +264,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         testGen.progressWriter->writeProgress("Building files", 0.0);
         Linker linker{ testGen, stubGen, lineInfo, generator };
         linker.prepareArtifacts();
-        linker.writeMakefiles();
         auto testMethods = linker.getTestMethods();
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
@@ -282,7 +274,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto finish_time = std::chrono::steady_clock::now();
         LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
     } catch (const ExecutionProcessException &e) {
-        string command = e.what();
+        std::string command = e.what();
         return Status(StatusCode::FAILED_PRECONDITION,
                       "Executing command\n" + command.substr(0, 100) +
                           "...\nfailed. See more info in console logs.");
@@ -308,7 +300,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
     return Status::OK;
 }
 
-shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
+std::shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
     BordersFinder stmtFinder(lineTestGen.filePath, lineTestGen.line,
                              lineTestGen.compilationDatabase,
                              lineTestGen.compileCommandsJsonPath);
@@ -343,7 +335,7 @@ void Server::logToClient(void *channel, const loguru::Message &message) {
     if (data == nullptr) {
         throw BaseException("Couldn't handle logging to client, data is null");
     }
-    vector <char> thread_name(LOGURU_BUFFER_SIZE);
+    std::vector<char> thread_name(LOGURU_BUFFER_SIZE);
     loguru::get_thread_name(thread_name.data(), LOGURU_BUFFER_SIZE, false);
 
     if (std::string(thread_name.data()) == data->client &&
@@ -361,7 +353,7 @@ void Server::gtestLog(void *channel, const loguru::Message &message) {
     if (data == nullptr) {
         throw BaseException("Can't interpret gtest log channel");
     }
-    vector <char> thread_name(LOGURU_BUFFER_SIZE);
+    std::vector<char> thread_name(LOGURU_BUFFER_SIZE);
     loguru::get_thread_name(thread_name.data(), LOGURU_BUFFER_SIZE, false);
 
     if (std::string(thread_name.data()) == data->client &&
@@ -387,7 +379,7 @@ Status Server::TestsGenServiceImpl::provideLoggingCallbacks(
     ServerWriter<LogEntry> *writer,
     const std::string &logLevel,
     loguru::log_handler_t handler,
-    std::map<string, std::atomic_bool> &channelStorage,
+    std::map<std::string, std::atomic_bool> &channelStorage,
     bool openFiles) {
     const auto &client = RequestEnvironment::getClientId();
     auto oldValue = channelStorage[client].load(std::memory_order_relaxed);
@@ -444,7 +436,7 @@ Status Server::TestsGenServiceImpl::CloseLogChannel(ServerContext *context,
                                                     const DummyRequest *request,
                                                     DummyResponse *response) {
     ServerUtils::setThreadOptions(context, testMode);
-    const string callbackName = logPrefix + RequestEnvironment::getClientId();
+    const std::string callbackName = logPrefix + RequestEnvironment::getClientId();
     holdLockFlag[callbackName].store(false, std::memory_order_release);
     return Status::OK;
 }
@@ -461,7 +453,7 @@ Status Server::TestsGenServiceImpl::CloseGTestChannel(ServerContext *context,
                                                       const DummyRequest *request,
                                                       DummyResponse *response) {
     ServerUtils::setThreadOptions(context, testMode);
-    const string callbackName = gtestLogPrefix + RequestEnvironment::getClientId();
+    const std::string callbackName = gtestLogPrefix + RequestEnvironment::getClientId();
     holdLockFlag[callbackName].store(false, std::memory_order_release);
     return Status::OK;
 }
@@ -472,7 +464,7 @@ Status Server::TestsGenServiceImpl::Heartbeat(ServerContext *context,
                                               HeartbeatResponse *response) {
     ServerUtils::setThreadOptions(context, testMode);
 
-    const string &client = RequestEnvironment::getClientId();
+    const std::string &client = RequestEnvironment::getClientId();
     const std::lock_guard<std::mutex> lock(logChannelOperationsMutex);
     bool linked = CollectionUtils::containsKey(linkedWithClient, client) &&
                   !TimeUtils::isOutdatedTimestamp(linkedWithClient[client]);
@@ -484,7 +476,7 @@ Status Server::TestsGenServiceImpl::Heartbeat(ServerContext *context,
 Status Server::TestsGenServiceImpl::RegisterClient(ServerContext *context,
                                                    const RegisterClientRequest *request,
                                                    DummyResponse *response) {
-    const string& name = request->clientid();
+    const std::string& name = request->clientid();
     ServerUtils::registerClient(clients, name);
     return Status::OK;
 }
@@ -548,9 +540,10 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
 
     static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
     LOG_S(DEBUG) << logMessage;
-    Fetcher fetcher(Fetcher::Options::Value::ALL, testGen->compilationDatabase, testGen->tests,
-                        &testGen->types, &sizeContext.pointerSize, &sizeContext.maximumAlignment,
-                        testGen->compileCommandsJsonPath, false);
+    Fetcher fetcher(Fetcher::Options::Value::TYPE | Fetcher::Options::Value::FUNCTION,
+                    testGen->compilationDatabase, testGen->tests, &testGen->types,
+                    &sizeContext.pointerSize, &sizeContext.maximumAlignment,
+                    testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
     Synchronizer synchronizer(testGen, &stubGen, &sizeContext);
@@ -561,7 +554,7 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
 
 Status Server::TestsGenServiceImpl::failedToLoadCDbStatus(const CompilationDatabaseException &e) {
     return Status(StatusCode::INVALID_ARGUMENT,
-                  "Failed to find compile_commands.json:\n" + string(e.what()));
+                  "Failed to find compile_commands.json:\n" + std::string(e.what()));
 }
 
 Status Server::TestsGenServiceImpl::PrintModulesContent(ServerContext *context,
@@ -576,7 +569,7 @@ Status Server::TestsGenServiceImpl::PrintModulesContent(ServerContext *context,
 
     fs::path serverBuildDir = Paths::getTmpDir(request->projectname());
     utbot::ProjectContext projectContext{ *request };
-    shared_ptr<BuildDatabase> buildDatabase = BuildDatabase::create(projectContext);
+    std::shared_ptr<BuildDatabase> buildDatabase = BuildDatabase::create(projectContext);
     StubSourcesFinder(buildDatabase).printAllModules();
     return Status::OK;
 }
@@ -591,13 +584,13 @@ Status Server::TestsGenServiceImpl::GetSourceCode(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
-    const string &filePath = request->filepath();
+    const std::string &filePath = request->filepath();
     std::ifstream stream{ filePath };
     if (!stream) {
         return Status(StatusCode::INVALID_ARGUMENT, "Failed to find file:\n" + filePath);
     }
-    auto code = std::make_unique<string>(std::istreambuf_iterator<char>(stream),
-                                         std::istreambuf_iterator<char>());
+    auto code = std::make_unique<std::string>(std::istreambuf_iterator<char>(stream),
+        std::istreambuf_iterator<char>());
     response->set_allocated_code(code.release());
     return Status::OK;
 }
@@ -623,12 +616,12 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
     case ConfigMode::CREATE_BUILD_DIR:
         return UserProjectConfiguration::RunBuildDirectoryCreation(buildDirPath, writer);
     case ConfigMode::GENERATE_JSON_FILES: {
-        std::vector<string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
+        std::vector<std::string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
         return UserProjectConfiguration::RunProjectConfigurationCommands(
                 buildDirPath, projectContext.projectname(), cmakeOptions, writer);
     }
     case ConfigMode::ALL: {
-        std::vector<string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
+        std::vector<std::string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
         return UserProjectConfiguration::RunProjectReConfigurationCommands(
                 buildDirPath, fs::path(projectContext.projectpath()),
                 projectContext.projectname(), cmakeOptions, writer);
@@ -685,7 +678,7 @@ Status Server::TestsGenServiceImpl::GetFileTargets(ServerContext *context,
 }
 
 RequestLockMutex &Server::TestsGenServiceImpl::getLock() {
-    string const &client = RequestEnvironment::getClientId();
+    std::string const &client = RequestEnvironment::getClientId();
     auto [iterator, inserted] = locks.try_emplace(client);
     return iterator->second;
 }

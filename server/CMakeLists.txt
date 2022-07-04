@@ -1,5 +1,33 @@
-cmake_minimum_required(VERSION 3.10)
-project(UnitTestBot)
+cmake_minimum_required(VERSION 3.12)
+
+if (NOT DEFINED VERSION)
+    if (DEFINED ENV{VERSION})
+        set(VERSION $ENV{VERSION})
+    else ()
+        set(VERSION "0.0.1")
+    endif ()
+endif ()
+
+if (NOT DEFINED RUN_INFO)
+    if (DEFINED ENV{RUN_INFO})
+        set(RUN_INFO $ENV{RUN_INFO})
+    else ()
+        set(RUN_INFO "local")
+    endif ()
+endif ()
+
+project(UTBotCpp DESCRIPTION "Tool that generates unit test by C/C++ source code, trying to reach all branches and maximize code coverage"
+        HOMEPAGE_URL "https://unittestbot.org" VERSION ${VERSION})
+set(PROJECT_ORG "UnitTestBot")
+
+message("Project: ${PROJECT_NAME}")
+message("Organisation: ${PROJECT_ORG}")
+message("Homepage: ${CMAKE_PROJECT_HOMEPAGE_URL}")
+message("Version: ${CMAKE_PROJECT_VERSION}")
+message("Run from: ${RUN_INFO}")
+include_directories(${PROJECT_BINARY_BIN})
+
+configure_file(config.h.in config.h @ONLY)
 
 if (UNIX)
     add_compile_definitions(_LINUX)
@@ -129,13 +157,13 @@ endif ()
 ################################################################################
 # Library
 ################################################################################
-add_library(UnitTestBotLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
-target_include_directories(UnitTestBotLib PUBLIC
+add_library(UTBotCppLib STATIC ${ALL_PROTO_GENERATED_SOURCES} ${ALL_SOURCES})
+target_include_directories(UTBotCppLib PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         resources
         thirdparty/ordered-map)
 
-target_link_libraries(UnitTestBotLib PUBLIC clangTooling clangBasic clangASTMatchers clangRewriteFrontend
+target_link_libraries(UTBotCppLib PUBLIC clangTooling clangBasic clangASTMatchers clangRewriteFrontend
         gRPC::grpc++_reflection
         gRPC::grpc++
         protobuf::libprotobuf
@@ -143,7 +171,7 @@ target_link_libraries(UnitTestBotLib PUBLIC clangTooling clangBasic clangASTMatc
         kleeRunner
         )
 if (ENABLE_PRECOMPILED_HEADERS)
-    target_precompile_headers(UnitTestBotLib PUBLIC pch.h)
+    target_precompile_headers(UTBotCppLib PUBLIC pch.h)
 endif ()
 
 ################################################################################
@@ -151,7 +179,7 @@ endif ()
 ################################################################################
 add_llvm_executable(utbot main.cpp)
 target_link_libraries(utbot PUBLIC
-        UnitTestBotLib
+        UTBotCppLib
         loguru
         )
 
@@ -179,7 +207,7 @@ if (ENABLE_UNIT_TESTS)
             UTBot_UnitTests
             PUBLIC
             gtest
-            UnitTestBotLib
+            UTBotCppLib
     )
 
     if (ENABLE_PRECOMPILED_HEADERS)

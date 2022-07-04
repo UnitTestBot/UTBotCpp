@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "HeaderPrinter.h"
 
 #include "utils/FileSystemUtils.h"
@@ -11,7 +7,7 @@
 namespace printer {
     void HeaderPrinter::print(const fs::path &testHeaderFilePath,
                                  const fs::path &sourceFilePath,
-                                 string &headerCode) {
+                                 std::string &headerCode) {
         processHeader(Include(true, "cstring"));
         processHeader(Include(true, "unistd.h"));
         ss << NL;

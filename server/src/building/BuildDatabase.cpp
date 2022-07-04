@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BuildDatabase.h"
 
 #include "BaseCommand.h"
@@ -19,9 +15,6 @@
 #include <queue>
 #include <set>
 #include <unordered_map>
-
-using std::set;
-using std::string;
 
 static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
                                           const fs::path &dirPath) {
@@ -91,19 +84,19 @@ void BuildDatabase::createClangCompileCommandsJson(const fs::path &buildCommands
     for (auto const& compileCommand: compileCommandsJson) {
         auto objectInfo = std::make_shared<ObjectFileInfo>();
 
-        fs::path directory = compileCommand.at("directory").get<string>();
+        fs::path directory = compileCommand.at("directory").get<std::string>();
         fs::path jsonFile = compileCommand.at("file").get<std::string>();
         fs::path sourceFile = Paths::getCCJsonFileFullPath(jsonFile, directory);
 
-        std::vector<string> jsonArguments;
+        std::vector<std::string> jsonArguments;
         if (compileCommand.contains("command")) {
-            string command = compileCommand.at("command");
+            std::string command = compileCommand.at("command");
             jsonArguments = StringUtils::splitByWhitespaces(command);
         } else {
-            jsonArguments = std::vector<string>(compileCommand.at("arguments"));
+            jsonArguments = std::vector<std::string>(compileCommand.at("arguments"));
         }
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
-                       [&directory](const string &argument) {
+                       [&directory](const std::string &argument) {
                            return tryConvertOptionToPath(argument, directory);
                        });
         objectInfo->command = utbot::CompileCommand(jsonArguments, directory, sourceFile);
@@ -170,20 +163,20 @@ void BuildDatabase::createClangCompileCommandsJson(const fs::path &buildCommands
 
 void BuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
     for (nlohmann::json const &linkCommand : linkCommandsJson) {
-        fs::path directory = linkCommand.at("directory").get<string>();
-        std::vector<string> jsonArguments;
+        fs::path directory = linkCommand.at("directory").get<std::string>();
+        std::vector<std::string> jsonArguments;
         if (linkCommand.contains("command")) {
-            string command = linkCommand.at("command");
+            std::string command = linkCommand.at("command");
             jsonArguments = StringUtils::splitByWhitespaces(command);
         } else {
-            jsonArguments = std::vector<string>(linkCommand.at("arguments"));
+            jsonArguments = std::vector<std::string>(linkCommand.at("arguments"));
         }
         if (StringUtils::endsWith(jsonArguments[0], "ranlib") ||
             StringUtils::endsWith(jsonArguments[0], "cmake")) {
             continue;
         }
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
-                       [&directory](const string &argument) {
+                       [&directory](const std::string &argument) {
                          return tryConvertOptionToPath(argument, directory);
                        });
 
@@ -226,7 +219,7 @@ namespace {
     CollectionUtils::OrderedFileSet collectLibraryDirs(const utbot::BaseCommand &command) {
         using namespace DynamicLibraryUtils;
         CollectionUtils::OrderedFileSet libraryDirs;
-        for (string const &argument : command.getCommandLine()) {
+        for (std::string const &argument : command.getCommandLine()) {
             auto optionalLibraryPath = getLibraryAbsolutePath(argument, command.getDirectory());
             if (optionalLibraryPath.has_value()) {
                 libraryDirs.insert(optionalLibraryPath.value());
@@ -249,10 +242,10 @@ namespace {
         return libraryDirs;
     }
 
-    CollectionUtils::MapFileTo<string> collectLibraryNames(const utbot::BaseCommand &command) {
+    CollectionUtils::MapFileTo<std::string> collectLibraryNames(const utbot::BaseCommand &command) {
         using namespace DynamicLibraryUtils;
 
-        CollectionUtils::MapFileTo<string> libraryNames;
+        CollectionUtils::MapFileTo<std::string> libraryNames;
 
         for (const auto &argument : command.getCommandLine()) {
             if (Paths::isSharedLibraryFile(argument) && argument != command.getOutput() &&
@@ -260,9 +253,9 @@ namespace {
                 libraryNames.emplace(argument, argument);
             }
             if (StringUtils::startsWith(argument, linkFlag)) {
-                string libraryName = argument.substr(linkFlag.length());
-                string archiveFile = "lib" + libraryName + ".a";
-                string sharedObjectFile = "lib" + libraryName + ".so";
+                std::string libraryName = argument.substr(linkFlag.length());
+                std::string archiveFile = "lib" + libraryName + ".a";
+                std::string sharedObjectFile = "lib" + libraryName + ".so";
                 libraryNames.emplace(sharedObjectFile, argument);
                 libraryNames.emplace(archiveFile, argument);
             }
@@ -527,7 +520,7 @@ void BuildDatabase::KleeFilesInfo::setCorrectMethods(std::unordered_set<std::str
     this->correctMethods = std::move(correctMethods);
 }
 
-bool BuildDatabase::KleeFilesInfo::isCorrectMethod(const string &method) {
+bool BuildDatabase::KleeFilesInfo::isCorrectMethod(const std::string &method) {
     if (allAreCorrect) {
         return true;
     }

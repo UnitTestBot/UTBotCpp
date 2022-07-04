@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "FunctionTestGen.h"
 
 #include "utils/ExecUtils.h"
@@ -12,7 +8,7 @@ FunctionTestGen::FunctionTestGen(const testsgen::FunctionRequest &request,
     : LineTestGen(request.linerequest(), progressWriter, testMode) {
 }
 
-string FunctionTestGen::toString() {
+std::string FunctionTestGen::toString() {
     return LineTestGen::toString();
 }
 

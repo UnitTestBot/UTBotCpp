@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -11,7 +7,6 @@
 #include "utils/path/FileSystemPath.h"
 
 namespace {
-    using namespace std;
     using testsgen::TestsResponse;
 
     class KleeGen_Test : public BaseTest {
@@ -19,7 +14,7 @@ namespace {
         KleeGen_Test() : BaseTest("server") {}
 
         struct TestSuite {
-            string name;
+            std::string name;
             fs::path buildPath;
             CollectionUtils::FileSet sourcesFilePaths;
         };
@@ -49,7 +44,7 @@ namespace {
                             getTestFilePath("inner/inner_basic_functions.c") } };
         }
 
-        KleeGenerator initKleeGenerator(const TestSuite &suite, string &errorMessage) {
+        KleeGenerator initKleeGenerator(const TestSuite &suite, std::string &errorMessage) {
             std::shared_ptr<CompilationDatabase> compilationDatabase =
                 CompilationDatabase::autoDetectFromDirectory(
                     suite.buildPath.string(), errorMessage);
@@ -70,7 +65,7 @@ namespace {
     };
 
     TEST_F(KleeGen_Test, BuildByCDb) {
-        string errorMessage;
+        std::string errorMessage;
         auto generator = initKleeGenerator(testSuite, errorMessage);
         ASSERT_TRUE(errorMessage.empty());
         CollectionUtils::FileSet sources(testSuite.sourcesFilePaths.begin(), testSuite.sourcesFilePaths.end());
@@ -83,7 +78,7 @@ namespace {
     }
 
     TEST_F(KleeGen_Test, DefaultBuild) {
-        string errorMessage;
+        std::string errorMessage;
         auto generator = initKleeGenerator(testSuite, errorMessage);
         ASSERT_TRUE(errorMessage.empty());
         fs::path sourceFilePath = *testSuite.sourcesFilePaths.begin();

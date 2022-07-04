@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SOURCETOHEADERREWRITER_H
 #define UNITTESTBOT_SOURCETOHEADERREWRITER_H
 
@@ -32,7 +28,7 @@ class SourceToHeaderRewriter {
     std::unique_ptr<clang::ast_matchers::MatchFinder::MatchCallback> fetcherInstance;
     std::unique_ptr<clang::ast_matchers::MatchFinder> finder;
 
-    unique_ptr<clang::tooling::FrontendActionFactory>
+    std::unique_ptr<clang::tooling::FrontendActionFactory>
     createFactory(llvm::raw_ostream *externalStream,
                   llvm::raw_ostream *internalStream,
                   llvm::raw_ostream *wrapperStream,

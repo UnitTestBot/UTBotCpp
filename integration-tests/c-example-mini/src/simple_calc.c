@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "simple_calc.h"
 #include "module/libfunc.h"
 
@@ -17,4 +13,3 @@ int other_module_call(int a) {
         return 2;
     }
 }
-

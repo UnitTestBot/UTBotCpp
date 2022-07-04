@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Types.h"
 
 #include "ArrayType.h"
@@ -181,7 +177,10 @@ std::vector<size_t> types::Type::arraysSizes(PointerUsage usage) const {
             if (kinds().size() <= 2) {
                 sizes.push_back(types::TypesHandler::getElementsNumberInPointerOneDim(usage));
             } else {
-                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim());
+                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim(usage));
+            }
+            if (usage == types::PointerUsage::LAZY) {
+                return sizes;
             }
             break;
         default:
@@ -274,8 +273,8 @@ types::Type types::Type::CStringType() {
     return cStringTypeSingleton;
 }
 
-const string &types::Type::getStdinParamName() {
-    static const string stdinParamName = "stdin_buf";
+const std::string &types::Type::getStdinParamName() {
+    static const std::string stdinParamName = "stdin_buf";
     return stdinParamName;
 }
 
@@ -355,8 +354,9 @@ types::Type types::Type::arrayCloneMultiDim(PointerUsage usage, std::vector<size
     Type t = *this;
     for(size_t i = 0; i < pointerSizes.size(); ++i) {
         if (t.mKinds[i]->getKind() == AbstractType::OBJECT_POINTER) {
-            t.mKinds[i] = std::make_shared<ArrayType>(TypesHandler::getElementsNumberInPointerMultiDim(pointerSizes[i]),
-                                                      true);
+            t.mKinds[i] = std::make_shared<ArrayType>(
+                TypesHandler::getElementsNumberInPointerMultiDim(usage, pointerSizes[i]),
+                true);
         }
     }
     return t;
@@ -491,6 +491,10 @@ bool types::TypesHandler::isVoid(const Type &type) {
     return type.isSimple() && isVoid(type.baseType());
 }
 
+bool types::TypesHandler::baseTypeIsVoid(const Type &type) {
+    return isVoid(type.baseType());
+}
+
 bool types::TypesHandler::isVoid(const TypeName &type) {
     return type == "void";
 }
@@ -614,7 +618,7 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
 }
 
 std::string types::TypesHandler::removeConstPrefix(const TypeName &type) {
-    std::vector<string> tmp = StringUtils::split(type);
+    std::vector<std::string> tmp = StringUtils::split(type);
     if (tmp[0] == CONST_QUALIFIER) {
         std::string res;
         for (int i = 1; i < (int) tmp.size(); i++) {
@@ -633,7 +637,7 @@ bool types::TypesHandler::hasConstModifier(const types::TypeName &typeName) {
     return std::find(splitType.begin(), splitType.end(), CONST_QUALIFIER) != splitType.end();
 }
 
-string types::TypesHandler::removeArrayReference(TypeName type) {
+std::string types::TypesHandler::removeArrayReference(TypeName type) {
     if (type[0] == '*') {
         type = type.substr(1, type.size());
     } else if (type.back() == '*') {
@@ -647,7 +651,7 @@ string types::TypesHandler::removeArrayReference(TypeName type) {
     return type;
 }
 
-string types::TypesHandler::removeArrayBrackets(TypeName type) {
+std::string types::TypesHandler::removeArrayBrackets(TypeName type) {
     if (type.back() == ']') {
         while (!type.empty() && type.back() != '[') {
             type.pop_back();
@@ -819,8 +823,8 @@ std::string types::TypesHandler::getDefaultValueForType(const types::Type &type,
     }
 
     TypeName name = type.typeName();
-    string cDefaultValue = StringUtils::stringFormat("(%s){0}", name);
-    string cppDefaultValue = "{}";
+    std::string cDefaultValue = StringUtils::stringFormat("(%s){0}", name);
+    std::string cppDefaultValue = "{}";
     switch (language) {
     case utbot::Language::C: {
         LOG_S(WARNING) << "Couldn't determine kind of type while generating default value. Using "
@@ -1013,7 +1017,7 @@ types::Type types::TypesHandler::getReturnTypeToCheck(const types::Type &returnT
     return returnType;
 }
 
-std::string types::EnumInfo::getEntryName(const string &value, utbot::Language language) {
+std::string types::EnumInfo::getEntryName(const std::string &value, utbot::Language language) {
     auto const& entry = valuesToEntries[value];
     if (language == utbot::Language::CXX && access.has_value()) {
         return access.value() + "::" + entry.name;

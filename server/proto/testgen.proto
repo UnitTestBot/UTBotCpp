@@ -3,9 +3,10 @@ syntax = "proto3";
 package testsgen;
 
 import "util.proto";
+import "google/protobuf/duration.proto";
 
 service TestsGenService {
-    rpc Handshake(DummyRequest) returns(DummyResponse) {}
+    rpc Handshake(VersionInfo) returns(VersionInfo) {}
 
     rpc Heartbeat(DummyRequest) returns(HeartbeatResponse) {}
 
@@ -57,6 +58,10 @@ service TestsGenService {
 message DummyRequest {}
 
 message DummyResponse {}
+
+message VersionInfo {
+    string version = 1;
+}
 
 message RegisterClientRequest {
     string clientId = 1;
@@ -188,6 +193,7 @@ message TestResultObject {
     string testname = 2;
     TestStatus status = 3;
     string output = 4;
+    google.protobuf.Duration executionTime = 5;
 }
 
 message CoverageAndResultsResponse {

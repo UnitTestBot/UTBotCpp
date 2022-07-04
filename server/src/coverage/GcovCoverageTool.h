@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_GCOVCOVERAGETOOL_H
 #define UNITTESTBOT_GCOVCOVERAGETOOL_H
 
@@ -13,12 +9,12 @@ class GcovCoverageTool : public CoverageTool {
 public:
     GcovCoverageTool(utbot::ProjectContext projectContext, ProgressWriter const *progressWriter);
 
-    std::vector<BuildRunCommand> getBuildRunCommands(const vector<UnitTest> &testsToLaunch,
+    std::vector<BuildRunCommand> getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch,
                                                      bool withCoverage) override;
 
     std::vector <std::string> getGcovArguments(bool jsonFormat) const;
 
-    std::vector<ShellExecTask> getCoverageCommands(const vector<UnitTest> &testsToLaunch) override;
+    std::vector<ShellExecTask> getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) override;
 
     [[nodiscard]] Coverage::CoverageMap getCoverageInfo() const override;
 
@@ -27,8 +23,6 @@ public:
     void cleanCoverage() const override;
 
 private:
-    const utbot::ProjectContext projectContext;
-
     std::vector<fs::path> getGcdaFiles() const;
 };
 

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PATHS_H
 #define UNITTESTBOT_PATHS_H
 
@@ -17,13 +13,10 @@
 #include <unordered_set>
 
 namespace Paths {
-    using std::string;
-    using std::vector;
-
     extern fs::path logPath, tmpPath;
 
     //region util
-    static inline bool isValidDir(const string &dir) {
+    static inline bool isValidDir(const std::string &dir) {
         fs::path p(dir);
         return (!fs::exists(p) || fs::is_directory(p));
     }
@@ -37,14 +30,14 @@ namespace Paths {
      */
     CollectionUtils::FileSet
     filterPathsByDirNames(const CollectionUtils::FileSet &path,
-                          const vector<fs::path> &dirNames,
+                          const std::vector<fs::path> &dirNames,
                           const std::function<bool(const fs::path &path)> &filter);
 
-    static inline void setOptPath(fs::path &path, const string &value) {
+    static inline void setOptPath(fs::path &path, const std::string &value) {
         path = fs::path(value);
     }
 
-    static inline fs::path addExtension(const string &filePath, const string &extension) {
+    static inline fs::path addExtension(const std::string &filePath, const std::string &extension) {
         return filePath + extension;
     }
 
@@ -55,20 +48,20 @@ namespace Paths {
         return result;
     }
 
-    static inline void removeBackTrailedSlash(string &pathStr) {
+    static inline void removeBackTrailedSlash(std::string &pathStr) {
         if (!pathStr.empty() && pathStr.back() == '/') {
             pathStr.pop_back();
         }
     }
 
     // returns path3: path1 == path3/path2/...
-    fs::path subtractPath(string path1, string path2);
+    fs::path subtractPath(std::string path1, std::string path2);
 
-    static inline fs::path addPrefix(const fs::path &path, string const &prefix) {
+    static inline fs::path addPrefix(const fs::path &path, std::string const &prefix) {
         return path.parent_path() / (prefix + path.filename().string());
     }
 
-    static inline fs::path addSuffix(const fs::path &path, string const &suffix) {
+    static inline fs::path addSuffix(const fs::path &path, std::string const &suffix) {
         return path.parent_path() / (path.stem().string() + suffix + path.extension().string());
     }
 
@@ -76,16 +69,16 @@ namespace Paths {
         return addSuffix(path, "_test");
     }
 
-    static inline fs::path removeSuffix(const fs::path &path, string const &suffix) {
-        string filenameWithoutExt = path.stem().string();
+    static inline fs::path removeSuffix(const fs::path &path, std::string const &suffix) {
+        std::string filenameWithoutExt = path.stem().string();
         std::size_t pos = filenameWithoutExt.rfind(suffix);
-        if (pos != string::npos) {
+        if (pos != std::string::npos) {
             filenameWithoutExt.replace(pos, suffix.length(), "");
         }
         return path.parent_path() / (filenameWithoutExt + path.extension().string());
     }
 
-    CollectionUtils::FileSet pathsToSet(const vector<fs::path> &paths);
+    CollectionUtils::FileSet pathsToSet(const std::vector<fs::path> &paths);
 
     static inline fs::path normalizedTrimmed(const fs::path &path) {
         auto r = path.lexically_normal();
@@ -113,9 +106,9 @@ namespace Paths {
 
     CollectionUtils::FileSet findFilesInFolder(const fs::path& folder);
 
-    vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths);
+    std::vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths);
 
-    string mangle(const fs::path& path);
+    std::string mangle(const fs::path& path);
     //endregion
 
     //region includes
@@ -135,22 +128,22 @@ namespace Paths {
         return logPath / Paths::getBaseLogDir() / filename;
     }
 
-    static inline fs::path getClientLogDir(const string &client) {
+    static inline fs::path getClientLogDir(const std::string &client) {
         return getBaseLogDir() / client;
     }
 
-    static inline fs::path getClientTmpDir(const string &client) {
+    static inline fs::path getClientTmpDir(const std::string &client) {
         return tmpPath / "tmp" / client;
     }
 
-    static inline fs::path getLogDir(const string &projectName = "") {
+    static inline fs::path getLogDir(const std::string &projectName = "") {
         if (projectName.empty()) {
             return getBaseLogDir() / RequestEnvironment::getClientId();
         }
         return getBaseLogDir() / RequestEnvironment::getClientId() / projectName;
     }
 
-    static inline fs::path getExecLogPath(const string &projectName) {
+    static inline fs::path getExecLogPath(const std::string &projectName) {
         fs::path execLogPath = getLogDir(projectName);
         auto logFilename = TimeUtils::getDate() + ".log";
         execLogPath /= logFilename;
@@ -163,7 +156,7 @@ namespace Paths {
 
     //endregion
 
-    static inline fs::path getTmpDir(const string &projectName) {
+    static inline fs::path getTmpDir(const std::string &projectName) {
         if (projectName.empty()) {
             return tmpPath / "tmp" / RequestEnvironment::getClientId();
         }
@@ -177,13 +170,13 @@ namespace Paths {
         return tmpPath / "tmp" / "clients.json";
     }
 
-    fs::path getCCJsonFileFullPath(const string &filename, const fs::path &directory);
+    fs::path getCCJsonFileFullPath(const std::string &filename, const fs::path &directory);
 
     bool isPath(const std::string& possibleFilePath) noexcept;
     //endregion
 
     //region klee
-    static inline fs::path getBitcodeOutFilePath(const fs::path &projectTmpPath, const string &filePath) {
+    static inline fs::path getBitcodeOutFilePath(const fs::path &projectTmpPath, const std::string &filePath) {
         return projectTmpPath / replaceExtension(filePath, ".bc");
     }
 
@@ -280,6 +273,8 @@ namespace Paths {
 
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext);
 
+    fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext);
+
     fs::path getFlagsDir(const utbot::ProjectContext &projectContext);
 
     fs::path getTestExecDir(const utbot::ProjectContext &projectContext);
@@ -348,7 +343,7 @@ namespace Paths {
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
     fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
-                                               const string& suffix = "");
+                                               const std::string &suffix = "");
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 

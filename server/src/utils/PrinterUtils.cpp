@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "PrinterUtils.h"
 
 #include "Tests.h"
@@ -80,12 +76,22 @@ namespace PrinterUtils {
         return StringUtils::stringFormat(access, varName);
     }
 
-    std::string initializePointer(const std::string &type, const std::string &value) {
+    std::string initializePointer(const std::string &type,
+                                  const std::string &value,
+                                  size_t additionalPointersCount) {
         if (value == C_NULL || std::stoull(value) == 0) {
             return C_NULL;
         } else {
-            return StringUtils::stringFormat("(%s) 0x%x", type, std::stoull(value));
+            std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
+            return StringUtils::stringFormat("(%s%s) 0x%x", type, additionalPointers, std::stoull(value));
         }
+    }
+
+    std::string initializePointerToVar(const std::string &type,
+                                       const std::string &varName,
+                                       size_t additionalPointersCount) {
+        std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
+        return StringUtils::stringFormat("(%s%s) &%s", type, additionalPointers, varName);
     }
 
     std::string generateNewVar(int cnt) {

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Linker.h"
 
 #include "KleeGenerator.h"
@@ -33,8 +29,6 @@
 #include <unordered_set>
 #include <utility>
 
-using std::string;
-using std::vector;
 using TypeUtils::isDerivedFrom;
 using TypeUtils::isSameType;
 std::vector<fs::path> sourcePaths;
@@ -83,7 +77,7 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
 
     auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(sourceFilePath);
     std::optional<fs::path> moduleOutput = linkUnitInfo->getOutput();
-    string suffixForParentOfStubs =
+    std::string suffixForParentOfStubs =
         StringUtils::stringFormat("___%s", Paths::mangle(moduleOutput.value().filename()));
 
     auto stubsSetResult = link(filesToLink, target, suffixForParentOfStubs, sourceFilePath, stubSources);
@@ -147,9 +141,6 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     CollectionUtils::FileSet siblingObjectsToBuild;
     for (const fs::path &objectFile : siblings) {
         auto objectInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
-        if (CollectionUtils::contains(stubSources, objectInfo->getSourcePath())) {
-            continue;
-        }
         bool insideFolder = true;
         if (auto folderTestGen = dynamic_cast<FolderTestGen *>(&testGen)) {
             fs::path folderGen = folderTestGen->folderPath;
@@ -160,12 +151,11 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
         if (testGen.buildDatabase->isFirstObjectFileForSource(objectFile) &&
             !CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) &&
             insideFolder) {
-            filesToLink.insert(
-                { objectFile, objectInfo->kleeFilesInfo->getKleeBitcodeFile() });
+            filesToLink.emplace(objectFile, objectInfo->kleeFilesInfo->getKleeBitcodeFile());
         } else {
             siblingObjectsToBuild.insert(objectInfo->getOutputFile());
             fs::path bitcodeFile =
-                testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
+                    testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
             filesToLink.emplace(objectFile, bitcodeFile);
         }
     }
@@ -248,13 +238,7 @@ void Linker::prepareArtifacts() {
     }
 }
 
-void Linker::writeMakefiles() {
-    for (const printer::TestMakefilesContent &testMakefilesPrinter : linkMakefiles) {
-        testMakefilesPrinter.write();
-    }
-}
-
-vector<tests::TestMethod> Linker::getTestMethods() {
+std::vector<tests::TestMethod> Linker::getTestMethods() {
     LOG_S(DEBUG) << StringUtils::stringFormat(
         "Linkage statistics:\nAll files: %d\nNumber of files with broken linkage: %d",
         testGen.tests.size(), brokenLinkFiles.size());
@@ -331,8 +315,8 @@ vector<tests::TestMethod> Linker::getTestMethods() {
 
 Linker::Linker(BaseTestGen &testGen,
                StubGen stubGen,
-               shared_ptr<LineInfo> lineInfo,
-               shared_ptr<KleeGenerator> kleeGenerator)
+               std::shared_ptr<LineInfo> lineInfo,
+               std::shared_ptr<KleeGenerator> kleeGenerator)
     : testGen(testGen), stubGen(std::move(stubGen)), lineInfo(std::move(lineInfo)),
       kleeGenerator(kleeGenerator) {
 }
@@ -376,10 +360,10 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     FileSystemUtils::writeToFile(linkMakefile, bitcodeLinkMakefilePrinter.ss.str());
 
     auto command =
-        MakefileUtils::makefileCommand(testGen.projectContext, linkMakefile, targetBitcode);
+        MakefileUtils::MakefileCommand(testGen.projectContext, linkMakefile, targetBitcode);
     auto [out, status, logFilePath] = command.run(testGen.serverBuildDir);
     if (status != 0) {
-        string errorMessage =
+        std::string errorMessage =
             StringUtils::stringFormat("Make for \"%s\" failed.\nCommand: \"%s\"\n%s\n",
                                       linkMakefile, command.getFailedCommand(), out);
         LOG_S(ERROR) << errorMessage;
@@ -401,14 +385,14 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
 
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
     if (!success) {
-        string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
+        std::string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
         throw CompilationDatabaseException(message);
     }
 
     for (const auto& [sourceFile, test] : testGen.tests) {
         if (!test.isFilePresentedInArtifact) {
             if (errorOnMissingBitcode) {
-                string message = FileNotPresentedInArtifactException::createMessage(sourceFile);
+                std::string message = FileNotPresentedInArtifactException::createMessage(sourceFile);
                 return message;
             }
         } else {
@@ -422,14 +406,14 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
         auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
         auto sourcePath = compilationUnitInfo->getSourcePath();
         if (CollectionUtils::containsKey(testGen.tests, sourcePath)) {
-            linkMakefiles.push_back(testMakefilesPrinter.GetMakefiles(sourcePath));
+            testMakefilesPrinter.GetMakefiles(sourcePath).write();
         }
     }
     return LinkResult{ targetBitcode, stubsSet, presentedFiles };
 };
 
-static const string STUB_BITCODE_FILES_NAME = "STUB_BITCODE_FILES";
-static const string STUB_BITCODE_FILES = "$(STUB_BITCODE_FILES)";
+static const std::string STUB_BITCODE_FILES_NAME = "STUB_BITCODE_FILES";
+static const std::string STUB_BITCODE_FILES = "$(STUB_BITCODE_FILES)";
 
 Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
     const fs::path &root, const fs::path &outputFile, const fs::path &stubsMakefile) const {
@@ -438,20 +422,20 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
         { "--print-file-name", "--undefined-only", "--just-symbol-name", outputFile });
     auto [out, status, _] = ShellExecTask::runShellCommandTask(nmCommand, testGen.serverBuildDir);
     if (status != 0) {
-        string errorMessage =
+        std::string errorMessage =
             StringUtils::stringFormat("llvm-nm on %s failed: %s", outputFile, out);
         LOG_S(ERROR) << errorMessage;
         return errorMessage;
     }
     auto symbols =
-        CollectionUtils::transform(StringUtils::split(out, '\n'), [](string const &line) {
+        CollectionUtils::transform(StringUtils::split(out, '\n'), [](std::string const &line) {
             return StringUtils::splitByWhitespaces(line).back();
         });
     CollectionUtils::erase_if(symbols, [](std::string const &symbol) {
         return StringUtils::startsWith(symbol, "__ubsan") ||
                StringUtils::startsWith(symbol, "klee_");
     });
-    auto signatures = CollectionUtils::transform(symbols, [](string const &symbol) {
+    auto signatures = CollectionUtils::transform(symbols, [](std::string const &symbol) {
         Tests::MethodDescription methodDescription;
         methodDescription.name = symbol;
         return methodDescription;
@@ -483,16 +467,16 @@ Result<utbot::Void> Linker::linkWithStubsIfNeeded(const fs::path &linkMakefile, 
     //so it has external functions without body.
     bool removeStatus = fs::remove(targetBitcode);
     if (!removeStatus) {
-        string errorMessage =
+        std::string errorMessage =
             StringUtils::stringFormat("Can't remove file: %s", targetBitcode);
         LOG_S(ERROR) << errorMessage;
         return errorMessage;
     }
 
-    auto command = MakefileUtils::makefileCommand(testGen.projectContext, linkMakefile, "all");
+    auto command = MakefileUtils::MakefileCommand(testGen.projectContext, linkMakefile, "all");
     auto [out, status, _] = command.run(testGen.serverBuildDir);
     if (status != 0) {
-        string errorMessage =
+        std::string errorMessage =
             StringUtils::stringFormat("link with stubs failed: %s", command.getFailedCommand());
         LOG_S(ERROR) << errorMessage;
         return errorMessage;
@@ -539,7 +523,7 @@ static void moveKleeTemporaryFileArgumentToBegin(std::vector<std::string> &argum
     std::iter_swap(iteratorToSwap + 2, iteratorToCurrentFile);
 }
 
-static void moveOutputOptionToBegin(vector<std::string> &arguments, fs::path const &output) {
+static void moveOutputOptionToBegin(std::vector<std::string> &arguments, fs::path const &output) {
     auto it = std::find(arguments.begin(), arguments.end(), "-o");
     if (it != arguments.end()) {
         arguments.erase(it, it + 2);
@@ -585,13 +569,15 @@ static const std::vector<std::string> LD_GOLD_OPTIONS = {
     "-relocatable"
 };
 
-static std::vector<std::string> getLinkActionsForRootLibrary(
-    fs::path const &workingDir, std::vector<fs::path> const &dependencies, fs::path const &output) {
+static std::vector<std::string>
+getLinkActionsForRootLibrary(fs::path const &workingDir,
+                             std::vector<fs::path> const &dependencies,
+                             fs::path const &rootOutput) {
     std::vector<std::string> commandLine = LD_GOLD_OPTIONS;
     commandLine.emplace_back("--whole-archive");
     CollectionUtils::extend(
         commandLine,
-        std::vector<std::string>{ StringUtils::joinWith(dependencies, " "), "-o", output });
+        std::vector<std::string>{ StringUtils::joinWith(dependencies, " "), "-o", rootOutput });
     utbot::LinkCommand linkAction{ commandLine, workingDir };
     return { linkAction.toStringWithChangingDirectory() };
 };
@@ -643,7 +629,7 @@ namespace {
     std::vector<std::string> sortLinkDependencies(const std::list<std::string> &linkCommandLine,
                                                   BuildDatabase::TargetInfo const &linkUnitInfo) {
 
-        std::vector<string> commandLine;
+        std::vector<std::string> commandLine;
         CollectionUtils::extend(commandLine, linkCommandLine);
         {
             std::string tmp;
@@ -705,31 +691,34 @@ Linker::getLinkActionsForExecutable(fs::path const &workingDir,
     return commands;
 }
 
-void Linker::declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
-                                      const fs::path &output,
-                                      const vector<fs::path> &bitcodeDependencies,
-                                      const fs::path &prefixPath,
-                                      const utbot::RunCommand &removeAction,
-                                      vector<utbot::LinkCommand> archiveActions) {
-    fs::path temporaryOutput = Paths::addSuffix(output, "_tmp");
-    utbot::RunCommand removeTemporaryAction =
-        utbot::RunCommand::forceRemoveFile(temporaryOutput, testGen.serverBuildDir);
-    std::vector<std::string> actions{ removeTemporaryAction.toStringWithChangingDirectory() };
+fs::path
+Linker::declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
+                                 const fs::path &output,
+                                 const std::vector<fs::path> &bitcodeDependencies,
+                                 const fs::path &prefixPath,
+                                 std::vector<utbot::LinkCommand> archiveActions) {
+    fs::path rootOutput = Paths::addSuffix(output, "_root");
+    utbot::RunCommand removeAction =
+        utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
+    std::vector<std::string> actions{ removeAction.toStringWithChangingDirectory() };
     for (auto &archiveAction : archiveActions) {
-        archiveAction.setOutput(temporaryOutput);
+        archiveAction.setOutput(output);
     }
     CollectionUtils::extend(
         actions, CollectionUtils::transform(
                      archiveActions, std::bind(&utbot::LinkCommand::toStringWithChangingDirectory,
                                                std::placeholders::_1)));
-    bitcodeLinkMakefilePrinter.declareTarget(temporaryOutput, bitcodeDependencies, actions);
+    bitcodeLinkMakefilePrinter.declareTarget(output, bitcodeDependencies, actions);
 
     auto linkActions =
-        getLinkActionsForRootLibrary(prefixPath, { temporaryOutput, STUB_BITCODE_FILES }, output);
-    linkActions.insert(linkActions.begin(), removeAction.toStringWithChangingDirectory());
-    bitcodeLinkMakefilePrinter.declareTarget(output, { temporaryOutput, STUB_BITCODE_FILES },
+        getLinkActionsForRootLibrary(prefixPath, { output, STUB_BITCODE_FILES }, rootOutput);
+    utbot::RunCommand removeRootAction =
+        utbot::RunCommand::forceRemoveFile(rootOutput, testGen.serverBuildDir);
+    linkActions.insert(linkActions.begin(), removeRootAction.toStringWithChangingDirectory());
+    bitcodeLinkMakefilePrinter.declareTarget(rootOutput, { output, STUB_BITCODE_FILES },
                                              linkActions);
-    bitcodeLinkMakefilePrinter.declareTarget("all", { output }, {});
+    bitcodeLinkMakefilePrinter.declareTarget("all", { rootOutput }, {});
+    return rootOutput;
 }
 
 
@@ -741,7 +730,6 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
                                  std::string const &suffixForParentOfStubs,
                                  bool hasParent,
                                  const std::optional<fs::path> &testedFilePath) {
-    using namespace std::placeholders;
     if (Paths::isObjectFile(fileToBuild)) {
         auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(fileToBuild);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
@@ -775,27 +763,28 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
         auto output = testGen.buildDatabase->getBitcodeFile(fileToBuild);
         output = LinkerUtils::applySuffix(output, unitType, suffixForParentOfStubs);
         if (Paths::isLibraryFile(fileToBuild)) {
-            utbot::RunCommand removeAction =
-                utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
             auto archiveActions = getArchiveCommands(prefixPath, dependencies, *linkUnit, output);
             if (!hasParent) {
-                declareRootLibraryTarget(bitcodeLinkMakefilePrinter, output, bitcodeDependencies,
-                                         prefixPath, removeAction, archiveActions);
-
+                fs::path rootBitcode =
+                    declareRootLibraryTarget(bitcodeLinkMakefilePrinter, output,
+                                             bitcodeDependencies, prefixPath, archiveActions);
+                return { rootBitcode, BuildResult::Type::NONE };
             } else {
+                utbot::RunCommand removeAction =
+                    utbot::RunCommand::forceRemoveFile(output, testGen.serverBuildDir);
                 std::vector<std::string> actions = { removeAction.toStringWithChangingDirectory() };
                 CollectionUtils::extend(
                     actions,
                     CollectionUtils::transform(
                         archiveActions,
-                        std::bind(&utbot::LinkCommand::toStringWithChangingDirectory, _1)));
+                        std::bind(&utbot::LinkCommand::toStringWithChangingDirectory, std::placeholders::_1)));
                 bitcodeLinkMakefilePrinter.declareTarget(output, bitcodeDependencies, actions);
             }
         } else {
             auto linkActions =
                 getLinkActionsForExecutable(prefixPath, dependencies, *linkUnit, output);
             auto actions = CollectionUtils::transform(
-                linkActions, std::bind(&utbot::LinkCommand::toStringWithChangingDirectory, _1));
+                linkActions, std::bind(&utbot::LinkCommand::toStringWithChangingDirectory, std::placeholders::_1));
             bitcodeLinkMakefilePrinter.declareTarget(output, bitcodeDependencies, actions);
             bitcodeLinkMakefilePrinter.declareTarget("all", { output }, {});
         }
@@ -803,7 +792,7 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
     }
 }
 
-fs::path Linker::getPrefixPath(const vector<fs::path> &dependencies, fs::path defaultPath) const {
+fs::path Linker::getPrefixPath(const std::vector<fs::path> &dependencies, fs::path defaultPath) const {
     if (dependencies.empty()) {
         return defaultPath;
     }

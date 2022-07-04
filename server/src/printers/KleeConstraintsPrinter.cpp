@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "KleeConstraintsPrinter.h"
 
 #include "utils/PrinterUtils.h"
@@ -16,7 +12,7 @@ printer::KleeConstraintsPrinter::KleeConstraintsPrinter(const types::TypesHandle
     : Printer(srcLanguage), typesHandler(typesHandler) {}
 
 printer::KleeConstraintsPrinter::Stream
-KleeConstraintsPrinter::genConstraints(const string &name, const types::Type& type) {
+KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Type& type) {
     ConstraintsState state = { "&" + name, name, type, true };
     auto paramType = type;
     if (type.maybeJustPointer()) {
@@ -109,7 +105,7 @@ void KleeConstraintsPrinter::genConstraintsForPointerOrArray(const ConstraintsSt
 }
 
 void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
-                                                                  vector<size_t> sizes) {
+                                                                  std::vector<size_t> sizes) {
     const types::Type baseType = state.curType.baseTypeObj();
     bool assignPointersToNull = state.curType.isTypeContainsPointer() && state.depth > 0;
     if (assignPointersToNull) {
@@ -121,10 +117,10 @@ void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const Constrai
 
     if (state.endString && types::TypesHandler::isCharacterType(baseType) &&
         TypesHandler::isCStringType(state.curType)) {
-        std::vector<string> charSizes(indexes.begin(), indexes.end() - 1);
+        std::vector<std::string> charSizes(indexes.begin(), indexes.end() - 1);
         const auto charElement = constrMultiIndex(state.curElement, charSizes);
         ss << TAB_N() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
-        ss << TAB_N() << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::ASSIGN_OPERATOR << "'\\0'" << SCNL;
+        ss << TAB_N() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
         ss << TAB_N() << "break" << SCNL;
         ss << RB();
     }
@@ -159,7 +155,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
         ConstraintsState newState = { state.paramName, access, field.type, state.endString, state.depth + 1 };
         TypeKind kind = typesHandler->getTypeKind(field.type);
-        string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
+        std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
         switch (kind) {
         case TypeKind::PRIMITIVE:
             genConstraintsForPrimitive(newState);
@@ -194,7 +190,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
     }
 }
 
-string KleeConstraintsPrinter::cexConstraints(const string &name, const types::Type &type) {
+std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, const types::Type &type) {
     std::stringstream ssCex;
     if (!CollectionUtils::containsKey(TypesHandler::preferredConstraints(), type.baseType())) {
         return "";

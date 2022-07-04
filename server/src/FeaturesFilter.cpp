@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "FeaturesFilter.h"
 
 #include "TimeExecStatistics.h"
@@ -23,7 +19,7 @@ void FeaturesFilter::filter(utbot::SettingsContext const &settingsContext,
                             tests::TestsMap &testsMap,
                             bool throwIfZeroFunctions) {
     bool hasSupportedMethods = false;
-    std::unordered_map<string, int> unsupportedStatistics;
+    std::unordered_map<std::string, int> unsupportedStatistics;
     for (auto testsMapIterator = testsMap.begin(); testsMapIterator != testsMap.end();
          testsMapIterator++) {
         fs::path const &sourceFile = testsMapIterator.key();

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "DefaultMakefilePrinter.h"
 
 #include "utils/Copyright.h"
@@ -21,10 +17,10 @@ void DefaultMakefilePrinter::declareVariable(std::string const &name, std::strin
     ss << stringFormat("%s = %s\n", name, value);
 }
 
-void DefaultMakefilePrinter::declareAction(const string &name) {
+void DefaultMakefilePrinter::declareAction(const std::string &name) {
     ss << name << "\n";
 }
-void DefaultMakefilePrinter::declareInclude(const string &otherMakefileName) {
+void DefaultMakefilePrinter::declareInclude(const std::string &otherMakefileName) {
     ss << stringFormat("include %s\n", otherMakefileName);
 }
 

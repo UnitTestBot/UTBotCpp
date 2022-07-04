@@ -1,15 +1,11 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "UserProjectConfiguration.h"
 
 #include "Paths.h"
 #include "environment/EnvironmentPaths.h"
 #include "tasks/ShellExecTask.h"
 #include "utils/Copyright.h"
-#include "utils/FileSystemUtils.h"
 #include "utils/ExecUtils.h"
+#include "utils/FileSystemUtils.h"
 #include "utils/LogUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
@@ -36,16 +32,37 @@ Status UserProjectConfiguration::RunBuildDirectoryCreation(const fs::path &build
     return Status::OK;
 }
 
+static const std::vector<std::string> CMAKE_MANDATORY_OPTIONS = {
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES=OFF",
+
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS=OFF",
+
+    "-DCMAKE_ASM_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+    "-DCMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+    "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
+};
 
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
-                                                          const string &projectName,
-                                                          vector<string> cmakeOptions,
+                                                          const std::string &projectName,
+                                                          std::vector<std::string> cmakeOptions,
                                                           ProjectConfigWriter const &writer) {
     try {
         fs::path bearShPath = createBearShScript(buildDirPath);
-        cmakeOptions.emplace_back("..");
-        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptions);
+
+        std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
+        for (const std::string &op : cmakeOptions) {
+            if (op.find("_USE_RESPONSE_FILE_FOR_") == std::string::npos) {
+                cmakeOptionsWithMandatory.emplace_back(op);
+            }
+        }
+        cmakeOptionsWithMandatory.emplace_back("..");
+
+        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptionsWithMandatory);
         ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(),
                                                           {Paths::getMake(), MakefileUtils::threadFlag()});
 
@@ -71,12 +88,12 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
 
 void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &buildDirPath,
                                                               const ShellExecTask::ExecutionParameters &params,
-                                                              const string &projectName,
+                                                              const std::string &projectName,
                                                               const ProjectConfigWriter &writer) {
     auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectName, true, true);
     if (status != 0) {
         auto logFilePath = LogUtils::writeLog(out, Paths::getTmpDir(projectName), "project-import");
-        string message = StringUtils::stringFormat(
+        std::string message = StringUtils::stringFormat(
                 "Running command \"%s\" failed. See more info in logs.", params.toString());
         throw std::runtime_error(message);
     }
@@ -98,7 +115,7 @@ fs::path UserProjectConfiguration::getBearShScriptPath(const fs::path &buildDirP
     return buildDirPath / "bear.sh";
 }
 
-static string getBearShEnvironmentSetting() {
+static std::string getBearShEnvironmentSetting() {
     auto libraryDirs = {
             Paths::getUTBotDebsInstallDir() / "usr/lib/x86_64-linux-gnu",
             Paths::getUTBotDebsInstallDir() / "lib/x86_64-linux-gnu",
@@ -123,8 +140,8 @@ fs::path UserProjectConfiguration::createBearShScript(const fs::path &buildDirPa
 
 Status UserProjectConfiguration::RunProjectReConfigurationCommands(const fs::path &buildDirPath,
                                                                    const fs::path &projectDirPath,
-                                                                   const string &projectName,
-                                                                   vector<string> cmakeOptions,
+                                                                   const std::string &projectName,
+                                                                   std::vector<std::string> cmakeOptions,
                                                                    ProjectConfigWriter const &writer) {
     try {
         fs::remove_all(Paths::getTmpDir(""));

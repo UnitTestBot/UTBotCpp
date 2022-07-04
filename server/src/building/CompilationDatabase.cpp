@@ -1,8 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #include "CompilationDatabase.h"
 
 #include "Paths.h"
@@ -51,7 +46,7 @@ const std::optional<fs::path> &CompilationDatabase::getResourceDir() const {
     return resourceDir;
 }
 std::unique_ptr<CompilationDatabase>
-CompilationDatabase::autoDetectFromDirectory(fs::path const& SourceDir, string &ErrorMessage) {
+CompilationDatabase::autoDetectFromDirectory(fs::path const& SourceDir, std::string &ErrorMessage) {
     auto clangCompilationDatabase = clang::tooling::CompilationDatabase::autoDetectFromDirectory(
         SourceDir.c_str(), ErrorMessage);
     if (clangCompilationDatabase == nullptr) {

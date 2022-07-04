@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_NATIVEMAKEFILEPRINTER_H
 #define UNITTESTBOT_NATIVEMAKEFILEPRINTER_H
 
@@ -18,7 +14,7 @@ namespace printer {
     class NativeMakefilePrinter : public DefaultMakefilePrinter {
     private:
         const utbot::ProjectContext projectContext;
-        shared_ptr<BuildDatabase> buildDatabase;
+        std::shared_ptr<BuildDatabase> buildDatabase;
         fs::path rootPath;
 
         fs::path primaryCompiler;
@@ -27,9 +23,9 @@ namespace printer {
         CompilationUtils::CompilerName primaryCxxCompilerName;
         fs::path cxxLinker;
 
-        string pthreadFlag;
-        string coverageLinkFlags;
-        string sanitizerLinkFlags;
+        std::string pthreadFlag;
+        std::string coverageLinkFlags;
+        std::string sanitizerLinkFlags;
 
         fs::path buildDirectory, dependencyDirectory;
 
@@ -70,7 +66,7 @@ namespace printer {
 
     public:
         NativeMakefilePrinter(utbot::ProjectContext projectContext,
-                              shared_ptr<BuildDatabase> buildDatabase,
+                              std::shared_ptr<BuildDatabase> buildDatabase,
                               fs::path const &rootPath,
                               fs::path primaryCompiler,
                               CollectionUtils::FileSet const *stubSources);
@@ -86,7 +82,7 @@ namespace printer {
         void close();
 
         void addLinkTargetRecursively(const fs::path &unitFile,
-                                      const string &suffixForParentOfStubs,
+                                      const std::string &suffixForParentOfStubs,
                                       bool exeToLib = true);
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);

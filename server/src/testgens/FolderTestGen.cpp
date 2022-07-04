@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "FolderTestGen.h"
 
 #include "Paths.h"
@@ -16,7 +12,7 @@ FolderTestGen::FolderTestGen(const testsgen::FolderRequest &request,
     setInitializedTestsMap();
 }
 
-string FolderTestGen::toString() {
+std::string FolderTestGen::toString() {
     std::stringstream s;
     s << ProjectTestGen::toString() << "folder path: " << folderPath << "\nfile paths:\n";
     for (const auto &sp : testingMethodsSourcePaths) {

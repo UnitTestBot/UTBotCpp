@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "FileTestGen.h"
 
 #include "utils/ExecUtils.h"
@@ -15,7 +11,7 @@ FileTestGen::FileTestGen(const testsgen::FileRequest &request,
     setInitializedTestsMap();
 }
 
-string FileTestGen::toString() {
+std::string FileTestGen::toString() {
     std::stringstream s;
     s << ProjectTestGen::toString() << "\n\tfilepath: " << filepath << "\n";
     return s.str();

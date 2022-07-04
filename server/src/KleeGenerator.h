@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEEGENERATOR_H
 #define UNITTESTBOT_KLEEGENERATOR_H
 
@@ -24,8 +20,6 @@
 #include <optional>
 #include <sstream>
 #include <string>
-
-using std::string;
 
 using json = nlohmann::json;
 
@@ -76,10 +70,10 @@ public:
      * @return Vector of paths to output files "*.bc".
      * @throws ExecutionProcessException if any of Clang calls returns non-zero code.
      */
-    vector<BuildFileInfo> buildByCDb(const CollectionUtils::MapFileTo<fs::path> &compileCommand,
-                                     const CollectionUtils::FileSet &stubSources = {});
+    std::vector<BuildFileInfo> buildByCDb(const CollectionUtils::MapFileTo<fs::path> &compileCommand,
+                                          const CollectionUtils::FileSet &stubSources = {});
 
-    vector<KleeGenerator::BuildFileInfo>
+    std::vector<KleeGenerator::BuildFileInfo>
     buildByCDb(const CollectionUtils::FileSet &filesToBuild,
                const CollectionUtils::FileSet &stubSources = {});
 
@@ -87,7 +81,7 @@ public:
     Result<fs::path> defaultBuild(const fs::path &hintPath,
                                   const fs::path &sourceFilePath,
                                   const fs::path &buildDirPath = "",
-                                  const vector<string> &flags = {});
+                                  const std::vector<std::string> &flags = {});
 
     /**
      * @brief Builds source file with default compilation flags.
@@ -101,7 +95,7 @@ public:
      */
     Result<fs::path> defaultBuild(const fs::path &sourceFilePath,
                                   const fs::path &buildDirPath = "",
-                                  const vector<string> &flags = {});
+                                  const std::vector<std::string> &flags = {});
 
     /**
      * @brief Writes temporary Klee files and builds them.
@@ -115,8 +109,8 @@ public:
      * @return Vector of paths to built binary files.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    vector<fs::path> buildKleeFiles(const TestsMap &testsMap,
-                                    const std::shared_ptr<LineInfo> &lineInfo);
+    std::vector<fs::path> buildKleeFiles(const TestsMap &testsMap,
+                                         const std::shared_ptr<LineInfo> &lineInfo);
 
     /**
      * @brief Parse JSON chunks into final tests code.
@@ -129,8 +123,8 @@ public:
      */
     void
     parseKTestsToFinalCode(tests::Tests &tests,
-                           const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
-                           const vector<MethodKtests> &kleeOutput,
+                           const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+                           const std::vector<MethodKtests> &kleeOutput,
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false);
 
@@ -152,9 +146,9 @@ public:
     std::optional<utbot::CompileCommand>
     getCompileCommandForKlee(const fs::path &hintPath,
                              const CollectionUtils::FileSet &stubSources,
-                             const vector<string> &flags) const;
+                             const std::vector<std::string> &flags) const;
 
-    vector<utbot::CompileCommand>
+    std::vector<utbot::CompileCommand>
     getCompileCommandsForKlee(const CollectionUtils::MapFileTo<fs::path> &filesToBuild,
                               const CollectionUtils::FileSet &stubSources) const;
 

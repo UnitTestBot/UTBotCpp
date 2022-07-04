@@ -1,20 +1,28 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as grpc from 'grpc';
 import * as os from 'os';
 import * as vs from 'vscode';
+import {Uri} from 'vscode';
 import * as defcfg from '../config/defaultValues';
 import * as messages from '../config/notificationMessages';
-import { Prefs } from '../config/prefs';
-import { ExtensionLogger } from '../logger';
-import { TestsGenServiceClient } from '../proto-ts/testgen_grpc_pb';
-import { GrpcServicePing } from '../utils/grpcServicePing';
+import {Prefs} from '../config/prefs';
+import {ExtensionLogger} from '../logger';
+import {TestsGenServiceClient} from '../proto-ts/testgen_grpc_pb';
+import {GrpcServicePing} from '../utils/grpcServicePing';
 import * as pathUtils from '../utils/pathUtils';
-import { WizardEventsEmitter } from './wizardEventsEmitter';
-import { WizardHtmlBuilder } from './wizardHtmlBuilder';
+import {WizardEventsEmitter} from './wizardEventsEmitter';
+import * as fs from "fs";
+import * as vsUtils from "../utils/vscodeUtils";
+
 const { logger } = ExtensionLogger;
+
+function getNonce(): string {
+    let text = '';
+    const possible = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    for (let i = 0; i < 10; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return text;
+}
 
 export class UtbotWizardPanel {
 
@@ -22,6 +30,7 @@ export class UtbotWizardPanel {
     private disposables: vs.Disposable[] = [];
     private static PING_TIMEOUT_MS = 5000;
     private static events = WizardEventsEmitter.getWizardEventsEmitter();
+    private static checkNonInitializedVars = /[{][{][a-zA-Z]+[}][}]/g;
 
     public static createOrShow(context: vs.ExtensionContext): void {
         const column = vs.window.activeTextEditor
@@ -60,41 +69,57 @@ export class UtbotWizardPanel {
         this.panel.webview.onDidReceiveMessage(
             async message => {
                 switch (message.command) {
-                    case 'run_installator':
+                    case 'openSFTPSettings':
+                        if (message.key !== undefined) {
+                            const keyName = message.key;
+                            //await vs.commands.executeCommand('workbench.action.openSettings', 'Natizyskunk.sftp.remotePath');
+                            await vs.commands.getCommands(true).then(
+                                async (commands: string[]) => {
+                                    if (commands.includes("sftp.config")) {
+                                        await vs.commands.executeCommand("sftp.config").then(
+                                            async () => {
+                                                // TODO: positioning at keyname/value line
+                                                // await vs.commands.executeCommand('actions.find', `${keyName}`).then(
+                                                //     () => messages.showErrorMessage(`query: @${keyName}`)
+                                                // );
+                                            }
+                                        );
+                                    } else {
+                                        messages.showErrorMessage("SFTP plugin isn't installed!");
+                                    }
+                                }
+                            );
+                        }
+                        break;
+                    case 'run_installer':
                         this.runInstallationScript();
                         break;
-                    case 'set_host_and_port':
+                    case 'set_server_setup':
                         await Prefs.setHost(message.host);
                         await Prefs.setPort(message.port);
-                        break;
-                    case 'set_mapping_path':
                         await Prefs.setRemotePath(message.mappingPath);
                         break;
                     case 'set_build_info':
                         await Prefs.setBuildDirectory(message.buildDirectory);
                         await Prefs.setCmakeOptions(message.cmakeOptions);
                         break;
+                    case 'check_connection':
                     case 'test_connection':
                         this.pingAction(
                             message.host,
                             message.port,
-                            'test_server_ping_success',
-                            'test_server_ping_failure'
-                        );
-                        break;
-                    case 'check_connection':
-                        this.pingAction(
-                            message.host,
-                            message.port,
-                            'check_server_ping_success',
-                            'check_server_ping_failure'
-                        );
+                            message.command + '_success',
+                            message.command + '_failure');
                         break;
                     case 'close_wizard':
                         this.panel.dispose();
                         break;
+                    case 'dbg_message':
+                        logger.info(`dbg_message: ${message.message}`);
+                        break;
                     default:
                         messages.showErrorMessage(`Unknown message (${message.command}) from WizardWebView: ${message}`);
+                        break;
                 }
             },
             null,
@@ -109,22 +134,38 @@ export class UtbotWizardPanel {
         terminal.sendText(onDiskPath.fsPath, true);
     }
 
+    private lastRequest: Promise<string|null> | null = null;
     private pingAction(host: string, port: number, successCmd: string, failureCmd: string): void {
         const servicePing = new GrpcServicePing(
+            this.context.extension.packageJSON.version,
             new TestsGenServiceClient(
                 `${host}:${port}`,
                 grpc.credentials.createInsecure()
             )
         );
-        servicePing.ping(UtbotWizardPanel.PING_TIMEOUT_MS).then(async pinged => {
-            if (pinged) {
-                await this.panel.webview.postMessage({ command: successCmd });
+
+        const capturedPingPromiseForLambda = servicePing.ping(UtbotWizardPanel.PING_TIMEOUT_MS);
+        this.lastRequest = capturedPingPromiseForLambda;
+        capturedPingPromiseForLambda.then(async serverVer => {
+            if (this.lastRequest !== capturedPingPromiseForLambda) {
+                // ignore: there is more actual request
+                return;
+            }
+            if (serverVer !== null) {
+                await this.panel.webview.postMessage({
+                    command: successCmd,
+                    clientVersion: this.context.extension.packageJSON.version,
+                    serverVersion: (serverVer.length === 0
+                       ? "undefined"
+                       : serverVer)});
             } else {
                 await this.panel.webview.postMessage({ command: failureCmd });
             }
         }).catch(async err => {
             logger.error(`Error! ${err}`);
-            await this.panel.webview.postMessage({ command: failureCmd });
+            if (this.lastRequest === capturedPingPromiseForLambda) {
+                await this.panel.webview.postMessage({command: failureCmd});
+            }
         });
         return;
     }
@@ -172,26 +213,59 @@ export class UtbotWizardPanel {
         };
     }
 
-
     private async getHtmlForWebview(webview: vs.Webview): Promise<string> {
-        const stylesUri = webview.asWebviewUri(vs.Uri.joinPath(this.context.extensionUri, 'media', 'wizard.css'));
-        const vscodeUri = webview.asWebviewUri(vs.Uri.joinPath(this.context.extensionUri, 'media', 'vscode.css'));
-        const scriptUri = webview.asWebviewUri(vs.Uri.joinPath(this.context.extensionUri, 'media', 'wizard.js'));
-        const htmlUri = vs.Uri.joinPath(this.context.extensionUri, 'media', 'wizard.html');
+
+        const extUri = this.context.extensionUri;
+        function mediaPath(fileName: string): Uri {
+            return webview.asWebviewUri(vs.Uri.joinPath(extUri, 'media', fileName));
+        }
 
         const predictedBuildDirectory = await defcfg.DefaultConfigValues.getDefaultBuildDirectoryPath();
+        const initVars: {param: string; value: string|undefined}[] = [
+            // UI javascript
+            {param: 'scriptUri', value: mediaPath('wizard.js').toString()},
 
-        const htmlBuilder = new WizardHtmlBuilder(htmlUri);
-        return htmlBuilder
-            .setVSCodeStyleUri(vscodeUri)
-            .setCustomStyleUri(stylesUri)
-            .setScriptUri(scriptUri)
-            .setPredictedHost(defcfg.DefaultConfigValues.getDefaultHost())
-            .setPredictedPort(defcfg.DefaultConfigValues.getDefaultPort())
-            .setPredictedRemotePath(defcfg.DefaultConfigValues.getDefaultRemotePath())
-            .setPredictedBuildDirectory(predictedBuildDirectory)
-            .setPlatform(os.platform())
-            .setCmakeOptions(defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS)
-            .build();
+            // Security (switched off)
+            //{param: 'wvscriptUri', value: webview.cspSource},
+            //{param: 'nonce', value: getNonce()}, // Use a nonce to only allow a specific script to be run.
+
+            // CSS in header
+            {param: 'vscodeUri', value: mediaPath('vscode.css').toString()},
+            {param: 'stylesUri', value: mediaPath('wizard.css').toString()},
+
+            // vars
+            {param: 'os', value: os.platform()},
+            {param: 'projectDir', value: defcfg.DefaultConfigValues.toWSLPathOnWindows(vsUtils.getProjectDirByOpenedFile().fsPath)},
+            {param: 'defaultPort', value: defcfg.DefaultConfigValues.DEFAULT_PORT.toString()},
+            {param: 'sftpHost', value: vsUtils.getFromSftpConfig("host")},
+            {param: 'sftpDir', value: vsUtils.getFromSftpConfig("remotePath")},
+
+            // connection tab
+            {param: 'predictedHost', value: defcfg.DefaultConfigValues.getDefaultHost()},
+            {param: 'predictedPort', value: Prefs.getGlobalPort()},
+            {param: 'predictedRemotePath', value: defcfg.DefaultConfigValues.getDefaultRemotePath()},
+
+            // project tab
+            {param: 'predictedBuildDirectory', value:predictedBuildDirectory},
+            {param: 'cmakeOptions', value: defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS.join("\n")},
+        ];
+
+        let content = fs.readFileSync(mediaPath('wizard.html').fsPath, 'utf8');
+        for (const p2v of initVars) {
+            logger.info(`map ${p2v.param} -> ${p2v.value}`);
+            // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+            // @ts-ignore
+            content = content.replaceAll(`{{${p2v.param}}}`,
+                `${p2v.value === undefined
+                ? '' 
+                : p2v.value}`);
+        }
+
+        const uninitVars = UtbotWizardPanel.checkNonInitializedVars.exec(content);
+        if (uninitVars !== null) {
+            logger.error(`Error! Wizard has non-initialized variable ${uninitVars[0]}.`);
+            throw new Error(`Wizard has non-initialized variable ${uninitVars[0]}.`);
+        }
+        return content;
     }
 }

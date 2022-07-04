@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "StubSourcesFinder.h"
 
 #include "loguru.h"
@@ -10,9 +6,9 @@ StubSourcesFinder::StubSourcesFinder(std::shared_ptr<BuildDatabase> buildDatabas
     : buildDatabase(std::move(buildDatabase)) {
 }
 
-vector<fs::path> StubSourcesFinder::find(const fs::path& testedFilePath) {
+std::vector<fs::path> StubSourcesFinder::find(const fs::path& testedFilePath) {
     CollectionUtils::FileSet libraryBitcodeFiles = getLibraryBitcodeFiles(testedFilePath);
-    vector<fs::path> stubSources;
+    std::vector<fs::path> stubSources;
     stubSources.reserve(libraryBitcodeFiles.size());
     for (const auto &bitcodeFile : libraryBitcodeFiles) {
         fs::path sourcePath =
@@ -22,11 +18,11 @@ vector<fs::path> StubSourcesFinder::find(const fs::path& testedFilePath) {
     return stubSources;
 }
 
-vector<fs::path> StubSourcesFinder::excludeFind(const fs::path &testedFilePath,
+std::vector<fs::path> StubSourcesFinder::excludeFind(const fs::path &testedFilePath,
                                                 const fs::path &rootPath) {
     auto allBitcodeFiles = buildDatabase->getArchiveObjectFiles(rootPath);
     CollectionUtils::FileSet libraryBitcodeFiles = getLibraryBitcodeFiles(testedFilePath);
-    vector<fs::path> stubSources;
+    std::vector<fs::path> stubSources;
     for (const auto &bitcodeFile : allBitcodeFiles) {
         if (CollectionUtils::contains(libraryBitcodeFiles, bitcodeFile))
             continue;

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 namespace UTBot {
 #define typeid typeid_
 #define throw throw_
@@ -61,9 +57,9 @@ namespace UTBot {
 #define _Thread_local thread_local
 
 
-extern "C" int double_max_dependent_functions_c(int a, int b);
-static int double_max(int a, int b) {
-return double_max_dependent_functions_c(a, b);
+extern "C" int simple_loop_uncovered_simple_loop_uncovered_c(unsigned int n);
+static int simple_loop_uncovered(unsigned int n) {
+return simple_loop_uncovered_simple_loop_uncovered_c(n);
 }
 
 }

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ParametrizedAssertsVisitor.h"
 
 namespace visitor {
@@ -21,7 +17,7 @@ namespace visitor {
                           : methodDescription.returnType;
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
                                                           false);
-        if (testCase.returnValueView->getEntryValue() == PrinterUtils::C_NULL) {
+        if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(
                     StringUtils::stringFormat("EXPECT_TRUE(%s)",
@@ -30,15 +26,15 @@ namespace visitor {
         } else {
             additionalPointersCount = 0;
         }
-        visitAny(returnType, "", testCase.returnValueView.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
         functionCall = {};
         additionalPointersCount = 0;
     }
 
     void ParametrizedAssertsVisitor::visitArray(const types::Type &type,
-                                                const string &name,
+                                                const std::string &name,
                                                 const tests::AbstractValueView *view,
-                                                const string &access,
+                                                const std::string &access,
                                                 size_t size,
                                                 int depth) {
         if (depth == 0) {
@@ -52,55 +48,60 @@ namespace visitor {
                             functionCall, std::nullopt, true, additionalPointersCount);
                     printer->strDeclareArrayVar(
                         type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                        view->getEntryValue(), std::nullopt, true);
+                        view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
                 return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
             }
         }
-        std::vector<size_t> sizes = type.arraysSizes(usage);
 
-        const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
-        const auto newAccess = printer::Printer::constrMultiIndex(access, iterators);
-
-        auto p = processExpect(type.baseTypeObj(), PrinterUtils::EQ,
-                               {PrinterUtils::fillVarName(newAccess, PrinterUtils::EXPECTED),
-                                PrinterUtils::fillVarName(newAccess, PrinterUtils::ACTUAL)});
-        printer->strFunctionCall(p.name, p.args, SCNL, std::nullopt, true, 0, std::nullopt,
-                                 inUnion);
-        printer->closeBrackets(sizes.size());
+        bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
+        if (!assignPointersToNull) {
+            std::vector<size_t> sizes = type.arraysSizes(usage);
+            const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
+            const auto indexing = printer::Printer::constrMultiIndex(iterators);
+            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
+            printer->closeBrackets(sizes.size());
+        }
     }
 
     void ParametrizedAssertsVisitor::visitStruct(const types::Type &type,
-                                                 const string &name,
+                                                 const std::string &name,
                                                  const tests::AbstractValueView *view,
-                                                 const string &access,
+                                                 const std::string &access,
                                                  int depth) {
+        auto value = view->getEntryValue(printer);
         if (depth == 0) {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
-            printer->strDeclareVar(type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), view->getEntryValue());
+                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
+                                   additionalPointersCount);
+            printer->strDeclareVar(
+                type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
         }
-        AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
+        else {
+            printer->ss << value << NL;
+        }
     }
 
     void ParametrizedAssertsVisitor::visitUnion(const types::Type &type,
-                                                const string &name,
+                                                const std::string &name,
                                                 const tests::AbstractValueView *view,
-                                                const string &access,
+                                                const std::string &access,
                                                 int depth) {
         if (depth == 0) {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
                                    PrinterUtils::ACTUAL, functionCall, std::nullopt, true, additionalPointersCount);
-            printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED, view->getEntryValue());
+            printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED, view->getEntryValue(printer));
         }
-        AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
+        else {
+            AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
+        }
     }
 
     void ParametrizedAssertsVisitor::visitPrimitive(const types::Type &type,
-                                                    const string &name,
+                                                    const std::string &name,
                                                     const tests::AbstractValueView *view,
-                                                    const string &access,
+                                                    const std::string &access,
                                                     int depth) {
         if (depth == 0) {
             if (types::TypesHandler::isVoid(type) || isError) {
@@ -111,7 +112,7 @@ namespace visitor {
                                        additionalPointersCount);
                 const auto &gtestMacro = predicateMapping.at(predicate);
                 auto signature =
-                        processExpect(type, gtestMacro, {view->getEntryValue(), getDecorateActualVarName(access)});
+                        processExpect(type, gtestMacro, {view->getEntryValue(printer), getDecorateActualVarName(access)});
                 signature = changeSignatureToNullCheck(signature, type, view, access);
                 printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                          std::nullopt, inUnion);
@@ -131,9 +132,9 @@ namespace visitor {
     }
 
     void ParametrizedAssertsVisitor::visitPointer(const types::Type &type,
-                                                  const string &name,
+                                                  const std::string &name,
                                                   const tests::AbstractValueView *view,
-                                                  const string &access,
+                                                  const std::string &access,
                                                   int depth) {
         if (depth == 0) {
             AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
@@ -143,9 +144,9 @@ namespace visitor {
     }
 
     void ParametrizedAssertsVisitor::visitPointerToFunction(const types::Type &type,
-                                                            const string &name,
+                                                            const std::string &name,
                                                             const tests::AbstractValueView *view,
-                                                            const string &access,
+                                                            const std::string &access,
                                                             int depth) {
         printer->writeCodeLine(functionCall);
     }

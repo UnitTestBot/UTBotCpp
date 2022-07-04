@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEEASSUMEVISITOR_H
 #define UNITTESTBOT_KLEEASSUMEVISITOR_H
 
@@ -19,9 +15,9 @@ namespace visitor {
 
     protected:
         void visitPointer(const types::Type &type,
-                          const string &name,
+                          const std::string &name,
                           const tests::AbstractValueView *view,
-                          const string &access,
+                          const std::string &access,
                           int depth) override;
 
         void kleeAssume(std::string const &assumption);

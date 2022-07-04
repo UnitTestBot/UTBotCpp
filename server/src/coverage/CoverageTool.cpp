@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CoverageTool.h"
 
 #include "GcovCoverageTool.h"
@@ -12,7 +8,8 @@
 
 using namespace CompilationUtils;
 
-CoverageTool::CoverageTool(ProgressWriter const *progressWriter) : progressWriter(progressWriter) {
+CoverageTool::CoverageTool(utbot::ProjectContext projectContext, ProgressWriter const *progressWriter) :
+        projectContext(std::move(projectContext)), progressWriter(progressWriter) {
 }
 
 std::unique_ptr<CoverageTool> getCoverageTool(const std::string &compileCommandsJsonPath,
@@ -33,6 +30,10 @@ std::unique_ptr<CoverageTool> getCoverageTool(const std::string &compileCommands
     }
 }
 
-std::string CoverageTool::getTestFilter(const UnitTest &unitTest) const {
-    return StringUtils::stringFormat("--gtest_filter=*.%s", unitTest.testname);
+std::string CoverageTool::getGTestFlags(const UnitTest &unitTest) const {
+    std::string gtestFilterFlag = StringUtils::stringFormat("\"--gtest_filter=*.%s\"", unitTest.testname);
+    std::string gtestOutputFlag = StringUtils::stringFormat("\"--gtest_output=json:%s\"",
+                                                            Paths::getGTestResultsJsonPath(projectContext));
+    std::vector<std::string> gtestFlagsList = { gtestFilterFlag, gtestOutputFlag };
+    return StringUtils::joinWith(gtestFlagsList, " ");
 }

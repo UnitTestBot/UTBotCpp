@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestMakefilesPrinter.h"
 #include "utils/FileSystemUtils.h"
 
@@ -40,7 +36,7 @@ namespace printer {
     }
 
     void
-    TestMakefilesPrinter::addLinkTargetRecursively(const fs::path &unitFile, const string &suffixForParentOfStubs) {
+    TestMakefilesPrinter::addLinkTargetRecursively(const fs::path &unitFile, const std::string &suffixForParentOfStubs) {
         sharedMakefilePrinter.addLinkTargetRecursively(unitFile, suffixForParentOfStubs, true);
         objMakefilePrinter.addLinkTargetRecursively(unitFile, suffixForParentOfStubs, false);
     }
@@ -72,6 +68,13 @@ namespace printer {
                 StringUtils::joinWith(
                         MakefileUtils::getMakeCommand(sharedMakefilePath.string(), "bin", true),
                         " ")
+        });
+        generalMakefilePrinter.declareTarget("build", {FORCE}, {
+                StringUtils::stringFormat("%s || %s",
+                                          StringUtils::joinWith(MakefileUtils::getMakeCommand(
+                                                  sharedMakefilePath.string(), "build", true), " "),
+                                          StringUtils::joinWith(MakefileUtils::getMakeCommand(
+                                                  objMakefilePath.string(), "build", true), " "))
         });
         generalMakefilePrinter.declareTarget("run", {FORCE}, {
                 StringUtils::stringFormat("%s && { %s; exit $$?; } || { %s && { %s; exit $$?; } }",
