@@ -8,6 +8,7 @@ import com.huawei.utbot.cpp.assertFileOrDirExists
 import org.junit.jupiter.api.Test
 
 class GenerateForFileTest : BaseGenerationTestCase() {
+    private val logger = setupLogger()
     fun doTest(relativeFilePath: String, compiler: CppCompiler, isVerboseMode: Boolean) {
         logger.info("Testing generate for file with file: $relativeFilePath, compiler: ${compiler.name}, verboseMode: $isVerboseMode")
         compiler.buildProject(projectPath, buildDirName)

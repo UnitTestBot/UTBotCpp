@@ -8,9 +8,10 @@ import com.huawei.utbot.cpp.ui.targetsToolWindow.UTBotTargetsController
 import com.huawei.utbot.cpp.utils.getClient
 import com.huawei.utbot.cpp.utils.logger
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.trace
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.testFramework.TestLoggerFactory
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
@@ -57,6 +58,7 @@ abstract class BaseGenerationTestCase {
     val buildDirName = "build"
     val buildDirectoryPath: Path
         get() = projectPath.resolve(buildDirName)
+    private val logger = setupLogger()
     val fixture: CodeInsightTestFixture = createFixture()
     val project: Project
         get() = fixture.project
@@ -66,7 +68,6 @@ abstract class BaseGenerationTestCase {
         get() = project.service()
     val client: Client
         get() = project.getClient()
-    val logger = com.intellij.openapi.diagnostic.Logger.getInstance(this.javaClass)
     val targetsController = UTBotTargetsController(project)
 
     init {
@@ -78,20 +79,22 @@ abstract class BaseGenerationTestCase {
         }
     }
 
+    protected fun setupLogger(): Logger {
+        Logger.setFactory(TestLoggerFactory::class.java)
+        return Logger.getInstance(this.javaClass)
+    }
+
     private fun createFixture(): CodeInsightTestFixture {
-        println("Creating fixture")
-        logger.trace { "Creating fixture" }
+        logger.info("Creating fixture")
         val fixture = IdeaTestFixtureFactory.getFixtureFactory().let {
             it.createCodeInsightFixture(
                 it.createFixtureBuilder(projectPath.name, projectPath, false).fixture,
                 TestFixtureProxy(projectPath)
             )
         }
-        println("Before doing setUP")
         fixture.setUp()
         fixture.testDataPath = projectPath.toString()
-        logger.trace { "Finished creating fixture" }
-        println("Finished creating fixture")
+        logger.info("Finished creating fixture")
         return fixture
     }
 
@@ -108,23 +111,23 @@ abstract class BaseGenerationTestCase {
      */
     fun waitForRequestsToFinish() = runBlocking {
         // requests to server are asynchronous, need to wait for server to respond
-        logger.trace { "Waiting for requests to finish." }
+        logger.info("Waiting for requests to finish.")
         client.waitForServerRequestsToFinish()
-        logger.trace { "Finished waiting!" }
+        logger.info("Finished waiting!")
     }
 
     @AfterEach
     fun tearDown() {
-        logger.trace { "tearDown is called!" }
+        logger.info("tearDown is called!")
         buildDirectoryPath.delete(recursively = true)
         testsDirectoryPath.delete(recursively = true)
     }
 
     @AfterAll
     fun tearDownAll() {
-        logger.trace { "tearDownAll of BaseGenerationTest is called" }
+        logger.info("tearDownAll of BaseGenerationTest is called")
         waitForRequestsToFinish()
         fixture.tearDown()
-        logger.trace { "tearDownAll of BaseGenerationTest has finished!" }
+        logger.info("tearDownAll of BaseGenerationTest has finished!")
     }
 }

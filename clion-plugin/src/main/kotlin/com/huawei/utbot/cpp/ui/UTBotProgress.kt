@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp.ui
 
+import com.huawei.utbot.cpp.utils.invokeOnEdt
 import com.huawei.utbot.cpp.utils.notifyInfo
 import com.intellij.openapi.progress.TaskInfo
 import com.intellij.openapi.progress.util.AbstractProgressIndicatorExBase
@@ -18,7 +19,9 @@ class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = nul
     override fun start() {
         val frame = WindowManagerEx.getInstanceEx().findFrameFor(project) ?: return
         val statusBar = frame.statusBar as? StatusBarEx ?: return
-        statusBar.addProgress(this, task)
+        invokeOnEdt {
+            statusBar.addProgress(this, task)
+        }
         super.start()
     }
 

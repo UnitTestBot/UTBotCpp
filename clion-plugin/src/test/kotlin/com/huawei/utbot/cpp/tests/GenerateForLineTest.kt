@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.Editor
 import org.junit.jupiter.api.Test
 
 class GenerateForLineTest: BaseGenerationTestCase() {
+    private val logger = setupLogger()
 
     fun doTest(lineNumber: Int, targetName: String = "liblib.a", compiler: CppCompiler = Clang, isVerbose: Boolean = true) {
         logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")

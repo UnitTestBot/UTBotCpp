@@ -8,9 +8,12 @@ import com.huawei.utbot.cpp.assertTestFilesExist
 import org.junit.jupiter.api.Test
 
 class GenerateForIsolatedFileTest : BaseGenerationTestCase() {
+    private val logger = setupLogger()
     @Test
     fun testGenerateForFile() {
-        Clang.buildProject(projectPath, buildDirName)
+        val compiler = Clang
+        logger.info("Testing generate for snippet using target: auto, compiler: ${compiler.name}, verbose mode = ${generatorSettings.verbose}")
+        compiler.buildProject(projectPath, buildDirName)
         fixture.configureFromTempProjectFile("snippet.c")
         fixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForSnippetAction")
         waitForRequestsToFinish()

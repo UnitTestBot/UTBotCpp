@@ -39,6 +39,7 @@ abstract class StreamHandler<T>(
 
     open fun onException(exception: Throwable) {
         logger.warn(exception.message)
+        exception.printStackTrace()
         exception.message?.let { notifyError(it, project) }
     }
 

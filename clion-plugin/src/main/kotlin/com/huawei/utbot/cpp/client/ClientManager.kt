@@ -7,12 +7,13 @@ import com.huawei.utbot.cpp.models.LoggingChannel
 import com.huawei.utbot.cpp.models.ServerLogChannel
 import com.huawei.utbot.cpp.utils.logger
 import com.intellij.ide.projectView.ProjectView
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlin.random.Random
 
 @Service
-class ClientManager(val project: Project) {
+class ClientManager(val project: Project): Disposable {
     private val clientId = generateClientID()
     private val loggingChannels = listOf<LoggingChannel>(GTestChannel(project), ServerLogChannel(project))
     var client: Client = Client(project, clientId, loggingChannels)
@@ -39,6 +40,10 @@ class ClientManager(val project: Project) {
                     ProjectView.getInstance(project).refresh()
                 })
         }
+    }
+
+    override fun dispose() {
+        client.dispose()
     }
 
     private fun generateClientID(): String {

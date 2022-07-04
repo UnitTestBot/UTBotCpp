@@ -17,10 +17,10 @@ class TestsStreamHandler(
     grpcStream: Flow<Testgen.TestsResponse>,
     progressName: String,
     cancellationJob: Job,
-    val onSuccess: (List<Path>)->Unit = {},
-    val onError: (Throwable)->Unit = {}
+    private val onSuccess: (List<Path>)->Unit = {},
+    private val onError: (Throwable)->Unit = {}
 ): StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
-    private val myGeneratedTestFiles: MutableList<Path> = mutableListOf()
+    private val myGeneratedTestFilesLocalFS: MutableList<Path> = mutableListOf()
 
     override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
@@ -39,7 +39,7 @@ class TestsStreamHandler(
             val filePath: String = project.utbotSettings.convertFromRemotePathIfNeeded(sourceCode.filePath)
 
             if (!isStubs)
-                myGeneratedTestFiles.add(Paths.get(filePath))
+                myGeneratedTestFilesLocalFS.add(Paths.get(filePath))
 
             if (sourceCode.code.isNotEmpty()) {
                 createFileAndMakeDirs(
@@ -63,7 +63,7 @@ class TestsStreamHandler(
     override fun onCompletion(exception: Throwable?) {
         super.onCompletion(exception)
         if (exception == null)
-            onSuccess(myGeneratedTestFiles)
+            onSuccess(myGeneratedTestFilesLocalFS)
     }
 
     override fun onException(exception: Throwable) {

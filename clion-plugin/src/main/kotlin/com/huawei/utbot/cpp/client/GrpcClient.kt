@@ -20,6 +20,6 @@ open class GrpcClient(val port: Int, val serverName: String, val clientId: Strin
     }
 
     override fun close() {
-        channel.shutdown().awaitTermination(5, TimeUnit.SECONDS)
+        channel.shutdownNow().awaitTermination(5L, TimeUnit.SECONDS)
     }
 }

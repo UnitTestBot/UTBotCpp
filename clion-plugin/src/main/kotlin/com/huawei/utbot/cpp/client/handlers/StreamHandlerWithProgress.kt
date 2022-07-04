@@ -21,9 +21,7 @@ abstract class StreamHandlerWithProgress<T>(
 
     override fun onStart() {
         super.onStart()
-        invokeOnEdt {
-            indicator.start()
-        }
+        indicator.start()
     }
 
     override fun onFinish() {
@@ -51,7 +49,7 @@ abstract class StreamHandlerWithProgress<T>(
     override fun onException(exception: Throwable) {
         super.onException(exception)
         invokeOnEdt {
-            indicator.stop()
+            indicator.cancel()
         }
     }
 }

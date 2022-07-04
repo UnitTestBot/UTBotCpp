@@ -9,8 +9,8 @@ import com.huawei.utbot.cpp.assertFileOrDirExists
 import com.huawei.utbot.cpp.assertTestFilesExist
 import org.junit.jupiter.api.Test
 
-
 class GenerateForProjectTest : BaseGenerationTestCase() {
+    private val logger = setupLogger()
     private fun doTest(compiler: CppCompiler, isVerbose: Boolean, targetNames: List<String> = emptyList()) {
         logger.info ( "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}")
 

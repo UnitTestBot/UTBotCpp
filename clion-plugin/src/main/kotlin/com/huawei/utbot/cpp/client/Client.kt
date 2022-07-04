@@ -6,7 +6,6 @@ import com.huawei.utbot.cpp.client.requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
 import com.huawei.utbot.cpp.models.LoggingChannel
-import com.huawei.utbot.cpp.ui.userLog.OutputProvider
 import com.intellij.openapi.Disposable
 
 import testsgen.Testgen
@@ -20,7 +19,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-import com.huawei.utbot.cpp.utils.children
 import com.huawei.utbot.cpp.utils.hasChildren
 import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.utbotSettings
@@ -202,20 +200,6 @@ class Client(
         runBlocking {
             withTimeout(timeout) {
                 while (requestsCS.hasChildren()) {
-                    delay(DELAY_TIME)
-                }
-            }
-        }
-    }
-
-    private fun cancelAllRequestsAndWaitForCancellation(timeoutMillis: Long = SERVER_TIMEOUT) {
-        runBlocking {
-            withTimeout(timeoutMillis) {
-                while (requestsCS.hasChildren() || servicesCS.hasChildren()) {
-                    requestsCS.cancel()
-                    servicesCS.cancel()
-                    logger.trace { "There are unfinished requests:\n${requestsCS.children}\n${servicesCS.children}" }
-                    logger.trace { "Waiting $DELAY_TIME ms for them to cancel!" }
                     delay(DELAY_TIME)
                 }
             }

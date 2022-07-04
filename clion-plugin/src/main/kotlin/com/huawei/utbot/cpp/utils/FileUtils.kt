@@ -4,8 +4,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import kotlin.io.path.div
-import kotlin.io.path.extension
-import kotlin.io.path.relativeTo
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.FileVisitResult
@@ -27,19 +25,30 @@ fun refreshAndFindIOFile(file: File) {
     }
 }
 
+fun getCommonPathFromRoot(p1: Path, p2: Path): Path {
+    if (p1 == p2) {
+        return p1
+    }
+
+    val path1 = p1.normalize()
+    val path2 = p2.normalize()
+    val minCount: Int = path1.nameCount.coerceAtMost(path2.nameCount)
+    for (i in minCount downTo 1) {
+        val subPath1: Path = path1.subpath(0, i)
+        if (subPath1 == path2.subpath(0, i)) {
+            val root: String = path1.root?.toString() ?: ""
+            return Paths.get(root, subPath1.toString())
+        }
+    }
+
+    return path1.root
+}
+
 fun List<Path>.getLongestCommonPathFromRoot(): Path? {
     if (this.isEmpty())
         return null
 
-    fun getCommon(p1: Path, p2: Path): Path {
-        var relativePath = p1.relativize(p2).normalize()
-        while (!relativePath.endsWith("..")) {
-            relativePath = relativePath.parent
-        }
-        return p1.resolve(relativePath).normalize()
-    }
-
-    return this.reduce(::getCommon)
+    return this.reduce(::getCommonPathFromRoot)
 }
 
 fun refreshAndFindIOFile(filePath: String) = refreshAndFindIOFile(File(filePath))
@@ -78,23 +87,18 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
     }
 }
 
-val DOT_SEP = "_dot_"
-val TEST_SUFFIX = "_test"
+private const val DOT_SEP = "_dot_"
+private const val TEST_SUFFIX = "_test"
 
 fun testFilePathToSourceFilePath(path: String, project: Project): Path = testFilePathToSourceFilePath(Paths.get(path), project)
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
     val relativeToProject = Paths.get(project.utbotSettings.testDirPath).relativize(path.parent)
-    println(relativeToProject.toString())
-    return (Paths.get(project.utbotSettings.projectPath) / relativeToProject / testFileNameToSourceFileName(path)).also {
-        println(it)
-    }
+    return (Paths.get(project.utbotSettings.projectPath) / relativeToProject / testFileNameToSourceFileName(path))
 }
 
 fun testFileNameToSourceFileName(path: Path): Path {
-    return restoreExtensionFromSuffix(removeSuffix(path, TEST_SUFFIX)).fileName.also {
-        println(it)
-    }
+    return restoreExtensionFromSuffix(removeSuffix(path, TEST_SUFFIX)).fileName
 }
 
 fun removeSuffix(path: Path, suffix: String): Path {
@@ -103,9 +107,6 @@ fun removeSuffix(path: Path, suffix: String): Path {
             val fn = it.toString()
             val posOfSuffix = fn.lastIndexOf(suffix)
             fn.removeRange(posOfSuffix until (posOfSuffix + suffix.length))
-        }.also {
-            println("REMOVING SUFFIX FORM $path")
-            println(it)
         }
     )
 }
@@ -119,8 +120,5 @@ fun restoreExtensionFromSuffix(path: Path, defaultExt: String = ".c"): Path {
     } else {
         fnWithoutExt.substring(0 until posEncodedExtension) + "." + fnWithoutExt.substring(posEncodedExtension + DOT_SEP.length)
     }
-    return path.parent.resolve(fnWithExt).also {
-        println("RESTORING EXTESION FROM $path")
-        println(it)
-    }
+    return path.parent.resolve(fnWithExt)
 }
