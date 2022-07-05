@@ -63,6 +63,20 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
         return panel {
+            group("Connection Settings") {
+                row(UTBot.message("settings.project.port")) {
+                    intTextField().bindIntText(utbotSettings::port).applyToComponent {
+                        maximumSize = TEXT_FIELD_MAX_SIZE
+                    }
+                }
+                row(UTBot.message("settings.project.serverName")) {
+                    textField().bindText(utbotSettings::serverName)
+                }
+                row(UTBot.message("settings.project.remotePath")) {
+                    textField().bindText(utbotSettings::remotePath)
+                }
+            }
+
             group("Paths") {
                 createPathChooser(
                     utbotSettings::buildDirRelativePath,
@@ -142,19 +156,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 }
             }
 
-            group("Connection Settings") {
-                row(UTBot.message("settings.project.port")) {
-                    intTextField().bindIntText(utbotSettings::port).applyToComponent {
-                        maximumSize = TEXT_FIELD_MAX_SIZE
-                    }
-                }
-                row(UTBot.message("settings.project.serverName")) {
-                    textField().bindText(utbotSettings::serverName)
-                }
-                row(UTBot.message("settings.project.remotePath")) {
-                    textField().bindText(utbotSettings::remotePath)
-                }
-            }
         }
     }
 
