@@ -75,8 +75,6 @@
                     class="com.huawei.utbot.cpp.actions.GenerateForAssertionAction"
                     text="Generate Tests Failing Assertion"
                     description="Generate unit tests that fail assertion on this line"/>
-            <action id="com.huawei.utbot.cpp.actions.DevAction"
-                    class="com.huawei.utbot.cpp.actions.DevAction" text="Development: Send HandShake"/>
         </group>
 
         <group id="actions.UTBot.projectTree" text="UTBot Actions" popup="true">

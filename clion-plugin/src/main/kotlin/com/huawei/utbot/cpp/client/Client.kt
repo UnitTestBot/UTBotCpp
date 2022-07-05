@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp.client
 
 import com.huawei.utbot.cpp.actions.utils.getDummyRequest
 import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
+import com.huawei.utbot.cpp.actions.utils.getVersionInfo
 import com.huawei.utbot.cpp.client.requests.CheckProjectConfigurationRequest
 import com.huawei.utbot.cpp.messaging.ConnectionStatus
 import com.huawei.utbot.cpp.messaging.UTBotEventsListener
@@ -97,7 +98,7 @@ class Client(
         requestsCS.launch {
             // Logger.info("sending HandShake request!")
             try {
-                stub.handshake(getDummyRequest())
+                stub.handshake(getVersionInfo())
                 logger.info { "Handshake successful!" }
             } catch (e: Exception) {
                 logger.warn { "HandShake failed with the following error: ${e.message}" }

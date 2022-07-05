@@ -5,6 +5,7 @@ import com.huawei.utbot.cpp.Clang
 import com.huawei.utbot.cpp.CppCompiler
 import com.huawei.utbot.cpp.assertAllFilesNotEmptyRecursively
 import com.huawei.utbot.cpp.assertFileOrDirExists
+import com.huawei.utbot.cpp.assertTestFilesExist
 import org.junit.jupiter.api.Test
 
 class GenerateForFileTest : BaseGenerationTestCase() {
@@ -19,7 +20,7 @@ class GenerateForFileTest : BaseGenerationTestCase() {
         waitForRequestsToFinish()
 
         testsDirectoryPath.assertFileOrDirExists()
-        testsDirectoryPath.resolve("lib/basic_functions_test.cpp").assertFileOrDirExists()
+        testsDirectoryPath.assertTestFilesExist(listOf("basic_functions"))
         testsDirectoryPath.assertAllFilesNotEmptyRecursively()
     }
 

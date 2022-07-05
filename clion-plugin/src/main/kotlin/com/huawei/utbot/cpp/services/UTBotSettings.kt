@@ -224,6 +224,7 @@ data class UTBotSettings(
     companion object {
         const val DEFAULT_HOST = "localhost"
         const val DEFAULT_PORT = 2121
+        const val versionInfo = "2022.7"
         val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")
     }
 }

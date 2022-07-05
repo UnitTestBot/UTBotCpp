@@ -244,3 +244,5 @@ fun getProjectTargetsRequest(project: Project): Testgen.ProjectTargetsRequest {
 fun getProjectTargetsRequest(e: AnActionEvent): Testgen.ProjectTargetsRequest {
     return getProjectTargetsRequest(e.project!!)
 }
+
+fun getVersionInfo() = Testgen.VersionInfo.newBuilder().setVersion("2022.7").build()

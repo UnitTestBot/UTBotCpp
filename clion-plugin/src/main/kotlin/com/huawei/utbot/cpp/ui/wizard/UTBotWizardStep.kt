@@ -1,9 +1,11 @@
 package com.huawei.utbot.cpp.ui.wizard
 
 import com.huawei.utbot.cpp.actions.utils.getDummyRequest
+import com.huawei.utbot.cpp.actions.utils.getVersionInfo
 import com.huawei.utbot.cpp.client.GrpcClient
 import com.huawei.utbot.cpp.services.UTBotSettings
 import com.huawei.utbot.cpp.utils.commandLineEditor
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.huawei.utbot.cpp.utils.validateOnInput
 import com.intellij.ide.wizard.Step
 import com.intellij.openapi.Disposable
@@ -11,11 +13,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.COLUMNS_MEDIUM
 import com.intellij.ui.dsl.builder.bindIntText
+import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
@@ -25,10 +29,12 @@ import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
+import javax.swing.event.DocumentEvent
 import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.awt.Component
 import java.awt.Dimension
@@ -136,28 +142,54 @@ class ConnectionStep(
 
     private val cs = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private val pingedServer = ObservableValue<Boolean?>(null)
-    private val isPingingServer = ObservableValue<Boolean>(false)
-    private val isValidInput = ObservableValue<Boolean>(true)
+    enum class ConnectionStatus {
+        connected, connecting, failed, warning
+    }
 
-    private suspend fun pingServer(port: Int, host: String) {
-        GrpcClient(port, host, "DummyId").apply {
-            use {
-                stub.handshake(getDummyRequest())
-            }
+    private val connectionStatus = ObservableValue<ConnectionStatus>(ConnectionStatus.failed)
+
+    private suspend fun pingServer(port: Int, host: String): ConnectionStatus {
+        connectionStatus.value = ConnectionStatus.connecting
+        val client = GrpcClient(port, host, "DummyId")
+        try {
+            val serverVersion = client.stub.handshake(getVersionInfo()).version
+            if (serverVersion != UTBotSettings.versionInfo)
+                return ConnectionStatus.warning
+            return ConnectionStatus.connected
+        } catch (e: Throwable) {
+            return ConnectionStatus.failed
+        } finally {
+            client.close()
         }
+    }
+
+    private fun pingServer() {
+        cs.launch {
+            connectionStatus.value = pingServer(portTextField.text.toInt(), hostTextField.text)
+        }
+    }
+
+    override fun _init() {
+        super._init()
+        pingServer()
     }
 
     private fun setupValidation() {
         portTextField.validateOnInput(parentDisposable) {
-            if (portTextField.text.toIntOrNull() == null) {
-                isValidInput.value = false
-                ValidationInfo("Integer number expected!", portTextField)
+            val value = portTextField.text.toUShortOrNull()
+            if (value == null) {
+                ValidationInfo("Number from 0 to 65535 is expected!", portTextField)
             } else {
-                isValidInput.value = true
+                pingServer()
                 null
             }
         }
+
+        hostTextField.document.addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(e: DocumentEvent) {
+                pingServer()
+            }
+        })
     }
 
     override fun createUI() {
@@ -177,56 +209,37 @@ class ConnectionStep(
                 }
             }
             row {
-                button("Test Connection") {
-                    cs.launch {
-                        isPingingServer.value = true
-                        try {
-                            pingServer(portTextField.text.toInt(), hostTextField.text)
-                            pingedServer.value = true
-                        } catch (e: io.grpc.StatusException) {
-                            pingedServer.value = false
-                        } finally {
-                            isPingingServer.value = false
-                        }
-                    }
-                }.enabledIf(object : ComponentPredicate() {
-                    override fun invoke(): Boolean = !isPingingServer.value && isValidInput.value
-                    override fun addListener(listener: (Boolean) -> Unit) {
-                        isPingingServer.addListener { listener(!it) }
-                        isValidInput.addListener(listener)
-                    }
-                })
-
                 cell(JBLabel(com.intellij.ui.AnimatedIcon.Default())).visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = isPingingServer.value
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.connecting
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        isPingingServer.addListener(listener)
+                        connectionStatus.addListener { listener(it == ConnectionStatus.connecting) }
                     }
                 })
 
-                label("Successfully pinged the server!").visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = pingedServer.value == true
+                label("✔️ Successfully pinged server!").visibleIf(object : ComponentPredicate() {
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.connected
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        pingedServer.addListener { listener(it == true) }
+                        connectionStatus.addListener { listener(it == ConnectionStatus.connected) }
                     }
                 })
 
-                label("Unable to ping the server!").visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = pingedServer.value == false
+                label("❌ Failed to establish connection!").visibleIf(object : ComponentPredicate() {
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.failed
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        pingedServer.addListener { listener(it == false) }
+                        connectionStatus.addListener { listener(it == ConnectionStatus.failed) }
+                    }
+                })
+
+                label("⚠️ Warning! Versions are different").visibleIf(object : ComponentPredicate() {
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.warning
+                    override fun addListener(listener: (Boolean) -> Unit) {
+                        connectionStatus.addListener { listener(it == ConnectionStatus.warning) }
                     }
                 })
             }
+            setupValidation()
         }.addToUI()
 
-        setupValidation()
-    }
-}
-
-class RemotePathStep(private val project: Project, private val settingsModel: UTBotSettings.State) :
-    UTBotWizardStep() {
-    override fun createUI() {
         addHtml("media/remote_path.html")
         panel {
             row {
@@ -234,9 +247,13 @@ class RemotePathStep(private val project: Project, private val settingsModel: UT
                     .bindText(settingsModel::remotePath)
                     .columns(COLUMNS_LARGE)
             }
+            row {
+                checkBox("Use defaults")
+            }
         }.addToUI()
     }
 }
+
 
 class BuildOptionsStep(private val project: Project, private val settingsModel: UTBotSettings.State) :
     UTBotWizardStep() {

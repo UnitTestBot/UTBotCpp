@@ -19,8 +19,8 @@ fun Path.assertAllFilesNotEmptyRecursively() {
 }
 
 fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
-    logger.trace("Scanning folder $this for tests.")
-    logger.trace("Source files are: ${sourceFileNames.joinToString()}")
+    logger.info("Scanning folder $this for tests.")
+    logger.info("Source files are: ${sourceFileNames.joinToString()}")
     var checked = true
     val visitedFile = sourceFileNames.associateWith { false }.toMutableMap()
 
@@ -28,7 +28,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
         if (!testFile.isStubFile()) {
             val sourceFileName = testFile.name.removeTestSuffixes()
             if (sourceFileName !in visitedFile) {
-                logger.error { "Unable to find a corresponding source file for test: ${testFile.name}" }
+                logger.error("Unable to find a corresponding source file for test: ${testFile.name}")
                 checked = false
             } else {
                 visitedFile[sourceFileName] = true
@@ -36,9 +36,9 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
         }
     }
 
-    val notVisitedFileNames = visitedFile.filterValues { visited -> !visited }.values
+    val notVisitedFileNames = visitedFile.filterValues { visited -> !visited }.keys
     if (notVisitedFileNames.isNotEmpty()) {
-        logger.error { "Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}" }
+        logger.error("Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}")
         checked = false
     }
 
@@ -49,8 +49,8 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
 fun Path.isStubFile() = name.contains("""_stub\.(c|cpp|h)$""".toRegex())
 
 fun String.removeTestSuffixes(): String {
-    val result = this.replace("""(_test|_test_error)\.(c|cpp|h)$""".toRegex(), "")
-    logger.trace("Converting $this to $result")
+    val result = this.replace("""(_dot_c_test|_dot_c_test_error)\.(c|cpp|h)$""".toRegex(), "")
+    logger.info("Converting $this to $result")
     return result
 }
 

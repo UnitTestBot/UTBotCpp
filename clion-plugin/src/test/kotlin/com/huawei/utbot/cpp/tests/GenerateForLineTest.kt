@@ -6,6 +6,7 @@ import com.huawei.utbot.cpp.CppCompiler
 import com.huawei.utbot.cpp.Gcc
 import com.huawei.utbot.cpp.assertAllFilesNotEmptyRecursively
 import com.huawei.utbot.cpp.assertFileOrDirExists
+import com.huawei.utbot.cpp.assertTestFilesExist
 import com.intellij.openapi.editor.Editor
 import org.junit.jupiter.api.Test
 
@@ -25,7 +26,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         waitForRequestsToFinish()
 
         testsDirectoryPath.assertFileOrDirExists()
-        testsDirectoryPath.resolve("lib/basic_functions_test.cpp").assertFileOrDirExists()
+        testsDirectoryPath.assertTestFilesExist(listOf("basic_functions"))
         testsDirectoryPath.assertAllFilesNotEmptyRecursively()
     }
 
@@ -50,7 +51,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
 
     companion object {
         // line numbers are assumed to start from 0
-        const val HEAD_OF_MAX_LINE = 6
-        const val IF_IN_MAX_FUNCTION_LINE = 7
+        const val HEAD_OF_MAX_LINE = 2
+        const val IF_IN_MAX_FUNCTION_LINE = 3
     }
 }
