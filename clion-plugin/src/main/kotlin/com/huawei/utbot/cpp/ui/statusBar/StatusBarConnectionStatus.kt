@@ -1,4 +1,4 @@
-package com.huawei.utbot.cpp.ui
+package com.huawei.utbot.cpp.ui.statusBar
 
 import com.huawei.utbot.cpp.actions.AskServerToGenerateJsonForProjectConfiguration
 import com.huawei.utbot.cpp.actions.ConfigureProjectAction
@@ -22,19 +22,16 @@ import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
 
-const val STATUS_BAR_ID = "UTBot plugin"
-const val ID = "UTBot.Status"
-const val STATUS_BAR_DISPLAY_NAME = "UTBot plugin"
 
-class StatusBar : StatusBarWidgetFactory {
-    override fun getId() = STATUS_BAR_ID
+class ConnectionStatusBarWidgetFactory : StatusBarWidgetFactory {
+    override fun getId() = UTBotStatusBarWidget.WIDGET_ID
 
     override fun getDisplayName() = STATUS_BAR_DISPLAY_NAME
 
     override fun isAvailable(p0: Project): Boolean = true
 
     override fun createWidget(p0: Project): StatusBarWidget {
-        return UTBotStatusBar()
+        return UTBotStatusBarWidget()
     }
 
     override fun disposeWidget(p0: StatusBarWidget) {}
@@ -42,13 +39,17 @@ class StatusBar : StatusBarWidgetFactory {
     override fun canBeEnabledOn(p0: StatusBar): Boolean {
         return p0.project != null
     }
+
+    companion object {
+        const val STATUS_BAR_DISPLAY_NAME = "UTBot connection status"
+    }
 }
 
-class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
+class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
     private var statusBar: StatusBar? = null
     private var myConnectionStatusText: String = ConnectionStatus.BROKEN.description
 
-    override fun ID(): String = ID
+    override fun ID(): String = WIDGET_ID
 
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
@@ -63,7 +64,7 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
 
     override fun dispose() {}
 
-    override fun getTooltipText() = STATUS_BAR_DISPLAY_NAME
+    override fun getTooltipText() = "UTBot: connection status"
 
     override fun getClickConsumer() = Consumer<MouseEvent> { event ->
         val component = event.component
@@ -81,6 +82,10 @@ class UTBotStatusBar : StatusBarWidget, StatusBarWidget.TextPresentation {
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
 
     override fun getPresentation(): StatusBarWidget.WidgetPresentation = this
+
+    companion object {
+        val WIDGET_ID: String = UTBotStatusBarWidget::class.java.name
+    }
 }
 
 object StatusBarActionsPopup {
@@ -88,7 +93,7 @@ object StatusBarActionsPopup {
         val actions = getActions()
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
-                STATUS_BAR_DISPLAY_NAME, actions,
+                ConnectionStatusBarWidgetFactory.STATUS_BAR_DISPLAY_NAME, actions,
                 dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false,
                 ActionPlaces.POPUP
             )

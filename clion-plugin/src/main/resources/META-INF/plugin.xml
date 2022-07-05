@@ -28,7 +28,8 @@
         <coverageEngine implementation="com.huawei.utbot.cpp.coverage.UTBotCoverageEngine"/>
         <coverageRunner implementation="com.huawei.utbot.cpp.coverage.UTBotCoverageRunner"/>
 
-        <statusBarWidgetFactory implementation="com.huawei.utbot.cpp.ui.StatusBar"/>
+        <statusBarWidgetFactory implementation="com.huawei.utbot.cpp.ui.statusBar.ConnectionStatusBarWidgetFactory"/>
+        <statusBarWidgetFactory implementation="com.huawei.utbot.cpp.ui.statusBar.VerboseModeWidgetFactory"/>
         <toolWindow id="UTBot targets"
                     secondary="false"
                     anchor="bottom"
