@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.rt.coverage.data.LineCoverage
 import com.intellij.rt.coverage.data.LineData
 import com.intellij.rt.coverage.data.ProjectData
+import com.intellij.util.io.exists
 import testsgen.Testgen
 import java.io.File
 import java.nio.charset.StandardCharsets
@@ -39,6 +40,10 @@ class UTBotCoverageRunner : CoverageRunner() {
             if (filePathFromServer.isNotEmpty()) {
                 isAnyCoverage = true
                 val localFilePath = filePathFromServer.convertFromRemotePathIfNeeded(baseCoverageSuite.project)
+                if (!Paths.get(localFilePath).exists()) {
+                    log.warn("Skipping $localFilePath in coverage processing as it does not exist!")
+                    continue
+                }
                 val lines = arrayOfNulls<LineData>(getLineCount(localFilePath))
                 val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath))
                 fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {

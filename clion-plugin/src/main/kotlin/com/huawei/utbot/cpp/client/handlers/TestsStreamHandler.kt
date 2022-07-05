@@ -42,6 +42,7 @@ class TestsStreamHandler(
                 myGeneratedTestFilesLocalFS.add(Paths.get(filePath))
 
             if (sourceCode.code.isNotEmpty()) {
+                project.logger.trace { "Creating generated test file: $filePath." }
                 createFileAndMakeDirs(
                     filePath,
                     sourceCode.code
