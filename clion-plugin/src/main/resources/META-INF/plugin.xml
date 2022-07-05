@@ -85,6 +85,9 @@
             <action id="com.huawei.utbot.cpp.actions.GenerateForFolderAction"
                     class="com.huawei.utbot.cpp.actions.GenerateForFolderAction" text="Generate For Folder"
                     description="Generate unit tests for this folder"/>
+            <action id="com.huawei.utbot.cpp.actions.GenerateForProjectActionFromProjectTree"
+                    class="com.huawei.utbot.cpp.actions.GenerateForProjectAction"
+                    text="Generate for Project" description="Generate tests for whole project"/>
         </group>
 
         <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
