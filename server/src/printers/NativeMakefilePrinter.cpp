@@ -326,7 +326,7 @@ namespace printer {
                           { dynamicLinkCommand.toStringWithChangingDirectory() });
         } else {
             utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands.front();
-            dynamicLinkCommand.setLinker(cxxLinker);
+            dynamicLinkCommand.setCompiler(cxxLinker);
             dynamicLinkCommand.setOutput(testExecutablePath);
             dynamicLinkCommand.erase_if([&](std::string const &argument) {
                 return CollectionUtils::contains(rootLinkUnitInfo->files, argument) ||
@@ -474,13 +474,13 @@ namespace printer {
                 }
                 if (!linkCommand.isArchiveCommand()) {
                     if (isExecutable && !transformExeToLib) {
-                        linkCommand.setLinker(Paths::getLd());
+                        linkCommand.setCompiler(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
                             transformCompilerFlagsToLinkerFlags(argument);
                         }
                     } else {
-                        linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
-                                CompilationUtils::getCompilerName(linkCommand.getLinker())));
+                        linkCommand.setCompiler(CompilationUtils::getBundledCompilerPath(
+                                CompilationUtils::getCompilerName(linkCommand.getCompiler())));
                     }
                     std::vector <std::string> libraryDirectoriesFlags;
                     for (std::string &argument : linkCommand.getCommandLine()) {

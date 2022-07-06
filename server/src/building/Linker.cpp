@@ -507,7 +507,7 @@ std::string getArchiveArgument(std::string const &argument,
     if (StringUtils::startsWith(argument, "-")) {
         return "";
     }
-    hasArchiveOption |= !argument.empty() && argument != linkCommand.getLinker();
+    hasArchiveOption |= !argument.empty() && argument != linkCommand.getCompiler();
     return argument;
 }
 
