@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp.actions.utils
 
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
@@ -50,7 +51,7 @@ fun getProjectRequestMessage(project: Project, params: UTBotSettings): Testgen.P
         .setProjectContext(getProjectContextMessage(params, project))
         .setTargetPath(params.convertedTargetPath)
         .addAllSourcePaths(params.convertedSourcePaths)
-        .setSynchronizeCode(params.synchronizeCode)
+        .setSynchronizeCode(project.utbotSettings.isRemoteScenario())
         .build()
 }
 

@@ -65,11 +65,11 @@ class UTBotCoverageRunner : CoverageRunner() {
     }
 
     override fun getPresentableName(): String {
-        return "Presentable name for CoverageRunner"
+        return "UTBot: Coverage runner"
     }
 
     override fun getId(): String {
-        return "Coverage runner ID"
+        return "UTBotCoverageRunner"
     }
 
     // actually no coverage file exists, but this method must be implemented, see UTBotCoverageFileProvider

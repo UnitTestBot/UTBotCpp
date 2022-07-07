@@ -18,6 +18,7 @@ import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.Panel
+import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindSelected
@@ -50,8 +51,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     override fun createPanel() = panel
 
-    fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String) {
-        row(name) {
+    fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String): Row {
+        return row(name) {
             textFieldWithBrowseButton(
                 chooserTitle,
                 myProject,
@@ -68,13 +69,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                     intTextField().bindIntText(utbotSettings::port).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
-                }
+                }.rowComment(UTBot.message("deployment.utbotPort.description"))
                 row(UTBot.message("settings.project.serverName")) {
                     textField().bindText(utbotSettings::serverName)
-                }
+                }.rowComment(UTBot.message("deployment.utbotHost.description"))
                 row(UTBot.message("settings.project.remotePath")) {
                     textField().bindText(utbotSettings::remotePath)
-                }
+                }.rowComment(UTBot.message("deployment.remotePath.description"))
             }
 
             group("Paths") {
@@ -82,17 +83,17 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                     utbotSettings::buildDirRelativePath,
                     UTBot.message("settings.project.buildDir"),
                     UTBot.message("settings.project.buildDir.browse.title")
-                )
+                ).rowComment(UTBot.message("paths.buildDirectory.description"))
                 createPathChooser(
                     utbotSettings::targetPath,
                     UTBot.message("settings.project.target"),
                     UTBot.message("settings.project.target.browse.title")
-                )
+                ).rowComment(UTBot.message("paths.target.description"))
                 createPathChooser(
                     utbotSettings::testDirPath,
                     UTBot.message("settings.project.testsDir"),
                     UTBot.message("settings.project.testsDir.browse.title")
-                )
+                ).rowComment(UTBot.message("paths.testsDirectory.description"))
 
                 row(UTBot.message("settings.project.sourcePaths")) {
                     cell(createSourcesListComponent())
@@ -110,7 +111,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         }
                     topGap(TopGap.SMALL)
                     bottomGap(BottomGap.SMALL)
-                }
+                }.rowComment(UTBot.message("paths.sourceDirectories.description"))
 
                 row {
                     label("Try to get paths from CMake model: ")
@@ -118,7 +119,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         utbotSettings.predictPaths()
                         utbotSettings.fireUTBotSettingsChanged()
                     }
-                }
+                }.rowComment("Queries CMake configurations in order to get source paths, build path. Also predicts tests folder")
             }
 
             group("CMake") {
@@ -127,33 +128,59 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         { utbotSettings.cmakeOptions },
                         { utbotSettings.cmakeOptions = it }
                     )
+                }.rowComment(UTBot.message("paths.cmakeOptions.description"))
+            }
+
+            data class CheckBoxInfo(
+                val boolProperty: KMutableProperty0<Boolean>,
+                val title: String,
+                val description: String
+            ) {
+                fun add(panel: Panel) {
+                    panel.row {
+                        checkBox(title).bindSelected(boolProperty)
+                    }.rowComment(description)
                 }
             }
 
             group("Generator settings") {
-                val checkBoxDs = mapOf(
-                    UTBot.message("settings.generation.synchronize") to utbotSettings::synchronizeCode,
-                    UTBot.message("settings.generation.stubs") to generatorSettings::useStubs,
-                    UTBot.message("settings.generation.verbose") to generatorSettings::verbose,
-                    UTBot.message("settings.generation.searcher") to generatorSettings::useDeterministicSearcher,
-                    UTBot.message("settings.generation.static") to generatorSettings::generateForStaticFunctions
+                val checkBoxes = listOf(
+                    CheckBoxInfo(
+                        generatorSettings::useStubs,
+                        UTBot.message("stubs.useStubs.title"),
+                        UTBot.message("stubs.useStubs.description")
+                    ),
+                    CheckBoxInfo(
+                        generatorSettings::verbose,
+                        UTBot.message("testsGeneration.verboseFormatting.title"),
+                        UTBot.message("testsGeneration.verboseFormatting.description")
+                    ),
+                    CheckBoxInfo(
+                        generatorSettings::useDeterministicSearcher,
+                        UTBot.message("advanced.useDeterministicSearcher.title"),
+                        UTBot.message("advanced.useDeterministicSearcher.description")
+                    ),
+                    CheckBoxInfo(
+                        generatorSettings::generateForStaticFunctions,
+                        UTBot.message("testsGeneration.generateForStaticFunctions.title"),
+                        UTBot.message("testsGeneration.generateForStaticFunctions.description")
+                    )
                 )
-                checkBoxDs.forEach { message, boolProperty ->
-                    row {
-                        checkBox(message).bindSelected(boolProperty)
-                    }
+                checkBoxes.forEach {
+                    it.add(this)
                 }
-                val intFields = mapOf(
-                    UTBot.message("settings.generation.timeoutFunction") to generatorSettings::timeoutPerFunction,
-                    UTBot.message("settings.generation.timeoutTest") to generatorSettings::timeoutPerTest,
-                )
-                intFields.forEach { (message, intProperty) ->
-                    row(message) {
-                        intTextField().bindIntText(intProperty).applyToComponent {
-                            maximumSize = TEXT_FIELD_MAX_SIZE
-                        }
+
+                row(UTBot.message("advanced.timeoutPerFunction.title")) {
+                    intTextField().bindIntText(generatorSettings::timeoutPerFunction).applyToComponent {
+                        maximumSize = TEXT_FIELD_MAX_SIZE
                     }
-                }
+                }.rowComment(UTBot.message("advanced.timeoutPerFunction.description"))
+
+                row(UTBot.message("advanced.timeoutPerTest.title")) {
+                    intTextField().bindIntText(generatorSettings::timeoutPerFunction).applyToComponent {
+                        maximumSize = TEXT_FIELD_MAX_SIZE
+                    }
+                }.rowComment(UTBot.message("advanced.timeoutPerTest.description"))
             }
 
         }

@@ -47,7 +47,6 @@ data class UTBotSettings(
         var targetPath: String = UTBotTarget.autoTarget.path,
         var buildDirRelativePath: String = "build-utbot",
         var testDirPath: String = "/",
-        var synchronizeCode: Boolean = false,
         var remotePath: String = "",
         var sourcePaths: MutableSet<String> = mutableSetOf(),
         var port: Int = DEFAULT_PORT,
@@ -74,12 +73,6 @@ data class UTBotSettings(
         get() = state.testDirPath
         set(value) {
             state.testDirPath = value
-        }
-
-    var synchronizeCode: Boolean
-        get() = state.synchronizeCode
-        set(value) {
-            state.synchronizeCode = value
         }
 
     var remotePath: String
