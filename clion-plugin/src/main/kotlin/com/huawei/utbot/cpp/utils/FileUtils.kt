@@ -62,6 +62,7 @@ fun createFileAndMakeDirs(filePath: String, text: String) {
 }
 
 fun isCPPorCFileName(fileName: String) = """.*\.(cpp|hpp|c|h)""".toRegex().matches(fileName)
+fun isCPPFileName(fileName: String) = """.*\.(cpp|hpp|h)""".toRegex().matches(fileName)
 
 fun isHeader(fileName: String) = """.*\.([ch])""".toRegex().matches(fileName)
 

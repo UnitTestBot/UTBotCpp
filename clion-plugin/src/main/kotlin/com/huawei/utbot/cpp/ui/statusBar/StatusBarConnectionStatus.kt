@@ -41,7 +41,7 @@ class ConnectionStatusBarWidgetFactory : StatusBarWidgetFactory {
     }
 
     companion object {
-        const val STATUS_BAR_DISPLAY_NAME = "UTBot connection status"
+        const val STATUS_BAR_DISPLAY_NAME = "UTBot"
     }
 }
 
