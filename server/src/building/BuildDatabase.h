@@ -40,11 +40,14 @@ public:
         BaseFileInfo() = default;
         virtual ~BaseFileInfo() = default;
 
+        // Object files and libraries that current command depends on
+        CollectionUtils::OrderedFileSet files;
+
         // Libraries that current command depends on, but those are already installed and not built
         // within project
         CollectionUtils::OrderedFileSet installedFiles;
 
-        virtual void addFile(fs::path file) = 0;
+        void addFile(fs::path file);
     };
 
     /*
@@ -54,9 +57,6 @@ public:
     struct ObjectFileInfo : BaseFileInfo {
         // Compilation command
         utbot::CompileCommand command;
-
-        // Object files and libraries that current command depends on
-        CollectionUtils::OrderedFileSet files;
 
         // Example of executable or a library which contains current objectFile
         fs::path linkUnit;
@@ -72,8 +72,6 @@ public:
         [[nodiscard]] fs::path getOutputFile() const;
 
         void setOutputFile(const fs::path &file);
-
-        void addFile(fs::path file) override;
     };
 
     /*
@@ -86,13 +84,8 @@ public:
         // Linkage command
         std::vector<utbot::LinkCommand> commands;
 
-        // Source files, object files and libraries that current command depends on
-        CollectionUtils::OrderedFileSet files;
-
         // Units which contains current library
         std::vector<fs::path> parentLinkUnits;
-
-        void addFile(fs::path file) override;
 
         // Executable or a library, the result of a command
         [[nodiscard]] fs::path getOutput() const;

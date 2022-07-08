@@ -563,11 +563,7 @@ void BuildDatabase::ObjectFileInfo::setOutputFile(const fs::path &file) {
     command.setOutput(file);
 }
 
-void BuildDatabase::ObjectFileInfo::addFile(fs::path file) {
-    files.insert(std::move(file));
-}
-
-void BuildDatabase::TargetInfo::addFile(fs::path file) {
+void BuildDatabase::BaseFileInfo::addFile(fs::path file) {
     files.insert(std::move(file));
 }
 
