@@ -47,6 +47,7 @@ BuildDatabase::BuildDatabase(const fs::path& buildCommandsJsonPath,
     filterInstalledFiles();
     addLocalSharedLibraries();
     fillTargetInfoParents();
+
 }
 
 std::shared_ptr<BuildDatabase> BuildDatabase::create(const utbot::ProjectContext &projectContext) {
@@ -664,13 +665,14 @@ std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() co
 
     auto rootTargets = getRootTargets();
     auto it = std::max_element(rootTargets.begin(), rootTargets.end(),
-                               [&](std::shared_ptr<BuildDatabase::TargetInfo> a,
-                                   std::shared_ptr<BuildDatabase::TargetInfo> b) {
+                               [&](const std::shared_ptr<BuildDatabase::TargetInfo>& a,
+                                   const std::shared_ptr<BuildDatabase::TargetInfo>& b) {
                                    return numberOfSources(a->getOutput()) <
                                           numberOfSources(b->getOutput());
                                });
     return *it;
 }
+
 fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
     fs::path base = Paths::longestCommonPrefixPath(this->projectContext.buildDir,
                                                    this->projectContext.projectPath);
