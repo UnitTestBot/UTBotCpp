@@ -150,6 +150,12 @@ namespace types {
         [[nodiscard]] bool isLValueReference() const;
 
         /**
+         * Checks whether given type is an rvalue reference type.
+         * @return true if type is rvalue reference, false otherwise.
+         */
+        [[nodiscard]] bool isRValueReference() const;
+
+        /**
          * Checks whether given type is an const qualified.
          * @return true if type is const, false otherwise.
          */

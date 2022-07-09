@@ -140,13 +140,10 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
     TestsPrinter::verboseParameters(methodDescription, testCase);
     ss << NL;
-
     printLazyVariables(methodDescription, testCase, true);
     ss << NL;
-
     printLazyReferences(methodDescription, testCase, true);
     ss << NL;
-
     if (!testCase.isError()) {
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
         ss << NL;
@@ -581,9 +578,12 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
             std::string qualifier = Printer::getConstQualifier(param.type);
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
+        } else if (param.type.isRValueReference()) {
+            args.push_back("std::move(" + param.name + ")");
+        } else if (param.type.maybeJustPointer()) {
+            args.push_back("&" + param.name);
         } else {
-            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
-            args.push_back(maybeAmpersand + param.name);
+            args.push_back(param.name);
         }
     }
     return args;
