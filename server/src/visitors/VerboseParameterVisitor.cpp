@@ -52,7 +52,8 @@ namespace visitor {
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
                                              size_t size,
-                                             int depth) {
+                                             int depth,
+                                             tests::Tests::ConstructorInfo constructorInfo) {
         if (needDeclaration) {
             printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(printer), parameterAlignment);
         } else {
@@ -83,7 +84,8 @@ namespace visitor {
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
-                                              int depth) {
+                                              int depth,
+                                              tests::Tests::ConstructorInfo constructorInfo) {
         auto value = view->getEntryValue(printer);
         if (depth == 0) {
             if (needDeclaration) {
@@ -100,7 +102,8 @@ namespace visitor {
                                              const std::string &name,
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
-                                             int depth) {
+                                             int depth,
+                                             tests::Tests::ConstructorInfo constructorInfo) {
         auto value = view->getEntryValue(printer);
         if (depth == 0) {
             if (needDeclaration) {
@@ -116,7 +119,8 @@ namespace visitor {
                                                  const std::string &name,
                                                  const tests::AbstractValueView *view,
                                                  const std::string &access,
-                                                 int depth) {
+                                                 int depth,
+                                                 tests::Tests::ConstructorInfo constructorInfo) {
         const auto typeName = types::TypesHandler::cBoolToCpp(type.usedType());
         auto value = view->getEntryValue(printer);
         if (depth == 0) {

@@ -24,13 +24,14 @@ namespace visitor {
                                            const tests::AbstractValueView *view,
                                            const std::string &access,
                                            size_t size,
-                                           int depth) {
+                                           int depth,
+                                           tests::Tests::ConstructorInfo constructorInfo) {
         std::vector<size_t> sizes = type.arraysSizes(usage);
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 
         visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
-                 depth + sizes.size());
+                 depth + sizes.size(), constructorInfo);
         printer->closeBrackets(sizes.size());
     }
 }

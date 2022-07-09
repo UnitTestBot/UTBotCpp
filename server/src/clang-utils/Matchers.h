@@ -27,6 +27,7 @@ namespace Matchers {
     static inline const std::string TYPEDEF_UNION_DECL = "the_union_typedef";
 
     static inline const std::string FUNCTION_DEF = "function_def";
+    static inline const std::string CONSTRUCTOR_DEF = "constructor_def";
     static inline const std::string TOPLEVEL_TYPEDEF = "typedef_decl";
 
     static inline const std::string TOPLEVEL_VAR_DECL = "toplevel_var_decl";
@@ -38,6 +39,8 @@ namespace Matchers {
     static inline const std::string RETURN = "return";
 
     extern const DeclarationMatcher functionDefinitionMatcher;
+    extern const DeclarationMatcher constructorDefinitionMatcher;
+    extern const DeclarationMatcher memberConstructorDefinitionMatcher;
 
     extern const DeclarationMatcher structMatcher;
     extern const DeclarationMatcher structJustDeclMatcher;

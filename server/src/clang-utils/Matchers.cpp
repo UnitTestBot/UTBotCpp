@@ -97,6 +97,10 @@ namespace Matchers {
         functionDecl(functionDefinitionTraits)
             .bind(FUNCTION_DEF);
 
+    const DeclarationMatcher constructorDefinitionMatcher = cxxConstructorDecl(isDefinition()).bind(CONSTRUCTOR_DEF);
+
+    const DeclarationMatcher memberConstructorDefinitionMatcher = cxxRecordDecl(cxxConstructorDecl(isDefinition())).bind(CONSTRUCTOR_DEF);
+
     const DeclarationMatcher anyTypeDeclarationMatcher =
         anyOf(
             structMatcher,
@@ -126,7 +130,9 @@ namespace Matchers {
 
     const DeclarationMatcher anyToplevelDeclarationMatcher = anyOf(
         anyToplevelTypeDeclarationMatcher,
-        functionDefinitionMatcher);
+        functionDefinitionMatcher,
+        constructorDefinitionMatcher,
+        memberConstructorDefinitionMatcher);
 
     const DeclarationMatcher globalVariableUsageMatcher = functionDecl(functionDefinitionTraits,
         forEachDescendant(declRefExpr(

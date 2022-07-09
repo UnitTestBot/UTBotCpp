@@ -18,16 +18,23 @@ namespace visitor {
             return;
         }
         additionalPointersCount = 0;
-        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0, methodDescription.constructorInfo);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPrimitive(const types::Type &type,
                                                           const std::string &name,
                                                           const tests::AbstractValueView *view,
                                                           const std::string &access,
-                                                          int depth) {
+                                                          int depth,
+                                                          tests::Tests::ConstructorInfo constructorInfo) {
         const auto &gtestMacro = predicateMapping.at(predicate);
-        auto signature = processExpect(type, gtestMacro, {PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), getDecorateActualVarName(access) });
+        std::string expectedValue;
+        if (tests::Tests::isConstructor(constructorInfo)) {
+            expectedValue = view->getEntryValue(printer);
+        } else {
+            expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
+        }
+        auto signature = processExpect(type, gtestMacro, {expectedValue, getDecorateActualVarName(access) });
         signature = changeSignatureToNullCheck(signature, type, view, access);
         printer->strFunctionCall(signature.name, signature.args);
     }
@@ -47,7 +54,8 @@ namespace visitor {
                                                       const tests::AbstractValueView *view,
                                                       const std::string &access,
                                                       size_t size,
-                                                      int depth) {
+                                                      int depth,
+                                                      tests::Tests::ConstructorInfo constructorInfo) {
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
             VerboseAssertsVisitor::visitArray(type, name, view, access, size, depth);

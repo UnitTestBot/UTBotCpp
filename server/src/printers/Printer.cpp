@@ -282,7 +282,11 @@ namespace printer {
         std::vector<std::string> parameters;
         for (const auto &param : method.params) {
             std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
-            parameters.push_back(maybeAmpersand + param.name);
+            std::string parameter = maybeAmpersand + param.name;
+            if (tests::Tests::isMoveConstructor(method.constructorInfo)) {
+                parameter = "std::move(" + parameter + ")";
+            }
+            parameters.push_back(parameter);
         }
         auto classObjName = method.getClassName();
         return strFunctionCall(method.name, parameters, end, classObjName, needTabs, returnPointers);

@@ -408,6 +408,16 @@ namespace tests {
             bool isInline;
         };
 
+        enum ConstructorInfo {
+            NOT_A_CONSTRUCTOR,
+            CONSTRUCTOR,
+            MOVE_CONSTRUCTOR
+        };
+
+        [[nodiscard]] static bool isConstructor(ConstructorInfo constructorInfo);
+
+        [[nodiscard]] static bool isMoveConstructor(ConstructorInfo constructorInfo);
+
         struct MethodDescription {
             std::optional<MethodParam> classObj;
             std::string name;
@@ -430,6 +440,8 @@ namespace tests {
             std::vector<MethodTestCase> testCases;
             typedef std::unordered_map<std::string, std::vector<MethodTestCase>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
+
+            ConstructorInfo constructorInfo{};
 
             bool operator==(const MethodDescription &other) const;
 

@@ -40,11 +40,12 @@ namespace visitor {
   }
 
   void VerboseAssertsParamVisitor::visitArray(const types::Type &type,
-                                              const std::string &name,
-                                              const tests::AbstractValueView *view,
-                                              const std::string &access,
-                                              size_t size,
-                                              int depth) {
+                                                    const std::string &name,
+                                                    const tests::AbstractValueView *view,
+                                                    const std::string &access,
+                                                    size_t size,
+                                                    int depth,
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
@@ -57,10 +58,11 @@ namespace visitor {
   }
 
   void VerboseAssertsParamVisitor::visitPrimitive(const types::Type &type,
-                                                  const std::string &name,
-                                                  const tests::AbstractValueView *view,
-                                                  const std::string &access,
-                                                  int depth) {
+                                                        const std::string &name,
+                                                        const tests::AbstractValueView *view,
+                                                        const std::string &access,
+                                                        int depth,
+                                                        tests::Tests::ConstructorInfo constructorInfo) {
       auto signature = processExpect(type, PrinterUtils::EQ, {PrinterUtils::fillVarName(access, expectedVariable), name });
       printer->strFunctionCall(signature.name, signature.args);
   }
