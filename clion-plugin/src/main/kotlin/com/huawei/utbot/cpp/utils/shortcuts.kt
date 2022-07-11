@@ -48,3 +48,5 @@ fun CoroutineScope.hasChildren(): Boolean = children.isNotEmpty()
 fun invokeOnEdt(task: ()->Unit) {
     ApplicationManager.getApplication().invokeLater(task)
 }
+
+fun isWindows() = System.getProperty("os.name").contains("win", ignoreCase = true)

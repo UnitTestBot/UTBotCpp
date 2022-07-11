@@ -91,7 +91,8 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
 private const val DOT_SEP = "_dot_"
 private const val TEST_SUFFIX = "_test"
 
-fun testFilePathToSourceFilePath(path: String, project: Project): Path = testFilePathToSourceFilePath(Paths.get(path), project)
+fun testFilePathToSourceFilePath(path: String, project: Project): Path =
+    testFilePathToSourceFilePath(Paths.get(path), project)
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
     val relativeToProject = Paths.get(project.utbotSettings.testDirPath).relativize(path.parent)
@@ -123,3 +124,8 @@ fun restoreExtensionFromSuffix(path: Path, defaultExt: String = ".c"): Path {
     }
     return path.parent.resolve(fnWithExt)
 }
+
+fun toWSLPathOnWindows(filePath: String) = filePath
+    .replace("""^(\w):|\\+""".toRegex(), "/")
+    .replace("""^/""".toRegex(), "/mnt/")
+    .replace("""/+""".toRegex(), "/")

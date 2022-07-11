@@ -11,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
+import com.huawei.utbot.cpp.utils.isWindows
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.Path
@@ -129,13 +130,15 @@ data class UTBotSettings(
             return project?.basePath ?: error("Could not get project path from project instance!")
         }
 
-    fun isRemoteScenario() = remotePath.isNotEmpty()
+   private fun isLocalHost() = serverName == "localhost" || serverName == "127.0.0.1"
+
+    fun isRemoteScenario() = (remotePath == projectPath && isLocalHost()) || isWindows()
 
     /**
-     * Convert absolute path on this machine to corresponding absolute path on docker
+     * Convert absolute path on this machine to corresponding absolute path on remote host
      * if path to project on a remote machine was specified in the settings.
      *
-     * If remote path == "", this function returns [path] unchanged.
+     * If [isRemoteScenario] == false, this function returns [path] unchanged.
      *
      * @param path - absolute path on local machine to be converted
      */
@@ -163,7 +166,7 @@ data class UTBotSettings(
         if (isRemoteScenario()) {
             val projectLocalPath = project?.basePath ?: let {
                 notifyError("Could not get project path.", project)
-                return "/"
+                error("Project path is null when converting paths!")
             }
             val relativeToProjectPath = path.getRelativeToProjectPath(remotePath)
             result = FilenameUtils.separatorsToSystem(Paths.get(projectLocalPath, relativeToProjectPath).toString())
@@ -176,7 +179,7 @@ data class UTBotSettings(
         logger.info("getRelativeToProjectPath was called on $this")
         projectPath ?: let {
             notifyError("Could not get project path.", project)
-            return "/"
+            error("Project path is null when converting paths!")
         }
         return relativize(projectPath, this)
     }
@@ -217,7 +220,7 @@ data class UTBotSettings(
     companion object {
         const val DEFAULT_HOST = "localhost"
         const val DEFAULT_PORT = 2121
-        const val versionInfo = "2022.7"
+        const val clientVersion = "2022.7"
         val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")
     }
 }

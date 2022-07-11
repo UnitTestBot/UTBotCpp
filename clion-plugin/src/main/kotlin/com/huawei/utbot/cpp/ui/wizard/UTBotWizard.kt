@@ -1,6 +1,10 @@
 package com.huawei.utbot.cpp.ui.wizard
 
 import com.huawei.utbot.cpp.UTBot
+import com.huawei.utbot.cpp.ui.wizard.steps.BuildOptionsStep
+import com.huawei.utbot.cpp.ui.wizard.steps.ConnectionStep
+import com.huawei.utbot.cpp.ui.wizard.steps.IntroStrep
+import com.huawei.utbot.cpp.ui.wizard.steps.SuccessStep
 import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.ide.BrowserUtil
 import com.intellij.ide.wizard.AbstractWizard
@@ -26,6 +30,12 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep
         with(project.utbotSettings) {
             loadState(mySettingsModel)
             fireUTBotSettingsChanged()
+        }
+    }
+
+    override fun proceedToNextStep() {
+        if (currentStepObject?.canProceedToNextStep() != false) {
+            super.proceedToNextStep()
         }
     }
 
