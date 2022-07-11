@@ -14,6 +14,12 @@
 
 namespace Paths {
     extern fs::path logPath;
+    const std::string MAKEFILE_EXTENSION = ".mk";
+    const std::string TEST_SUFFIX = "_test";
+    const std::string STUB_SUFFIX = "_stub";
+    const std::string DOT_SEP = "_dot_";
+    const std::string MAKE_WRAPPER_SUFFIX = "_wrapper";
+    const char dot = '.';
 
     //region util
     static inline bool isValidDir(const std::string &dir) {
@@ -109,6 +115,36 @@ namespace Paths {
     std::vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths);
 
     std::string mangle(const fs::path& path);
+
+    static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
+                                                             const std::string &newExt) {
+        std::string extensionAsSuffix = path.extension().string();
+        if (!extensionAsSuffix.empty()) {
+            std::string fnWithNewExt =
+                    path.stem().string() + DOT_SEP + extensionAsSuffix.substr(1) + newExt;
+            return path.parent_path() / fnWithNewExt;
+        }
+        return replaceExtension(path, newExt);
+    }
+
+    static inline fs::path restoreExtensionFromSuffix(const fs::path &path,
+                                                      const std::string &defaultExt) {
+        std::string fnWithoutExt = path.stem();
+        fs::path fnWithExt;
+        std::size_t posEncodedExtension = fnWithoutExt.rfind(DOT_SEP);
+        if (posEncodedExtension == std::string::npos) {
+            // In `sample_class_test.cpp` the `class` is not an extension
+            fnWithExt = fnWithoutExt + defaultExt;
+        }
+        else {
+            // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
+            fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
+                        + dot
+                        + fnWithoutExt.substr(posEncodedExtension + DOT_SEP.length());
+        }
+        return path.parent_path() / fs::path(fnWithExt);
+    }
+
     //endregion
 
     //region includes
@@ -201,6 +237,9 @@ namespace Paths {
     bool hasInternalError(fs::path const &path);
 
     bool hasError(fs::path const &path);
+
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath, const std::string &methodName = "");
 
     //endregion
 
