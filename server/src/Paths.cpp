@@ -153,6 +153,17 @@ namespace Paths {
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
     }
 
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath, const std::string &methodName) {
+        fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
+        fs::path relative = (fs::relative(addOrigExtensionAsSuffixAndAddNew(srcFilePath, ""),
+                                          projectContext.projectPath));
+        if (!methodName.empty()) {
+            return kleeOutDir / relative / ("klee_out_" + methodName);
+        }
+        return kleeOutDir / relative / ("klee_out_" + srcFilePath.filename().stem().string());
+    }
+
     //endregion
 
     //region extensions
@@ -281,46 +292,11 @@ namespace Paths {
     //endregion
 
     //region transformation
-    const std::string MAKEFILE_EXTENSION = ".mk";
-    const std::string TEST_SUFFIX = "_test";
-    const std::string STUB_SUFFIX = "_stub";
-    const std::string DOT_SEP = "_dot_";
-    const std::string MAKE_WRAPPER_SUFFIX = "_wrapper";
-    const char dot = '.';
 
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
         return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath) /
                sourcePathToTestName(sourceFilePath);
-    }
-
-    static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
-                                                             const std::string &newExt) {
-        std::string extensionAsSuffix = path.extension().string();
-        if (!extensionAsSuffix.empty()) {
-            std::string fnWithNewExt =
-                path.stem().string() + DOT_SEP + extensionAsSuffix.substr(1) + newExt;
-            return path.parent_path() / fnWithNewExt;
-        }
-        return replaceExtension(path, newExt);
-    }
-
-    static inline fs::path restoreExtensionFromSuffix(const fs::path &path,
-                                                      const std::string &defaultExt) {
-        std::string fnWithoutExt = path.stem();
-        fs::path fnWithExt;
-        std::size_t posEncodedExtension = fnWithoutExt.rfind(DOT_SEP);
-        if (posEncodedExtension == std::string::npos) {
-            // In `sample_class_test.cpp` the `class` is not an extension
-            fnWithExt = fnWithoutExt + defaultExt;
-        }
-        else {
-            // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
-            fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
-                        + dot
-                        + fnWithoutExt.substr(posEncodedExtension + DOT_SEP.length());
-        }
-        return path.parent_path() / fs::path(fnWithExt);
     }
 
     fs::path sourcePathToTestName(const fs::path &source) {

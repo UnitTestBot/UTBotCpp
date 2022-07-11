@@ -49,7 +49,6 @@ private:
     void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
                                      tests::Tests &tests,
                                      std::vector<tests::MethodKtests> &ktests);
-    fs::path getKleeMethodOutFile(const tests::TestMethod &method);
 };
 
 

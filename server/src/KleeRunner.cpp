@@ -93,13 +93,6 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                                         std::move(writeFunctor));
 }
 
-fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {
-    fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
-    fs::path relative =
-        Paths::removeExtension(fs::relative(method.sourceFilePath, projectContext.projectPath));
-    return kleeOutDir / relative / ("klee_out_" + method.methodName);
-}
-
 namespace {
     void clearUnusedData(const fs::path &kleeDir) {
         fs::remove(kleeDir / "assembly.ll");
@@ -198,7 +191,8 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
 
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = getKleeMethodOutFile(testMethod);
+    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, testMethod.sourceFilePath,
+                                                   testMethod.methodName);
     fs::create_directories(kleeOut.parent_path());
     std::string outputDir = "--output-dir=" + kleeOut.string();
     std::vector<std::string> argvData = { "klee",
@@ -259,7 +253,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     TestMethod testMethod = testMethods[0];
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = getKleeMethodOutFile(testMethod);
+    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, tests.sourceFilePath);
     fs::create_directories(kleeOut.parent_path());
 
     fs::path entrypoints = kleeOut.parent_path() / "entrypoints.txt";
