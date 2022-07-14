@@ -3,6 +3,7 @@ package com.huawei.utbot.cpp.utils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.psi.PsiDirectory
 import kotlin.io.path.div
 import org.apache.commons.io.FilenameUtils
 import java.io.File
@@ -129,3 +130,25 @@ fun toWSLPathOnWindows(filePath: String) = filePath
     .replace("""^(\w):|\\+""".toRegex(), "/")
     .replace("""^/""".toRegex(), "/mnt/")
     .replace("""/+""".toRegex(), "/")
+
+fun Set<String>.markDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<String> {
+    val newSourceFolders = this.toMutableSet()
+    dirsToMark.forEach { dir ->
+        newSourceFolders.add(dir.virtualFile.path)
+        dir.virtualFile.toNioPath().visitAllDirectories {
+            newSourceFolders.add(it.toString())
+        }
+    }
+    return newSourceFolders
+}
+
+fun Set<String>.unmarkDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<String> {
+    val newSourceFolders = this.toMutableSet()
+    dirsToMark.forEach { dir ->
+        newSourceFolders.add(dir.virtualFile.path)
+        dir.virtualFile.toNioPath().visitAllDirectories {
+            newSourceFolders.remove(it.toString())
+        }
+    }
+    return newSourceFolders
+}

@@ -57,14 +57,14 @@ class NotConnectedWarningDialog(project: Project) : DialogWrapper(project) {
             row {
                 text(
                     """UTBot failed to establish connection with specified server. 
-                        If you wish to continue anyway, press "Ok" button.
+                       If you wish to continue anyway, press "Ok" button.
                     """.trimMargin(), TEXT_LENGTH
                 )
             }
             row {
                 text(
-                    """<p> In any case, you will need to specify correct port and host of UTBot server to use the plugin.
-                            You can do it via CLion Settings -> Tools -> UTBot Settings</p>
+                    """In any case, you will need to specify correct port and host of UTBot server to use the plugin.
+                       You can do it via CLion Settings -> Tools -> UTBot Settings
                     """.trimIndent(), TEXT_LENGTH
                 )
             }
@@ -269,4 +269,3 @@ class ConnectionStep(
         }.addToUI()
     }
 }
-

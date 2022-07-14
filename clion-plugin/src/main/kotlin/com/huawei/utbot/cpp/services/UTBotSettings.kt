@@ -49,7 +49,7 @@ data class UTBotSettings(
         var buildDirRelativePath: String = "build-utbot",
         var testDirPath: String = "/",
         var remotePath: String = "",
-        var sourcePaths: MutableSet<String> = mutableSetOf(),
+        var sourceDirs: MutableSet<String> = mutableSetOf(),
         var port: Int = DEFAULT_PORT,
         var serverName: String = DEFAULT_HOST,
         var cmakeOptions: List<String> = DEFAULT_CMAKE_OPTIONS
@@ -82,12 +82,12 @@ data class UTBotSettings(
             state.remotePath = value
         }
 
-    var sourcePaths: Set<String>
+    var sourceDirs: Set<String>
         get() {
-            return state.sourcePaths
+            return state.sourceDirs
         }
         set(value) {
-            state.sourcePaths = value.toMutableSet()
+            state.sourceDirs = value.toMutableSet()
             project?.messageBus?.syncPublisher(SourceFoldersListener.TOPIC)?.sourceFoldersChanged(value)
         }
 
@@ -110,7 +110,7 @@ data class UTBotSettings(
         }
 
     val convertedSourcePaths: List<String>
-        get() = sourcePaths.map { convertToRemotePathIfNeeded(it) }
+        get() = sourceDirs.map { convertToRemotePathIfNeeded(it) }
 
     val convertedTestDirPath: String
         get() = convertToRemotePathIfNeeded(testDirPath)
@@ -203,7 +203,7 @@ data class UTBotSettings(
             ?.first?.cMakeTarget?.buildConfigurations?.first()
             ?: return
 
-        sourcePaths = getSourceFoldersFromSources(cmakeConfiguration.sources)
+        sourceDirs = getSourceFoldersFromSources(cmakeConfiguration.sources)
     }
 
     fun fireUTBotSettingsChanged() {

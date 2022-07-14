@@ -39,7 +39,7 @@
                     anchor="bottom"
                     secondary="true"
         />
-        <projectViewNodeDecorator implementation="com.huawei.utbot.cpp.ui.sourceFoldersView.FolderDecorator"/>
+        <projectViewPane implementation="com.huawei.utbot.cpp.ui.sourceFoldersView.UTBotProjectViewPane"/>
     </extensions>
 
 
@@ -53,14 +53,17 @@
             <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
         </group>
 
-        <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
-                class="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction" text="Unmark UTBot Folders"
-                description="Unmarks selected folders as UTBot folders">
-        </action>
-
         <action id="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
                 class="com.huawei.utbot.cpp.actions.MarkSourceFolderAction" text="Mark As UTBot Folders"
                 description="Marks selected folders as UTBot folders">
+            <add-to-group group-id="actions.UTBot.projectTree" anchor="first"/>
+        </action>
+
+        <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
+                class="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction" text="Unmark UTBot Folders"
+                description="Unmarks selected folders as UTBot folders">
+            <add-to-group group-id="actions.UTBot.projectTree" relative-to-action="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
+                          anchor="after"/>
         </action>
 
         <action id="com.huawei.utbot.cpp.actions.AskServerToGenerateBuildDir"

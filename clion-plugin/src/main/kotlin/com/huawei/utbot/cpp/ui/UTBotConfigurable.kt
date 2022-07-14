@@ -4,28 +4,23 @@ import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import com.huawei.utbot.cpp.utils.commandLineEditor
-import com.huawei.utbot.cpp.utils.removeIndices
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
-import com.intellij.ui.CollectionListModel
-import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.Row
-import com.intellij.ui.dsl.builder.TopGap
 import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import javax.swing.JList
 import kotlin.reflect.KMutableProperty0
 import java.awt.Dimension
 
@@ -38,8 +33,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val utbotSettings: UTBotSettings get() = myProject.service()
     private val generatorSettings: GeneratorSettings get() = myProject.service()
     private val logger = Logger.getInstance("ProjectConfigurable")
-    private val sourcePathListModel =
-        CollectionListModel(*myProject.getService(UTBotSettings::class.java).sourcePaths.toTypedArray())
     private val panel by lazy { createMainPanel() }
 
     init {
@@ -96,22 +89,15 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 ).rowComment(UTBot.message("paths.testsDirectory.description"))
 
                 row(UTBot.message("settings.project.sourcePaths")) {
-                    cell(createSourcesListComponent())
-                        .onApply {
-                            utbotSettings.sourcePaths = sourcePathListModel.toList().toMutableSet()
-                        }
-                        .onReset {
-                            sourcePathListModel.also {
-                                it.removeAll()
-                                it.addAll(0, utbotSettings.sourcePaths.toList())
-                            }
-                        }
-                        .onIsModified {
-                            (sourcePathListModel.toList() != utbotSettings.sourcePaths)
-                        }
-                    topGap(TopGap.SMALL)
-                    bottomGap(BottomGap.SMALL)
-                }.rowComment(UTBot.message("paths.sourceDirectories.description"))
+                    val pane = UTBotProjectViewPaneForSettings(myProject)
+                    cell(pane.createComponent()).onApply {
+                        pane.apply()
+                    }.onReset {
+                        pane.reset()
+                    }.onIsModified {
+                        pane.isModified()
+                    }
+                }.bottomGap(BottomGap.SMALL).rowComment(UTBot.message("paths.sourceDirectories.description"))
 
                 row {
                     label("Try to get paths from CMake model: ")
@@ -185,19 +171,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
         }
     }
-
-    private fun createSourcesListComponent() =
-        ToolbarDecorator.createDecorator(JList(sourcePathListModel))
-            .setAddAction { _ ->
-                FileChooser.chooseFiles(
-                    FileChooserDescriptorFactory.createMultipleFoldersDescriptor(), myProject, null
-                ) { files ->
-                    sourcePathListModel.add(files.map { it.path })
-                }
-            }.setRemoveAction { actionBtn ->
-                sourcePathListModel.removeIndices((actionBtn.contextComponent as JList<String>).selectedIndices)
-            }.setPreferredSize(SOURCES_LIST_SIZE)
-            .createPanel()
 
     override fun isModified(): Boolean {
         return panel.isModified()
