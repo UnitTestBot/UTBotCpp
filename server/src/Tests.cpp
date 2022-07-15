@@ -508,6 +508,7 @@ void KTestObjectParser::parseKTest(const MethodKtests &batch,
                                    bool filterByLineFlag,
                                    std::shared_ptr<LineInfo> lineInfo) {
     LOG_SCOPE_FUNCTION(DEBUG);
+    sourceFilePath = tests.sourceFilePath;
     for (auto &[testMethod, testCases] : batch) {
         auto it = tests.methods.find<std::string, tests::Tests::MethodDescriptionToStringEqual>(
             testMethod.methodName);
@@ -852,9 +853,9 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
         processGlobalParamPostValue(testCaseDescription, globalParam, rawKleeParams);
     }
 
-    //We should turn off symbolic stdin, because it doesn't work correct with interactive mode
-    //TODO: rewrite symbolic stdin, so that it can work with interactive mode
-    //processSymbolicStdin(testCaseDescription, rawKleeParams);
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
+        processSymbolicStdin(testCaseDescription, rawKleeParams);
+    }
 
     processStubParamValue(testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {

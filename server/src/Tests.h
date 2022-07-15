@@ -569,6 +569,8 @@ namespace tests {
                         bool filterByLineFlag,
                         std::shared_ptr<LineInfo> lineInfo);
     private:
+        fs::path sourceFilePath;
+
         types::TypesHandler &typesHandler;
 
         struct RawKleeParam {

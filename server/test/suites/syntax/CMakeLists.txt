@@ -37,4 +37,5 @@ add_executable(syntax1
         inner_unnamed.c
         array_sort.c
         stubs.c
-        namespace.cpp)
+        namespace.cpp
+        input_output.c)

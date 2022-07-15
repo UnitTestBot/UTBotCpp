@@ -15,8 +15,9 @@ namespace KleeUtils {
     std::string getRenamedOperator(std::string_view methodName);
 
     std::string entryPointFunction(const tests::Tests &tests,
-                              const std::string &methodName,
-                              bool needToMangle = false);
+                                   const std::string &methodName,
+                                   bool needToMangle = false,
+                                   bool isWrapped = false);
 
     std::string postSymbolicVariable(const std::string &variableName);
 

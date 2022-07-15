@@ -81,12 +81,16 @@ namespace KleeUtils {
 
     std::string entryPointFunction(const tests::Tests &tests,
                                    const std::string &methodName,
-                                   bool needToMangle) {
+                                   bool needToMangle,
+                                   bool isWrapped) {
         std::string methodNewName = getRenamedOperator(methodName);
+        if (isWrapped) {
+            methodNewName += PrinterUtils::WRAPPED_SUFFIX;
+        }
         std::string mangledPath = Paths::mangle(tests.relativeFileDir / tests.sourceFileNameNoExt);
         mangledPath = StringUtils::stringFormat("klee_entry__%s_%s", mangledPath, methodNewName);
         if (needToMangle && Paths::isCXXFile(tests.sourceFilePath)) {
-            mangledPath = "_Z" + std::to_string(mangledPath.size()) + mangledPath + "iPPcS0_";
+            mangledPath = PrinterUtils::MANGLED_PREFIX + std::to_string(mangledPath.size()) + mangledPath + PrinterUtils::MANGLED_SUFFIX;
         }
         return mangledPath;
     }

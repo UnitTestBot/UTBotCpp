@@ -77,6 +77,14 @@ namespace PrinterUtils {
     std::string generateNewVar(int cnt);
 
     const std::string LAZYRENAME = "utbotInnerVar";
+    const std::string UTBOT_ARGC = "utbot_argc";
+    const std::string UTBOT_ARGV = "utbot_argv";
+    const std::string UTBOT_ENVP = "utbot_envp";
+    const std::string POSIX_INIT = "klee_init_env";
+    const std::string WRAPPED_SUFFIX = "__wrapped";
+    const std::string POSIX_CHECK_STDIN_READ = "check_stdin_read";
+    const std::string MANGLED_PREFIX = "_Z";
+    const std::string MANGLED_SUFFIX = "iPPcS0_";
 
     extern const std::string TEST_NAMESPACE;
     extern const std::string DEFINES_FOR_C_KEYWORDS;
