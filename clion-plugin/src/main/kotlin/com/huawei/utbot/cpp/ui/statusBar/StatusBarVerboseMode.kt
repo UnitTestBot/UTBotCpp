@@ -9,7 +9,6 @@ import com.intellij.util.Consumer
 import java.awt.Component
 import java.awt.event.MouseEvent
 
-
 class VerboseModeWidgetFactory : StatusBarWidgetFactory {
     override fun getId() = STATUS_BAR_ID
 

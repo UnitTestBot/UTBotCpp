@@ -5,7 +5,6 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-
 @State(name = "UTBotPluginSpecificSettings", storages = [Storage("UTBotPluginSpecificSettings.xml")])
 data class UTBotPluginSpecificSettings(
     var isFirstLaunch: Boolean = true

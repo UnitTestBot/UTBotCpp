@@ -6,13 +6,10 @@ import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
 import testsgen.Testgen
 import testsgen.Util
-
-internal val LOG = Logger.getInstance("GrpcMessageUtil")
 
 fun getSettingsContextMessage(params: GeneratorSettings): Testgen.SettingsContext {
     return Testgen.SettingsContext.newBuilder()
@@ -26,7 +23,6 @@ fun getSettingsContextMessage(params: GeneratorSettings): Testgen.SettingsContex
 }
 
 fun getProjectContextMessage(params: UTBotSettings, project: Project): Testgen.ProjectContext {
-    LOG.info("In getProjectContextMessage")
     return Testgen.ProjectContext.newBuilder()
         .setProjectName(project.name)
         .setProjectPath(params.convertedProjectPath)
@@ -41,7 +37,6 @@ fun getProjectContextMessage(e: AnActionEvent): Testgen.ProjectContext {
 }
 
 fun getProjectRequestMessage(project: Project, params: UTBotSettings): Testgen.ProjectRequest {
-    LOG.info("In getProjectRequestMessage")
     return Testgen.ProjectRequest.newBuilder()
         .setSettingsContext(
             getSettingsContextMessage(
@@ -64,10 +59,8 @@ fun getSourceInfoMessage(line: Int, filePath: String, project: Project): Util.So
 }
 
 fun getLineRequestMessage(project: Project, params: UTBotSettings, line: Int, filePath: String): Testgen.LineRequest {
-    LOG.info("In getLineRequestMessage: which takes many parameters")
     val projectRequest = getProjectRequestMessage(project, params)
     val sourceInfo = getSourceInfoMessage(line, filePath, project)
-    LOG.info("Before returning from getLineRequestMessage: which takes many parameters")
     return Testgen.LineRequest.newBuilder()
         .setProjectRequest(projectRequest)
         .setSourceInfo(sourceInfo)
@@ -75,19 +68,16 @@ fun getLineRequestMessage(project: Project, params: UTBotSettings, line: Int, fi
 }
 
 fun getLineRequestMessage(e: AnActionEvent): Testgen.LineRequest {
-    LOG.info("In getLineRequestMessage")
     val project = e.getRequiredData(CommonDataKeys.PROJECT)
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     val editor = e.getRequiredData(CommonDataKeys.EDITOR)
     val utbotSettings = project.service<UTBotSettings>()
     val lineNumber = editor.caretModel.logicalPosition.line + 1
     val result = getLineRequestMessage(project, utbotSettings, lineNumber, filePath)
-    LOG.info("Before returning from getLIneRequestMessage")
     return result
 }
 
 fun getFunctionRequestMessage(e: AnActionEvent): Testgen.FunctionRequest {
-    LOG.info("in getFuctionRequestMessage")
     val lineRequest = getLineRequestMessage(e)
     return Testgen.FunctionRequest.newBuilder()
         .setLineRequest(lineRequest)
@@ -95,12 +85,10 @@ fun getFunctionRequestMessage(e: AnActionEvent): Testgen.FunctionRequest {
 }
 
 fun getProjectRequestMessage(e: AnActionEvent): Testgen.ProjectRequest {
-    LOG.info("in getProjectRequestMessage")
     return getProjectRequestMessage(e.project!!, e.project!!.service())
 }
 
 fun getFileRequestMessage(e: AnActionEvent): Testgen.FileRequest {
-    LOG.info("in getFileRequestMessage")
     // this function is supposed to be called in actions' performAction(), so update() validated these properties
     val project: Project = e.project!!
     val utbotSettings = project.service<UTBotSettings>()
@@ -112,7 +100,6 @@ fun getFileRequestMessage(e: AnActionEvent): Testgen.FileRequest {
 }
 
 fun getPredicateInfoMessage(predicate: String, returnValue: String, type: Util.ValidationType): Util.PredicateInfo {
-    LOG.info("in getPredicateInfoMessage")
     return Util.PredicateInfo.newBuilder()
         .setPredicate(predicate)
         .setReturnValue(returnValue)
@@ -121,14 +108,12 @@ fun getPredicateInfoMessage(predicate: String, returnValue: String, type: Util.V
 }
 
 fun getClassRequestMessage(e: AnActionEvent): Testgen.ClassRequest {
-    LOG.info("In getClassRequestMessage")
     return Testgen.ClassRequest.newBuilder().setLineRequest(
         getLineRequestMessage(e)
     ).build()
 }
 
 fun getFolderRequestMessage(e: AnActionEvent): Testgen.FolderRequest {
-    LOG.info("in getFolderRequestMessage")
     val utbotSettings = e.project!!.service<UTBotSettings>()
     val localPath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.FolderRequest.newBuilder()
@@ -138,7 +123,6 @@ fun getFolderRequestMessage(e: AnActionEvent): Testgen.FolderRequest {
 }
 
 fun getSnippetRequestMessage(e: AnActionEvent): Testgen.SnippetRequest {
-    LOG.info("in getSnippetRequestMessage")
     val utbotSettings = e.project!!.service<UTBotSettings>()
     val localPath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.SnippetRequest.newBuilder()
@@ -149,7 +133,6 @@ fun getSnippetRequestMessage(e: AnActionEvent): Testgen.SnippetRequest {
 }
 
 fun getAssertionRequestMessage(e: AnActionEvent): Testgen.AssertionRequest {
-    LOG.info("in getAssertionRequestMessage")
     return Testgen.AssertionRequest.newBuilder()
         .setLineRequest(getLineRequestMessage(e))
         .build()
@@ -159,7 +142,6 @@ fun getPredicateRequestMessage(
     validationType: Util.ValidationType, returnValue: String, predicate: String,
     e: AnActionEvent
 ): Testgen.PredicateRequest {
-    LOG.info("getPredicateRequestMessage")
     val predicateInfo = getPredicateInfoMessage(predicate, returnValue, validationType)
     return Testgen.PredicateRequest.newBuilder()
         .setLineRequest(getLineRequestMessage(e))
@@ -168,7 +150,6 @@ fun getPredicateRequestMessage(
 }
 
 fun getProjectConfigRequestMessage(project: Project, configMode: Testgen.ConfigMode): Testgen.ProjectConfigRequest {
-    LOG.info("getProjectConfigure")
     val builder = Testgen.ProjectConfigRequest.newBuilder()
         .setProjectContext(getProjectContextMessage(project.service(), project))
         .setConfigMode(configMode)
@@ -240,10 +221,6 @@ fun getProjectTargetsRequest(project: Project): Testgen.ProjectTargetsRequest {
     return Testgen.ProjectTargetsRequest.newBuilder()
         .setProjectContext(getProjectContextMessage(project.service(), project))
         .build()
-}
-
-fun getProjectTargetsRequest(e: AnActionEvent): Testgen.ProjectTargetsRequest {
-    return getProjectTargetsRequest(e.project!!)
 }
 
 fun getVersionInfo() = Testgen.VersionInfo.newBuilder().setVersion("2022.7").build()

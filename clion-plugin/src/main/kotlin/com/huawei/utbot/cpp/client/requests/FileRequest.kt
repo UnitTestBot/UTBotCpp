@@ -1,6 +1,7 @@
 package com.huawei.utbot.cpp.client.requests
 
 import com.huawei.utbot.cpp.UTBot
+import com.huawei.utbot.cpp.utils.fileNameOrNull
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -11,8 +12,8 @@ class FileRequest(
     request: Testgen.FileRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.FileRequest>(request, project, UTBot.message("requests.file.description.progress")) {
-    override val target: String = "File"
     override val logMessage: String = "Sending request to generate for FILE."
+    override fun getInfoMessage(): String = "Tests for file <em>${(request.filePath.fileNameOrNull()?.plus(" ")) ?: ""}</em>generated!"
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateFileTests(request)
 }

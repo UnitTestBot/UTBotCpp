@@ -1,6 +1,5 @@
 package com.huawei.utbot.cpp.client
 
-import com.huawei.utbot.cpp.actions.utils.getDummyRequest
 import com.huawei.utbot.cpp.actions.utils.getProjectConfigRequestMessage
 import com.huawei.utbot.cpp.actions.utils.getVersionInfo
 import com.huawei.utbot.cpp.client.requests.CheckProjectConfigurationRequest

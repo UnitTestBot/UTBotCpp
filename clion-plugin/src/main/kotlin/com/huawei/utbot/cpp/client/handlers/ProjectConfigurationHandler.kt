@@ -79,11 +79,11 @@ class CreateBuildDirHandler(
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
-                notifyInfo("Build dir was created!", project)
+                notifyInfo("Build directory was created!", project)
                 project.getClient().configureProject()
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
-                notifyInfo("Failed to create build dir! ${response.message}", project)
+                notifyInfo("Failed to create build directory! ${response.message}", project)
             }
             else -> notifyUnknownResponse(response, project)
         }

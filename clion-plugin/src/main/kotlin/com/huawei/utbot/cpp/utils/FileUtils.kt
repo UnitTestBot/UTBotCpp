@@ -9,6 +9,7 @@ import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
+import java.nio.file.InvalidPathException
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.SimpleFileVisitor
@@ -86,6 +87,14 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
         }
     }.let { visitor ->
         Files.walkFileTree(this, visitor)
+    }
+}
+
+fun String.fileNameOrNull(): String? {
+    return try {
+        Paths.get(this).fileName.toString()
+    } catch (e: InvalidPathException) {
+        null
     }
 }
 

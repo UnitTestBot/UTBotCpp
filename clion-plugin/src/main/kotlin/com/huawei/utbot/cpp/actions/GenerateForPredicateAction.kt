@@ -3,7 +3,6 @@ package com.huawei.utbot.cpp.actions
 import com.huawei.utbot.cpp.actions.utils.getFunctionRequestMessage
 import com.huawei.utbot.cpp.actions.utils.getPredicateRequestMessage
 import com.huawei.utbot.cpp.utils.client
-import com.huawei.utbot.cpp.actions.utils.getContainingFunction
 import com.huawei.utbot.cpp.client.requests.FunctionReturnTypeRequest
 import com.huawei.utbot.cpp.client.requests.PredicateRequest
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -24,8 +23,7 @@ import java.util.function.Supplier
 
 class GenerateForPredicateAction : GenerateTestsBaseAction() {
     override fun updateIfServerAvailable(e: AnActionEvent) {
-        val containingFun = getContainingFunction(e)
-        e.presentation.isEnabledAndVisible = (containingFun != null)
+        e.presentation.isEnabledAndVisible = (e.project != null)
     }
 
     fun createListPopup(title: String, list: List<String>, onChoose: (String) -> Unit): JBPopup {

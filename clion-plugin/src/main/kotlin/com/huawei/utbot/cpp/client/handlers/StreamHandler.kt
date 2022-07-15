@@ -5,7 +5,6 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 
 /**
@@ -24,9 +23,6 @@ abstract class StreamHandler<T>(
             .onCompletion { cause ->
                 onCompletion(cause)
             }
-            .catch { exception ->
-                onException(exception)
-            }
             .collect { data: T ->
                 lastResponse = data
                 onData(data)
@@ -37,15 +33,15 @@ abstract class StreamHandler<T>(
 
     open fun onStart() {}
 
-    open fun onException(exception: Throwable) {
-        logger.warn(exception.message)
-        exception.printStackTrace()
-        exception.message?.let { notifyError(it, project) }
-    }
-
     abstract fun onData(data: T)
 
-    open fun onCompletion(exception: Throwable?) {}
+    open fun onCompletion(exception: Throwable?) {
+        if (exception != null) {
+            logger.warn(exception.message)
+            exception.printStackTrace()
+            exception.message?.let { notifyError(it, project) }
+        }
+    }
 
     open fun onLastResponse(response: T?) {}
 

@@ -8,7 +8,6 @@ import com.huawei.utbot.cpp.messaging.UTBotTestResultsReceivedListener
 import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.utils.notifyInfo
-import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.coverage.CoverageDataManager
 import com.intellij.coverage.CoverageEngine
 import com.intellij.coverage.CoverageRunner

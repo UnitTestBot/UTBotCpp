@@ -38,9 +38,8 @@ abstract class BaseRequest<X, Y>(val request: X, val project: Project) : Request
  * Base class for requests that handle a stream of [Testgen.TestsResponse].
  * @param progressName - a name of a progress that user will see, when this request will be executing.
  */
-abstract class BaseTestsRequest<R>(request: R, project: Project, val progressName: String) :
+abstract class BaseTestsRequest<R>(request: R, project: Project, private val progressName: String) :
     BaseRequest<R, Flow<Testgen.TestsResponse>>(request, project) {
-    protected open val target: String = ""
     val logger = project.logger
 
     override suspend fun Flow<Testgen.TestsResponse>.handle(cancellationJob: Job?) {
@@ -64,8 +63,10 @@ abstract class BaseTestsRequest<R>(request: R, project: Project, val progressNam
         logger.info { "$logMessage \n$request" }
     }
 
+    open fun getInfoMessage() = "Tests generated!"
+
     open fun notifySuccess(generatedTestFiles: List<Path>) {
-        notifyInfo("$target tests generated!", project, getFocusTarget(generatedTestFiles)?.let {
+        notifyInfo(getInfoMessage(), project, getFocusTarget(generatedTestFiles)?.let {
           FocusAction(it)
         })
     }

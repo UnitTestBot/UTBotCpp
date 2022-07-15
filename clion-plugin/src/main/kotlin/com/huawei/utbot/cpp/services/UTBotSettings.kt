@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
 import com.huawei.utbot.cpp.utils.isWindows
+import com.intellij.openapi.components.Storage
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.Path
@@ -23,7 +24,10 @@ import java.nio.file.Paths
  *
  * @see UTBotConfigurable
  */
-@State(name = "UTBotProjectSettings")
+@State(
+    name = "UtBotSettings",
+    storages = [Storage("utbot-settings.xml")]
+)
 data class UTBotSettings(
     @com.intellij.util.xmlb.annotations.Transient
     val project: Project? = null,
@@ -34,7 +38,6 @@ data class UTBotSettings(
     private var myState = State()
 
     init {
-        logger.info("ProjectSettings instance's constructor is called: project == $project")
         // when user launches the project for the first time, try to predict paths
         project?.let {
             RunOnceUtil.runOnceForProject(
@@ -132,7 +135,7 @@ data class UTBotSettings(
 
    private fun isLocalHost() = serverName == "localhost" || serverName == "127.0.0.1"
 
-    fun isRemoteScenario() = (remotePath == projectPath && isLocalHost()) || isWindows()
+    fun isRemoteScenario() = !((remotePath == projectPath && isLocalHost()) || isWindows())
 
     /**
      * Convert absolute path on this machine to corresponding absolute path on remote host

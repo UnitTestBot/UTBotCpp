@@ -1,12 +1,10 @@
 package com.huawei.utbot.cpp.client
 
-import com.huawei.utbot.cpp.messaging.SourceFoldersListener
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.models.GTestChannel
 import com.huawei.utbot.cpp.models.LoggingChannel
 import com.huawei.utbot.cpp.models.ServerLogChannel
 import com.huawei.utbot.cpp.utils.logger
-import com.intellij.ide.projectView.ProjectView
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -32,13 +30,6 @@ class ClientManager(val project: Project): Disposable {
                     client = Client(project, clientId, loggingChannels)
                 }
             })
-
-            subscribe(
-                SourceFoldersListener.TOPIC,
-                // when source folder are changed, the ProjectViewNodeDecorator.decorate should be invoked again for this we force refresh on change
-                SourceFoldersListener {
-                    ProjectView.getInstance(project).refresh()
-                })
         }
     }
 

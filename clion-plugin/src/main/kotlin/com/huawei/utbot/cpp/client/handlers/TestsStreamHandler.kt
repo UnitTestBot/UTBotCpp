@@ -65,10 +65,7 @@ class TestsStreamHandler(
         super.onCompletion(exception)
         if (exception == null)
             onSuccess(myGeneratedTestFilesLocalFS)
-    }
-
-    override fun onException(exception: Throwable) {
-        super.onException(exception)
-        onError(exception)
+        else
+            onError(exception)
     }
 }

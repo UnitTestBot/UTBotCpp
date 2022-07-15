@@ -36,10 +36,6 @@ fun String.convertFromRemotePathIfNeeded(project: Project): String {
     return project.service<UTBotSettings>().convertFromRemotePathIfNeeded(this)
 }
 
-fun String.convertToRemotePathIfNeeded(project: Project): String {
-    return project.service<UTBotSettings>().convertToRemotePathIfNeeded(this)
-}
-
 val CoroutineScope.children
     get() = this.coroutineContext.job.children.toList()
 

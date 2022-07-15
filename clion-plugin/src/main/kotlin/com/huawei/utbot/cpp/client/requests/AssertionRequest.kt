@@ -11,8 +11,8 @@ class AssertionRequest(
     request: Testgen.AssertionRequest,
     project: Project,
 ) : BaseTestsRequest<Testgen.AssertionRequest>(request, project, UTBot.message("requests.assertion.description.progress")) {
-    override val target: String = "Assertion"
     override val logMessage: String = "Sending request to generate tests for ASSERTION."
+    override fun getInfoMessage(): String = "Assertion tests generated!"
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateAssertionFailTests(request)
 }

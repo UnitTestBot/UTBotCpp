@@ -2,7 +2,6 @@ package com.huawei.utbot.cpp.actions
 
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.ui.wizard.UTBotWizard
-import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
 import com.intellij.openapi.actionSystem.AnActionEvent

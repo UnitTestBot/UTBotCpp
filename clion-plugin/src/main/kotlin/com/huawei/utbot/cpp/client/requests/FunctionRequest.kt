@@ -12,8 +12,10 @@ class FunctionRequest(
     project: Project,
 ) : BaseTestsRequest<Testgen.FunctionRequest>(request, project, UTBot.message("requests.function.description.progress")) {
 
-    override val target: String = "Function"
     override val logMessage: String = "Sending request to generate tests for FUNCTION."
+    override fun getInfoMessage(): String {
+        return "Function tests generated!"
+    }
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateFunctionTests(request)
 }
