@@ -55,7 +55,7 @@ namespace printer {
             types::Type curType;
         };
 
-        void declTestEntryPoint(const Tests &tests, const Tests::MethodDescription &testMethod);
+        void declTestEntryPoint(const Tests &tests, const Tests::MethodDescription &testMethod, bool isWrapped);
 
         void genGlobalParamsDeclarations(const Tests::MethodDescription &testMethod);
 
@@ -129,6 +129,16 @@ namespace printer {
         void genPostSymbolicVariable(const Tests::MethodDescription &testMethod, const Tests::MethodParam &param);
 
         void genPostAssumes(const Tests::MethodParam &param, bool visitGlobal = false);
+
+        void writePosixWrapper(const Tests &tests,
+                               const tests::Tests::MethodDescription &testMethod);
+
+        void writeTestedFunction(const Tests &tests,
+                                 const tests::Tests::MethodDescription &testMethod,
+                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+                                 const std::string &testedMethod,
+                                 bool onlyForOneEntity,
+                                 bool isWrapped);
     };
 }
 
