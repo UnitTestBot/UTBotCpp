@@ -1,5 +1,6 @@
 package com.huawei.utbot.cpp.ui.statusBar
 
+import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
 import com.huawei.utbot.cpp.utils.generatorSettings
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.StatusBar
@@ -40,6 +41,9 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
         statusBar?.updateWidget(ID())
+        statusbar.project?.messageBus?.connect()?.subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
+            statusbar.updateWidget(ID())
+        })
     }
 
     override fun dispose() {}

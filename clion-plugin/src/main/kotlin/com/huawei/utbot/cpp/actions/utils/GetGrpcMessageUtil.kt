@@ -2,6 +2,7 @@ package com.huawei.utbot.cpp.actions.utils
 
 import com.huawei.utbot.cpp.services.GeneratorSettings
 import com.huawei.utbot.cpp.services.UTBotSettings
+import com.huawei.utbot.cpp.utils.convertToRemotePathIfNeeded
 import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -51,10 +52,9 @@ fun getProjectRequestMessage(project: Project, params: UTBotSettings): Testgen.P
 }
 
 fun getSourceInfoMessage(line: Int, filePath: String, project: Project): Util.SourceInfo {
-    val utbotSettings = project.service<UTBotSettings>()
     return Util.SourceInfo.newBuilder()
         .setLine(line)
-        .setFilePath(utbotSettings.convertToRemotePathIfNeeded(filePath))
+        .setFilePath(filePath.convertToRemotePathIfNeeded(project))
         .build()
 }
 
@@ -73,8 +73,7 @@ fun getLineRequestMessage(e: AnActionEvent): Testgen.LineRequest {
     val editor = e.getRequiredData(CommonDataKeys.EDITOR)
     val utbotSettings = project.service<UTBotSettings>()
     val lineNumber = editor.caretModel.logicalPosition.line + 1
-    val result = getLineRequestMessage(project, utbotSettings, lineNumber, filePath)
-    return result
+    return getLineRequestMessage(project, utbotSettings, lineNumber, filePath)
 }
 
 fun getFunctionRequestMessage(e: AnActionEvent): Testgen.FunctionRequest {
@@ -95,7 +94,7 @@ fun getFileRequestMessage(e: AnActionEvent): Testgen.FileRequest {
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.FileRequest.newBuilder()
         .setProjectRequest(getProjectRequestMessage(project, utbotSettings))
-        .setFilePath(utbotSettings.convertToRemotePathIfNeeded(filePath))
+        .setFilePath(filePath.convertToRemotePathIfNeeded(project))
         .build()
 }
 
@@ -114,21 +113,19 @@ fun getClassRequestMessage(e: AnActionEvent): Testgen.ClassRequest {
 }
 
 fun getFolderRequestMessage(e: AnActionEvent): Testgen.FolderRequest {
-    val utbotSettings = e.project!!.service<UTBotSettings>()
     val localPath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.FolderRequest.newBuilder()
         .setProjectRequest(getProjectRequestMessage(e))
-        .setFolderPath(utbotSettings.convertToRemotePathIfNeeded(localPath))
+        .setFolderPath(localPath.convertToRemotePathIfNeeded(e.project!!))
         .build()
 }
 
 fun getSnippetRequestMessage(e: AnActionEvent): Testgen.SnippetRequest {
-    val utbotSettings = e.project!!.service<UTBotSettings>()
     val localPath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.SnippetRequest.newBuilder()
         .setProjectContext(getProjectContextMessage(e))
         .setSettingsContext(getSettingsContextMessage(e.project!!.service()))
-        .setFilePath(utbotSettings.convertToRemotePathIfNeeded(localPath))
+        .setFilePath(localPath.convertToRemotePathIfNeeded(e.project!!))
         .build()
 }
 
@@ -167,9 +164,10 @@ fun getCmakeOptions(project: Project): String? {
     }?.profile?.generationOptions
 }
 
-fun getDummyRequest() = Testgen.DummyRequest.newBuilder().build()
+fun getDummyRequest(): Testgen.DummyRequest = Testgen.DummyRequest.newBuilder().build()
 
-fun getLogChannelRequest(logLevel: String) = Testgen.LogChannelRequest.newBuilder().setLogLevel(logLevel).build()
+fun getLogChannelRequest(logLevel: String): Testgen.LogChannelRequest =
+    Testgen.LogChannelRequest.newBuilder().setLogLevel(logLevel).build()
 
 fun getTestFilter(e: AnActionEvent): Testgen.TestFilter {
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
@@ -192,12 +190,12 @@ fun getCoverageAndResultsRequest(
     testName: String = "",
     includeCoverage: Boolean = true
 ): Testgen.CoverageAndResultsRequest {
-    val correctFilePath = utbotSettings.convertToRemotePathIfNeeded(filePath)
+    val remoteFilePath = filePath.convertToRemotePathIfNeeded(utbotSettings.project)
     return Testgen.CoverageAndResultsRequest.newBuilder()
         .setCoverage(includeCoverage)
-        .setProjectContext(getProjectContextMessage(utbotSettings, utbotSettings.project!!))
+        .setProjectContext(getProjectContextMessage(utbotSettings, utbotSettings.project))
         .setSettingsContext(getSettingsContextMessage(utbotSettings.project.service()))
-        .setTestFilter(getTestFilter(correctFilePath, testName, testSuite))
+        .setTestFilter(getTestFilter(remoteFilePath, testName, testSuite))
         .build()
 }
 
@@ -223,4 +221,4 @@ fun getProjectTargetsRequest(project: Project): Testgen.ProjectTargetsRequest {
         .build()
 }
 
-fun getVersionInfo() = Testgen.VersionInfo.newBuilder().setVersion("2022.7").build()
+fun getVersionInfo(): Testgen.VersionInfo = Testgen.VersionInfo.newBuilder().setVersion("2022.7").build()

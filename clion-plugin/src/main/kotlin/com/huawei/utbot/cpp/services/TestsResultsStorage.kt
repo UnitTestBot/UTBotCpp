@@ -2,7 +2,7 @@ package com.huawei.utbot.cpp.services
 
 import com.huawei.utbot.cpp.messaging.UTBotTestResultsReceivedListener
 import com.huawei.utbot.cpp.models.TestNameAndTestSuite
-import com.huawei.utbot.cpp.utils.utbotSettings
+import com.huawei.utbot.cpp.utils.convertFromRemotePathIfNeeded
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.Service
@@ -63,7 +63,7 @@ class TestsResultsStorage(val project: Project) {
             it.file?.toNioPath()
         }
         for (testResult in storage.values) {
-            if (Paths.get(project.utbotSettings.convertFromRemotePathIfNeeded(testResult.testFilePath)) in currentlyOpenedFilePaths) {
+            if (Paths.get(testResult.testFilePath.convertFromRemotePathIfNeeded(project)) in currentlyOpenedFilePaths) {
                 return true
             }
         }
@@ -76,7 +76,6 @@ class TestsResultsStorage(val project: Project) {
     }
 
     fun getTestStatusIcon(element: PsiElement): Icon {
-        log.info("getTestStatusIcon was called: $element")
         if (element.text == "UTBot") {
             return AllIcons.RunConfigurations.TestState.Run_run
         }

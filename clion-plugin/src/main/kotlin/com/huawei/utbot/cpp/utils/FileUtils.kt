@@ -161,3 +161,44 @@ fun Set<String>.unmarkDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<
     }
     return newSourceFolders
 }
+
+/**
+ * Convert absolute path on this machine to corresponding absolute path on remote host
+ * if path to project on a remote machine was specified in the settings.
+ *
+ * If [isRemoteScenario] == false, this function returns [path] unchanged.
+ *
+ * @param path - absolute path on local machine to be converted
+ */
+fun String.convertToRemotePathIfNeeded(project: Project): String {
+    if (project.utbotSettings.isRemoteScenario())
+        return this.convertToRemotePath(project)
+    return this
+}
+
+fun String.convertToRemotePath(project: Project): String {
+    val relativeToProjectPath = this.getRelativeToProjectPath(project)
+    return FilenameUtils.separatorsToUnix(Paths.get(project.utbotSettings.remotePath, relativeToProjectPath).toString())
+}
+
+/**
+ * Convert absolute path on docker container to corresponding absolute path on local machine.
+ *
+ * If remote path == "", this function returns [path] unchanged.
+ *
+ * @param path - absolute path on docker to be converted
+ */
+fun String.convertFromRemotePathIfNeeded(project: Project): String {
+    if (project.utbotSettings.isRemoteScenario())
+        return this.convertFromRemotePath(project)
+    return this
+}
+
+fun String.convertFromRemotePath(project: Project): String {
+    val relativeToProjectPath = this.getRelativeToProjectPath(project)
+    return FilenameUtils.separatorsToSystem(Paths.get(project.utbotSettings.projectPath, relativeToProjectPath).toString())
+}
+
+fun String.getRelativeToProjectPath(project: Project): String {
+    return relativize(project.utbotSettings.projectPath, this)
+}

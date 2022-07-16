@@ -1,9 +1,9 @@
 package com.huawei.utbot.cpp.client.handlers
 
+import com.huawei.utbot.cpp.utils.convertFromRemotePathIfNeeded
 import com.huawei.utbot.cpp.utils.createFileAndMakeDirs
 import com.huawei.utbot.cpp.utils.logger
 import com.huawei.utbot.cpp.utils.refreshAndFindIOFile
-import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -36,7 +36,7 @@ class TestsStreamHandler(
 
     private fun handleSourceCode(sources: List<Util.SourceCode>, isStubs: Boolean = false) {
         sources.forEach { sourceCode ->
-            val filePath: String = project.utbotSettings.convertFromRemotePathIfNeeded(sourceCode.filePath)
+            val filePath: String = sourceCode.filePath.convertFromRemotePathIfNeeded(project)
 
             if (!isStubs)
                 myGeneratedTestFilesLocalFS.add(Paths.get(filePath))

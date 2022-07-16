@@ -32,10 +32,6 @@ fun Request.execute(e: AnActionEvent) {
     e.client.executeRequest(this)
 }
 
-fun String.convertFromRemotePathIfNeeded(project: Project): String {
-    return project.service<UTBotSettings>().convertFromRemotePathIfNeeded(this)
-}
-
 val CoroutineScope.children
     get() = this.coroutineContext.job.children.toList()
 

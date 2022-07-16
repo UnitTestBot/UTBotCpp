@@ -2,8 +2,8 @@ package com.huawei.utbot.cpp.client.requests
 
 import com.huawei.utbot.cpp.UTBot
 import com.huawei.utbot.cpp.client.handlers.CoverageAndResultsHandler
+import com.huawei.utbot.cpp.utils.convertFromRemotePathIfNeeded
 import com.huawei.utbot.cpp.utils.testFilePathToSourceFilePath
-import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +24,7 @@ class RunWithCoverageRequest(
                 this,
                 UTBot.message("requests.coverage.description.progress"),
                 cancellationJob,
-                testFilePathToSourceFilePath(project.utbotSettings.convertFromRemotePathIfNeeded(request.testFilter.testFilePath), project)
+                testFilePathToSourceFilePath(request.testFilter.testFilePath.convertFromRemotePathIfNeeded(project), project)
             ).handle()
         }
     }

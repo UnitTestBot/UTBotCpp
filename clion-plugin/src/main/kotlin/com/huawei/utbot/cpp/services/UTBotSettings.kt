@@ -1,23 +1,18 @@
 package com.huawei.utbot.cpp.services
 
 import com.huawei.utbot.cpp.messaging.SourceFoldersListener
-import com.huawei.utbot.cpp.utils.relativize
-import com.huawei.utbot.cpp.utils.notifyError
 import com.huawei.utbot.cpp.messaging.UTBotSettingsChangedListener
-import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
+import com.huawei.utbot.cpp.utils.convertToRemotePathIfNeeded
 import com.huawei.utbot.cpp.utils.isWindows
-import com.huawei.utbot.cpp.utils.notifyProjectPathUnset
 import com.huawei.utbot.cpp.utils.notifyWarning
-import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.guessProjectDir
-import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -106,29 +101,34 @@ data class UTBotSettings(
         }
 
     val convertedSourcePaths: List<String>
-        get() = sourceDirs.map { convertToRemotePathIfNeeded(it) }
+        get() = sourceDirs.map { it.convertToRemotePathIfNeeded(project) }
 
     val convertedTestDirPath: String
-        get() = convertToRemotePathIfNeeded(testDirPath)
+        get() = testDirPath.convertToRemotePathIfNeeded(project)
 
     val convertedTargetPath: String
         get() = if (targetPath == UTBotTarget.autoTarget.path)
             targetPath
-        else convertToRemotePathIfNeeded(targetPath)
+        else targetPath.convertToRemotePathIfNeeded(project)
 
     val convertedProjectPath: String
         get() {
-            return convertToRemotePathIfNeeded(projectPath)
+            return projectPath.convertToRemotePathIfNeeded(project)
         }
 
     var projectPath: String
         get() {
-            if (state.projectPath == null)
+            System.err.println("Project path from utbot settings is demanded!")
+            if (state.projectPath == null) {
+                System.err.println("Project path from utbot settings is null! GUESSING")
                 state.projectPath = project.guessProjectDir()?.path
                     ?: error("Could not guess project path! Should be specified in settings by user")
+            }
+            System.err.println("Project path from utbot settings is: ${state.projectPath}")
             return state.projectPath!!
         }
         set(value) {
+            System.err.println("Project path is set to by set: ${value}")
             state.projectPath = value
         }
 
@@ -136,47 +136,6 @@ data class UTBotSettings(
 
     fun isRemoteScenario() = !((remotePath == projectPath && isLocalHost()) || isWindows())
 
-    /**
-     * Convert absolute path on this machine to corresponding absolute path on remote host
-     * if path to project on a remote machine was specified in the settings.
-     *
-     * If [isRemoteScenario] == false, this function returns [path] unchanged.
-     *
-     * @param path - absolute path on local machine to be converted
-     */
-    fun convertToRemotePathIfNeeded(path: String): String {
-        logger.info("Converting $path to remote version")
-        var result = path
-        if (isRemoteScenario()) {
-            val relativeToProjectPath = path.getRelativeToProjectPath(project)
-            result = FilenameUtils.separatorsToUnix(Paths.get(remotePath, relativeToProjectPath).toString())
-        }
-        logger.info("The resulting path: $result")
-        return result
-    }
-
-    /**
-     * Convert absolute path on docker container to corresponding absolute path on local machine.
-     *
-     * If remote path == "", this function returns [path] unchanged.
-     *
-     * @param path - absolute path on docker to be converted
-     */
-    fun convertFromRemotePathIfNeeded(path: String): String {
-        logger.info("Converting $path to local version")
-        var result = path
-        if (isRemoteScenario()) {
-            val relativeToProjectPath = path.getRelativeToProjectPath(project)
-            result = FilenameUtils.separatorsToSystem(Paths.get(projectPath, relativeToProjectPath).toString())
-        }
-        logger.info("The resulting path: $result")
-        return result
-    }
-
-    private fun String.getRelativeToProjectPath(project: Project): String {
-        logger.info("getRelativeToProjectPath was called on $this")
-        return relativize(project.utbotSettings.projectPath, this)
-    }
 
     // try to predict build dir, tests dir, cmake target paths, and get source folders paths from ide,
     // so user don't have to fill in them by hand
@@ -187,6 +146,7 @@ data class UTBotSettings(
             it.parent
         }.toMutableSet()
 
+        remotePath = projectPath
         try {
             testDirPath = Paths.get(projectPath, "tests").toString()
         } catch (e: IllegalStateException) {
@@ -203,7 +163,6 @@ data class UTBotSettings(
     }
 
     fun fireUTBotSettingsChanged() {
-        project ?: return
         project.messageBus.syncPublisher(UTBotSettingsChangedListener.TOPIC).settingsChanged(this)
     }
 
