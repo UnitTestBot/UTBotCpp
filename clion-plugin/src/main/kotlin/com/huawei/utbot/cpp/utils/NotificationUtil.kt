@@ -18,6 +18,11 @@ fun notifyWarning(content: String, project: Project? = null, action: AnAction? =
     notify(content, NotificationType.WARNING, project, action)
 }
 
+fun notifyProjectPathUnset() {
+    // todo: make hyperlink to settings
+    notifyWarning("Could not guess project directory! Please specify it in settings.")
+}
+
 fun notify(content: String, type: NotificationType, project: Project? = null, action: AnAction? = null) {
     val notification = NotificationGroupManager.getInstance().getNotificationGroup("Custom Notification Group")
         .createNotification(content, type)

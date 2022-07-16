@@ -15,7 +15,7 @@ class GenerateForFolderAction : GenerateTestsBaseAction() {
     }
 
     override fun updateIfServerAvailable(e: AnActionEvent) {
-        if (e.project?.basePath == null) {
+        if (e.project == null) {
             e.presentation.isEnabledAndVisible = false
             return
         }

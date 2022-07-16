@@ -12,7 +12,11 @@ import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import com.huawei.utbot.cpp.models.UTBotTarget
 import com.huawei.utbot.cpp.utils.isWindows
+import com.huawei.utbot.cpp.utils.notifyProjectPathUnset
+import com.huawei.utbot.cpp.utils.notifyWarning
+import com.huawei.utbot.cpp.utils.utbotSettings
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.project.guessProjectDir
 import org.apache.commons.io.FilenameUtils
 import java.io.File
 import java.nio.file.Path
@@ -29,28 +33,17 @@ import java.nio.file.Paths
     storages = [Storage("utbot-settings.xml")]
 )
 data class UTBotSettings(
-    @com.intellij.util.xmlb.annotations.Transient
-    val project: Project? = null,
+    val project: Project
 ) : PersistentStateComponent<UTBotSettings.State> {
-    @com.intellij.util.xmlb.annotations.Transient
-    val logger = Logger.getInstance(this::class.java)
-
+    private val logger = Logger.getInstance(this::class.java)
     private var myState = State()
-
-    init {
-        // when user launches the project for the first time, try to predict paths
-        project?.let {
-            RunOnceUtil.runOnceForProject(
-                project, "Predict UTBot paths"
-            ) { predictPaths() }
-        }
-    }
 
     // serialized by the ide, the settings of plugin
     data class State(
+        var projectPath: String? = null,
         var targetPath: String = UTBotTarget.autoTarget.path,
         var buildDirRelativePath: String = "build-utbot",
-        var testDirPath: String = "/",
+        var testDirPath: String = "",
         var remotePath: String = "",
         var sourceDirs: MutableSet<String> = mutableSetOf(),
         var port: Int = DEFAULT_PORT,
@@ -91,7 +84,7 @@ data class UTBotSettings(
         }
         set(value) {
             state.sourceDirs = value.toMutableSet()
-            project?.messageBus?.syncPublisher(SourceFoldersListener.TOPIC)?.sourceFoldersChanged(value)
+            project.messageBus.syncPublisher(SourceFoldersListener.TOPIC).sourceFoldersChanged(value)
         }
 
     var port: Int
@@ -128,12 +121,18 @@ data class UTBotSettings(
             return convertToRemotePathIfNeeded(projectPath)
         }
 
-    val projectPath: String
+    var projectPath: String
         get() {
-            return project?.basePath ?: error("Could not get project path from project instance!")
+            if (state.projectPath == null)
+                state.projectPath = project.guessProjectDir()?.path
+                    ?: error("Could not guess project path! Should be specified in settings by user")
+            return state.projectPath!!
+        }
+        set(value) {
+            state.projectPath = value
         }
 
-   private fun isLocalHost() = serverName == "localhost" || serverName == "127.0.0.1"
+    private fun isLocalHost() = serverName == "localhost" || serverName == "127.0.0.1"
 
     fun isRemoteScenario() = !((remotePath == projectPath && isLocalHost()) || isWindows())
 
@@ -149,7 +148,7 @@ data class UTBotSettings(
         logger.info("Converting $path to remote version")
         var result = path
         if (isRemoteScenario()) {
-            val relativeToProjectPath = path.getRelativeToProjectPath()
+            val relativeToProjectPath = path.getRelativeToProjectPath(project)
             result = FilenameUtils.separatorsToUnix(Paths.get(remotePath, relativeToProjectPath).toString())
         }
         logger.info("The resulting path: $result")
@@ -167,24 +166,16 @@ data class UTBotSettings(
         logger.info("Converting $path to local version")
         var result = path
         if (isRemoteScenario()) {
-            val projectLocalPath = project?.basePath ?: let {
-                notifyError("Could not get project path.", project)
-                error("Project path is null when converting paths!")
-            }
-            val relativeToProjectPath = path.getRelativeToProjectPath(remotePath)
-            result = FilenameUtils.separatorsToSystem(Paths.get(projectLocalPath, relativeToProjectPath).toString())
+            val relativeToProjectPath = path.getRelativeToProjectPath(project)
+            result = FilenameUtils.separatorsToSystem(Paths.get(projectPath, relativeToProjectPath).toString())
         }
         logger.info("The resulting path: $result")
         return result
     }
 
-    private fun String.getRelativeToProjectPath(projectPath: String? = project?.basePath): String {
+    private fun String.getRelativeToProjectPath(project: Project): String {
         logger.info("getRelativeToProjectPath was called on $this")
-        projectPath ?: let {
-            notifyError("Could not get project path.", project)
-            error("Project path is null when converting paths!")
-        }
-        return relativize(projectPath, this)
+        return relativize(project.utbotSettings.projectPath, this)
     }
 
     // try to predict build dir, tests dir, cmake target paths, and get source folders paths from ide,
@@ -196,9 +187,11 @@ data class UTBotSettings(
             it.parent
         }.toMutableSet()
 
-        val projectPath = project?.basePath ?: return notifyError("Path to project unavailable", project)
-
-        testDirPath = Paths.get(projectPath, "tests").toString()
+        try {
+            testDirPath = Paths.get(projectPath, "tests").toString()
+        } catch (e: IllegalStateException) {
+            notifyWarning("Guessing settings failed: could not guess project path! Please specify project path in settings!")
+        }
         buildDirRelativePath = "build-utbot"
         targetPath = UTBotTarget.autoTarget.path
 

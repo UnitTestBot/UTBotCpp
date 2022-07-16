@@ -24,9 +24,6 @@ import com.intellij.ui.dsl.builder.panel
 import kotlin.reflect.KMutableProperty0
 import java.awt.Dimension
 
-/**
- * Get UTBot project settings and generation settings from settings menu.
- */
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings for Generating Tests"
 ) {
@@ -72,6 +69,16 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             }
 
             group("Paths") {
+                row(UTBot.message("settings.project.projectPath")) {
+                    textFieldWithBrowseButton(
+                        UTBot.message("settings.project.projectPath.title"),
+                        myProject,
+                        FileChooserDescriptorFactory.createSingleFileDescriptor()
+                    ).bindText(
+                        getter = { utbotSettings.state.projectPath ?: "" },
+                        setter = { value -> utbotSettings.state.projectPath = value })
+                        .columns(COLUMNS_LARGE)
+                }.rowComment(UTBot.message("settings.project.projectPath.info"))
                 createPathChooser(
                     utbotSettings::buildDirRelativePath,
                     UTBot.message("settings.project.buildDir"),

@@ -15,8 +15,7 @@ class GenerateForSnippetAction : GenerateTestsBaseAction() {
     }
 
     override fun updateIfServerAvailable(e: AnActionEvent) {
-        val projectPath = e.project?.basePath
         val file = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        e.presentation.isEnabledAndVisible = (projectPath != null && file != null)
+        e.presentation.isEnabledAndVisible = file != null
     }
 }
