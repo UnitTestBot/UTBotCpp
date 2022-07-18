@@ -2,7 +2,9 @@ package org.utbot.cpp.clion.plugin
 
 import com.intellij.util.io.exists
 import com.intellij.util.io.readText
+import kotlin.io.path.extension
 import kotlin.io.path.name
+import kotlin.io.path.nameWithoutExtension
 import org.utbot.cpp.clion.plugin.utils.visitAllFiles
 import java.nio.file.Path
 
@@ -15,7 +17,7 @@ fun Path.assertAllFilesNotEmptyRecursively() {
             emptyFiles.add(it)
     }
 
-    assert(emptyFiles.isEmpty()) { "There are empty files in $this: ${emptyFiles.joinToString()}"}
+    assert(emptyFiles.isEmpty()) { "There are empty files in $this: ${emptyFiles.joinToString()}" }
 }
 
 fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
@@ -25,7 +27,10 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
     val visitedFile = sourceFileNames.associateWith { false }.toMutableMap()
 
     this.visitAllFiles { testFile ->
-        if (!testFile.isStubFile()) {
+        val name = testFile.nameWithoutExtension
+        if (!name.endsWith("_stub") &&
+            !name.endsWith("_wrapper") &&
+            testFile.extension != "mk") {
             val sourceFileName = testFile.name.removeTestSuffixes()
             if (sourceFileName !in visitedFile) {
                 logger.error("Unable to find a corresponding source file for test: ${testFile.name}")
@@ -44,9 +49,6 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
 
     assert(checked) { "Some test files don't exist!" }
 }
-
-
-fun Path.isStubFile() = name.contains("""_stub\.(c|cpp|h)$""".toRegex())
 
 fun String.removeTestSuffixes(): String {
     val result = this.replace("""(_dot_c_test|_dot_c_test_error)\.(c|cpp|h)$""".toRegex(), "")

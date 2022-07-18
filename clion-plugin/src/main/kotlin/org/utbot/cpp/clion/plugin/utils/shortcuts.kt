@@ -32,7 +32,7 @@ val CoroutineScope.children
 
 fun CoroutineScope.hasChildren(): Boolean = children.isNotEmpty()
 
-fun invokeOnEdt(task: ()->Unit) {
+fun invokeOnEdt(task: () -> Unit) {
     ApplicationManager.getApplication().invokeLater(task)
 }
 

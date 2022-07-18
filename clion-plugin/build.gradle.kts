@@ -43,6 +43,8 @@ plugins {
     // serialization
     kotlin("plugin.serialization") version "1.6.10"
     id("com.google.protobuf") version "0.8.15"
+    // code style
+    id("io.gitlab.arturbosch.detekt").version("1.21.0")
     idea
     application
 }
@@ -78,6 +80,11 @@ sourceSets {
             srcDir("../server/proto")
         }
     }
+}
+
+detekt {
+    buildUponDefaultConfig = true // preconfigure defaults
+    allRules = false // activate all available (even unstable) rules.
 }
 
 //kotlin {
@@ -147,6 +154,7 @@ changelog {
     groups.set(emptyList())
 }
 
+
 // Configure Gradle Qodana Plugin - read more: https://github.com/JetBrains/gradle-qodana-plugin
 qodana {
     cachePath.set(projectDir.resolve(".qodana").canonicalPath)
@@ -156,6 +164,13 @@ qodana {
 }
 
 tasks {
+    withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+        jvmTarget = "1.8"
+    }
+    withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
+        jvmTarget = "1.8"
+    }
+
     // Set the JVM compatibility versions
     properties("javaVersion").let {
         withType<JavaCompile> {

@@ -35,6 +35,7 @@ data class UTBotSettings(
 
     // serialized by the ide, the settings of plugin
     data class State(
+        // for all
         var projectPath: String? = null,
         var targetPath: String = UTBotTarget.autoTarget.path,
         var buildDirRelativePath: String = "build-utbot",
