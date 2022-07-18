@@ -161,15 +161,20 @@ namespace Paths {
         return errFiles;
     }
 
+    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                   const fs::path &filePath) {
+        fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
+        fs::path relative = (fs::relative(addOrigExtensionAsSuffixAndAddNew(filePath, ""), projectContext.projectPath));
+        return kleeOutDir / relative;
+    }
+
     fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
                                       const fs::path &srcFilePath, const std::string &methodName) {
-        fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
-        fs::path relative = (fs::relative(addOrigExtensionAsSuffixAndAddNew(srcFilePath, ""),
-                                          projectContext.projectPath));
         if (!methodName.empty()) {
-            return kleeOutDir / relative / ("klee_out_" + methodName);
+            return kleeOutDirForFilePath(projectContext, projectTmpPath, srcFilePath) / ("klee_out_" + methodName);
         }
-        return kleeOutDir / relative / ("klee_out_" + srcFilePath.filename().stem().string());
+        return kleeOutDirForFilePath(projectContext, projectTmpPath, srcFilePath) /
+               ("klee_out_" + srcFilePath.filename().stem().string());
     }
 
     //endregion

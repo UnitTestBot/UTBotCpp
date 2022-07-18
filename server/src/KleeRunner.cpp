@@ -10,13 +10,53 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
+#include "utils/stats/CSVReader.h"
 
 #include "loguru.h"
 
 #include <fstream>
 #include <utility>
+#include <utils/stats/TestsGenerationStats.h>
 
 using namespace tests;
+
+namespace {
+    void clearUnusedData(const fs::path &kleeDir) {
+        fs::remove(kleeDir / "assembly.ll");
+        fs::remove(kleeDir / "run.istats");
+    }
+
+    StatsUtils::KleeStats parseKleeStatsReport(const std::string &kleeStatsReport) {
+        std::stringstream ss(kleeStatsReport);
+        StatsUtils::CSVTable parsedCSV = StatsUtils::readCSV(ss, ',');
+        std::map<std::string, std::chrono::milliseconds> timeStats;
+        std::vector<std::string> keys = {"Time(s)", "TSolver(s)", "TResolve(s)"};
+        std::vector<std::chrono::milliseconds> timeValues;
+        for (const auto &key: keys) {
+            if (!CollectionUtils::containsKey(parsedCSV, key)) {
+                LOG_S(WARNING) << StringUtils::stringFormat("Key %s not found in klee-stats report", key);
+            }
+            std::chrono::milliseconds totalTime((int)(1000 * std::stof(parsedCSV[key].back())));
+            timeValues.emplace_back(totalTime);
+        }
+        return StatsUtils::KleeStats(timeValues[0], timeValues[1], timeValues[2]);
+    }
+
+    StatsUtils::KleeStats writeKleeStats(const fs::path &kleeOut) {
+        ShellExecTask::ExecutionParameters kleeStatsParams("klee-stats",
+                                                           {"--utbot-config", kleeOut.string(),
+                                                            "--table-format=readable-csv"});
+        auto[out, status, _] = ShellExecTask::runShellCommandTask(kleeStatsParams);
+        if (status != 0) {
+            LOG_S(ERROR) << "klee-stats call failed:";
+            LOG_S(ERROR) << out;
+        } else {
+            LOG_S(DEBUG) << "klee-stats report:";
+            LOG_S(DEBUG) << '\n' << out;
+        }
+        return parseKleeStatsReport(out);
+    }
+}
 
 KleeRunner::KleeRunner(utbot::ProjectContext projectContext,
                        utbot::SettingsContext settingsContext,
@@ -32,7 +72,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          const std::shared_ptr<LineInfo> &lineInfo,
                          TestsWriter *testsWriter,
                          bool isBatched,
-                         bool interactiveMode) {
+                         bool interactiveMode,
+                         StatsUtils::TestsGenerationStatsFileMap &generationStats) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
@@ -77,19 +118,14 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
             LOG_S(MAX) << logStream.str();
         }
         if (interactiveMode) {
-            if (!batch.empty()) {
-                processBatchWithInteractive(batch, tests, ktests);
-            }
+            processBatchWithInteractive(batch, tests, ktests);
         } else {
-          for (auto const &testMethod : batch) {
-              MethodKtests ktestChunk;
-              processBatchWithoutInteractive(ktestChunk, testMethod, tests);
-              ExecUtils::throwIfCancelled();
-              ktests.push_back(ktestChunk);
-          }
+            processBatchWithoutInteractive(batch, tests, ktests);
         }
+        auto kleeStats = writeKleeStats(Paths::kleeOutDirForFilePath(projectContext, projectTmpPath, filePath));
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
                                           settingsContext.verbose);
+        generationStats.addFileStats(kleeStats, tests);
 
         sarif::sarifAddTestsToResults(projectContext, tests, sarifResults);
     };
@@ -108,65 +144,47 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         std::move(prepareTotal));
 }
 
-namespace {
-    void clearUnusedData(const fs::path &kleeDir) {
-        fs::remove(kleeDir / "assembly.ll");
-        fs::remove(kleeDir / "run.istats");
-    }
-
-    void writeKleeStats(const fs::path &kleeOut) {
-        ShellExecTask::ExecutionParameters kleeStatsParams("klee-stats",
-                                                           { "--utbot-config", kleeOut.string() });
-        auto [out, status, _] = ShellExecTask::runShellCommandTask(kleeStatsParams);
-        if (status != 0) {
-            LOG_S(ERROR) << "klee-stats call failed:";
-            LOG_S(ERROR) << out;
-        } else {
-            LOG_S(DEBUG) << "klee-stats report:";
-            LOG_S(DEBUG) << '\n' << out;
-        }
-    }
-}
-
 static void processMethod(MethodKtests &ktestChunk,
                           tests::Tests &tests,
                           const fs::path &kleeOut,
                           const tests::TestMethod &method) {
-    if (fs::exists(kleeOut)) {
-        clearUnusedData(kleeOut);
-        bool hasTimeout = false;
-        bool hasError = false;
-        for (auto const &entry : fs::directory_iterator(kleeOut)) {
-            auto const &path = entry.path();
-            if (Paths::isKtestJson(path)) {
-                if (Paths::hasEarly(path)) {
-                    hasTimeout = true;
-                } else if (Paths::hasInternalError(path)) {
-                    hasError = true;
-                } else {
-                    std::unique_ptr<TestCase, decltype(&TestCase_free)> ktestData{
-                        TC_fromFile(path.c_str()), TestCase_free
-                    };
-                    if (ktestData == nullptr) {
-                        LOG_S(WARNING) << "Unable to open .ktestjson file";
-                        continue;
-                    }
+    if (!fs::exists(kleeOut)) {
+        return;
+    }
 
-                    const std::vector<fs::path> &errorDescriptorFiles =
+    clearUnusedData(kleeOut);
+    bool hasTimeout = false;
+    bool hasError = false;
+    for (auto const &entry : fs::directory_iterator(kleeOut)) {
+        auto const &path = entry.path();
+        if (Paths::isKtestJson(path)) {
+            if (Paths::hasEarly(path)) {
+                hasTimeout = true;
+            } else if (Paths::hasInternalError(path)) {
+                hasError = true;
+            } else {
+                std::unique_ptr<TestCase, decltype(&TestCase_free)> ktestData{
+                    TC_fromFile(path.c_str()), TestCase_free
+                };
+                if (ktestData == nullptr) {
+                    LOG_S(WARNING) << "Unable to open .ktestjson file";
+                    continue;
+                }
+                const std::vector<fs::path> &errorDescriptorFiles =
                         Paths::getErrorDescriptors(path);
 
-                    UTBotKTest::Status status = errorDescriptorFiles.empty()
-                                                    ? UTBotKTest::Status::SUCCESS
-                                                    : UTBotKTest::Status::FAILED;
-                    std::vector<ConcretizedObject> kTestObjects(
-                        ktestData->objects, ktestData->objects + ktestData->n_objects);
+                UTBotKTest::Status status = errorDescriptorFiles.empty()
+                                            ? UTBotKTest::Status::SUCCESS
+                                            : UTBotKTest::Status::FAILED;
+                std::vector<ConcretizedObject> kTestObjects(
+                    ktestData->objects, ktestData->objects + ktestData->n_objects);
 
                     std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
                         kTestObjects, [](const ConcretizedObject &kTestObject) {
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    std::vector<std::string> errorDescriptors = CollectionUtils::transform(
+                std::vector<std::string> errorDescriptors = CollectionUtils::transform(
                         errorDescriptorFiles, [](const fs::path &errorFile) {
                             std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
                             std::string content((std::istreambuf_iterator<char>(fileWithError)),
@@ -181,7 +199,7 @@ static void processMethod(MethodKtests &ktestChunk,
                         });
 
 
-                    ktestChunk[method].emplace_back(objects, status, errorDescriptors);
+                ktestChunk[method].emplace_back(objects, status, errorDescriptors);
                 }
             }
         }
@@ -200,29 +218,28 @@ static void processMethod(MethodKtests &ktestChunk,
             tests.commentBlocks.emplace_back(std::move(message));
         }
 
-        writeKleeStats(kleeOut);
-
         if (!CollectionUtils::containsKey(ktestChunk, method) || ktestChunk.at(method).empty()) {
             tests.commentBlocks.emplace_back(StringUtils::stringFormat(
                 "Tests for %s were not generated. Maybe the function is too complex.",
                 method.methodName));
         }
-    }
 }
 
-void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
-                                                const TestMethod &testMethod,
-                                                Tests &tests) {
-    if (!tests.isFilePresentedInArtifact) {
+void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                                tests::Tests &tests,
+                                                std::vector<tests::MethodKtests> &ktests) {
+    if (!tests.isFilePresentedInArtifact || testMethods.empty()) {
         return;
     }
-    if (testMethod.sourceFilePath != tests.sourceFilePath) {
-        std::string message = StringUtils::stringFormat(
-                "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n",
-                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
-        LOG_S(WARNING) << message;
-    }
+
+    for (const auto &testMethod : testMethods) {
+        if (testMethod.sourceFilePath != tests.sourceFilePath) {
+            std::string message = StringUtils::stringFormat(
+                    "While generating tests for source file: %s tried to generate tests for method %s "
+                    "from another source file: %s. This can cause invalid generation.\n",
+                    tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+            LOG_S(WARNING) << message;
+        }
 
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
@@ -261,18 +278,21 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
         LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
         MEASURE_FUNCTION_EXECUTION_TIME
 
-        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
-        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
-        ExecUtils::throwIfCancelled();
+            RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
+            ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+            ExecUtils::throwIfCancelled();
 
-        processMethod(ktestChunk, tests, kleeOut, testMethod);
+            MethodKtests ktestChunk;
+            processMethod(ktestChunk, tests, kleeOut, testMethod);
+            ktests.push_back(ktestChunk);
+        }
     }
 }
 
 void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
                                              tests::Tests &tests,
                                              std::vector<tests::MethodKtests> &ktests) {
-    if (!tests.isFilePresentedInArtifact) {
+    if (!tests.isFilePresentedInArtifact || testMethods.empty()) {
         return;
     }
 

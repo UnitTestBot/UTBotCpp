@@ -29,10 +29,12 @@
 #include "stubs/StubsCollector.h"
 #include "utils/LogUtils.h"
 #include "utils/ServerUtils.h"
+#include "utils/stats/TestsGenerationStats.h"
 #include "utils/TypeUtils.h"
 
 #include <thread>
 #include <fstream>
+#include <utils/stats/TestsExecutionStats.h>
 
 using TypeUtils::isSameType;
 
@@ -190,6 +192,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                                            TestsWriter *testsWriter) {
     try {
         MEASURE_FUNCTION_EXECUTION_TIME
+        auto preprocessingStartTime = std::chrono::steady_clock::now();
         types::TypesHandler::SizeContext sizeContext;
 
         static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
@@ -267,11 +270,18 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         KleeRunner kleeRunner{ testGen.projectContext, testGen.settingsContext,
                                testGen.serverBuildDir };
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
-        auto start_time = std::chrono::steady_clock::now();
+        auto generationStartTime = std::chrono::steady_clock::now();
+        StatsUtils::TestsGenerationStatsFileMap generationStatsMap(testGen.projectContext,
+                std::chrono::duration_cast<std::chrono::milliseconds>(generationStartTime - preprocessingStartTime));
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode);
-        auto finish_time = std::chrono::steady_clock::now();
-        LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_time).count() << " ms\n";
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode, generationStatsMap);
+        LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>
+                        (generationStatsMap.getTotal().kleeStats.getKleeTime()).count() << " ms\n";
+        printer::CSVPrinter printer = generationStatsMap.toCSV();
+        FileSystemUtils::writeToFile(Paths::getGenerationStatsCSVPath(testGen.projectContext),
+                                     printer.getStream().str());
+        LOG_S(INFO) << StringUtils::stringFormat("See generation stats here: %s",
+                                                 Paths::getGenerationStatsCSVPath(testGen.projectContext));
     } catch (const ExecutionProcessException &e) {
         std::string command = e.what();
         return Status(StatusCode::FAILED_PRECONDITION,

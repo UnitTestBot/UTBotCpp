@@ -226,7 +226,7 @@ namespace Commands {
         fs::path projectPath;
         std::string testDir = "tests";
         std::string buildDir = "build";
-        std::string resultsDir = "results";
+        std::string resultsDir = "utbot-results";
     };
 
     struct SettingsContextOptionGroup {

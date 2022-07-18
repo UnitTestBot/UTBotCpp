@@ -6,10 +6,12 @@
 #include "SettingsContext.h"
 #include "Tests.h"
 #include "streams/tests/TestsWriter.h"
+#include "utils/stats/KleeStats.h"
 
 #include <grpcpp/grpcpp.h>
 
 #include <vector>
+#include <utils/stats/TestsGenerationStats.h>
 
 class KleeRunner {
 public:
@@ -27,24 +29,21 @@ public:
      * generated unit tests for each batch.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    void runKlee(const std::vector<tests::TestMethod> &testMethods,
-                 tests::TestsMap &testsMap,
-                 const std::shared_ptr<KleeGenerator>& generator,
+    void runKlee(const std::vector<tests::TestMethod> &testMethods, tests::TestsMap &testsMap,
+                 const std::shared_ptr<KleeGenerator> &generator,
                  const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-                 const std::shared_ptr<LineInfo> &lineInfo,
-                 TestsWriter *testsWriter,
-                 bool isBatched,
-                 bool interactiveMode);
+                 const std::shared_ptr<LineInfo> &lineInfo, TestsWriter *testsWriter, bool isBatched,
+                 bool interactiveMode,
+                 StatsUtils::TestsGenerationStatsFileMap &generationStats);
 
 private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
     fs::path projectTmpPath;
 
-
-    void processBatchWithoutInteractive(tests::MethodKtests &ktestChunk,
-                                        const tests::TestMethod &testMethod,
-                                        tests::Tests &tests);
+    void processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                        tests::Tests &tests,
+                                        std::vector<tests::MethodKtests> &ktests);
 
     void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
                                      tests::Tests &tests,
