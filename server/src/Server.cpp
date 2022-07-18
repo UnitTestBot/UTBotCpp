@@ -43,7 +43,6 @@ void Server::run(uint16_t customPort) {
     LOG_S(INFO) << "UnitTestBot Server, build " << UTBOT_BUILD_VERSION;
     LOG_S(INFO) << "Logs directory: " << Paths::logPath;
     LOG_S(INFO) << "Latest log path: " << Paths::getUtbotLogAllFilePath();
-    LOG_S(INFO) << "Tmp directory path: " << Paths::tmpPath;
     LOG_S(INFO) << "Executable path: " << fs::current_path();
 
     host = "0.0.0.0";
@@ -567,8 +566,8 @@ Status Server::TestsGenServiceImpl::PrintModulesContent(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
-    fs::path serverBuildDir = Paths::getTmpDir(request->projectname());
     utbot::ProjectContext projectContext{ *request };
+    fs::path serverBuildDir = Paths::getUtbotBuildDir(projectContext);
     std::shared_ptr<BuildDatabase> buildDatabase = BuildDatabase::create(projectContext);
     StubSourcesFinder(buildDatabase).printAllModules();
     return Status::OK;
@@ -607,9 +606,9 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
-    const auto &projectContext = request->projectcontext();
+    utbot::ProjectContext utbotProjectContext{ request->projectcontext() };
     fs::path buildDirPath =
-        fs::path(projectContext.projectpath()) / projectContext.builddirrelativepath();
+        fs::path(utbotProjectContext.projectPath) / utbotProjectContext.buildDirRelativePath;
     switch (request->configmode()) {
     case ConfigMode::CHECK:
         return UserProjectConfiguration::CheckProjectConfiguration(buildDirPath, writer);
@@ -618,13 +617,13 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
     case ConfigMode::GENERATE_JSON_FILES: {
         std::vector<std::string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
         return UserProjectConfiguration::RunProjectConfigurationCommands(
-                buildDirPath, projectContext.projectname(), cmakeOptions, writer);
+                buildDirPath, utbotProjectContext, cmakeOptions, writer);
     }
     case ConfigMode::ALL: {
         std::vector<std::string> cmakeOptions(request->cmakeoptions().begin(), request->cmakeoptions().end());
         return UserProjectConfiguration::RunProjectReConfigurationCommands(
-                buildDirPath, fs::path(projectContext.projectpath()),
-                projectContext.projectname(), cmakeOptions, writer);
+                buildDirPath, fs::path(utbotProjectContext.projectPath),
+                utbotProjectContext, cmakeOptions, writer);
     }
     default:
         return {StatusCode::CANCELLED, "Invalid request type."};

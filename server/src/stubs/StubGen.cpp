@@ -25,7 +25,7 @@ CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
 CollectionUtils::FileSet
 StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescription> &signatures) {
     fs::path ccJsonDirPath =
-        Paths::getTmpDir(testGen.projectContext.projectName) / "stubs_build_files";
+            Paths::getUtbotBuildDir(testGen.projectContext) / "stubs_build_files";
     auto stubFiles =
         Paths::findFilesInFolder(Paths::getStubsDirPath(testGen.projectContext));
     stubFiles = Synchronizer::dropHeaders(stubFiles);

@@ -112,7 +112,7 @@ then
 
   #Server-specific parameters
   UTBOT_EXECUTABLE_PATH=$UTBOT_BINARIES_FOLDER/$UTBOT_PROCESS_PATTERN
-  UTBOT_SERVER_OPTIONS="$UTBOT_MODE --port $UTBOT_PORT --log=$UTBOT_LOGS_FOLDER --tmp=$UTBOT_ALL"
+  UTBOT_SERVER_OPTIONS="$UTBOT_MODE --port $UTBOT_PORT --log=$UTBOT_LOGS_FOLDER"
   UTBOT_STDOUT_LOG_FILE=$UTBOT_LOGS_FOLDER/logs/"latest.log"
 
   log "Starting a new server process; logs are written into [$UTBOT_LOGS_FOLDER] folder"

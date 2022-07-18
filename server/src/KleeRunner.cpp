@@ -1,6 +1,7 @@
 #include "KleeRunner.h"
 
 #include "Paths.h"
+#include "TimeExecStatistics.h"
 #include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
 #include "tasks/RunKleeTask.h"
@@ -8,10 +9,10 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
-#include "TimeExecStatistics.h"
 
 #include "loguru.h"
 
+#include <fstream>
 #include <utility>
 
 using namespace tests;
@@ -92,13 +93,6 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                                         std::move(writeFunctor));
 }
 
-fs::path KleeRunner::getKleeMethodOutFile(const TestMethod &method) {
-    fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
-    fs::path relative =
-        Paths::removeExtension(fs::relative(method.sourceFilePath, projectContext.projectPath));
-    return kleeOutDir / relative / ("klee_out_" + method.methodName);
-}
-
 namespace {
     void clearUnusedData(const fs::path &kleeDir) {
         fs::remove(kleeDir / "assembly.ll");
@@ -119,56 +113,10 @@ namespace {
     }
 }
 
-void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
-                                                const TestMethod &testMethod,
-                                                Tests &tests) {
-    if (!tests.isFilePresentedInArtifact) {
-        return;
-    }
-    if (testMethod.sourceFilePath != tests.sourceFilePath) {
-        std::string message = StringUtils::stringFormat(
-                "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n", 
-                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
-        LOG_S(WARNING) << message;
-    }
-
-    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
-    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = getKleeMethodOutFile(testMethod);
-    fs::create_directories(kleeOut.parent_path());
-    std::string outputDir = "--output-dir=" + kleeOut.string();
-    std::vector<std::string> argvData = { "klee",
-                                          entryPointFlag,
-                                          "--libc=klee",
-                                          "--posix-runtime",
-                                          "--fp-runtime",
-                                          "--only-output-states-covering-new",
-                                          "--allocate-determ",
-                                          "--external-calls=all",
-                                          "--timer-interval=1000ms",
-                                          "--bcov-check-interval=6s",
-                                          "-istats-write-interval=5s",
-                                          "--disable-verify",
-                                          "--check-div-zero=false",
-                                          "--check-overshift=false",
-                                          "--skip-not-lazy-and-symbolic-pointers",
-                                          outputDir };
-    if (settingsContext.useDeterministicSearcher) {
-        argvData.emplace_back("--search=dfs");
-    }
-    argvData.push_back(testMethod.bitcodeFilePath);
-    argvData.emplace_back("--sym-stdin");
-    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
-    std::vector<char *> cargv, cenvp;
-    std::vector<std::string> tmp;
-    ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
-    LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
-    MEASURE_FUNCTION_EXECUTION_TIME
-    RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
-    ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
-    ExecUtils::throwIfCancelled();
-
+static void processMethod(MethodKtests &ktestChunk,
+                          tests::Tests &tests,
+                          const fs::path &kleeOut,
+                          const tests::TestMethod &method) {
     if (fs::exists(kleeOut)) {
         clearUnusedData(kleeOut);
         bool hasTimeout = false;
@@ -198,7 +146,7 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[testMethod].emplace_back(objects, status);
+                    ktestChunk[method].emplace_back(objects, status);
                 }
             }
         }
@@ -206,24 +154,83 @@ void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
             std::string message = StringUtils::stringFormat(
                 "Some tests for function '%s' were skipped, as execution of function is "
                 "out of timeout.",
-                testMethod.methodName);
+                method.methodName);
             tests.commentBlocks.emplace_back(std::move(message));
         }
         if (hasError) {
             std::string message = StringUtils::stringFormat(
                 "Some tests for function '%s' were skipped, as execution of function leads "
                 "KLEE to the internal error. See console log for more details.",
-                testMethod.methodName);
+                method.methodName);
             tests.commentBlocks.emplace_back(std::move(message));
         }
+
         writeKleeStats(kleeOut);
+
+        if (!CollectionUtils::containsKey(ktestChunk, method) || ktestChunk.at(method).empty()) {
+            tests.commentBlocks.emplace_back(StringUtils::stringFormat(
+                "Tests for %s were not generated. Maybe the function is too complex.",
+                method.methodName));
+        }
+    }
+}
+
+void KleeRunner::processBatchWithoutInteractive(MethodKtests &ktestChunk,
+                                                const TestMethod &testMethod,
+                                                Tests &tests) {
+    if (!tests.isFilePresentedInArtifact) {
+        return;
+    }
+    if (testMethod.sourceFilePath != tests.sourceFilePath) {
+        std::string message = StringUtils::stringFormat(
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n",
+                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+        LOG_S(WARNING) << message;
     }
 
-    if (!CollectionUtils::containsKey(ktestChunk, testMethod) ||
-        ktestChunk.at(testMethod).empty()) {
-        tests.commentBlocks.emplace_back(StringUtils::stringFormat(
-            "Tests for %s were not generated. Maybe the function is too complex.",
-            testMethod.methodName));
+    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
+    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
+    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, testMethod.sourceFilePath,
+                                                   testMethod.methodName);
+    fs::create_directories(kleeOut.parent_path());
+    std::string outputDir = "--output-dir=" + kleeOut.string();
+    std::vector<std::string> argvData = { "klee",
+                                          entryPointFlag,
+                                          "--libc=klee",
+                                          "--utbot",
+                                          "--posix-runtime",
+                                          "--fp-runtime",
+                                          "--only-output-states-covering-new",
+                                          "--allocate-determ",
+                                          "--external-calls=all",
+                                          "--timer-interval=1000ms",
+                                          "--bcov-check-interval=6s",
+                                          "-istats-write-interval=5s",
+                                          "--disable-verify",
+                                          "--check-div-zero=false",
+                                          "--check-overshift=false",
+                                          "--skip-not-lazy-and-symbolic-pointers",
+                                          outputDir };
+    if (settingsContext.useDeterministicSearcher) {
+        argvData.emplace_back("--search=dfs");
+    }
+    argvData.push_back(testMethod.bitcodeFilePath);
+    argvData.emplace_back("--sym-stdin");
+    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
+
+    {
+        std::vector<char *> cargv, cenvp;
+        std::vector<std::string> tmp;
+        ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
+        LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+        MEASURE_FUNCTION_EXECUTION_TIME
+
+        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
+        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
+        ExecUtils::throwIfCancelled();
+
+        processMethod(ktestChunk, tests, kleeOut, testMethod);
     }
 }
 
@@ -238,7 +245,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         if (method.sourceFilePath != tests.sourceFilePath) {
             std::string message = StringUtils::stringFormat(
                 "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n", 
+                "from another source file: %s. This can cause invalid generation.\n",
                 tests.sourceFilePath, method.methodName, method.sourceFilePath);
             LOG_S(WARNING) << message;
         }
@@ -247,7 +254,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     TestMethod testMethod = testMethods[0];
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
     std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = getKleeMethodOutFile(testMethod);
+    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, tests.sourceFilePath);
     fs::create_directories(kleeOut.parent_path());
 
     fs::path entrypoints = kleeOut.parent_path() / "entrypoints.txt";
@@ -262,6 +269,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     std::vector<std::string> argvData = { "klee",
                                           entryPointFlag,
                                           "--libc=klee",
+                                          "--utbot",
                                           "--posix-runtime",
                                           "--fp-runtime",
                                           "--only-output-states-covering-new",
@@ -287,86 +295,31 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
     argvData.push_back(testMethod.bitcodeFilePath);
     argvData.emplace_back("--sym-stdin");
     argvData.emplace_back(std::to_string(types::Type::symStdinSize));
-    std::vector<char *> cargv, cenvp;
-    std::vector<std::string> tmp;
-    ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
 
-    LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
-    MEASURE_FUNCTION_EXECUTION_TIME
-    if (settingsContext.timeoutPerFunction.has_value()) {
-        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction.value() * testMethods.size());
+    {
+        std::vector<char *> cargv, cenvp;
+        std::vector<std::string> tmp;
+        ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
+
+        LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+        MEASURE_FUNCTION_EXECUTION_TIME
+
+        RunKleeTask task(cargv.size(),
+                         cargv.data(),
+                         settingsContext.timeoutPerFunction.has_value()
+                             ? settingsContext.timeoutPerFunction.value() * testMethods.size()
+                             : settingsContext.timeoutPerFunction);
         ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
-    } else {
-        RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
-        ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
-    }
 
-    ExecUtils::throwIfCancelled();
+        ExecUtils::throwIfCancelled();
 
-    for (const auto &method : testMethods) {
-        std::string kleeMethodName = KleeUtils::entryPointFunction(tests, method.methodName, true);
-        fs::path newKleeOut = kleeOut / kleeMethodName;
-        MethodKtests ktestChunk;
-        if (fs::exists(newKleeOut)) {
-            clearUnusedData(newKleeOut);
-            bool hasTimeout = false;
-            bool hasError = false;
-            for (auto const &entry : fs::directory_iterator(newKleeOut)) {
-                auto const &path = entry.path();
-                if (Paths::isKtestJson(path)) {
-                    if (Paths::hasEarly(path)) {
-                        hasTimeout = true;
-                    } else if (Paths::hasInternalError(path)) {
-                        hasError = true;
-                    } else {
-                        std::unique_ptr<TestCase, decltype(&TestCase_free)> ktestData{
-                            TC_fromFile(path.c_str()), TestCase_free
-                        };
-                        if (ktestData == nullptr) {
-                            LOG_S(WARNING) << "Unable to open .ktestjson file";
-                            continue;
-                        }
-                        UTBotKTest::Status status = Paths::hasError(path)
-                                                    ? UTBotKTest::Status::FAILED
-                                                    : UTBotKTest::Status::SUCCESS;
-                        std::vector<ConcretizedObject> kTestObjects(
-                            ktestData->objects, ktestData->objects + ktestData->n_objects);
-
-                        std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
-                            kTestObjects, [](const ConcretizedObject &kTestObject) {
-                              return UTBotKTestObject{ kTestObject };
-                            });
-
-                        ktestChunk[method].emplace_back(objects, status);
-                    }
-                }
-            }
-            if (hasTimeout) {
-                std::string message = StringUtils::stringFormat(
-                    "Some tests for function '%s' were skipped, as execution of function is "
-                    "out of timeout.",
-                    method.methodName);
-                tests.commentBlocks.emplace_back(std::move(message));
-            }
-            if (hasError) {
-                std::string message = StringUtils::stringFormat(
-                    "Some tests for function '%s' were skipped, as execution of function leads "
-                    "KLEE to the internal error. See console log for more details.",
-                    method.methodName);
-                tests.commentBlocks.emplace_back(std::move(message));
-            }
+        for (const auto &method : testMethods) {
+            std::string kleeMethodName =
+                KleeUtils::entryPointFunction(tests, method.methodName, true);
+            fs::path newKleeOut = kleeOut / kleeMethodName;
+            MethodKtests ktestChunk;
+            processMethod(ktestChunk, tests, newKleeOut, method);
+            ktests.push_back(ktestChunk);
         }
-
-        if (fs::exists(kleeOut)) {
-            writeKleeStats(kleeOut);
-        }
-
-        if (!CollectionUtils::containsKey(ktestChunk, method) ||
-            ktestChunk.at(method).empty()) {
-            tests.commentBlocks.emplace_back(StringUtils::stringFormat(
-                "Tests for %s were not generated. Maybe the function is too complex.",
-                method.methodName));
-        }
-        ktests.push_back(ktestChunk);
     }
 }

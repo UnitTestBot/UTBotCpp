@@ -2,7 +2,8 @@
 #define UNITTESTBOT_NATIVEMAKEFILEPRINTER_H
 
 #include "BuildResult.h"
-#include "printers/DefaultMakefilePrinter.h"
+#include "environment/EnvironmentPaths.h"
+#include "printers/RelativeMakefilePrinter.h"
 #include "testgens/BaseTestGen.h"
 
 #include "utils/path/FileSystemPath.h"
@@ -11,7 +12,8 @@
 namespace printer {
     static const std::string FORCE = ".FORCE";
 
-    class NativeMakefilePrinter : public DefaultMakefilePrinter {
+    class NativeMakefilePrinter : public RelativeMakefilePrinter {
+        friend class TestMakefilesPrinter;
     private:
         const utbot::ProjectContext projectContext;
         std::shared_ptr<BuildDatabase> buildDatabase;
@@ -54,7 +56,7 @@ namespace printer {
                                   const std::string &suffixForParentOfStubs);
 
         void addCompileTarget(const fs::path &sourcePath,
-                              const fs::path &output,
+                              const fs::path &target,
                               const BuildDatabase::ObjectFileInfo &compilationUnitInfo);
 
         fs::path getTestExecutablePath(const fs::path &sourcePath) const;
@@ -69,13 +71,11 @@ namespace printer {
                               std::shared_ptr<BuildDatabase> buildDatabase,
                               fs::path const &rootPath,
                               fs::path primaryCompiler,
-                              CollectionUtils::FileSet const *stubSources);
+                              CollectionUtils::FileSet const *stubSources,
+                              std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable);
 
         NativeMakefilePrinter(const NativeMakefilePrinter &baseMakefilePrinter,
                               const fs::path &sourcePath);
-
-        NativeMakefilePrinter(const BaseTestGen &testGen,
-                              CollectionUtils::FileSet const *stubSources);
 
         void init();
 
@@ -86,6 +86,8 @@ namespace printer {
                                       bool exeToLib = true);
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
+
+        void tryChangeToRelativePath(std::string& argument) const;
     };
 }
 

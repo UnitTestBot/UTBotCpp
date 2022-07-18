@@ -3,6 +3,8 @@
 
 #include <utility>
 #include <utils/MakefileUtils.h>
+#include "utils/StringUtils.h"
+#include "RelativeMakefilePrinter.h"
 
 namespace printer {
     fs::path getMakefilePathForShared(fs::path path) {
@@ -30,9 +32,25 @@ namespace printer {
 
     TestMakefilesPrinter::TestMakefilesPrinter(const BaseTestGen &testGen,
                                                CollectionUtils::FileSet const *stubSources) :
-            projectContext(testGen.projectContext),
-            sharedMakefilePrinter(testGen, stubSources),
-            objMakefilePrinter(testGen, stubSources) {
+            TestMakefilesPrinter(
+                    testGen.projectContext,
+                    testGen.buildDatabase,
+                    testGen.getTargetPath(),
+                    CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
+                            testGen.compilationDatabase->getBuildCompilerPath())),
+                    stubSources) {
+    }
+
+    TestMakefilesPrinter::TestMakefilesPrinter(
+            utbot::ProjectContext projectContext,
+            std::shared_ptr<BuildDatabase> buildDatabase,
+            fs::path const &rootPath,
+            fs::path primaryCompiler,
+            CollectionUtils::FileSet const *stubSources) :
+            RelativeMakefilePrinter(Paths::getUtbotBuildDir(projectContext), Paths::getRelativeUtbotBuildDir(projectContext), projectContext.projectPath),
+        projectContext(projectContext),
+        sharedMakefilePrinter(projectContext, buildDatabase, rootPath, primaryCompiler, stubSources, pathToShellVariable),
+        objMakefilePrinter(projectContext, buildDatabase, rootPath, primaryCompiler, stubSources, pathToShellVariable) {
     }
 
     void
@@ -46,52 +64,55 @@ namespace printer {
         objMakefilePrinter.close();
     }
 
-    void TestMakefilesPrinter::init() {
-        sharedMakefilePrinter.init();
-        objMakefilePrinter.init();
-    }
-
     void TestMakefilesPrinter::addStubs(const CollectionUtils::FileSet &stubsSet) {
         sharedMakefilePrinter.addStubs(stubsSet);
         objMakefilePrinter.addStubs(stubsSet);
     }
 
-    TestMakefilesContent TestMakefilesPrinter::GetMakefiles(const fs::path &path) const {
+    TestMakefilesContent TestMakefilesPrinter::GetMakefiles(const fs::path &path) {
         printer::DefaultMakefilePrinter generalMakefilePrinter;
         fs::path generalMakefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, path);
         fs::path sharedMakefilePath = getMakefilePathForShared(generalMakefilePath);
         fs::path objMakefilePath = getMakefilePathForObject(generalMakefilePath);
 
+        generalMakefilePrinter.ss << getProjectStructureRelativeTo(path);
+        generalMakefilePrinter.ss << ss.str();
+
         generalMakefilePrinter.declareTarget(FORCE, {}, {});
 
+        const std::string sharedMakefilePathRelative =
+                sharedMakefilePrinter.getRelativePath(sharedMakefilePath);
+        const std::string objMakefilePathRelative =
+                objMakefilePrinter.getRelativePath(objMakefilePath);
         generalMakefilePrinter.declareTarget("bin", {FORCE}, {
                 StringUtils::joinWith(
-                        MakefileUtils::getMakeCommand(sharedMakefilePath.string(), "bin", true),
+                        MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "bin", true),
                         " ")
         });
         generalMakefilePrinter.declareTarget("build", {FORCE}, {
                 StringUtils::stringFormat("%s || %s",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePath.string(), "build", true), " "),
+                                                  sharedMakefilePathRelative, "build", true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePath.string(), "build", true), " "))
+                                                  objMakefilePathRelative, "build", true), " "))
         });
+
         generalMakefilePrinter.declareTarget("run", {FORCE}, {
                 StringUtils::stringFormat("%s && { %s; exit $$?; } || { %s && { %s; exit $$?; } }",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePath.string(), "build", true), " "),
+                                                  sharedMakefilePathRelative, "build", true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePath.string(), "run", true), " "),
+                                                  sharedMakefilePathRelative, "run", true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePath.string(), "build", true), " "),
+                                                  objMakefilePathRelative, "build", true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePath.string(), "run", true), " "))
+                                                  objMakefilePathRelative, "run", true), " "))
         });
         generalMakefilePrinter.declareTarget("clean", {FORCE}, {
                 StringUtils::joinWith(
-                        MakefileUtils::getMakeCommand(sharedMakefilePath.string(), "clean", true), " "),
+                        MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "clean", true), " "),
                 StringUtils::joinWith(
-                        MakefileUtils::getMakeCommand(objMakefilePath.string(), "clean", true), " ")
+                        MakefileUtils::getMakeCommand(objMakefilePathRelative, "clean", true), " ")
         });
 
         return {generalMakefilePath,

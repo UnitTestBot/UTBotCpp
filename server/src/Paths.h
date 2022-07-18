@@ -13,7 +13,13 @@
 #include <unordered_set>
 
 namespace Paths {
-    extern fs::path logPath, tmpPath;
+    extern fs::path logPath;
+    const std::string MAKEFILE_EXTENSION = ".mk";
+    const std::string TEST_SUFFIX = "_test";
+    const std::string STUB_SUFFIX = "_stub";
+    const std::string DOT_SEP = "_dot_";
+    const std::string MAKE_WRAPPER_SUFFIX = "_wrapper";
+    const char dot = '.';
 
     //region util
     static inline bool isValidDir(const std::string &dir) {
@@ -104,11 +110,41 @@ namespace Paths {
         return fs::path(path).replace_filename(newName);
     }
 
-    CollectionUtils::FileSet findFilesInFolder(const fs::path& folder);
+    CollectionUtils::FileSet findFilesInFolder(const fs::path &folder);
 
     std::vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths);
 
     std::string mangle(const fs::path& path);
+
+    static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
+                                                             const std::string &newExt) {
+        std::string extensionAsSuffix = path.extension().string();
+        if (!extensionAsSuffix.empty()) {
+            std::string fnWithNewExt =
+                    path.stem().string() + DOT_SEP + extensionAsSuffix.substr(1) + newExt;
+            return path.parent_path() / fnWithNewExt;
+        }
+        return replaceExtension(path, newExt);
+    }
+
+    static inline fs::path restoreExtensionFromSuffix(const fs::path &path,
+                                                      const std::string &defaultExt) {
+        std::string fnWithoutExt = path.stem();
+        fs::path fnWithExt;
+        std::size_t posEncodedExtension = fnWithoutExt.rfind(DOT_SEP);
+        if (posEncodedExtension == std::string::npos) {
+            // In `sample_class_test.cpp` the `class` is not an extension
+            fnWithExt = fnWithoutExt + defaultExt;
+        }
+        else {
+            // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
+            fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
+                        + dot
+                        + fnWithoutExt.substr(posEncodedExtension + DOT_SEP.length());
+        }
+        return path.parent_path() / fs::path(fnWithExt);
+    }
+
     //endregion
 
     //region includes
@@ -132,10 +168,6 @@ namespace Paths {
         return getBaseLogDir() / client;
     }
 
-    static inline fs::path getClientTmpDir(const std::string &client) {
-        return tmpPath / "tmp" / client;
-    }
-
     static inline fs::path getLogDir(const std::string &projectName = "") {
         if (projectName.empty()) {
             return getBaseLogDir() / RequestEnvironment::getClientId();
@@ -156,23 +188,20 @@ namespace Paths {
 
     //endregion
 
-    static inline fs::path getTmpDir(const std::string &projectName) {
-        if (projectName.empty()) {
-            return tmpPath / "tmp" / RequestEnvironment::getClientId();
-        }
-        return tmpPath / "tmp" / RequestEnvironment::getClientId() / projectName;
-    }
+    fs::path getUtbotBuildDir(const utbot::ProjectContext &projectContext);
 
-    fs::path getBuildDir(const utbot::ProjectContext &projectContext);
+    static inline fs::path getRelativeUtbotBuildDir(const utbot::ProjectContext &projectContext) {
+        return fs::relative(getUtbotBuildDir(projectContext), projectContext.projectPath);
+    }
 
     //region json
     static inline fs::path getClientsJsonPath() {
-        return tmpPath / "tmp" / "clients.json";
+        return getBaseLogDir() / "clients.json";
     }
 
     fs::path getCCJsonFileFullPath(const std::string &filename, const fs::path &directory);
 
-    bool isPath(const std::string& possibleFilePath) noexcept;
+    bool isPath(const std::string &possibleFilePath) noexcept;
     //endregion
 
     //region klee
@@ -185,18 +214,18 @@ namespace Paths {
     }
 
     static inline fs::path getKleeTmpLogFilePath() {
-        return getTmpDir("") / "klee_tmp_log.txt";
+        return getBaseLogDir() / "klee_tmp_log.txt";
     }
 
     static inline fs::path getKleeOutDir(const fs::path &projectTmpPath) {
         return projectTmpPath / "klee_out";
     }
 
-    static inline bool isKtest(fs::path const& path) {
+    static inline bool isKtest(fs::path const &path) {
         return path.extension() == ".ktest";
     }
 
-    static inline bool isKtestJson(fs::path const& path) {
+    static inline bool isKtestJson(fs::path const &path) {
         return path.extension() == ".ktestjson";
     }
 
@@ -209,25 +238,32 @@ namespace Paths {
 
     bool hasError(fs::path const &path);
 
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath, const std::string &methodName = "");
+
     //endregion
 
     //region extensions
     extern const std::vector<std::string> CFileHeaderExtensions;
+
     static inline bool isHFile(const fs::path &path) {
         return CollectionUtils::contains(CFileHeaderExtensions, path.extension());
     }
 
     extern const std::vector<std::string> CFileSourceExtensions;
+
     static inline bool isCFile(const fs::path &path) {
         return CollectionUtils::contains(CFileSourceExtensions, path.extension());
     }
 
     extern const std::vector<std::string> CXXFileExtensions;
+
     static inline bool isCXXFile(const fs::path &path) {
         return CollectionUtils::contains(CXXFileExtensions, path.extension());
     }
 
     extern const std::vector<std::string> HPPFileExtensions;
+
     static inline bool isHppFile(const fs::path &path) {
         return CollectionUtils::contains(HPPFileExtensions, path.extension());
     }
@@ -281,7 +317,9 @@ namespace Paths {
 
     fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 
-    fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path& sourceFilePath);
+    fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+
+    fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 
     fs::path getRecompiledDir(const utbot::ProjectContext &projectContext);
 
@@ -321,6 +359,13 @@ namespace Paths {
     //endregion
 
     //region transformations
+    extern const std::string MAKEFILE_EXTENSION;
+    extern const std::string TEST_SUFFIX;
+    extern const std::string STUB_SUFFIX;
+    extern const std::string DOT_SEP;
+    extern const std::string MAKE_WRAPPER_SUFFIX;
+    extern const char dot;
+
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 
     fs::path testPathToSourceName(const fs::path &testFilePath);
@@ -342,8 +387,13 @@ namespace Paths {
 
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
-    fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
-                                               const std::string &suffix = "");
+    std::optional<std::string> getRelativePathWithShellVariable(const fs::path &shellVariableForBase,
+                                                             const std::string &base,
+                                                             const std::string &source);
+
+    fs::path
+    getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
+                                      const std::string &suffix = "");
 
     fs::path getStubsMakefilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 
@@ -361,7 +411,7 @@ namespace Paths {
 
     //endregion
 
-    bool isHeadersEqual(const fs::path& srcPath, const fs::path& headerPath);
+    bool isHeadersEqual(const fs::path &srcPath, const fs::path &headerPath);
 }
 
 #endif //UNITTESTBOT_PATHS_H

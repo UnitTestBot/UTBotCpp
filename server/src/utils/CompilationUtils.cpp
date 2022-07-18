@@ -122,10 +122,10 @@ namespace CompilationUtils {
             const fs::path& projectPath,
             const std::string& buildDirRelativePath) {
         const std::string ccJsonFileName = "compile_commands.json";
-        fs::path newCCJsonDir = projectPath / buildDirRelativePath / MOUNTED_CC_JSON_DIR_NAME;
-        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, ccJsonFileName, newCCJsonDir);
-        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, "link_commands.json", newCCJsonDir);
-        return newCCJsonDir;
+        fs::path utbotBuildDir = projectPath / buildDirRelativePath / UTBOT_BUILD_DIR_NAME;
+        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, ccJsonFileName, utbotBuildDir);
+        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, "link_commands.json", utbotBuildDir);
+        return utbotBuildDir;
     }
 
     fs::path getClangCompileCommandsJsonPath(const fs::path &buildCommandsJsonPath) {

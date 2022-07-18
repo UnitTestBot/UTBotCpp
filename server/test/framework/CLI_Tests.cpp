@@ -62,7 +62,7 @@ namespace {
         void SetUp() override {
             clearTestDirectory();
             clearDirectory(suitePath / resultsDirectoryName);
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
         static void runCommandLine(const std::vector<std::string> &&args) {
@@ -79,7 +79,9 @@ namespace {
 
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(getTestDirectory());
             for (auto &&it : directoryIterator) {
-                if (!it.is_regular_file()) {
+                if (!it.is_regular_file() ||
+                it.path().extension() == Paths::MAKEFILE_EXTENSION ||
+                StringUtils::endsWith(Paths::removeExtension(it.path().filename()).string(), Paths::MAKE_WRAPPER_SUFFIX)) {
                     continue;
                 }
                 EXPECT_TRUE(Paths::isSubPathOf(getStubsDirectory(), it.path()) ||

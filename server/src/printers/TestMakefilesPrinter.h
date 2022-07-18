@@ -2,6 +2,7 @@
 #define UNITTESTBOT_TESTMAKEFILESPRINTER_H
 
 #include "NativeMakefilePrinter.h"
+#include "RelativeMakefilePrinter.h"
 
 namespace printer {
     class TestMakefilesContent {
@@ -18,7 +19,7 @@ namespace printer {
         void write() const;
     };
 
-    class TestMakefilesPrinter {
+    class TestMakefilesPrinter: public RelativeMakefilePrinter {
     private:
         utbot::ProjectContext projectContext;
         printer::NativeMakefilePrinter sharedMakefilePrinter;
@@ -28,7 +29,12 @@ namespace printer {
         TestMakefilesPrinter(const BaseTestGen &testGen,
                              CollectionUtils::FileSet const *stubSources);
 
-        void init();
+        TestMakefilesPrinter(
+                utbot::ProjectContext projectContext,
+                std::shared_ptr<BuildDatabase> buildDatabase,
+                fs::path const &rootPath,
+                fs::path primaryCompiler,
+                CollectionUtils::FileSet const *stubSources);
 
         void close();
 
@@ -36,7 +42,7 @@ namespace printer {
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
 
-        [[nodiscard]] TestMakefilesContent GetMakefiles(const fs::path &path) const;
+        [[nodiscard]] TestMakefilesContent GetMakefiles(const fs::path &path);
     };
 }
 

@@ -34,11 +34,11 @@ namespace Paths {
 
 
     fs::path getBear() {
-        return getUTBotRootDir() / "bear/bin/bear";
+        return getUTBotRootDir() / "bear" / "bin" / "bear";
     }
 
     fs::path getCMake() {
-        return getUTBotInstallDir() / "bin/cmake";
+        return getUTBotInstallDir() / "bin" / "cmake";
     }
 
     fs::path getMake() {
@@ -46,11 +46,11 @@ namespace Paths {
     }
 
     fs::path getUTBotClang() {
-        return getUTBotInstallDir() / "bin/clang";
+        return getUTBotInstallDir() / "bin" / "clang";
     }
 
     fs::path getUTBotClangPP() {
-        return getUTBotInstallDir() / "bin/clang++";
+        return getUTBotInstallDir() / "bin" / "clang++";
     }
 
     fs::path getGcc() {
@@ -62,7 +62,7 @@ namespace Paths {
     }
 
     fs::path getLLVMnm() {
-        return getUTBotInstallDir() / "bin/llvm-nm";
+        return getUTBotInstallDir() / "bin" / "llvm-nm";
     }
 
     fs::path getGtestLibPath() {
@@ -70,19 +70,19 @@ namespace Paths {
     }
 
     fs::path getAccessPrivateLibPath() {
-        return getUTBotRootDir() / "access_private/include";
+        return getUTBotRootDir() / "access_private" / "include";
     }
 
     fs::path getLLVMprofdata() {
-        return getUTBotInstallDir() / "bin/llvm-profdata";
+        return getUTBotInstallDir() / "bin" / "llvm-profdata";
     }
 
     fs::path getLLVMcov() {
-        return getUTBotInstallDir() / "bin/llvm-cov";
+        return getUTBotInstallDir() / "bin" / "llvm-cov";
     }
 
     fs::path getLLVMgold() {
-        return getUTBotInstallDir() / "lib/LLVMgold.so";
+        return getUTBotInstallDir() / "lib" / "LLVMgold.so";
     }
 
     fs::path getAr() {
@@ -95,5 +95,9 @@ namespace Paths {
 
     fs::path getLd() {
         return getUTBotDebsInstallDir() / "usr" / "bin" / "ld";
+    }
+
+    fs::path getAsanLibraryPath() {
+        return Paths::getUTBotDebsInstallDir() / "usr" / "lib" / "gcc" / "x86_64-linux-gnu" / "9" / "libasan.so";
     }
 }

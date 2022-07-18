@@ -19,7 +19,6 @@ namespace Paths {
     }
 
     fs::path logPath = getHomeDir();
-    fs::path tmpPath = getHomeDir();
 
     CollectionUtils::FileSet
     filterPathsByDirNames(const CollectionUtils::FileSet &paths,
@@ -154,6 +153,17 @@ namespace Paths {
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
     }
 
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath, const std::string &methodName) {
+        fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
+        fs::path relative = (fs::relative(addOrigExtensionAsSuffixAndAddNew(srcFilePath, ""),
+                                          projectContext.projectPath));
+        if (!methodName.empty()) {
+            return kleeOutDir / relative / ("klee_out_" + methodName);
+        }
+        return kleeOutDir / relative / ("klee_out_" + srcFilePath.filename().stem().string());
+    }
+
     //endregion
 
     //region extensions
@@ -193,19 +203,24 @@ namespace Paths {
         return getArtifactsRootDir(projectContext) / "tests";
     }
     fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
-        return getArtifactsRootDir(projectContext) / "make" / getRelativeDirPath(projectContext, sourceFilePath);
+        return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
     }
     fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
+        return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
+    }
+
+    fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
         return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath);
     }
+
     fs::path getRecompiledDir(const utbot::ProjectContext &projectContext) {
-        return getTmpDir(projectContext.projectName) / "recompiled";
+        return getUtbotBuildDir(projectContext) / "recompiled";
     }
     fs::path getTestObjectDir(const utbot::ProjectContext &projectContext) {
-        return getTmpDir(projectContext.projectName) / "test_objects";
+        return getUtbotBuildDir(projectContext) / "test_objects";
     }
     fs::path getCoverageDir(const utbot::ProjectContext &projectContext) {
-        return getTmpDir(projectContext.projectName) / "coverage";
+        return getUtbotBuildDir(projectContext) / "coverage";
     }
     fs::path getClangCoverageDir(const utbot::ProjectContext &projectContext) {
         return getCoverageDir(projectContext) / "lcov";
@@ -248,7 +263,7 @@ namespace Paths {
 
     fs::path getBuildFilePath(const utbot::ProjectContext &projectContext,
                               const fs::path &sourceFilePath) {
-        fs::path path = getTmpDir(projectContext.projectName) /
+        fs::path path = getUtbotBuildDir(projectContext) /
                         getRelativeDirPath(projectContext, sourceFilePath) /
                         sourceFilePath.filename();
         return addExtension(path, ".o");
@@ -256,14 +271,14 @@ namespace Paths {
 
     fs::path getStubBuildFilePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
-        fs::path path = getTmpDir(projectContext.projectName) /
+        fs::path path = getUtbotBuildDir(projectContext) /
                         getRelativeDirPath(projectContext, sourceFilePath) /
                         sourcePathToStubName(sourceFilePath);
         return addExtension(path, ".o");
     }
 
     fs::path getWrapperDirPath(const utbot::ProjectContext &projectContext) {
-        return getArtifactsRootDir(projectContext) / "wrapper";
+        return projectContext.testDirPath / "wrapper";
     }
 
     fs::path getWrapperFilePath(const utbot::ProjectContext &projectContext,
@@ -277,45 +292,11 @@ namespace Paths {
     //endregion
 
     //region transformation
-    static const std::string MAKEFILE_EXTENSION = ".mk";
-    static const std::string TEST_SUFFIX = "_test";
-    static const std::string STUB_SUFFIX = "_stub";
-    static const std::string DOT_SEP = "_dot_";
-    static const char dot = '.';
 
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
         return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath) /
                sourcePathToTestName(sourceFilePath);
-    }
-
-    static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
-                                                             const std::string &newExt) {
-        std::string extensionAsSuffix = path.extension().string();
-        if (!extensionAsSuffix.empty()) {
-            std::string fnWithNewExt =
-                path.stem().string() + DOT_SEP + extensionAsSuffix.substr(1) + newExt;
-            return path.parent_path() / fnWithNewExt;
-        }
-        return replaceExtension(path, newExt);
-    }
-
-    static inline fs::path restoreExtensionFromSuffix(const fs::path &path,
-                                                      const std::string &defaultExt) {
-        std::string fnWithoutExt = path.stem();
-        fs::path fnWithExt;
-        std::size_t posEncodedExtension = fnWithoutExt.rfind(DOT_SEP);
-        if (posEncodedExtension == std::string::npos) {
-            // In `sample_class_test.cpp` the `class` is not an extension
-            fnWithExt = fnWithoutExt + defaultExt;
-        }
-        else {
-            // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
-            fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
-                        + dot
-                        + fnWithoutExt.substr(posEncodedExtension + DOT_SEP.length());
-        }
-        return path.parent_path() / fs::path(fnWithExt);
     }
 
     fs::path sourcePathToTestName(const fs::path &source) {
@@ -391,6 +372,18 @@ namespace Paths {
         return fs::relative(source.parent_path(), projectContext.projectPath);
     }
 
+    std::optional<std::string> getRelativePathWithShellVariable(const fs::path &shellVariableForBase,
+                                                 const std::string &base,
+                                                 const std::string &source) {
+        std::string returnPath = source;
+        if (StringUtils::startsWith(source, base)) {
+            StringUtils::replaceFirst(returnPath, base, shellVariableForBase.string());
+            return returnPath;
+        }
+        return std::nullopt;
+    }
+
+
     fs::path stubPathToSourcePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &stubPath) {
         fs::path sourceFilePath =
@@ -402,8 +395,8 @@ namespace Paths {
     bool isHeadersEqual(const fs::path &srcPath, const fs::path &headerPath) {
         return removeSuffix(srcPath, STUB_SUFFIX).stem() == headerPath.stem();
     }
-    fs::path getBuildDir(const utbot::ProjectContext &projectContext) {
-        return getTmpDir(projectContext.projectName) / "build";
+    fs::path getUtbotBuildDir(const utbot::ProjectContext &projectContext) {
+        return projectContext.buildDir / CompilationUtils::UTBOT_BUILD_DIR_NAME;
     }
 
     //endregion
