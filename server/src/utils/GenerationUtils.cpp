@@ -50,11 +50,16 @@ void GenerationUtils::generateCoverageAndResultsAndWriteStatus(
 
 std::optional<fs::path> GenerationUtils::findTarget(const BaseTestGen &baseTestGen,
                                                     const std::string &name) {
+    return findTarget(baseTestGen.buildDatabase->getAllTargets(), name);
+}
+
+std::optional<fs::path>
+GenerationUtils::findTarget(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &allTargets,
+                            const std::string &name) {
     if (name.empty()) {
         LOG_S(INFO) << "Target was not chosen. Using UTBot: Auto target instead.";
         return GrpcUtils::UTBOT_AUTO_TARGET_PATH;
     }
-    auto allTargets = baseTestGen.buildDatabase->getAllTargets();
     auto candidates = CollectionUtils::filterOut(allTargets, [&name](auto const &target) {
         fs::path output = target->getOutput();
         return !(output == name || output.stem() == name || output.stem() == "lib" + name);

@@ -15,8 +15,6 @@ namespace utbot {
     class CompileCommand : public BaseCommand {
     private:
         iterator sourcePath;
-        iterator compiler;
-        iterator output;
 
     public:
         CompileCommand() = default;
@@ -39,15 +37,7 @@ namespace utbot {
 
         void setSourcePath(fs::path sourcePath);
 
-        [[nodiscard]] fs::path getCompiler() const;
-
-        void setCompiler(fs::path compiler);
-
-        [[nodiscard]] fs::path getOutput() const override;
-
         [[nodiscard]] bool isArchiveCommand() const override;
-
-        void setOutput(fs::path output);
 
         void removeCompilerFlagsAndOptions(const std::unordered_set<std::string> &switchesToRemove);
 

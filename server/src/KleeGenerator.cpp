@@ -254,8 +254,8 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                 return;
             }
             kleePrinter.srcLanguage = Paths::getSourceLanguage(filename);
-            auto includeFlags = { StringUtils::stringFormat("-I%s",
-                                                            Paths::getFlagsDir(projectContext)) };
+            std::vector<std::string> includeFlags = {
+                    StringUtils::stringFormat("-I%s", Paths::getFlagsDir(projectContext))};
             auto buildDirPath =
                 buildDatabase->getClientCompilationUnitInfo(filename)->getDirectory();
 

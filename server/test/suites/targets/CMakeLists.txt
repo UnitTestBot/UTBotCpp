@@ -14,6 +14,15 @@ add_executable(ls ls.c)
 add_executable(cat cat.c)
 add_executable(dummy dummy.c)
 
+add_executable(get_10 get_10.c shared.c get_val_main.c)
+add_executable(get_20 get_20x.c shared.c get_val_main.c)
+add_executable(get_10_2 get_10.c shared.c get_val_main_2.c)
+
+add_library(shared_get SHARED get_20x.c shared.c get_val_main.c)
+
+add_library(static_get STATIC get_20x.c shared.c get_val_main.c)
+target_compile_definitions(static_get PRIVATE TESTDEF)
+
 target_link_libraries(ls parse)
 target_link_libraries(cat parse)
 target_link_libraries(dummy parse)

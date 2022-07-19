@@ -24,6 +24,10 @@ using grpc::Status;
 using grpc::StatusCode;
 
 namespace GenerationUtils {
+
+    std::optional<fs::path>
+    findTarget(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &allTargets, const std::string &name);
+
     std::optional<fs::path> findTarget(const BaseTestGen &baseTestGen, const std::string &name);
 
     template <typename TestGenT, typename RequestT>

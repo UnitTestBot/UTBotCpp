@@ -8,18 +8,18 @@
 ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
                                ProgressWriter *progressWriter,
                                bool testMode,
-                               bool autoDetect)
-    : BaseTestGen(request.projectcontext(),
-                  request.settingscontext(),
-                  progressWriter,
-                  testMode), request(&request) {
+                               bool autoSrcPaths)
+        : BaseTestGen(request.projectcontext(),
+                      request.settingscontext(),
+                      progressWriter,
+                      testMode), request(&request) {
     fs::create_directories(projectContext.testDirPath);
     compileCommandsJsonPath = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
-        projectContext.projectPath, projectContext.buildDirRelativePath);
-    buildDatabase =
-        std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
+            projectContext.projectPath, projectContext.buildDirRelativePath);
+    buildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext,
+                                                    request.targetpath());
     compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
-    if (autoDetect) {
+    if (autoSrcPaths) {
         autoDetectSourcePathsIfNotEmpty();
     } else {
         sourcePaths = compilationDatabase->getAllFiles();

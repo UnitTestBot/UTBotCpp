@@ -130,6 +130,8 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
 
 Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     auto requestTarget = testGen.getTargetPath();
+    LOG_IF_S(ERROR, target != GrpcUtils::UTBOT_AUTO_TARGET_PATH && requestTarget != target)
+        << "Try link target that not specified by user";
     testGen.setTargetPath(target);
 
     auto targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
@@ -148,15 +150,13 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
                 insideFolder = false;
             }
         }
-        if (testGen.buildDatabase->isFirstObjectFileForSource(objectFile) &&
-            !CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) &&
-            insideFolder) {
-            filesToLink.emplace(objectFile, objectInfo->kleeFilesInfo->getKleeBitcodeFile());
+        if (!CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) && insideFolder) {
+            fs::path bitcodeFile = objectInfo->kleeFilesInfo->getKleeBitcodeFile();
+            filesToLink.emplace(objectFile, std::move(bitcodeFile));
         } else {
+            fs::path bitcodeFile = testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
             siblingObjectsToBuild.insert(objectInfo->getOutputFile());
-            fs::path bitcodeFile =
-                    testGen.buildDatabase->getBitcodeForSource(objectInfo->getSourcePath());
-            filesToLink.emplace(objectFile, bitcodeFile);
+            filesToLink.emplace(objectFile, std::move(bitcodeFile));
         }
     }
 
@@ -512,7 +512,7 @@ std::string getArchiveArgument(std::string const &argument,
     if (StringUtils::startsWith(argument, "-")) {
         return "";
     }
-    hasArchiveOption |= !argument.empty() && argument != linkCommand.getLinker();
+    hasArchiveOption |= !argument.empty() && argument != linkCommand.getCompiler();
     return argument;
 }
 
@@ -673,7 +673,7 @@ Linker::getLinkActionsForExecutable(fs::path const &workingDir,
                                     BuildDatabase::TargetInfo const &linkUnitInfo,
                                     fs::path const &output,
                                     bool shouldChangeDirectory) {
-    
+
     using namespace DynamicLibraryUtils;
 
     auto commands = CollectionUtils::transform(

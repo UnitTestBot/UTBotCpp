@@ -47,12 +47,19 @@ namespace testUtils {
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap);
 
-    int getNumberOfTests(const tests::TestsMap &tests);
+    size_t getNumberOfTests(const tests::TestsMap &tests);
 
-    void checkMinNumberOfTests(const tests::TestsMap &tests, int minNumber);
+    size_t getNumberOfTestsForFile(const BaseTestGen &testGen, const std::string &fileName);
+
+    void checkMinNumberOfTests(const tests::TestsMap &tests, size_t minNumber);
 
     void checkMinNumberOfTests(const std::vector<tests::Tests::MethodTestCase> &testCases,
-                               int minNumber);
+                               size_t minNumber);
+
+    void checkNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
+
+    void
+    checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
@@ -81,13 +88,13 @@ namespace testUtils {
                                                    bool verbose, int kleeTimeout);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
-                                                    const fs::path &projectPath,
-                                                    const std::string &buildDirRelativePath,
-                                                    const std::vector<fs::path> &srcPaths,
-                                                    const fs::path &filePath,
-                                                    int line,
-                                                    bool verbose = true,
-                                                    int kleeTimeout = 60);
+                                                     const fs::path &projectPath,
+                                                     const std::string &buildDirRelativePath,
+                                                     const std::vector<fs::path> &srcPaths,
+                                                     const fs::path &filePath,
+                                                     int line,
+                                                     bool verbose = true,
+                                                     int kleeTimeout = 60);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
@@ -107,7 +114,8 @@ namespace testUtils {
     void tryExecGetBuildCommands(
             const fs::path &path,
             CompilationUtils::CompilerName compilerName = CompilationUtils::CompilerName::CLANG,
-            BuildCommandsTool buildCommandsTool = CMAKE_BUILD_COMMANDS_TOOL, bool build = true);
+            BuildCommandsTool buildCommandsTool = CMAKE_BUILD_COMMANDS_TOOL,
+            bool build = true);
 
     fs::path getRelativeTestSuitePath(const std::string &suiteName);
 
@@ -115,7 +123,7 @@ namespace testUtils {
 
     std::string unexpectedFileMessage(const fs::path &filePath);
 
-    std::vector<char*> createArgvVector(const std::vector<std::string> &args);
+    std::vector<char *> createArgvVector(const std::vector<std::string> &args);
 
     void setTargetForFirstSource(ProjectTestGen &testGen);
 
