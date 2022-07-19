@@ -10,6 +10,7 @@
 
 #include "utils/path/FileSystemPath.h"
 #include <optional>
+#include <vector>
 #include <unordered_set>
 
 namespace Paths {
@@ -236,7 +237,7 @@ namespace Paths {
 
     bool hasInternalError(fs::path const &path);
 
-    bool hasError(fs::path const &path);
+    std::vector<fs::path> getErrorDescriptors(fs::path const &path);
 
     fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
                                       const fs::path &srcFilePath, const std::string &methodName = "");

@@ -11,9 +11,10 @@ public:
     explicit CLITestsWriter(): TestsWriter(nullptr) {};
 
     void writeTestsWithProgress(tests::TestsMap &testMap,
-                                std::string const &message,
+                                const std::string &message,
                                 const fs::path &testDirPath,
-                                std::function<void(tests::Tests &)> &&functor) override;
+                                std::function<void(tests::Tests &)> &&prepareTests,
+                                std::function<void()> &&prepareTotal) override;
 
 private:
     static bool writeTestFile(const tests::Tests &tests, const fs::path &testDirPath);

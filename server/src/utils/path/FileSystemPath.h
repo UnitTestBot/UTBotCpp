@@ -149,6 +149,7 @@ namespace fs {
         friend bool create_directories( const path& p );
         friend void copy( const path& from, const path& to);
         friend void copy( const path& from, const path& to, std::filesystem::copy_options options );
+        friend void rename( const path& from, const path& to);
         friend bool copy_file( const path& from,
                                const path& to,
                                copy_options options );
@@ -219,6 +220,11 @@ namespace fs {
     inline void copy( const path& from,
                       const path& to, std::filesystem::copy_options options ) {
         copy(from.path_, to.path_, options);
+    }
+
+    inline void rename( const path& from,
+                        const path& to) {
+        rename(from.path_, to.path_);
     }
 
     inline std::filesystem::file_time_type last_write_time(const path& p) {

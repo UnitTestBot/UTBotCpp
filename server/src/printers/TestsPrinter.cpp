@@ -1,8 +1,9 @@
 #include "TestsPrinter.h"
 
 #include "Paths.h"
-#include "utils/ArgumentsUtils.h"
+#include "SARIFGenerator.h"
 #include "utils/Copyright.h"
+#include "utils/JsonUtils.h"
 #include "visitors/ParametrizedAssertsVisitor.h"
 #include "visitors/VerboseAssertsParamVisitor.h"
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
@@ -11,6 +12,7 @@
 
 #include "loguru.h"
 
+using json = nlohmann::json;
 using printer::TestsPrinter;
 
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
@@ -59,7 +61,64 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
     ss << RB();
-    tests.code = ss.str();
+    printFinalCodeAndAlterJson(tests);
+}
+
+void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
+    int line_count = 0;
+    std::string line;
+    while (getline(ss, line)) {
+        if (line.rfind(sarif::PREFIX_FOR_JSON_PATH, 0) != 0) {
+            // ordinal string
+            tests.code.append(line);
+            tests.code.append("\n");
+            ++line_count;
+        } else {
+            // anchor for SARIF ala testFilePath,lineThatCallsTestedFunction
+            std::string nameAndTestIndex =
+                line.substr(sarif::PREFIX_FOR_JSON_PATH.size());
+            int pos = nameAndTestIndex.find(',');
+            if (pos != -1) {
+                std::string name = nameAndTestIndex.substr(0, pos);
+                int testIndex = -1;
+                try {
+                    testIndex = std::stoi(nameAndTestIndex.substr(pos + 1));
+                } catch (std::logic_error &e) {
+                    // ignore
+                }
+                Tests::MethodsMap::iterator it = tests.methods.find(name);
+                if (it != tests.methods.end() && testIndex >= 0) {
+                    Tests::MethodDescription &methodDescription = it.value();
+                    std::vector<Tests::MethodTestCase> &testCases =methodDescription.testCases;
+                    if (testIndex < testCases.size()) {
+                        Tests::MethodTestCase &testCase = testCases[testIndex];
+                        auto &descriptors = testCase.errorDescriptors;
+                        if (testCase.errorDescriptors.empty()) {
+                            LOG_S(ERROR) << "no error info for test case: "
+                                         << name
+                                         << ", test #"
+                                         << testIndex;
+                            continue;
+                        }
+                        std::stringstream ss;
+                        ss << sarif::TEST_FILE_KEY << ":" << tests.testSourceFilePath.c_str() << std::endl
+                           << sarif::TEST_LINE_KEY << ":" << line_count << std::endl
+                           << sarif::TEST_NAME_KEY << ":"
+                                          << testCase.suiteName
+                                          << "."
+                                          << testCase.testName
+                                          << std::endl;
+
+                        descriptors.emplace_back(ss.str());
+                        // ok
+                        continue;
+                    }
+                }
+            }
+            LOG_S(ERROR) << "wrong SARIF anchor (need {testFilePath,lineThatCallsTestedFunction}): "
+                         << line;
+        }
+    }
 }
 
 std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods) {
@@ -112,18 +171,31 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
     resetStream();
 }
 
+static std::string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
+    std::string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
+    std::string testBaseName = methodDescription.isClassMethod()
+                                   ? StringUtils::stringFormat("%s_%s",
+                                                               methodDescription.classObj->type.typeName(),
+                                                               renamedMethodDescription)
+                                   : renamedMethodDescription;
+
+    return printer::Printer::concat(testBaseName, "_test_", testNum);
+}
+
 void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       Tests::MethodDescription &methodDescription,
                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                       bool verbose,
                                       int &testNum) {
-    const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
+    auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
     }
-    for (auto &testCase : testCases) {
-        testNum++;
-        testHeader(testCase.suiteName, methodDescription, testNum);
+    for (int testCaseIndex : testCases) {
+        ++testNum;
+        Tests::MethodTestCase &testCase = methodDescription.testCases[testCaseIndex];
+        testCase.testName = getTestName(methodDescription, testNum);
+        testHeader(testCase);
         redirectStdin(methodDescription, testCase, verbose);
         if (verbose) {
             genVerboseTestCase(methodDescription, testCase, predicateInfo);
@@ -152,6 +224,8 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         ss << NL;
     }
     TestsPrinter::verboseFunctionCall(methodDescription, testCase);
+    markTestedFunctionCallIfNeed(methodDescription.name, testCase);
+
     ss << NL;
     if (testCase.isError()) {
         ss << TAB_N()
@@ -247,21 +321,8 @@ void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath)
     writeAccessPrivateMacros(typesHandler, tests, true);
 }
 
-static std::string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
-    std::string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
-    std::string testBaseName = methodDescription.isClassMethod()
-        ? StringUtils::stringFormat("%s_%s", methodDescription.classObj->type.typeName(),
-                                    renamedMethodDescription)
-        : renamedMethodDescription;
-
-    return printer::Printer::concat(testBaseName, "_test_", testNum);
-}
-
-void TestsPrinter::testHeader(const std::string &scopeName,
-                              const Tests::MethodDescription &methodDescription,
-                              int testNum) {
-    std::string testName = getTestName(methodDescription, testNum);
-    strFunctionCall("TEST", { scopeName, testName }, NL) << LB(false);
+void TestsPrinter::testHeader(const Tests::MethodTestCase &testCase) {
+    strFunctionCall("TEST", { testCase.suiteName, testCase.testName }, NL) << LB(false);
 }
 
 void TestsPrinter::redirectStdin(const Tests::MethodDescription &methodDescription,
@@ -540,11 +601,21 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
     visitor.visit(methodDescription, testCase);
+    markTestedFunctionCallIfNeed(methodDescription.name, testCase);
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
         changeableParamsAsserts(methodDescription, testCase);
     }
+}
+
+void TestsPrinter::markTestedFunctionCallIfNeed(const std::string &name,
+                                                const Tests::MethodTestCase &testCase) {
+    if (testCase.errorDescriptors.empty()) {
+        // cannot generate stack for error
+        return;
+    }
+    ss << sarif::PREFIX_FOR_JSON_PATH << name << "," << testCase.testIndex << NL;
 }
 
 std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,

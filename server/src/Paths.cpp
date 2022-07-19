@@ -1,8 +1,8 @@
 #include "Paths.h"
 
 #include "ProjectContext.h"
-#include "utils/StringUtils.h"
 #include "utils/CLIUtils.h"
+#include "utils/StringUtils.h"
 
 #include "loguru.h"
 
@@ -117,10 +117,12 @@ namespace Paths {
 
     //region klee
 
+    static fs::path errorFile(const fs::path &path, std::string const& suffix) {
+        return replaceExtension(path, StringUtils::stringFormat(".%s.err", suffix));
+    }
+
     static bool errorFileExists(const fs::path &path, std::string const& suffix) {
-        fs::path file = replaceExtension(
-            path, StringUtils::stringFormat(".%s.err", suffix));
-        return fs::exists(file);
+        return fs::exists(errorFile(path, suffix));
     }
 
     bool hasInternalError(const fs::path &path) {
@@ -133,7 +135,7 @@ namespace Paths {
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
     }
 
-    bool hasError(const fs::path &path) {
+    std::vector<fs::path> getErrorDescriptors(const fs::path &path) {
         static const auto internalErrorSuffixes = {
             "abort",
             "assert",
@@ -149,8 +151,14 @@ namespace Paths {
             "uncaught_exception",
             "unexpected_exception"
         };
-        return std::any_of(internalErrorSuffixes.begin(), internalErrorSuffixes.end(),
-                           [&path](auto const &suffix) { return errorFileExists(path, suffix); });
+
+        std::vector<fs::path> errFiles;
+        for (const auto &suffix : internalErrorSuffixes) {
+            if (errorFileExists(path, suffix)) {
+                errFiles.emplace_back(errorFile(path, suffix));
+            }
+        }
+        return errFiles;
     }
 
     fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,

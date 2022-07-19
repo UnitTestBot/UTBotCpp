@@ -6,18 +6,21 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
+#include "json.hpp"
 
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
-#include "json.hpp"
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 
 #include <iterator>
 #include <memory>
-#include <utility>
-#include <queue>
 #include <optional>
+#include <queue>
+#include <utility>
+#include <vector>
+
+using json = nlohmann::json;
 
 namespace tests {
     class StructValueView;
@@ -60,10 +63,20 @@ namespace tests {
         };
         std::vector<UTBotKTestObject> objects;
         Status status;
+        std::vector<std::string> errorDescriptors;
 
-        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status)
-            : objects(std::move(objects)), status(status) {
+        UTBotKTest(const std::vector<UTBotKTestObject> &objects,
+                   const Status &status,
+                   std::vector<std::string> &errorDescriptors) :
+            objects(objects),
+            status(status),
+            errorDescriptors(errorDescriptors)
+        {}
+
+        bool isError() {
+            return !errorDescriptors.empty();
         }
+
     };
     using UTBotKTestList = std::vector<UTBotKTest>;
 
@@ -348,10 +361,13 @@ namespace tests {
             std::vector<MethodParam> lazyParams;
             std::vector<TestCaseParamValue> lazyValues;
             TestCaseParamValue() = default;
-            TestCaseParamValue(std::string name,
-                               std::optional<uint64_t> alignment,
-                               std::shared_ptr<AbstractValueView> view)
-                : name(std::move(name)), alignment(alignment), view(std::move(view)) {};
+
+            TestCaseParamValue(const std::string &_name,
+                               const std::optional<uint64_t> &_alignment,
+                               const std::shared_ptr<AbstractValueView> &_view)
+                : name(_name),
+                  alignment(_alignment),
+                  view(_view) {}
         };
 
         struct TestCaseDescription {
@@ -378,7 +394,9 @@ namespace tests {
         };
 
         struct MethodTestCase {
+            int testIndex; // from 0
             std::string suiteName;
+            std::string testName; // filled by test generator
 
             std::vector<TestCaseParamValue> globalPreValues;
             std::vector<TestCaseParamValue> globalPostValues;
@@ -398,6 +416,7 @@ namespace tests {
             TestCaseParamValue returnValue;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            std::vector<std::string> errorDescriptors;
 
             [[nodiscard]] bool isError() const;
         };
@@ -428,7 +447,7 @@ namespace tests {
             typedef std::unordered_map<std::string, std::shared_ptr<types::FunctionInfo>> FPointerMap;
             FPointerMap functionPointers;
             std::vector<MethodTestCase> testCases;
-            typedef std::unordered_map<std::string, std::vector<MethodTestCase>> SuiteNameToTestCasesMap;
+            typedef std::unordered_map<std::string, std::vector<int>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
 
             bool operator==(const MethodDescription &other) const;

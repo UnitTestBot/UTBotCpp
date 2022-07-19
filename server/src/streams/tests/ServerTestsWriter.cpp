@@ -4,22 +4,26 @@
 
 #include "loguru.h"
 
-void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                               std::string const &message,
-                                               const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor) {
+#include <fstream>
+#include <iostream>
 
+void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
+                                               const std::string &message,
+                                               const fs::path &testDirPath,
+                                               std::function<void(tests::Tests &)> &&prepareTests,
+                                               std::function<void()> &&prepareTotal) {
     size_t size = testMap.size();
     writeProgress(message);
     int totalTestsCounter = 0;
-    for (auto it = testMap.begin(); it != testMap.end(); it++) {
+    for (auto it = testMap.begin(); it != testMap.end(); ++it) {
         tests::Tests &tests = it.value();
         ExecUtils::throwIfCancelled();
-        functor(tests);
-        if (writeFileAndSendResponse(tests, testDirPath, message, 100.0 / size, false)) {
-            totalTestsCounter += 1;
+        prepareTests(tests);
+        if (writeFileAndSendResponse(tests, testDirPath, message, (100.0 * totalTestsCounter) / size, false)) {
+            ++totalTestsCounter;
         }
     }
+    prepareTotal();
     writeCompleted(testMap, totalTestsCounter);
 }
 
@@ -59,4 +63,25 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
     response.set_allocated_progress(progress.release());
     writeMessage(response);
     return isAnyTestsGenerated;
+}
+
+void ServerTestsWriter::writeReport(const std::string &content,
+                                    const std::string &message,
+                                    const fs::path &pathToStore) const
+{
+    if (synchronizeCode || fs::exists(pathToStore)) {
+        testsgen::TestsResponse response;
+        if (synchronizeCode) {
+            TestsWriter::writeReport(content, message, pathToStore);
+        }
+        auto testSource = response.add_testsources();
+        testSource->set_filepath(pathToStore);
+        if (synchronizeCode) {
+            testSource->set_code(content);
+        }
+        LOG_S(INFO) << message;
+        auto progress = GrpcUtils::createProgress(message, 100, false);
+        response.set_allocated_progress(progress.release());
+        writeMessage(response);
+    }
 }
