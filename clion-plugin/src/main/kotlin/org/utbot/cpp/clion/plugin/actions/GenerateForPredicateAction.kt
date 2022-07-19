@@ -9,8 +9,8 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.fields.ExtendableTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
-import org.utbot.cpp.clion.plugin.actions.utils.getFunctionRequestMessage
-import org.utbot.cpp.clion.plugin.actions.utils.getPredicateRequestMessage
+import org.utbot.cpp.clion.plugin.utils.getFunctionRequestMessage
+import org.utbot.cpp.clion.plugin.utils.getPredicateRequestMessage
 import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.client

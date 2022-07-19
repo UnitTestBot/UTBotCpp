@@ -4,7 +4,7 @@ import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.actions.utils.getProjectConfigRequestMessage
+import org.utbot.cpp.clion.plugin.utils.getProjectConfigRequestMessage
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import testsgen.Testgen
 

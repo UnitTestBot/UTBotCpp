@@ -5,11 +5,11 @@ import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizardStep
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 
-class BuildOptionsStep(private val project: Project, private val settingsModel: UTBotSettings.State) :
+class BuildOptionsStep(private val settingsModel: UTBotSettingsModel) :
     UTBotWizardStep() {
     override fun createUI() {
         addHtml("media/build_dir.html")
@@ -21,8 +21,8 @@ class BuildOptionsStep(private val project: Project, private val settingsModel: 
         addHtml("media/cmake_options.html")
         panel {
             row {
-                commandLineEditor({ settingsModel.cmakeOptions.joinToString(" ") },
-                    { value: String -> settingsModel.cmakeOptions = value.split(" ") })
+                commandLineEditor({ settingsModel.cmakeOptions },
+                    { value: String -> settingsModel.cmakeOptions = value })
             }
         }.addToUI()
     }

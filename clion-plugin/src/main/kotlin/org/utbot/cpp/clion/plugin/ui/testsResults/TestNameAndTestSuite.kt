@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.models
+package org.utbot.cpp.clion.plugin.ui.testsResults
 
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement

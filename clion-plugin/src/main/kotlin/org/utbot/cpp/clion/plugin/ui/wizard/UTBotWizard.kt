@@ -12,12 +12,12 @@ import org.utbot.cpp.clion.plugin.utils.utbotSettings
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
-    private val mySettingsModel = project.utbotSettings.state.copy()
+    private val mySettingsModel = project.utbotSettings.asModel()
 
     init {
         addStep(IntroStrep())
         addStep(ConnectionStep(project, mySettingsModel, disposable))
-        addStep(BuildOptionsStep(project, mySettingsModel))
+        addStep(BuildOptionsStep(mySettingsModel))
         addStep(SuccessStep())
         super.init()
         isResizable = true
@@ -28,7 +28,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep
         super.doOKAction()
         // commit changes made during wizard and notify
         with(project.utbotSettings) {
-            loadState(mySettingsModel)
+            project.utbotSettings.applyModel(mySettingsModel)
             fireUTBotSettingsChanged()
         }
     }

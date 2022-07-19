@@ -5,7 +5,6 @@ import com.intellij.notification.NotificationAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import testsgen.Testgen
 
 class ConfigureProjectAction : NotificationAction(UTBot.message("projectConfigure.configure")) {
     override fun actionPerformed(e: AnActionEvent, n: Notification) {

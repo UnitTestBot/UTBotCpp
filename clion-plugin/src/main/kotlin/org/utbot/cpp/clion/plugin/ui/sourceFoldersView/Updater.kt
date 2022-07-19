@@ -1,8 +1,8 @@
 package org.utbot.cpp.clion.plugin.ui.sourceFoldersView
 
 import com.intellij.psi.PsiDirectory
-import org.utbot.cpp.clion.plugin.utils.markDirectoriesRecursive
-import org.utbot.cpp.clion.plugin.utils.unmarkDirectoriesRecursive
+import org.utbot.cpp.clion.plugin.utils.addDirectoriesRecursive
+import org.utbot.cpp.clion.plugin.utils.removeDirectoriesRecursive
 
 interface DirectoriesStatusUpdater {
     fun toggle()
@@ -14,11 +14,11 @@ abstract class BaseUpdater(val selectedDirectories: List<PsiDirectory>) : Direct
     abstract fun getCurrentMarkedDirs(): Set<String>
     abstract fun setCurrentMarkedDirs(value: Set<String>)
     override fun markAsSource() {
-        setCurrentMarkedDirs(getCurrentMarkedDirs().markDirectoriesRecursive(selectedDirectories))
+        setCurrentMarkedDirs(getCurrentMarkedDirs().addDirectoriesRecursive(selectedDirectories))
     }
 
     override fun unmarkAsSource() {
-        setCurrentMarkedDirs(getCurrentMarkedDirs().unmarkDirectoriesRecursive(selectedDirectories))
+        setCurrentMarkedDirs(getCurrentMarkedDirs().removeDirectoriesRecursive(selectedDirectories))
     }
 
     override fun toggle() {
@@ -26,7 +26,7 @@ abstract class BaseUpdater(val selectedDirectories: List<PsiDirectory>) : Direct
         selectedDirectories.partition {
             it.virtualFile.path in currentlyMarked
         }.also {
-            setCurrentMarkedDirs(currentlyMarked.unmarkDirectoriesRecursive(it.first).markDirectoriesRecursive(it.second))
+            setCurrentMarkedDirs(currentlyMarked.removeDirectoriesRecursive(it.first).addDirectoriesRecursive(it.second))
         }
     }
 }

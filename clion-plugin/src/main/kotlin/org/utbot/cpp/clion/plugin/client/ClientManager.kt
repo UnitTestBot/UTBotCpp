@@ -4,10 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import kotlin.random.Random
-import org.utbot.cpp.clion.plugin.messaging.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.models.GTestChannel
-import org.utbot.cpp.clion.plugin.models.LoggingChannel
-import org.utbot.cpp.clion.plugin.models.ServerLogChannel
+import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.utils.logger
 
 @Service
@@ -23,11 +20,13 @@ class ClientManager(val project: Project): Disposable {
 
     private fun subscribeToEvents() {
         with(project.messageBus.connect()) {
-            subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener { newSettings ->
-                if (newSettings.port != client.port || newSettings.serverName != client.serverName) {
-                    project.logger.trace{ "Connection settings changed. Setting up new client." }
-                    client.dispose()
-                    client = Client(project, clientId, loggingChannels)
+            subscribe(ConnectionSettingsListener.TOPIC, object : ConnectionSettingsListener {
+                override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
+                    if (newPort != client.port || newServerName != client.serverName) {
+                        project.logger.trace{ "Connection settings changed. Setting up new client." }
+                        client.dispose()
+                        client = Client(project, clientId, loggingChannels)
+                    }
                 }
             })
         }

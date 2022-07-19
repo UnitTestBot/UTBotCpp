@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.services
+package org.utbot.cpp.clion.plugin.settings
 
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State

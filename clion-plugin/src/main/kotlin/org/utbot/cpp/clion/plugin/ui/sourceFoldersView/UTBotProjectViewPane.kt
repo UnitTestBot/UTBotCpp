@@ -8,7 +8,7 @@ import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileSystemItem
 import javax.swing.tree.DefaultTreeModel
-import org.utbot.cpp.clion.plugin.messaging.SourceFoldersListener
+import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 import org.utbot.cpp.clion.plugin.utils.utbotSettings
 
 open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {

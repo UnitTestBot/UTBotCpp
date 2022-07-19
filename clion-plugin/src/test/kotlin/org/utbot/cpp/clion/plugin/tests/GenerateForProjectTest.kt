@@ -14,7 +14,7 @@ class GenerateForProjectTest : BaseGenerationTestCase() {
     private fun doTest(compiler: CppCompiler, isVerbose: Boolean, targetNames: List<String> = emptyList()) {
         logger.info ( "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}")
 
-        generatorSettings.verbose = isVerbose
+        settings.verbose = isVerbose
         compiler.buildProject(projectPath, buildDirName)
 
         for (targetName in targetNames) {

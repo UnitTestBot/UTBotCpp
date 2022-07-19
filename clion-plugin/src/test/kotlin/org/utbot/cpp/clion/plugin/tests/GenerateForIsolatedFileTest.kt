@@ -12,7 +12,7 @@ class GenerateForIsolatedFileTest : BaseGenerationTestCase() {
     @Test
     fun testGenerateForFile() {
         val compiler = Clang
-        logger.info("Testing generate for snippet using target: auto, compiler: ${compiler.name}, verbose mode = ${generatorSettings.verbose}")
+        logger.info("Testing generate for snippet using target: auto, compiler: ${compiler.name}, verbose mode = ${settings.verbose}")
         compiler.buildProject(projectPath, buildDirName)
         fixture.configureFromTempProjectFile("snippet.c")
         fixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForSnippetAction")

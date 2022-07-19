@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.ui
+package org.utbot.cpp.clion.plugin.ui.testsResults
 
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.LineMarkerProvider
@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
 import org.utbot.cpp.clion.plugin.actions.RunWithCoverageAction
-import org.utbot.cpp.clion.plugin.services.TestsResultsStorage
 
 class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
     val log = Logger.getInstance(this::class.java)
@@ -24,7 +23,7 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
             { message }
         ) {
         override fun createGutterRenderer(): GutterIconRenderer {
-            return object : LineMarkerInfo.LineMarkerGutterIconRenderer<PsiElement>(this) {
+            return object : LineMarkerGutterIconRenderer<PsiElement>(this) {
                 override fun isNavigateAction(): Boolean = true
                 override fun getClickAction(): AnAction? {
                     return element?.let { RunWithCoverageAction(it) }

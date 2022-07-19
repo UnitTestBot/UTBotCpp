@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.ui
+package org.utbot.cpp.clion.plugin.settings
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -17,9 +17,7 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import kotlin.reflect.KMutableProperty0
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.messaging.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.services.GeneratorSettings
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import java.awt.Dimension
@@ -27,8 +25,7 @@ import java.awt.Dimension
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings for Generating Tests"
 ) {
-    private val utbotSettings: UTBotSettings get() = myProject.service()
-    private val generatorSettings: GeneratorSettings get() = myProject.service()
+    private val utbotSettings: UTBotAllSettings get() = myProject.service()
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
 
@@ -64,7 +61,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                     textField().bindText(utbotSettings::serverName)
                 }.rowComment(UTBot.message("deployment.utbotHost.description"))
                 row(UTBot.message("settings.project.remotePath")) {
-                    textField().bindText(utbotSettings::remotePath)
+                    textField().bindText(utbotSettings::remotePath).columns(COLUMNS_LARGE)
                 }.rowComment(UTBot.message("deployment.remotePath.description"))
             }
 
@@ -75,8 +72,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         myProject,
                         FileChooserDescriptorFactory.createSingleFileDescriptor()
                     ).bindText(
-                        getter = { utbotSettings.state.projectPath ?: "" },
-                        setter = { value -> utbotSettings.state.projectPath = value })
+                        getter = { utbotSettings.projectPath ?: "" },
+                        setter = { value -> utbotSettings.projectPath = value })
                         .columns(COLUMNS_LARGE)
                 }.rowComment(UTBot.message("settings.project.projectPath.info"))
                 createPathChooser(
@@ -139,22 +136,22 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             group("Generator settings") {
                 val checkBoxes = listOf(
                     CheckBoxInfo(
-                        generatorSettings::useStubs,
+                        utbotSettings::useStubs,
                         UTBot.message("stubs.useStubs.title"),
                         UTBot.message("stubs.useStubs.description")
                     ),
                     CheckBoxInfo(
-                        generatorSettings::verbose,
+                        utbotSettings::verbose,
                         UTBot.message("testsGeneration.verboseFormatting.title"),
                         UTBot.message("testsGeneration.verboseFormatting.description")
                     ),
                     CheckBoxInfo(
-                        generatorSettings::useDeterministicSearcher,
+                        utbotSettings::useDeterministicSearcher,
                         UTBot.message("advanced.useDeterministicSearcher.title"),
                         UTBot.message("advanced.useDeterministicSearcher.description")
                     ),
                     CheckBoxInfo(
-                        generatorSettings::generateForStaticFunctions,
+                        utbotSettings::generateForStaticFunctions,
                         UTBot.message("testsGeneration.generateForStaticFunctions.title"),
                         UTBot.message("testsGeneration.generateForStaticFunctions.description")
                     )
@@ -164,13 +161,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 }
 
                 row(UTBot.message("advanced.timeoutPerFunction.title")) {
-                    intTextField().bindIntText(generatorSettings::timeoutPerFunction).applyToComponent {
+                    intTextField().bindIntText(utbotSettings::timeoutPerFunction).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
                 }.rowComment(UTBot.message("advanced.timeoutPerFunction.description"))
 
                 row(UTBot.message("advanced.timeoutPerTest.title")) {
-                    intTextField().bindIntText(generatorSettings::timeoutPerFunction).applyToComponent {
+                    intTextField().bindIntText(utbotSettings::timeoutPerFunction).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
                 }.rowComment(UTBot.message("advanced.timeoutPerTest.description"))

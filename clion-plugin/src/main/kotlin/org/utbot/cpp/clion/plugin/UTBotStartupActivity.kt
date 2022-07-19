@@ -1,10 +1,11 @@
-package org.utbot.cpp.clion.plugin.services
+package org.utbot.cpp.clion.plugin
 
 import com.intellij.ide.util.RunOnceUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
 import org.utbot.cpp.clion.plugin.client.Client
+import org.utbot.cpp.clion.plugin.settings.UTBotPluginSpecificSettings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizard
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt

@@ -12,7 +12,7 @@ import org.utbot.cpp.clion.plugin.actions.FocusAction
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageSuite
-import org.utbot.cpp.clion.plugin.messaging.UTBotTestResultsReceivedListener
+import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo

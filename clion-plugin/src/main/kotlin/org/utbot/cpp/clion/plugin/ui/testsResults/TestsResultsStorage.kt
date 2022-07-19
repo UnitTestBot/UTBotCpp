@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.services
+package org.utbot.cpp.clion.plugin.ui.testsResults
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
@@ -11,8 +11,7 @@ import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
-import org.utbot.cpp.clion.plugin.messaging.UTBotTestResultsReceivedListener
-import org.utbot.cpp.clion.plugin.models.TestNameAndTestSuite
+import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import testsgen.Testgen
 import java.nio.file.Paths
@@ -25,7 +24,8 @@ class TestsResultsStorage(val project: Project) {
 
     init {
         val connection = project.messageBus.connect()
-        connection.subscribe(UTBotTestResultsReceivedListener.TOPIC,
+        connection.subscribe(
+            UTBotTestResultsReceivedListener.TOPIC,
             UTBotTestResultsReceivedListener { results ->
                 log.info("Received results")
                 results.forEach { testResult ->

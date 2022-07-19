@@ -1,6 +1,5 @@
 package org.utbot.cpp.clion.plugin
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
@@ -17,11 +16,11 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.logger.SystemWriter
-import org.utbot.cpp.clion.plugin.services.GeneratorSettings
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.utbotSettings
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -56,16 +55,12 @@ abstract class BaseGenerationTestCase {
         Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     val testsDirectoryPath: Path = projectPath.resolve("cl-plugin-test-tests")
     val buildDirName = "build"
-    val buildDirectoryPath: Path
-        get() = projectPath.resolve(buildDirName)
     private val logger = setupLogger()
     val fixture: CodeInsightTestFixture = createFixture()
     val project: Project
         get() = fixture.project
-    val settings: UTBotSettings
-        get() = project.service()
-    val generatorSettings: GeneratorSettings
-        get() = project.service()
+    val settings: UTBotAllSettings
+        get() = project.utbotSettings
     val client: Client
         get() = project.getClient()
     val targetsController = UTBotTargetsController(project)
@@ -119,7 +114,7 @@ abstract class BaseGenerationTestCase {
     @AfterEach
     fun tearDown() {
         logger.info("tearDown is called!")
-        buildDirectoryPath.delete(recursively = true)
+        project.utbotSettings.buildDirPath.delete(recursively = true)
         testsDirectoryPath.delete(recursively = true)
     }
 

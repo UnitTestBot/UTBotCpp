@@ -1,23 +1,22 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.utbot.cpp.clion.plugin.actions.utils.getProjectTargetsRequest
+import org.utbot.cpp.clion.plugin.utils.getProjectTargetsRequest
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
-import org.utbot.cpp.clion.plugin.messaging.ConnectionStatus
-import org.utbot.cpp.clion.plugin.messaging.UTBotEventsListener
-import org.utbot.cpp.clion.plugin.messaging.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.models.UTBotTarget
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
+import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
+import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
+import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.relativize
+import org.utbot.cpp.clion.plugin.utils.utbotSettings
 
 class UTBotTargetsController(val project: Project) {
-    private val utbotSettings = project.service<UTBotSettings>()
+    private val utbotSettings = project.utbotSettings
     private val listModel = CollectionListModel(mutableListOf<UTBotTarget>(UTBotTarget.autoTarget))
     private val client: Client
      get() = project.getClient()
@@ -88,7 +87,7 @@ class UTBotTargetsController(val project: Project) {
             // if user specifies some custom target path in settings, it will be added if not already present
             connection.subscribe(
                 UTBotSettingsChangedListener.TOPIC,
-                UTBotSettingsChangedListener { settings: UTBotSettings ->
+                UTBotSettingsChangedListener { settings: UTBotAllSettings ->
                     val possiblyNewTargetPath = settings.targetPath
                     addTargetPathIfNotPresent(possiblyNewTargetPath)
                 })

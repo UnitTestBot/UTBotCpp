@@ -35,7 +35,7 @@ open class ProxyProjectViewTree(
     protected open fun createUpdater() = object : BaseUpdater(myPane.selectedDirectories.toList()) {
         override fun getCurrentMarkedDirs(): Set<String> = project.utbotSettings.sourceDirs
         override fun setCurrentMarkedDirs(value: Set<String>) {
-            project.utbotSettings.sourceDirs = value
+            project.utbotSettings.sourceDirs = value.toMutableSet()
         }
     }
 

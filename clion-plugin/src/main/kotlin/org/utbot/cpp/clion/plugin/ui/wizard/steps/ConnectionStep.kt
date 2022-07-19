@@ -24,9 +24,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.utbot.cpp.clion.plugin.actions.utils.getVersionInfo
+import org.utbot.cpp.clion.plugin.utils.getVersionInfo
 import org.utbot.cpp.clion.plugin.client.GrpcClient
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizardStep
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.toWSLPathOnWindows
@@ -78,7 +79,9 @@ class NotConnectedWarningDialog(project: Project) : DialogWrapper(project) {
 
 
 class ConnectionStep(
-    val project: Project, private val settingsModel: UTBotSettings.State, private val parentDisposable: Disposable
+    val project: Project,
+    private val settingsModel: UTBotSettingsModel,
+    private val parentDisposable: Disposable
 ) : UTBotWizardStep() {
     private lateinit var hostTextField: JBTextField
     private lateinit var portTextField: JBTextField
@@ -97,8 +100,8 @@ class ConnectionStep(
     init {
         useDefaults.addOnChangeListener { newValue ->
             if (newValue) {
-                portTextField.text = UTBotSettings.DEFAULT_PORT.toString()
-                hostTextField.text = UTBotSettings.DEFAULT_HOST
+                portTextField.text = UTBotAllSettings.DEFAULT_PORT.toString()
+                hostTextField.text = UTBotAllSettings.DEFAULT_HOST
                 remotePathTextField.text = project.utbotSettings.projectPath
                 if (isWindows())
                     remotePathTextField.text = toWSLPathOnWindows(remotePathTextField.text)
@@ -111,17 +114,14 @@ class ConnectionStep(
         runCatching {
             GrpcClient(port, host, "DummyId").use { client ->
                 serverVersion = client.stub.handshake(getVersionInfo()).version
-                if (serverVersion != UTBotSettings.clientVersion)
+                if (serverVersion != UTBotAllSettings.clientVersion)
                     return ConnectionStatus.warning
                 return ConnectionStatus.connected
             }
         }.getOrElse { exception ->
-            println(exception.message)
-            println(exception.javaClass)
             when (exception) {
                 is io.grpc.StatusException -> return ConnectionStatus.failed
                 else -> {
-                    println(exception.javaClass)
                     connectionStatus.value = ConnectionStatus.failed
                     throw exception
                 }
@@ -232,7 +232,7 @@ class ConnectionStep(
                 val warningMessage: () -> String = {
                     "⚠️ Warning! Versions are different" +
                             if (serverVersion != null)
-                                ": Server: $serverVersion Client: ${UTBotSettings.clientVersion}"
+                                ": Server: $serverVersion Client: ${UTBotAllSettings.clientVersion}"
                             else ""
                 }
                 label(warningMessage()).visibleIf(

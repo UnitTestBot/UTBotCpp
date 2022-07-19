@@ -13,13 +13,12 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider language="ObjectiveC"
-                                        implementationClass="org.utbot.cpp.clion.plugin.ui.UTBotTestRunLineMarkerProvider"/>
-        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.services.GeneratorSettings"/>
-        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.services.UTBotSettings"/>
-        <applicationService serviceImplementation="org.utbot.cpp.clion.plugin.services.UTBotPluginSpecificSettings"/>
+                                        implementationClass="org.utbot.cpp.clion.plugin.ui.testsResults.UTBotTestRunLineMarkerProvider"/>
+        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllSettings"/>
+        <applicationService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotPluginSpecificSettings"/>
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
-        <postStartupActivity implementation="org.utbot.cpp.clion.plugin.services.UTBotStartupActivity"/>
-        <projectConfigurable parentId="tools" instance="org.utbot.cpp.clion.plugin.ui.UTBotConfigurable"
+        <postStartupActivity implementation="org.utbot.cpp.clion.plugin.UTBotStartupActivity"/>
+        <projectConfigurable parentId="tools" instance="org.utbot.cpp.clion.plugin.settings.UTBotConfigurable"
                              id="com.huawei.utbot.cpp.ui.UTBotConfigurable"
                              displayName="UTBot Settings"
                              nonDefaultProject="true"/>

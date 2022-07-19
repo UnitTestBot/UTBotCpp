@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.actions.utils.getClassRequestMessage
+import org.utbot.cpp.clion.plugin.utils.getClassRequestMessage
 import org.utbot.cpp.clion.plugin.client.requests.ClassRequest
 import org.utbot.cpp.clion.plugin.utils.isCPPFileName
 

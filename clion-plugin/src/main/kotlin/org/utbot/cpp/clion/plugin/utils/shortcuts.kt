@@ -10,8 +10,7 @@ import kotlinx.coroutines.job
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
-import org.utbot.cpp.clion.plugin.services.GeneratorSettings
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 
 val Project.logger: ClientLogger
     get() = this.service<ClientLogger>()
@@ -21,10 +20,7 @@ val AnActionEvent.client: Client
 
 fun Project.getClient(): Client = this.service<ClientManager>().client
 
-val Project.utbotSettings: UTBotSettings
-    get() = this.service()
-
-val Project.generatorSettings: GeneratorSettings
+val Project.utbotSettings: UTBotAllSettings
     get() = this.service()
 
 val CoroutineScope.children

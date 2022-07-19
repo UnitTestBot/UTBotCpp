@@ -21,12 +21,11 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 import kotlinx.coroutines.Job
-import org.utbot.cpp.clion.plugin.actions.utils.getProjectConfigRequestMessage
-import org.utbot.cpp.clion.plugin.actions.utils.getVersionInfo
+import org.utbot.cpp.clion.plugin.utils.getProjectConfigRequestMessage
+import org.utbot.cpp.clion.plugin.utils.getVersionInfo
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.messaging.ConnectionStatus
-import org.utbot.cpp.clion.plugin.messaging.UTBotEventsListener
-import org.utbot.cpp.clion.plugin.models.LoggingChannel
+import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
+import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.utils.hasChildren
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.utbotSettings

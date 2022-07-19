@@ -8,7 +8,6 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import javax.swing.JList
 import javax.swing.ListSelectionModel
-import org.utbot.cpp.clion.plugin.models.UTBotTarget
 
 class UTBotTargetsToolWindow(
     listModel: CollectionListModel<UTBotTarget>,

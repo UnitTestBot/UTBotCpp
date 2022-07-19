@@ -17,7 +17,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
         compiler.buildProject(projectPath, buildDirName)
         setTarget(targetName)
-        generatorSettings.verbose = isVerbose
+        settings.verbose = isVerbose
 
         fixture.configureFromTempProjectFile("/lib/basic_functions.c")
         fixture.editor.moveCursorToLine(lineNumber)

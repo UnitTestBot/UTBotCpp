@@ -140,9 +140,9 @@ fun toWSLPathOnWindows(filePath: String) = filePath
     .replace("""^/""".toRegex(), "/mnt/")
     .replace("""/+""".toRegex(), "/")
 
-fun Set<String>.markDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<String> {
+fun Set<String>.addDirectoriesRecursive(dirsToAdd: List<PsiDirectory>): Set<String> {
     val newSourceFolders = this.toMutableSet()
-    dirsToMark.forEach { dir ->
+    dirsToAdd.forEach { dir ->
         newSourceFolders.add(dir.virtualFile.path)
         dir.virtualFile.toNioPath().visitAllDirectories {
             newSourceFolders.add(it.toString())
@@ -151,9 +151,9 @@ fun Set<String>.markDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<St
     return newSourceFolders
 }
 
-fun Set<String>.unmarkDirectoriesRecursive(dirsToMark: List<PsiDirectory>): Set<String> {
+fun Set<String>.removeDirectoriesRecursive(dirsToRemove: List<PsiDirectory>): Set<String> {
     val newSourceFolders = this.toMutableSet()
-    dirsToMark.forEach { dir ->
+    dirsToRemove.forEach { dir ->
         newSourceFolders.add(dir.virtualFile.path)
         dir.virtualFile.toNioPath().visitAllDirectories {
             newSourceFolders.remove(it.toString())

@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.messaging
+package org.utbot.cpp.clion.plugin.listeners
 
 import com.intellij.util.messages.Topic
 

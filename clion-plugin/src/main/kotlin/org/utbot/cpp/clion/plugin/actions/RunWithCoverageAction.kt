@@ -3,9 +3,9 @@ package org.utbot.cpp.clion.plugin.actions
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
-import org.utbot.cpp.clion.plugin.actions.utils.getCoverageAndResultsRequest
+import org.utbot.cpp.clion.plugin.utils.getCoverageAndResultsRequest
 import org.utbot.cpp.clion.plugin.client.requests.RunWithCoverageRequest
-import org.utbot.cpp.clion.plugin.models.TestNameAndTestSuite
+import org.utbot.cpp.clion.plugin.ui.testsResults.TestNameAndTestSuite
 
 
 class RunWithCoverageAction(val element: PsiElement) : GenerateTestsBaseAction() {

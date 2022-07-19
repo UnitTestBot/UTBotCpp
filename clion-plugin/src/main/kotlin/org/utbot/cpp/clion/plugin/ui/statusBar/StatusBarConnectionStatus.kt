@@ -16,8 +16,8 @@ import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfi
 import org.utbot.cpp.clion.plugin.actions.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
-import org.utbot.cpp.clion.plugin.messaging.ConnectionStatus
-import org.utbot.cpp.clion.plugin.messaging.UTBotEventsListener
+import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
+import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent

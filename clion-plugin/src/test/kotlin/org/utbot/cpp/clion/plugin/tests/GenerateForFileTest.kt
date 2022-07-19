@@ -13,7 +13,7 @@ class GenerateForFileTest : BaseGenerationTestCase() {
     fun doTest(relativeFilePath: String, compiler: CppCompiler, isVerboseMode: Boolean) {
         logger.info("Testing generate for file with file: $relativeFilePath, compiler: ${compiler.name}, verboseMode: $isVerboseMode")
         compiler.buildProject(projectPath, buildDirName)
-        generatorSettings.verbose = isVerboseMode
+        settings.verbose = isVerboseMode
 
         fixture.configureFromTempProjectFile(relativeFilePath)
         fixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForFileAction")

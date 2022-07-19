@@ -1,18 +1,15 @@
-package org.utbot.cpp.clion.plugin.actions.utils
+package org.utbot.cpp.clion.plugin.utils
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.jetbrains.cidr.cpp.cmake.workspace.CMakeWorkspace
-import org.utbot.cpp.clion.plugin.services.GeneratorSettings
-import org.utbot.cpp.clion.plugin.services.UTBotSettings
-import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 import testsgen.Testgen
 import testsgen.Util
 
-fun getSettingsContextMessage(params: GeneratorSettings): Testgen.SettingsContext {
+fun getSettingsContextMessage(params: UTBotAllSettings): Testgen.SettingsContext {
     return Testgen.SettingsContext.newBuilder()
         .setVerbose(params.verbose)
         .setUseStubs(params.useStubs)
@@ -23,7 +20,7 @@ fun getSettingsContextMessage(params: GeneratorSettings): Testgen.SettingsContex
         .build()
 }
 
-fun getProjectContextMessage(params: UTBotSettings, project: Project): Testgen.ProjectContext {
+fun getProjectContextMessage(params: UTBotAllSettings, project: Project): Testgen.ProjectContext {
     return Testgen.ProjectContext.newBuilder()
         .setProjectName(project.name)
         .setProjectPath(params.convertedProjectPath)
@@ -37,7 +34,7 @@ fun getProjectContextMessage(e: AnActionEvent): Testgen.ProjectContext {
     return getProjectContextMessage(e.project?.service()!!, e.project!!)
 }
 
-fun getProjectRequestMessage(project: Project, params: UTBotSettings): Testgen.ProjectRequest {
+fun getProjectRequestMessage(project: Project, params: UTBotAllSettings): Testgen.ProjectRequest {
     return Testgen.ProjectRequest.newBuilder()
         .setSettingsContext(
             getSettingsContextMessage(
@@ -58,7 +55,7 @@ fun getSourceInfoMessage(line: Int, filePath: String, project: Project): Util.So
         .build()
 }
 
-fun getLineRequestMessage(project: Project, params: UTBotSettings, line: Int, filePath: String): Testgen.LineRequest {
+fun getLineRequestMessage(project: Project, params: UTBotAllSettings, line: Int, filePath: String): Testgen.LineRequest {
     val projectRequest = getProjectRequestMessage(project, params)
     val sourceInfo = getSourceInfoMessage(line, filePath, project)
     return Testgen.LineRequest.newBuilder()
@@ -71,7 +68,7 @@ fun getLineRequestMessage(e: AnActionEvent): Testgen.LineRequest {
     val project = e.getRequiredData(CommonDataKeys.PROJECT)
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     val editor = e.getRequiredData(CommonDataKeys.EDITOR)
-    val utbotSettings = project.service<UTBotSettings>()
+    val utbotSettings = project.utbotSettings
     val lineNumber = editor.caretModel.logicalPosition.line + 1
     return getLineRequestMessage(project, utbotSettings, lineNumber, filePath)
 }
@@ -90,7 +87,7 @@ fun getProjectRequestMessage(e: AnActionEvent): Testgen.ProjectRequest {
 fun getFileRequestMessage(e: AnActionEvent): Testgen.FileRequest {
     // this function is supposed to be called in actions' performAction(), so update() validated these properties
     val project: Project = e.project!!
-    val utbotSettings = project.service<UTBotSettings>()
+    val utbotSettings = project.utbotSettings
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
     return Testgen.FileRequest.newBuilder()
         .setProjectRequest(getProjectRequestMessage(project, utbotSettings))
@@ -184,7 +181,7 @@ fun getTestFilter(filePath: String, testName: String = "", testSuite: String = "
         .build()
 
 fun getCoverageAndResultsRequest(
-    utbotSettings: UTBotSettings,
+    utbotSettings: UTBotAllSettings,
     filePath: String,
     testSuite: String = "",
     testName: String = "",
@@ -205,7 +202,7 @@ fun getCoverageAndResultsRequest(
     testName: String = "",
     includeCoverage: Boolean = true
 ): Testgen.CoverageAndResultsRequest {
-    val utbotSettings = e.project!!.service<UTBotSettings>()
+    val utbotSettings = e.project!!.utbotSettings
     return getCoverageAndResultsRequest(
         utbotSettings,
         e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path,

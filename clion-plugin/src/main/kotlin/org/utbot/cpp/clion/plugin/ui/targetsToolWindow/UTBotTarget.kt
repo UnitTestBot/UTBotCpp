@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.models
+package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
