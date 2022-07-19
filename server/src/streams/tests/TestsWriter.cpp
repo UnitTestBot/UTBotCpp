@@ -22,17 +22,14 @@ void TestsWriter::writeReport(const std::string &content,
                               const std::string &message,
                               const fs::path &pathToStore) const
 {
-    if (fs::exists(pathToStore)) {
-        try {
-            backupIfExists(pathToStore);
-            FileSystemUtils::writeToFile(pathToStore, content);
-        } catch (const std::exception &e) {
-            LOG_S(ERROR) << e.what()
-                         << ": problem in `writeReport` with "
-                         << pathToStore;
-            throw e;
-        }
+    try {
+        backupIfExists(pathToStore);
+    } catch (const std::exception &e) {
+        LOG_S(ERROR) << e.what()
+                     << ": problem in `writeReport` with "
+                     << pathToStore;
     }
+    FileSystemUtils::writeToFile(pathToStore, content);
 }
 
 template <typename TP>

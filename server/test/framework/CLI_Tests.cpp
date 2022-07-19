@@ -125,6 +125,8 @@ namespace {
     }
 
     TEST_F(CLI_Test, Generate_Project_Tests) {
+        fs::remove(suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
