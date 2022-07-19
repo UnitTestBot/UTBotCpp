@@ -61,6 +61,10 @@ namespace {
             complex_structs_test_h,         inner_basic_functions_test_h
         };
 
+        std::vector<fs::path> allProjectSrcFiles = {
+            "assertion_failures.c", "basic_functions.c", "complex_structs.c", "inner/inner_basic_functions.c"
+        };
+
         void SetUp() override {
             clearTestDirectory();
             clearDirectory(suitePath / resultsDirectoryName);
@@ -92,7 +96,7 @@ namespace {
             }
         }
 
-        void checkCoverageDirectory() {
+        void checkResultsDirectory() {
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath /
                                                                           resultsDirectoryName);
             EXPECT_EQ(directoryIterator.size(), 3);
@@ -223,42 +227,54 @@ namespace {
     }
 
     TEST_F(CLI_Test, Run_All_Tests) {
-        runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
-                         buildDirectoryName, "project" });
+        clearTestDirectory();
+        runCommandLine({ "./utbot", "generate", "--project-path", suitePath,
+                         "--results-dir", resultsDirectoryName,
+                         "--build-dir", buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
+        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv", allProjectSrcFiles);
         runCommandLine({ "./utbot", "run", "--project-path", suitePath, "--results-dir",
                          resultsDirectoryName, "--build-dir", buildDirectoryName, "project" });
-        checkCoverageDirectory();
+        checkResultsDirectory();
+        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv", allProjectSrcFiles);
     }
 
     TEST_F(CLI_Test, Run_File_Tests) {
-        runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
-                         buildDirectoryName, "file", "--file-path",
-                         suitePath / "basic_functions.c" });
+        runCommandLine({ "./utbot", "generate", "--project-path", suitePath,
+                         "--results-dir", resultsDirectoryName,
+                         "--build-dir", buildDirectoryName, "file",
+                         "--file-path", suitePath / "basic_functions.c" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
+        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv",
+                                           {"basic_functions.c"});
         runCommandLine({ "./utbot", "run", "--project-path", suitePath, "--results-dir",
                          resultsDirectoryName, "--build-dir", buildDirectoryName, "file",
                          "--file-path", getTestDirectory() / basic_functions_tests_cpp });
-        checkCoverageDirectory();
+        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv",
+                                          {"basic_functions.c"});
+        checkResultsDirectory();
     }
 
     TEST_F(CLI_Test, Run_Specific_Test) {
-        runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
-                         buildDirectoryName, "file", "--file-path",
-                         suitePath / "basic_functions.c" });
+        runCommandLine({ "./utbot", "generate", "--project-path", suitePath,
+                         "--results-dir", resultsDirectoryName,
+                         "--build-dir", buildDirectoryName, "file",
+                         "--file-path", suitePath / "basic_functions.c" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
         runCommandLine({ "./utbot", "run", "--project-path", suitePath, "--results-dir",
                          resultsDirectoryName, "--build-dir", buildDirectoryName, "test",
                          "--file-path", getTestDirectory() / basic_functions_tests_cpp,
                          "--test-suite", "regression", "--test-name", " max__test_1" });
-        checkCoverageDirectory();
+        checkResultsDirectory();
     }
 
     TEST_F(CLI_Test, All_Command_Tests) {
         runCommandLine({ "./utbot", "all", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "--results-dir", resultsDirectoryName });
         checkTestDirectory(allProjectTestFiles);
-        checkCoverageDirectory();
+        checkResultsDirectory();
+        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv", allProjectSrcFiles);
+        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv", allProjectSrcFiles);
     }
 
     TEST_F(CLI_Test, Target_Option_Tests) {
@@ -266,6 +282,5 @@ namespace {
                          buildDirectoryName, "file", "--file-path",
                          suitePath / "basic_functions.c", "--target", "cli" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
-
     }
 }
