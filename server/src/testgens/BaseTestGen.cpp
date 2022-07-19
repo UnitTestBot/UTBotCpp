@@ -54,6 +54,7 @@ void BaseTestGen::setTargetPath(fs::path _targetPath) {
 }
 
 void BaseTestGen::updateTargetSources() {
+    buildDatabase->updateTarget(getTargetPath());
     targetSources = CollectionUtils::transformTo<CollectionUtils::FileSet>(
             buildDatabase->getArchiveObjectFiles(getTargetPath()), [this](fs::path const &objectPath) {
             return buildDatabase->getClientCompilationUnitInfo(objectPath)->getSourcePath();

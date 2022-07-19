@@ -11,14 +11,14 @@ public:
     ProjectTestGen(const testsgen::ProjectRequest &request,
                    ProgressWriter *progressWriter,
                    bool testMode,
-                   bool autoDetect = true);
+                   bool autoSrcPaths = true);
 
     ~ProjectTestGen() override = default;
 
     std::string toString() override;
 
     const testsgen::ProjectRequest *getRequest() const;
-    
+
     void setTargetForSource(fs::path const &sourcePath) override;
 
 private:

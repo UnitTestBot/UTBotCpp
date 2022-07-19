@@ -21,9 +21,7 @@ namespace utbot {
     }
 
     CompileCommand::CompileCommand(CompileCommand &&other) noexcept : BaseCommand(std::move(other)),
-                                                                      sourcePath(other.sourcePath),
-                                                                      compiler(other.compiler),
-                                                                      output(other.output) {
+                                                                      sourcePath(other.sourcePath) {
     }
 
     CompileCommand &CompileCommand::operator=(const CompileCommand &other) {
@@ -92,24 +90,8 @@ namespace utbot {
         *(this->sourcePath) = std::move(sourcePath);
     }
 
-    fs::path CompileCommand::getCompiler() const {
-        return *compiler;
-    }
-
-    void CompileCommand::setCompiler(fs::path compiler) {
-        *(this->compiler) = std::move(compiler);
-    }
-
-    fs::path CompileCommand::getOutput() const {
-        return *output;
-    }
-
     bool CompileCommand::isArchiveCommand() const {
         return false;
-    }
-
-    void CompileCommand::setOutput(fs::path output) {
-        *(this->output) = std::move(output);
     }
 
     void CompileCommand::removeCompilerFlagsAndOptions(
