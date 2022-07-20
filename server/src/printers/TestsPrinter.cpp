@@ -187,7 +187,7 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                       bool verbose,
                                       int &testNum) {
-    auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
+    auto &testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
     }
