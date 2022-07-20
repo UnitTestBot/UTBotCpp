@@ -47,7 +47,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
 
     nlohmann::json sarifResults;
 
-    std::function<void(tests::Tests &tests)> prepateTests = [&](tests::Tests &tests) {
+    std::function<void(tests::Tests &tests)> prepareTests = [&](tests::Tests &tests) {
         fs::path filePath = tests.sourceFilePath;
         const auto &batch = fileToMethods[filePath];
         if (!tests.isFilePresentedInCommands) {
@@ -104,7 +104,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         testsMap,
         "Running klee",
         projectContext.testDirPath,
-        std::move(prepateTests),
+        std::move(prepareTests),
         std::move(prepareTotal));
 }
 

@@ -51,6 +51,7 @@
               ]
             }
           ],
+          "kind": "fail",
           "level": "error",
           "locations": [
             {
@@ -164,6 +165,7 @@
               ]
             }
           ],
+          "kind": "fail",
           "level": "error",
           "locations": [
             {

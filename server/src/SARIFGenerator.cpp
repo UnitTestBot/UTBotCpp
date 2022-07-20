@@ -140,6 +140,7 @@ namespace sarif {
                                 if (key == "Error") {
                                     result["message"]["text"] = value;
                                     result["level"] = "error";
+                                    result["kind"] = "fail";
                                 } else if (key == ERROR_ID_KEY) {
                                     result["ruleId"] = value;
                                 } else if (key == "Stack") {
