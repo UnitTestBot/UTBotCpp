@@ -35,11 +35,12 @@ namespace {
         for (const auto &key: keys) {
             if (!CollectionUtils::containsKey(parsedCSV, key)) {
                 LOG_S(WARNING) << StringUtils::stringFormat("Key %s not found in klee-stats report", key);
+                return {};
             }
             std::chrono::milliseconds totalTime((int)(1000 * std::stof(parsedCSV[key].back())));
             timeValues.emplace_back(totalTime);
         }
-        return StatsUtils::KleeStats(timeValues[0], timeValues[1], timeValues[2]);
+        return { timeValues[0], timeValues[1], timeValues[2] };
     }
 
     StatsUtils::KleeStats writeKleeStats(const fs::path &kleeOut) {
@@ -50,6 +51,7 @@ namespace {
         if (status != 0) {
             LOG_S(ERROR) << "klee-stats call failed:";
             LOG_S(ERROR) << out;
+            return {};
         } else {
             LOG_S(DEBUG) << "klee-stats report:";
             LOG_S(DEBUG) << '\n' << out;
