@@ -8,6 +8,7 @@ import * as fs from 'fs';
 import { ExtensionLogger } from "../logger";
 import { TestsRunner } from "../runner/testsRunner";
 import {Uri} from "vscode";
+import * as messages from "../config/notificationMessages";
 
 const { logger } = ExtensionLogger;
 
@@ -81,8 +82,11 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
 
                 await vs.workspace.fs.writeFile(testfile, Buffer.from(test.getCode()));
                 if (isSarifReport) {
-                    const sarifExt = vs.extensions.getExtension('MS-SarifVSCode.sarif-viewer');
-                    if (sarifExt != null) {
+                    const sarifExt = vs.extensions.getExtension(messages.defaultSARIFViewer);
+                    // eslint-disable-next-line eqeqeq
+                    if (sarifExt == null) {
+                        messages.showWarningMessage(messages.intstallSARIFViewer);
+                    } else {
                         if (!sarifExt.isActive) {
                             await sarifExt.activate();
                         }
