@@ -8,14 +8,14 @@
 #include "utils/DynamicLibraryUtils.h"
 #include "utils/JsonUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/GrpcUtils.h"
+#include "utils/GenerationUtils.h"
 
 #include "loguru.h"
 
 #include <functional>
 #include <queue>
 #include <unordered_map>
-#include "utils/GrpcUtils.h"
-#include "utils/GenerationUtils.h"
 
 static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
                                           const fs::path &dirPath) {
@@ -153,6 +153,7 @@ void BuildDatabase::initObjects(const nlohmann::json &compileCommandsJson) {
         sourceFileInfos[sourcePath].emplace_back(objectInfo);
     }
     for (auto &[sourceFile, objectInfos]: sourceFileInfos) {
+        //Need stable sort for save order of 32 and 64 bits files
         std::stable_sort(objectInfos.begin(), objectInfos.end(), conflictPriorityMore);
     }
 }
