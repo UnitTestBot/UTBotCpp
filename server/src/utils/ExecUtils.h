@@ -42,10 +42,12 @@ namespace ExecUtils {
                             Functor &&functor) {
         size_t size = iterable.size();
         progressWriter->writeProgress(message);
+        size_t step = 0;
         for (auto &&it : iterable) {
             throwIfCancelled();
             functor(it);
-            progressWriter->writeProgress(message, 100.0 / size);
+            progressWriter->writeProgress(message, (100.0 * step) / size);
+            ++step;
         }
     }
 

@@ -6,6 +6,7 @@
 
 #include "utils/path/FileSystemPath.h"
 #include <fstream>
+#include <exception>
 
 namespace JsonUtils {
     nlohmann::json getJsonFromFile(const fs::path &path) {
@@ -15,6 +16,9 @@ namespace JsonUtils {
         try {
             nlohmann::json coverageJson = nlohmann::json::parse(buffer.str());
             return coverageJson;
+        } catch (const std::exception &e) {
+            LOG_S(ERROR) << e.what() << ": " << buffer.str() << " in: " << path.string();
+            throw e;
         } catch (...) {
             LOG_S(ERROR) << buffer.str();
             throw;

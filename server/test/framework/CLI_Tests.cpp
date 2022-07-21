@@ -2,6 +2,7 @@
 
 #include "BaseTest.h"
 #include "KleeGenerator.h"
+#include "SARIFGenerator.h"
 #include "Paths.h"
 #include "Server.h"
 #include "TestUtils.h"
@@ -100,10 +101,38 @@ namespace {
         }
     };
 
+    std::size_t replaceAll(std::string& inout, std::string_view what, std::string_view with)
+    {
+        std::size_t count{};
+        for (std::string::size_type pos{};
+             inout.npos != (pos = inout.find(what.data(), pos, what.length()));
+             pos += with.length(), ++count) {
+            inout.replace(pos, what.length(), with.data(), with.length());
+        }
+        return count;
+    }
+
+    std::string getNormalizedContent(const fs::path &name) {
+        EXPECT_TRUE(fs::exists(name)) << "File " << name.c_str() << " don't exists!";
+        std::ifstream src(name, std::ios_base::in);
+        std::string content((std::istreambuf_iterator<char>(src)), std::istreambuf_iterator<char>());
+        replaceAll(content, "\r\n", "\n");
+        return content;
+    }
+
+    void compareFiles(const fs::path &golden, const fs::path &real) {
+        ASSERT_EQ(getNormalizedContent(golden), getNormalizedContent(real));
+    }
+
     TEST_F(CLI_Test, Generate_Project_Tests) {
+        fs::remove(suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
+
+        compareFiles( suitePath / "goldenImage" / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME,
+                      suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
     }
 
     TEST_F(CLI_Test, Generate_File_Tests) {

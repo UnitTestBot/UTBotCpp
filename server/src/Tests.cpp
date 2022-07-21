@@ -22,13 +22,12 @@ const Tests::MethodParam &tests::Tests::getStdinMethodParam() {
     return stdinMethodParam;
 }
 
-Tests::MethodDescription::MethodDescription() : suiteTestCases{
-    {Tests::DEFAULT_SUITE_NAME, std::vector<MethodTestCase>()},
-    {Tests::ERROR_SUITE_NAME, std::vector<MethodTestCase>()}
-}, codeText{
-    {Tests::DEFAULT_SUITE_NAME, std::string()},
-    {Tests::ERROR_SUITE_NAME, std::string()}
-} {}
+Tests::MethodDescription::MethodDescription()
+    : suiteTestCases{ { Tests::DEFAULT_SUITE_NAME, std::vector<int>() },
+                      { Tests::ERROR_SUITE_NAME, std::vector<int>() } },
+      codeText{ { Tests::DEFAULT_SUITE_NAME, std::string() },
+                { Tests::ERROR_SUITE_NAME, std::string() } } {
+}
 
 static std::string makeDecimalConstant(std::string value, const std::string &typeName) {
     if (typeName == "long") {
@@ -558,7 +557,6 @@ void KTestObjectParser::addToOrder(const std::vector<UTBotKTestObject> &objects,
     }
     std::string message = "Don't find object " + paramName + " in objects array";
     LOG_S(WARNING) << message;
-    return;
 }
 
 void KTestObjectParser::assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
@@ -678,12 +676,13 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
     }
     int caseCounter = 0;
 
+    int testIndex = 0;
     for (const auto &case_ : cases) {
         try {
             std::stringstream traceStream;
             traceStream << "Test case #" << (++caseCounter) << ":\n";
             std::string suiteName = getSuiteName(case_.status, lineInfo);
-            Tests::MethodTestCase testCase{suiteName};
+            Tests::MethodTestCase testCase{testIndex, suiteName};
             std::vector<Tests::TestCaseParamValue> paramValues;
 
             Tests::TestCaseDescription testCaseDescription = parseTestCaseParameters(case_, methodDescription,
@@ -695,7 +694,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
                 methodDescription.params.empty()) {
                 std::swap(testCase.paramValues, testCaseDescription.funcParamValues);
             } else {
-                // if all of the data characters are not printable the case is skipped
+                // if all the data characters are not printable the case is skipped
                 continue;
             }
             std::swap(testCase.classPreValues, testCaseDescription.classPreValues);
@@ -709,6 +708,9 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             std::swap(testCase.objects, testCaseDescription.objects);
             std::swap(testCase.lazyAddressToName, testCaseDescription.lazyAddressToName);
             std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+
+            testCase.errorDescriptors = case_.errorDescriptors;
+
             if (filterByLineFlag) {
                 auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
                 if (!view || view->getEntryValue(nullptr) != "1") {
@@ -740,7 +742,8 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             assignTypeStubVar(testCase, methodDescription);
 
             methodDescription.testCases.push_back(testCase);
-            methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase);
+            methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase.testIndex);
+            ++testIndex;
         } catch (const UnImplementedException &e) {
             LOG_S(WARNING) << "Skipping test case: " << e.what();
         } catch (const NoSuchTypeException &e) {

@@ -3,8 +3,12 @@ import { Prefs } from "../config/prefs";
 import { CoverageAndResultsResponse, ProjectConfigResponse, StubsResponse, TestsResponse } from "../proto-ts/testgen_pb";
 import * as pathUtils from '../utils/pathUtils';
 import * as vs from 'vscode';
+import * as path from 'path';
+import * as fs from 'fs';
 import { ExtensionLogger } from "../logger";
 import { TestsRunner } from "../runner/testsRunner";
+import {Uri} from "vscode";
+import * as messages from "../config/notificationMessages";
 
 const { logger } = ExtensionLogger;
 
@@ -29,6 +33,7 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
 
     public async handle(response: TestsResponse): Promise<void> {
         const testsSourceList = response.getTestsourcesList();
+
         testsSourceList.forEach(testsSourceInfo => {
             this.testsRunner.testResultsVizualizer.clearTestsByTestFileName(testsSourceInfo.getFilepath(), false);
         });
@@ -43,8 +48,7 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                     await vs.workspace.fs.writeFile(stubfile, Buffer.from(stub.getCode()));
                 }));
             }
-            const testsFiles = testsSourceList;
-            await Promise.all((testsFiles).map(async (test) => {
+            await Promise.all((testsSourceList).map(async (test) => {
                 const localPath = pathUtils.substituteLocalPath(test.getFilepath());
                 const testfile = vs.Uri.file(localPath);
                 
@@ -55,7 +59,42 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                 } else {
                     logger.info(`Generated test file ${localPath}`);
                 }
+
+                const isSarifReport = testfile.path.endsWith("project_code_analysis.sarif");
+                if (isSarifReport && fs.existsSync(testfile.fsPath)) {
+                    const ctime = fs.lstatSync(testfile.fsPath).ctime;
+
+                    // eslint-disable-next-line no-inner-declarations
+                    function pad2(num: number): string {
+                        return ("0" + num).slice(-2);
+                    }
+
+                    const newName = "project_code_analysis-"
+                    + ctime.getFullYear()
+                    + pad2(ctime.getMonth() + 1)
+                    + pad2(ctime.getDate())
+                    + pad2(ctime.getHours())
+                    + pad2(ctime.getMinutes())
+                    + pad2(ctime.getSeconds())
+                    + ".sarif";
+                    await vs.workspace.fs.rename(testfile, Uri.file(path.join(path.dirname(testfile.fsPath), newName)));
+                }
+
                 await vs.workspace.fs.writeFile(testfile, Buffer.from(test.getCode()));
+                if (isSarifReport) {
+                    const sarifExt = vs.extensions.getExtension(messages.defaultSARIFViewer);
+                    // eslint-disable-next-line eqeqeq
+                    if (sarifExt == null) {
+                        messages.showWarningMessage(messages.intstallSARIFViewer);
+                    } else {
+                        if (!sarifExt.isActive) {
+                            await sarifExt.activate();
+                        }
+                        await sarifExt.exports.openLogs([
+                            testfile,
+                        ]);    
+                    }                 
+                }
                 return testfile;
             }));
         }

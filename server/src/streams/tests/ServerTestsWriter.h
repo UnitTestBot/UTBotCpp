@@ -14,9 +14,14 @@ public:
         : TestsWriter(writer), synchronizeCode(synchronizeCode)  {};
 
     void writeTestsWithProgress(tests::TestsMap &testMap,
-                                std::string const &message,
+                                const std::string &message,
                                 const fs::path &testDirPath,
-                                std::function<void(tests::Tests &)> &&functor) override;
+                                std::function<void(tests::Tests &)> &&prepareTests,
+                                std::function<void()> &&prepareTotal) override;
+
+    void writeReport(const std::string &content,
+                     const std::string &message,
+                     const fs::path &pathToStore) const override;
 
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,

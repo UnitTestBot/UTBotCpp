@@ -42,9 +42,7 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase,
                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
-        void testHeader(const std::string &scopeName,
-                        const tests::Tests::MethodDescription &methodDescription,
-                        int testNum);
+        void testHeader(const Tests::MethodTestCase &testCase);
 
         void redirectStdin(const tests::Tests::MethodDescription &methodDescription,
                            const Tests::MethodTestCase &testCase,
@@ -90,6 +88,11 @@ namespace printer {
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+
+        void markTestedFunctionCallIfNeed(const std::string &name,
+                                          const Tests::MethodTestCase &testCase);
+
+        void printFinalCodeAndAlterJson(Tests &tests);
 
         std::vector<std::string>
         methodParametersListParametrized(const tests::Tests::MethodDescription &methodDescription,

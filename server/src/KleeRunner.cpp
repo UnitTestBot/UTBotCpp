@@ -2,6 +2,7 @@
 
 #include "Paths.h"
 #include "TimeExecStatistics.h"
+#include "SARIFGenerator.h"
 #include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
 #include "tasks/RunKleeTask.h"
@@ -44,7 +45,9 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         fileToMethods[method.sourceFilePath].push_back(method);
     }
 
-    std::function<void(tests::Tests &tests)> writeFunctor = [&](tests::Tests &tests) {
+    nlohmann::json sarifResults;
+
+    std::function<void(tests::Tests &tests)> prepareTests = [&](tests::Tests &tests) {
         fs::path filePath = tests.sourceFilePath;
         const auto &batch = fileToMethods[filePath];
         if (!tests.isFilePresentedInCommands) {
@@ -87,10 +90,22 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         }
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
                                           settingsContext.verbose);
+
+        sarif::sarifAddTestsToResults(projectContext, tests, sarifResults);
     };
 
-    testsWriter->writeTestsWithProgress(testsMap, "Running klee", projectContext.testDirPath,
-                                        std::move(writeFunctor));
+    std::function<void()> prepareTotal = [&]() {
+        testsWriter->writeReport(sarif::sarifPackResults(sarifResults),
+                                 "Sarif Report was created",
+                                 projectContext.projectPath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+    };
+
+    testsWriter->writeTestsWithProgress(
+        testsMap,
+        "Running klee",
+        projectContext.testDirPath,
+        std::move(prepareTests),
+        std::move(prepareTotal));
 }
 
 namespace {
@@ -136,8 +151,13 @@ static void processMethod(MethodKtests &ktestChunk,
                         LOG_S(WARNING) << "Unable to open .ktestjson file";
                         continue;
                     }
-                    UTBotKTest::Status status = Paths::hasError(path) ? UTBotKTest::Status::FAILED
-                                                                      : UTBotKTest::Status::SUCCESS;
+
+                    const std::vector<fs::path> &errorDescriptorFiles =
+                        Paths::getErrorDescriptors(path);
+
+                    UTBotKTest::Status status = errorDescriptorFiles.empty()
+                                                    ? UTBotKTest::Status::SUCCESS
+                                                    : UTBotKTest::Status::FAILED;
                     std::vector<ConcretizedObject> kTestObjects(
                         ktestData->objects, ktestData->objects + ktestData->n_objects);
 
@@ -146,7 +166,22 @@ static void processMethod(MethodKtests &ktestChunk,
                             return UTBotKTestObject{ kTestObject };
                         });
 
-                    ktestChunk[method].emplace_back(objects, status);
+                    std::vector<std::string> errorDescriptors = CollectionUtils::transform(
+                        errorDescriptorFiles, [](const fs::path &errorFile) {
+                            std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
+                            std::string content((std::istreambuf_iterator<char>(fileWithError)),
+                                                std::istreambuf_iterator<char>());
+
+                            const std::string &errorId = errorFile.stem().extension().string();
+                            if (!errorId.empty()) {
+                                // skip leading dot
+                                content += "\n" + sarif::ERROR_ID_KEY + ":" + errorId.substr(1);
+                            }
+                            return content;
+                        });
+
+
+                    ktestChunk[method].emplace_back(objects, status, errorDescriptors);
                 }
             }
         }
