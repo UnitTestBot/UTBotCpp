@@ -117,12 +117,12 @@ struct ForwardDecl {
 };
 
 // it's a duplicate of struct in types.h
-struct SupportedStruct1 {
+struct SimpleStruct {
     int length;
     int x[2];
 };
 
-long mul_of(struct SupportedStruct1 arg) {
+long mul_of(struct SimpleStruct arg) {
     long mul = 1;
     for (int i = 0; i < arg.length; i++) {
         mul *= arg.x[i];

@@ -15,4 +15,5 @@ void variadic_function(const char* fmt, ...) {
         }
         ++fmt;
     }
+    va_end(args);
 }
