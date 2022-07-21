@@ -1,6 +1,6 @@
 #include "TestsWriter.h"
 
-#include <SARIFGenerator.h>
+#include "SARIFGenerator.h"
 #include "utils/FileSystemUtils.h"
 
 #include "loguru.h"

@@ -10,10 +10,13 @@
 using namespace tests;
 
 namespace sarif {
-    // Some more logic above standard implementation
-    //     `fs::relative(src, path)`
-    // for the case of src as the relative path.
-    // For example:
+    // Here is a temporary solution that restores the correct project-relative path from
+    // the abstract relative path, provided by KLEE in stack trace inside a `XXXX.err` file.
+    // There is no clear reason why KLEE is using the wrong base for relative path.
+    // The correct way to extract the full path for a stack file is in checking entries like
+    // !820 = !DIFile(filename: "test/suites/cli/complex_structs.c", directory: "/home/utbot/tmp/UTBotCpp/server")
+    // in upper laying file `assembly.ll`; then we may call the `fs::relative(src, path)`.
+    // For example the function call:
     //     getInProjectPath("/home/utbot/tmp/UTBotCpp/server/test/suites/object-file",
     //                      "test/suites/object-file/op/source2.c")
     // returns
@@ -121,8 +124,8 @@ namespace sarif {
                                 }
                             }
                         } else {
-                            int pos = lineInDescriptor.find(':');
-                            if (pos == -1) {
+                            size_t pos = lineInDescriptor.find(':');
+                            if (pos == std::string::npos) {
                                 LOG_S(ERROR) << "no key:" << lineInDescriptor;
                             } else {
                                 if (key == "Stack") {

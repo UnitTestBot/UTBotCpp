@@ -89,7 +89,7 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
                 Tests::MethodsMap::iterator it = tests.methods.find(name);
                 if (it != tests.methods.end() && testIndex >= 0) {
                     Tests::MethodDescription &methodDescription = it.value();
-                    std::vector<Tests::MethodTestCase> &testCases =methodDescription.testCases;
+                    std::vector<Tests::MethodTestCase> &testCases = methodDescription.testCases;
                     if (testIndex < testCases.size()) {
                         Tests::MethodTestCase &testCase = testCases[testIndex];
                         auto &descriptors = testCase.errorDescriptors;
@@ -100,16 +100,16 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
                                          << testIndex;
                             continue;
                         }
-                        std::stringstream ss;
-                        ss << sarif::TEST_FILE_KEY << ":" << tests.testSourceFilePath.c_str() << std::endl
-                           << sarif::TEST_LINE_KEY << ":" << line_count << std::endl
-                           << sarif::TEST_NAME_KEY << ":"
-                                          << testCase.suiteName
-                                          << "."
-                                          << testCase.testName
-                                          << std::endl;
+                        std::stringstream ssFromTestCallInfo;
+                        ssFromTestCallInfo
+                          << sarif::TEST_FILE_KEY << ":" << tests.testSourceFilePath.c_str() << std::endl
+                          << sarif::TEST_LINE_KEY << ":" << line_count << std::endl
+                          << sarif::TEST_NAME_KEY << ":" << testCase.suiteName
+                                                         << "."
+                                                         << testCase.testName
+                                                         << std::endl;
 
-                        descriptors.emplace_back(ss.str());
+                        descriptors.emplace_back(ssFromTestCallInfo.str());
                         // ok
                         continue;
                     }
