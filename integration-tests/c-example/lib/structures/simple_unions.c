@@ -49,6 +49,13 @@ int get_coordinate(union Vector2D vect, int i) {
     return 0;
 }
 
+int count_equal_members_anon_union(struct WithAnonymousUnion st) {
+    if (st.i == st.m) {
+        return 2;
+    }
+    return 1;
+}
+
 signed char operate_with_inner_unions(union MainUnion st) {
     if (st.x == 5 || st.y == 5 || st.inner.c == '5' ||
         st.inner.s == 5 || st.inner.ininner.l == 5 || st.inner.ininner.u == 5) {
@@ -72,16 +79,16 @@ signed char operate_with_inner_unions(union MainUnion st) {
 
 union MainUnion union_as_return_type(int a) {
     if (a == 0) {
-        union MainUnion res = {{.c='0'}};
+        union MainUnion res = {{ .c='0' }};
         return res;
     }
 
     if (a == 1) {
-        union MainUnion res = {{.ininner={.l=1}}};
+        union MainUnion res = {{ .ininner={ .l=1 }}};
         return res;
     }
 
-    union MainUnion res = {.x=2};
+    union MainUnion res = { .x=2 };
     return res;
 }
 
@@ -111,7 +118,7 @@ long long operateWithUnionWithPointer(union UnionWithPointer un) {
     if (un.b == 1) {
         return 1;
     }
-    
+
     if (un.a == NULL) {
         return 0;
     }

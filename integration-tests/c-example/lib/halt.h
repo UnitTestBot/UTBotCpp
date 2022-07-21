@@ -5,4 +5,8 @@ int raise_by_num(int num);
 
 int raise_stop(int _);
 
+void cleanup();
+
+int call_abort();
+
 #endif
