@@ -5,8 +5,8 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
-import org.utbot.cpp.clion.plugin.utils.getDummyRequest
-import org.utbot.cpp.clion.plugin.utils.getLogChannelRequest
+import org.utbot.cpp.clion.plugin.grpc.getDummyRequest
+import org.utbot.cpp.clion.plugin.grpc.getLogChannelRequest
 import org.utbot.cpp.clion.plugin.ui.userLog.OutputProvider
 import org.utbot.cpp.clion.plugin.ui.userLog.UTBotConsole
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt

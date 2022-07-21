@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.utbot.cpp.clion.plugin.utils.getVersionInfo
+import org.utbot.cpp.clion.plugin.grpc.getVersionRequests
 import org.utbot.cpp.clion.plugin.client.GrpcClient
 import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
@@ -103,7 +103,7 @@ class ConnectionStep(
                 portTextField.text = UTBotAllSettings.DEFAULT_PORT.toString()
                 hostTextField.text = UTBotAllSettings.DEFAULT_HOST
                 remotePathTextField.text = project.utbotSettings.projectPath
-                if (isWindows())
+                if (isWindows)
                     remotePathTextField.text = toWSLPathOnWindows(remotePathTextField.text)
             }
         }
@@ -113,7 +113,7 @@ class ConnectionStep(
         connectionStatus.value = ConnectionStatus.connecting
         runCatching {
             GrpcClient(port, host, "DummyId").use { client ->
-                serverVersion = client.stub.handshake(getVersionInfo()).version
+                serverVersion = client.stub.handshake(getVersionRequests()).version
                 if (serverVersion != UTBotAllSettings.clientVersion)
                     return ConnectionStatus.warning
                 return ConnectionStatus.connected

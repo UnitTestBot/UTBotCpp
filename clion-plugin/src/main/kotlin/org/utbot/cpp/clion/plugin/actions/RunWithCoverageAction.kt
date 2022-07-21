@@ -1,10 +1,12 @@
 package org.utbot.cpp.clion.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
-import org.utbot.cpp.clion.plugin.utils.getCoverageAndResultsRequest
+import org.utbot.cpp.clion.plugin.grpc.getCoverageAndResultsRequest
 import org.utbot.cpp.clion.plugin.client.requests.RunWithCoverageRequest
+import org.utbot.cpp.clion.plugin.grpc.activeProject
 import org.utbot.cpp.clion.plugin.ui.testsResults.TestNameAndTestSuite
 
 
@@ -17,7 +19,8 @@ class RunWithCoverageAction(val element: PsiElement) : GenerateTestsBaseAction()
         val testArgs = TestNameAndTestSuite.getFromPsiElement(element)
         val suiteName = testArgs.suite
         val testedMethodName = testArgs.name
-        val request = getCoverageAndResultsRequest(e, suiteName, testedMethodName)
+        val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
+        val request = getCoverageAndResultsRequest(e.activeProject(), filePath, suiteName, testedMethodName)
         RunWithCoverageRequest(
             e.project!!,
             request

@@ -2,13 +2,13 @@ package org.utbot.cpp.clion.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.utils.getFolderRequestMessage
+import org.utbot.cpp.clion.plugin.grpc.getFolderRequest
 import org.utbot.cpp.clion.plugin.client.requests.FolderRequest
 
 class GenerateForFolderAction : GenerateTestsBaseAction() {
     override fun actionPerformed(e: AnActionEvent) {
         FolderRequest(
-            getFolderRequestMessage(e),
+            getFolderRequest(e),
             e.project!!
         ).execute()
     }
