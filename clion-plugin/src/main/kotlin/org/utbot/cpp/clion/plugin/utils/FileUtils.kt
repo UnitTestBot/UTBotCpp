@@ -6,6 +6,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiDirectory
 import kotlin.io.path.div
 import org.apache.commons.io.FilenameUtils
+import org.utbot.cpp.clion.plugin.grpc.allSettings
 import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
@@ -168,17 +169,16 @@ fun Set<String>.removeDirectoriesRecursive(dirsToRemove: List<PsiDirectory>): Se
  *
  * If [isRemoteScenario] == false, this function returns [path] unchanged.
  *
- * @param path - absolute path on local machine to be converted
  */
 fun String.convertToRemotePathIfNeeded(project: Project): String {
-    if (project.utbotSettings.isRemoteScenario())
+    if (project.allSettings().isRemoteScenario)
         return this.convertToRemotePath(project)
     return this
 }
 
 fun String.convertToRemotePath(project: Project): String {
     val relativeToProjectPath = this.getRelativeToProjectPath(project)
-    return FilenameUtils.separatorsToUnix(Paths.get(project.utbotSettings.remotePath, relativeToProjectPath).toString())
+    return FilenameUtils.separatorsToUnix(Paths.get(project.allSettings().remotePath, relativeToProjectPath).toString())
 }
 
 /**
@@ -186,19 +186,20 @@ fun String.convertToRemotePath(project: Project): String {
  *
  * If remote path == "", this function returns [path] unchanged.
  *
- * @param path - absolute path on docker to be converted
+ * @param path - absolute path in Docker to be converted
  */
+//TODO: it seems that this method should return Path, not String
+//TODO: update documentation after refactoring
 fun String.convertFromRemotePathIfNeeded(project: Project): String {
-    if (project.utbotSettings.isRemoteScenario())
+    if (project.allSettings().isRemoteScenario)
         return this.convertFromRemotePath(project)
     return this
 }
 
-fun String.convertFromRemotePath(project: Project): String {
-    val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(project.utbotSettings.remotePath, this))
-    return FilenameUtils.separatorsToSystem(Paths.get(project.utbotSettings.projectPath, relativeToProjectPath).toString())
+private fun String.convertFromRemotePath(project: Project): String {
+    val settings = project.allSettings()
+    val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(settings.remotePath, this))
+    return FilenameUtils.separatorsToSystem(Paths.get(settings.projectPath, relativeToProjectPath).toString())
 }
 
-fun String.getRelativeToProjectPath(project: Project): String {
-    return relativize(project.utbotSettings.projectPath, this)
-}
+private fun String.getRelativeToProjectPath(project: Project): String = relativize(project.allSettings().projectPath, this)

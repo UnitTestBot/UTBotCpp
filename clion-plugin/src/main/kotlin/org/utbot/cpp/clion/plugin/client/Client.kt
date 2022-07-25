@@ -21,8 +21,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 
 import kotlinx.coroutines.Job
-import org.utbot.cpp.clion.plugin.utils.getProjectConfigRequestMessage
-import org.utbot.cpp.clion.plugin.utils.getVersionInfo
+import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
+import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
@@ -84,7 +84,7 @@ class Client(
     fun configureProject() {
         CheckProjectConfigurationRequest(
             project,
-            getProjectConfigRequestMessage(project, Testgen.ConfigMode.CHECK)
+            getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK)
         ).also {
             executeRequest(it)
         }
@@ -96,7 +96,7 @@ class Client(
         requestsCS.launch {
             // Logger.info("sending HandShake request!")
             try {
-                stub.handshake(getVersionInfo())
+                stub.handshake(getVersionGrpcRequest())
                 logger.info { "Handshake successful!" }
             } catch (e: Exception) {
                 logger.warn { "HandShake failed with the following error: ${e.message}" }
