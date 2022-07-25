@@ -202,7 +202,8 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     command.setOutput(bitcodeFilePath);
 
     printer::DefaultMakefilePrinter makefilePrinter;
-    makefilePrinter.declareTarget("build", {command.getSourcePath()}, {command.toStringWithChangingDirectory()});
+    auto printingCommand = utbot::CompileCommand(command, true);
+    makefilePrinter.declareTarget("build", {printingCommand.getSourcePath()}, {printingCommand.toStringWithChangingDirectory()});
     fs::path makefile = projectTmpPath / "BCForKLEE.mk";
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
@@ -210,7 +211,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     auto [out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"
-                     << "Command: \"" << command.toString() << "\"\n"
+                     << "Command: \"" << printingCommand.toString() << "\"\n"
                      << "Directory: " << buildDirPath << "\n"
                      << out << "\n";
         return out;
