@@ -5,8 +5,8 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
-import org.utbot.cpp.clion.plugin.grpc.getDummyRequest
-import org.utbot.cpp.clion.plugin.grpc.getLogChannelRequest
+import org.utbot.cpp.clion.plugin.grpc.getDummyGrpcRequest
+import org.utbot.cpp.clion.plugin.grpc.getLogChannelGrpcRequest
 import org.utbot.cpp.clion.plugin.ui.userLog.OutputProvider
 import org.utbot.cpp.clion.plugin.ui.userLog.UTBotConsole
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
@@ -58,11 +58,11 @@ class GTestChannel(project: Project): BaseChannel(project) {
     override val console: UTBotConsole = project.service<OutputProvider>().gtestOutputChannel.outputConsole
 
     override suspend fun close(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub) {
-        stub.closeGTestChannel(getDummyRequest())
+        stub.closeGTestChannel(getDummyGrpcRequest())
     }
 
     override suspend fun open(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub): Flow<Testgen.LogEntry> {
-        return stub.openGTestChannel(getLogChannelRequest(logLevel))
+        return stub.openGTestChannel(getLogChannelGrpcRequest(logLevel))
     }
 }
 
@@ -72,10 +72,10 @@ class ServerLogChannel(project: Project): BaseChannel(project) {
     override val console: UTBotConsole = project.service<OutputProvider>().serverOutputChannel.outputConsole
 
     override suspend fun close(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub) {
-        stub.closeLogChannel(getDummyRequest())
+        stub.closeLogChannel(getDummyGrpcRequest())
     }
 
     override suspend fun open(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub): Flow<Testgen.LogEntry> {
-        return stub.openLogChannel(getLogChannelRequest(logLevel))
+        return stub.openLogChannel(getLogChannelGrpcRequest(logLevel))
     }
 }

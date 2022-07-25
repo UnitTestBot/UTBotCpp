@@ -2,13 +2,13 @@ package org.utbot.cpp.clion.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.grpc.getAssertionRequest
+import org.utbot.cpp.clion.plugin.grpc.getAssertionGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.AssertionRequest
 
 class GenerateForAssertionAction : GenerateTestsBaseAction() {
     override fun actionPerformed(e: AnActionEvent) {
         AssertionRequest(
-            getAssertionRequest(e),
+            getAssertionGrpcRequest(e),
             e.project!!,
         ).execute()
     }

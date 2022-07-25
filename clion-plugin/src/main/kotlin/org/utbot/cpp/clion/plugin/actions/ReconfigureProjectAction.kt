@@ -4,7 +4,7 @@ import com.intellij.notification.Notification
 import com.intellij.notification.NotificationAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.grpc.getProjectConfigRequest
+import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import testsgen.Testgen
 
@@ -16,7 +16,7 @@ class ReconfigureProjectAction: NotificationAction(UTBot.message("projectConfigu
     override fun actionPerformed(e: AnActionEvent) {
         CheckProjectConfigurationRequest(
             e.project!!,
-            getProjectConfigRequest(e.project!!, Testgen.ConfigMode.ALL),
+            getProjectConfigGrpcRequest(e.project!!, Testgen.ConfigMode.ALL),
         ).execute()
     }
 

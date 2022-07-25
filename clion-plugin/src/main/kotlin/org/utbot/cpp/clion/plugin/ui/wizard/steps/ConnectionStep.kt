@@ -24,7 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.utbot.cpp.clion.plugin.grpc.getVersionRequests
+import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.client.GrpcClient
 import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
@@ -113,7 +113,7 @@ class ConnectionStep(
         connectionStatus.value = ConnectionStatus.connecting
         runCatching {
             GrpcClient(port, host, "DummyId").use { client ->
-                serverVersion = client.stub.handshake(getVersionRequests()).version
+                serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
                 if (serverVersion != UTBotAllSettings.clientVersion)
                     return ConnectionStatus.warning
                 return ConnectionStatus.connected

@@ -4,10 +4,12 @@ import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
 import testsgen.Testgen
 
-//TODO: what is the meaning of "testSuiteName"?
-//TODO: why can "testName" be empty? It is something strange.
-fun getCoverageAndResultsRequest(
-    project:Project,
+/**
+ * [testName] and [testSuiteName] are non-empty if a concrete test is specified.
+ * Request for several tests leaves these fields empty.
+ */
+fun getCoverageAndResultsGrpcRequest(
+    project: Project,
     filePath: String,
     testSuiteName: String = "",
     testName: String = "",

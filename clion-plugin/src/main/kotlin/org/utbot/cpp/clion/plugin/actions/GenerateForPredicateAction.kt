@@ -9,8 +9,8 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.fields.ExtendableTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
-import org.utbot.cpp.clion.plugin.grpc.getFunctionRequest
-import org.utbot.cpp.clion.plugin.grpc.getPredicateRequest
+import org.utbot.cpp.clion.plugin.grpc.getFunctionGrpcRequest
+import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.client
@@ -88,7 +88,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
     override fun actionPerformed(e: AnActionEvent) {
 
         fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) {
-            val predicateRequest = getPredicateRequest(e, comparisonOperator, validationType, valueToCompare)
+            val predicateRequest = getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare)
             PredicateRequest(
                 predicateRequest,
                 e.project!!
@@ -122,7 +122,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
 
         FunctionReturnTypeRequest(
             e.project!!,
-            getFunctionRequest(e)
+            getFunctionGrpcRequest(e)
         ) { functionReturnType ->
             val type = functionReturnType.validationType
             chooseComparisonOperator(type) { comparisonOperator ->

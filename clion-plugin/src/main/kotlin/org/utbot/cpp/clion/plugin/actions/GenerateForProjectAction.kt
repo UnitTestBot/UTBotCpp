@@ -1,7 +1,7 @@
 package org.utbot.cpp.clion.plugin.actions
 
 import com.intellij.openapi.actionSystem.AnActionEvent
-import org.utbot.cpp.clion.plugin.grpc.getProjectRequest
+import org.utbot.cpp.clion.plugin.grpc.getProjectGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.ProjectRequest
 import org.utbot.cpp.clion.plugin.utils.client
 
@@ -12,7 +12,7 @@ class GenerateForProjectAction : GenerateTestsBaseAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         ProjectRequest(
-            getProjectRequest(e),
+            getProjectGrpcRequest(e),
             e.project!!
         ).apply {
             e.client.executeRequest(this)
