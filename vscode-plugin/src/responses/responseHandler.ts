@@ -28,91 +28,110 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
     constructor(
         private readonly client: Client,
         private readonly testsRunner: TestsRunner,
-        private readonly batched: boolean) {
+        private readonly generateForMultipleSources: boolean) {
     }
 
     public async handle(response: TestsResponse): Promise<void> {
         const testsSourceList = response.getTestsourcesList();
 
-        testsSourceList.forEach(testsSourceInfo => {
-            this.testsRunner.testResultsVizualizer.clearTestsByTestFileName(testsSourceInfo.getFilepath(), false);
-        });
+        // Delete/backup old info
+        for (const test of testsSourceList) {
+            const localPath = pathUtils.substituteLocalPath(test.getFilepath());
+            if (isSarifReportFile(localPath)) {
+                if (Prefs.isRemoteScenario()) {
+                    // do not back up the SARIF for local scenario - server did it
+                    await backupPreviousClientSarifReport(localPath);
+                }
+            }
+            else {
+                this.testsRunner.testResultsVizualizer.removeFileFromData(localPath, false);
+            }
+        }
+
+        // Transfer files' code if need
         if (Prefs.isRemoteScenario()) {
+            //  do not write files for local scenario - server did it
             const stubs = response.getStubs();
             if (stubs) {
                 const stubsFiles = stubs.getStubsourcesList();
-                await Promise.all(stubsFiles.map(async (stub) => {
+                for (const stub of stubsFiles) {
                     const localPath = pathUtils.substituteLocalPath(stub.getFilepath());
-                    const stubfile = vs.Uri.file(localPath);
                     logger.info(`Write stub file ${stub.getFilepath()} to ${localPath}`);
-                    await vs.workspace.fs.writeFile(stubfile, Buffer.from(stub.getCode()));
-                }));
+                    await vs.workspace.fs.writeFile(vs.Uri.file(localPath), Buffer.from(stub.getCode()));
+                }
             }
-            await Promise.all((testsSourceList).map(async (test) => {
+            for (const test of testsSourceList) {
                 const localPath = pathUtils.substituteLocalPath(test.getFilepath());
-                const testfile = vs.Uri.file(localPath);
-                
-                if (isTestFileSourceFile(testfile)) {
+                await vs.workspace.fs.writeFile(vs.Uri.file(localPath), Buffer.from(test.getCode()));
+            }
+        }
+
+        // Show and log the results in UI
+        {
+            let firstTest = true;
+            const SarifReportFiles = [];
+            for (const test of testsSourceList) {
+                const localPath = pathUtils.substituteLocalPath(test.getFilepath());
+
+                if (isSarifReportFile(localPath)) {
+                    logger.info(`Generated SARIF file ${localPath}`);
+                    SarifReportFiles.push(vs.Uri.file(localPath));
+                } else if (isTestFileSourceFile(localPath)) {
                     const testsNumberInErrorSuite = test.getErrormethodsnumber();
                     const testsNumberInRegressionSuite = test.getRegressionmethodsnumber();
                     logger.info(`Generated test file ${localPath} with ${testsNumberInRegressionSuite} tests in regression suite and ${testsNumberInErrorSuite} tests in error suite`);
+                    if (!this.generateForMultipleSources && firstTest) {
+                        // show generated test file for line, class, function, single source file
+                        firstTest = false;
+                        await vs.window.showTextDocument(vs.Uri.file(localPath), {preview: false});
+                    }
                 } else {
                     logger.info(`Generated test file ${localPath}`);
                 }
-
-                const isSarifReport = testfile.path.endsWith("project_code_analysis.sarif");
-                if (isSarifReport && fs.existsSync(testfile.fsPath)) {
-                    const ctime = fs.lstatSync(testfile.fsPath).ctime;
-
-                    // eslint-disable-next-line no-inner-declarations
-                    function pad2(num: number): string {
-                        return ("0" + num).slice(-2);
+            }
+            if (SarifReportFiles.length > 0) {
+                const sarifExt = vs.extensions.getExtension(messages.defaultSARIFViewer);
+                // eslint-disable-next-line eqeqeq
+                if (sarifExt == null) {
+                    messages.showWarningMessage(messages.intstallSARIFViewer);
+                } else {
+                    if (!sarifExt.isActive) {
+                        await sarifExt.activate();
                     }
-
-                    const newName = "project_code_analysis-"
-                    + ctime.getFullYear()
-                    + pad2(ctime.getMonth() + 1)
-                    + pad2(ctime.getDate())
-                    + pad2(ctime.getHours())
-                    + pad2(ctime.getMinutes())
-                    + pad2(ctime.getSeconds())
-                    + ".sarif";
-                    await vs.workspace.fs.rename(testfile, Uri.file(path.join(path.dirname(testfile.fsPath), newName)));
-                }
-
-                await vs.workspace.fs.writeFile(testfile, Buffer.from(test.getCode()));
-                if (isSarifReport) {
-                    const sarifExt = vs.extensions.getExtension(messages.defaultSARIFViewer);
-                    // eslint-disable-next-line eqeqeq
-                    if (sarifExt == null) {
-                        messages.showWarningMessage(messages.intstallSARIFViewer);
-                    } else {
-                        if (!sarifExt.isActive) {
-                            await sarifExt.activate();
-                        }
-                        await sarifExt.exports.openLogs([
-                            testfile,
-                        ]);    
-                    }                 
-                }
-                return testfile;
-            }));
-        }
-        if (!this.batched) {
-            const localPaths = testsSourceList.map(testsSourceInfo => pathUtils.substituteLocalPath(testsSourceInfo.getFilepath()));
-            if (localPaths.length > 0) {
-                const cppLocalPaths = localPaths.filter(fileName => fileName.endsWith('_test.cpp'));
-                if (cppLocalPaths.length > 0) {
-                    const fileToOpen = vs.Uri.file(cppLocalPaths[0]);
-                    await vs.window.showTextDocument(fileToOpen, { preview: false });
+                    sarifExt.exports.openLogs(SarifReportFiles);
                 }
             }
         }
     }
 }
 
-function isTestFileSourceFile(testfile: any): boolean {
-    return testfile.path.endsWith('_test.cpp');
+function isSarifReportFile(testfile: string): boolean {
+    return testfile.endsWith("project_code_analysis.sarif");
+}
+
+async function backupPreviousClientSarifReport(localPath: string): Promise<void> {
+    if (fs.existsSync(localPath)) {
+        const ctime = fs.lstatSync(localPath).ctime;
+
+        // eslint-disable-next-line no-inner-declarations
+        function pad2(num: number): string {
+            return ("0" + num).slice(-2);
+        }
+
+        const newName = "project_code_analysis-"
+            + ctime.getFullYear()
+            + pad2(ctime.getMonth() + 1)
+            + pad2(ctime.getDate())
+            + pad2(ctime.getHours())
+            + pad2(ctime.getMinutes())
+            + pad2(ctime.getSeconds())
+            + ".sarif";
+        await vs.workspace.fs.rename(vs.Uri.file(localPath), Uri.file(path.join(path.dirname(localPath), newName)));
+    }
+}
+
+function isTestFileSourceFile(localpath: string): boolean {
+    return localpath.endsWith('_test.cpp');
 }
 
 export class SnippetResponseHandler implements ResponseHandler<TestsResponse> {
@@ -133,5 +152,4 @@ export class SnippetResponseHandler implements ResponseHandler<TestsResponse> {
                 await vs.window.showTextDocument(doc, { preview: false });
             });
     }
-
 }
