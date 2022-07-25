@@ -48,9 +48,9 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
         testSource->set_filepath(tests.testSourceFilePath);
         if (synchronizeCode) {
             testSource->set_code(tests.code);
-            testSource->set_errormethodsnumber(tests.errorMethodsNumber);
-            testSource->set_regressionmethodsnumber(tests.regressionMethodsNumber);
         }
+        testSource->set_errormethodsnumber(tests.errorMethodsNumber);
+        testSource->set_regressionmethodsnumber(tests.regressionMethodsNumber);
 
         auto testHeader = response.add_testsources();
         testHeader->set_filepath(tests.testHeaderFilePath);
@@ -69,19 +69,18 @@ void ServerTestsWriter::writeReport(const std::string &content,
                                     const std::string &message,
                                     const fs::path &pathToStore) const
 {
-    if (synchronizeCode || fs::exists(pathToStore)) {
-        testsgen::TestsResponse response;
-        if (synchronizeCode) {
-            TestsWriter::writeReport(content, message, pathToStore);
-        }
-        auto testSource = response.add_testsources();
-        testSource->set_filepath(pathToStore);
-        if (synchronizeCode) {
-            testSource->set_code(content);
-        }
-        LOG_S(INFO) << message;
-        auto progress = GrpcUtils::createProgress(message, 100, false);
-        response.set_allocated_progress(progress.release());
-        writeMessage(response);
+    testsgen::TestsResponse response;
+    TestsWriter::writeReport(content, message, pathToStore);
+
+    auto testSource = response.add_testsources();
+    testSource->set_filepath(pathToStore);
+    if (synchronizeCode) {
+        // write the content only for real data transfer
+        // `synchronizeCode` is false if client and server share the same FS
+        testSource->set_code(content);
     }
+    LOG_S(INFO) << message;
+    auto progress = GrpcUtils::createProgress(message, 100, false);
+    response.set_allocated_progress(progress.release());
+    writeMessage(response);
 }

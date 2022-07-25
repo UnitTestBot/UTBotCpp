@@ -47,7 +47,7 @@ namespace sarif {
     void sarifAddTestsToResults(const utbot::ProjectContext &projectContext,
                                 const Tests &tests,
                                 json &results) {
-        LOG_S(INFO) << "{stack";
+        LOG_SCOPE_FUNCTION(DEBUG);
         for (const auto &it : tests.methods) {
             for (const auto &methodTestCase : it.second.testCases) {
                 json result;
@@ -180,11 +180,9 @@ namespace sarif {
                 }
             }
         }
-        LOG_S(INFO) << "}stack";
     }
 
     std::string sarifPackResults(const json &results) {
-        // POINT 3
         json sarifJson;
         sarifJson["$schema"] = "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json";
         sarifJson["version"] = "2.1.0";
