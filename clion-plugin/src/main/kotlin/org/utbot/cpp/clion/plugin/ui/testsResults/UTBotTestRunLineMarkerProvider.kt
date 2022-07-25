@@ -8,7 +8,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
-import org.utbot.cpp.clion.plugin.actions.RunWithCoverageAction
+import org.utbot.cpp.clion.plugin.actions.generate.RunWithCoverageAction
 
 class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
     val log = Logger.getInstance(this::class.java)

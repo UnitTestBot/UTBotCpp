@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.actions
+package org.utbot.cpp.clion.plugin.actions.generate
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.ComponentValidator
@@ -13,6 +13,7 @@ import org.utbot.cpp.clion.plugin.grpc.getFunctionGrpcRequest
 import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
+import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
 import testsgen.Util.ValidationType
 import java.awt.Dimension
@@ -21,13 +22,67 @@ import java.awt.event.KeyEvent
 import java.math.BigInteger
 import java.util.function.Supplier
 
-class GenerateForPredicateAction : GenerateTestsBaseAction() {
-    override fun updateIfServerAvailable(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = (e.project != null)
+class GenerateForPredicateAction : BaseGenerateTestsAction() {
+
+    override fun actionPerformed(e: AnActionEvent) {
+        fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
+            PredicateRequest(
+                getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
+                e.activeProject()
+            ).apply {
+                e.client.executeRequest(this)
+            }
+
+        //TODO: this code requires some comments
+        fun chooseComparisonOperator(
+            validationType: ValidationType,
+            proceedWithComparisonOperator: (comparisonOperator: String) -> Unit,
+        ) {
+            when (validationType) {
+                ValidationType.STRING,
+                ValidationType.BOOL -> {
+                    proceedWithComparisonOperator("==")
+                    return
+                }
+                else -> {
+                    val operators = listOf("==", "<=", "=>", "<", ">")
+                    createListPopup("Select predicate", operators) { comparisonOperator ->
+                        proceedWithComparisonOperator(comparisonOperator)
+                    }.showInBestPositionFor(e.dataContext)
+                }
+            }
+        }
+
+        fun chooseReturnValue(
+            validationType: ValidationType,
+            proceedWithValueToCompare: (valueToCompare: String) -> Unit,
+        ) {
+            val popup = when (validationType) {
+                ValidationType.BOOL -> createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
+                else -> createTextFieldPopup(validationType) { returnValue -> proceedWithValueToCompare(returnValue) }
+            }
+            popup.showInBestPositionFor(e.dataContext)
+        }
+
+        FunctionReturnTypeRequest(
+            getFunctionGrpcRequest(e),
+            e.activeProject(),
+        ) { functionReturnType ->
+            val validationType = functionReturnType.validationType
+            chooseComparisonOperator(validationType) { comparisonOperator ->
+                chooseReturnValue(validationType) { valueToCompare ->
+                    sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
+                }
+            }
+        }.apply {
+            e.client.executeRequest(this)
+        }
     }
 
-    fun createListPopup(title: String, list: List<String>, onChoose: (String) -> Unit): JBPopup {
-        return JBPopupFactory.getInstance().createPopupChooserBuilder(list)
+    override fun isDefined(e: AnActionEvent): Boolean = e.project != null
+
+    private fun createListPopup(title: String, items: List<String>, onChoose: (String) -> Unit): JBPopup {
+        return JBPopupFactory.getInstance().createPopupChooserBuilder(items)
             .setResizable(false)
             .setMovable(false)
             .setTitle(title)
@@ -37,14 +92,15 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
             .createPopup()
     }
 
-    fun createTrueFalsePopup(onChoose: (String) -> Unit) = createListPopup("Select bool value",
-        listOf("true", "false")) { onChoose(it) }
+    private fun createTrueFalsePopup(onChoose: (String) -> Unit) =
+        createListPopup("Select bool value", listOf("true", "false")) { onChoose(it) }
 
-    fun createTextFieldPopup(type: ValidationType, onChoose: (String) -> Unit): JBPopup {
+    private fun createTextFieldPopup(type: ValidationType, onChoose: (String) -> Unit): JBPopup {
         val textField = ExtendableTextField()
         textField.minimumSize = Dimension(100, textField.width)
         textField.text = defaultReturnValues[type]
         textField.selectAll()
+
         val popup = JBPopupFactory.getInstance().createComponentPopupBuilder(textField, null)
             .setFocusable(true)
             .setRequestFocus(true)
@@ -54,12 +110,12 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
         var canClosePopup = true
         ComponentValidator(popup).withValidator(Supplier<ValidationInfo?> {
             val validationResult = returnValueValidators[type]?.let { it(textField.text) }
-            if (validationResult == null) {
+            if (validationResult is ValidationResult.Failure) {
+                canClosePopup = false
+                ValidationInfo(validationResult.message, textField)
+            } else {
                 canClosePopup = true
                 null
-            } else {
-                canClosePopup = false
-                ValidationInfo(validationResult, textField)
             }
         }).installOn(textField)
 
@@ -85,57 +141,8 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
         return popup
     }
 
-    override fun actionPerformed(e: AnActionEvent) {
-
-        fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) {
-            val predicateRequest = getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare)
-            PredicateRequest(
-                predicateRequest,
-                e.project!!
-            ).apply {
-                e.client.executeRequest(this)
-            }
-        }
-
-        fun chooseComparisonOperator(type: ValidationType, proceedWithComparisonOperator: (comparisonOperator: String) -> Unit) {
-            when (type) {
-                ValidationType.STRING, ValidationType.BOOL -> {
-                    proceedWithComparisonOperator("==")
-                    return
-                }
-                else -> {
-                    createListPopup("Select Predicate", listOf("==", "<=", "=>", "<", ">")) { comparisonOperator ->
-                        proceedWithComparisonOperator(comparisonOperator)
-                    }.showInBestPositionFor(e.dataContext)
-                }
-            }
-        }
-
-        fun chooseReturnValue(type: ValidationType, proceedWithValueToCompare: (valueToCompare: String) -> Unit) {
-            val popup = if (type == ValidationType.BOOL) {
-                createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
-            } else {
-                createTextFieldPopup(type) { returnValue -> proceedWithValueToCompare(returnValue) }
-            }
-            popup.showInBestPositionFor(e.dataContext)
-        }
-
-        FunctionReturnTypeRequest(
-            e.project!!,
-            getFunctionGrpcRequest(e)
-        ) { functionReturnType ->
-            val type = functionReturnType.validationType
-            chooseComparisonOperator(type) { comparisonOperator ->
-                chooseReturnValue(type) { valueToCompare ->
-                    sendPredicateToServer(type, valueToCompare, comparisonOperator)
-                }
-            }
-        }.apply {
-            e.client.executeRequest(this)
-        }
-    }
-
     companion object {
+        //TODO: why don't we have DOUBLE and BYTE here?
         val defaultReturnValues = mapOf(
             ValidationType.INT8_T to "0",
             ValidationType.INT16_T to "0",
@@ -190,69 +197,54 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
             ValidationType.UINT64_T to intBoundsBySize(64, true)
         )
 
-        private fun intValidationFunc(validationType: ValidationType): (String) -> String? {
-            return fun(value: String): String? {
-                return if ("""^-?(([1-9][0-9]*)|0)$""".toRegex().matches(value)) {
-                    if (isIntegerInBounds(
-                            value,
-                            integerBounds[validationType]?.first,
-                            integerBounds[validationType]?.second
-                        )
-                    ) {
-                        null
-                    } else {
-                        "Value does not fit into C  ${validationTypeName[validationType]} type"
-                    }
-                } else {
-                    "Value is not an integer"
-                }
-            }
+        sealed class ValidationResult {
+            object Success : ValidationResult()
+            data class Failure(val message: String) : ValidationResult()
         }
 
-        private fun validateChar(value: String): String? {
-            if (value.length == 1) {
-                return null
+        private fun intValidationFunc(validationType: ValidationType): (String) -> ValidationResult =
+            fun(value: String): ValidationResult = if ("""^-?(([1-9][0-9]*)|0)$""".toRegex().matches(value)) {
+                if (isIntegerInBounds(
+                        value,
+                        integerBounds[validationType]?.first,
+                        integerBounds[validationType]?.second
+                    )
+                ) {
+                    ValidationResult.Success
+                } else {
+                    ValidationResult.Failure("Value does not fit into C  ${validationTypeName[validationType]} type")
+                }
             } else {
-                val escapeSequences = listOf(
-                    "\\\'",
-                    "\"",
-                    "\\?",
-                    "\\\\",
-                    "\\a",
-                    "\\b",
-                    "\\f",
-                    "\\n",
-                    "\\r",
-                    "\\t",
-                    "\\v"
-                )
-                return if (!escapeSequences.contains(value)) {
-                    "Value is not a character"
-                } else {
-                    null
-                }
+                ValidationResult.Failure("Value is not an integer")
+            }
+
+        private fun validateChar(value: String): ValidationResult {
+            val escapeSequence = listOf("\\\'", "\"", "\\?", "\\\\", "\\a", "\\b", "\\f", "\\n", "\\r", "\\t", "\\v")
+            return if (value.length == 1 || escapeSequence.contains(value)) {
+                ValidationResult.Success
+            } else {
+                ValidationResult.Failure("Value is not a character")
             }
         }
 
-        private fun validateFloat(value: String): String? {
+        private fun validateFloat(value: String): ValidationResult {
             return if ("""^-?([1-9][0-9]*)[.]([0-9]*)$""".toRegex().matches(value)) {
                 if (value.length < 15) {
-                    null
+                    ValidationResult.Success
                 } else {
-                    "Value does not fit into C float type."
+                    ValidationResult.Failure("Value does not fit into C float type")
                 }
             } else {
-                "Value is not floating-point"
+                ValidationResult.Failure("Value is not floating-point")
             }
         }
 
-        private fun validateString(value: String): String? {
-            return if (value.length > 32) {
-                "String is too long"
+        private fun validateString(value: String): ValidationResult =
+            if (value.length > 32) {
+                ValidationResult.Failure("String is too long")
             } else {
-                null
+                ValidationResult.Success
             }
-        }
 
         val returnValueValidators = mapOf(
             ValidationType.INT8_T to intValidationFunc(ValidationType.INT8_T),

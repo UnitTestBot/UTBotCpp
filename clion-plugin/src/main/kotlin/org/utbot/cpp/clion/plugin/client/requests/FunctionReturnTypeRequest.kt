@@ -3,20 +3,19 @@ package org.utbot.cpp.clion.plugin.client.requests
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import testsgen.Testgen
-import testsgen.TestsGenServiceGrpcKt
+import testsgen.Testgen.FunctionTypeResponse
+import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class FunctionReturnTypeRequest(
-    project: Project,
     request: Testgen.FunctionRequest,
-    val processReturnType: suspend (Testgen.FunctionTypeResponse)->(Unit)
-) : BaseRequest<Testgen.FunctionRequest, Testgen.FunctionTypeResponse>(request, project) {
-    override val logMessage: String = "Sending request to generate tests for CLASS."
+    project: Project,
+    val processReturnType: suspend (FunctionTypeResponse)->(Unit)
+) : BaseRequest<Testgen.FunctionRequest, FunctionTypeResponse>(request, project) {
 
-    override suspend fun Testgen.FunctionTypeResponse.handle(cancellationJob: Job?) {
-        processReturnType(this)
-    }
+    override val logMessage: String = "Sending request to generate tests for class"
 
-    override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Testgen.FunctionTypeResponse {
-        return getFunctionReturnType(request)
-    }
+    override suspend fun FunctionTypeResponse.handle(cancellationJob: Job?) = processReturnType(this)
+
+    override suspend fun TestsGenServiceCoroutineStub.send(cancellationJob: Job?): FunctionTypeResponse =
+        getFunctionReturnType(request)
 }

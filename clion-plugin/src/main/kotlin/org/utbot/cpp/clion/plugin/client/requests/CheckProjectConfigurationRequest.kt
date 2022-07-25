@@ -1,6 +1,5 @@
 package org.utbot.cpp.clion.plugin.client.requests
 
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
@@ -11,13 +10,12 @@ import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class CheckProjectConfigurationRequest(
-    project: Project,
     request: Testgen.ProjectConfigRequest,
+    project: Project,
 ): BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request, project) {
     override val logMessage: String = "Sending request to check project configuration."
 
-    constructor(project: Project): this(project, getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK))
-    constructor(e: AnActionEvent): this(e.project!!)
+    constructor(project: Project): this(getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK), project)
 
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> {
         return this.configureProject(request)

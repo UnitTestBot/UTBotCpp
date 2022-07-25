@@ -1,6 +1,5 @@
 package org.utbot.cpp.clion.plugin.grpc
 
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
@@ -30,6 +29,3 @@ fun getProjectContextMessage(project: Project): Testgen.ProjectContext {
 }
 
 fun Project.allSettings() = this.service<UTBotAllSettings>()
-
-fun AnActionEvent.activeProject() = this.project
-    ?: error("A project related to action event $this not found")
