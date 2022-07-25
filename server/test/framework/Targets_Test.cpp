@@ -12,7 +12,7 @@ protected:
 
     fs::path parse_c = getTestFilePath("parse.c");
     fs::path get_10_c = getTestFilePath("get_10.c");
-    fs::path get_20_c = getTestFilePath("get_20.c");
+    fs::path get_20x_c = getTestFilePath("get_20x.c");
     fs::path shared_c = getTestFilePath("shared.c");
     fs::path get_val_main_c = getTestFilePath("get_val_main.c");
     fs::path get_val_main_2_c = getTestFilePath("get_val_main_2.c");
@@ -146,7 +146,7 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10) {
             "get_res");
 
     checkNumberOfTestsInFile(testGen, parse_c, 0);
-    checkNumberOfTestsInFile(testGen, get_20_c, 0);
+    checkNumberOfTestsInFile(testGen, get_20x_c, 0);
     checkNumberOfTestsInFile(testGen, get_val_main_2_c, 0);
 }
 
@@ -161,9 +161,9 @@ TEST_F(TargetsTest, Valid_Target_Test_get_20) {
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
 
-    checkMinNumberOfTestsInFile(testGen, get_20_c, 1);
+    checkMinNumberOfTestsInFile(testGen, get_20x_c, 1);
     checkTestCasePredicates(
-            testGen.tests.at(get_20_c).methods.begin().value().testCases,
+            testGen.tests.at(get_20x_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                 return testCase.returnValue.view->getEntryValue(nullptr) == "20";
             }}),
@@ -230,7 +230,7 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10_2) {
             "get_res");
 
     checkNumberOfTestsInFile(testGen, parse_c, 0);
-    checkNumberOfTestsInFile(testGen, get_20_c, 0);
+    checkNumberOfTestsInFile(testGen, get_20x_c, 0);
     checkNumberOfTestsInFile(testGen, get_val_main_c, 0);
 }
 
@@ -245,9 +245,9 @@ TEST_F(TargetsTest, Valid_Target_Test_libshared) {
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
 
-    checkMinNumberOfTestsInFile(testGen, get_20_c, 1);
+    checkMinNumberOfTestsInFile(testGen, get_20x_c, 1);
     checkTestCasePredicates(
-            testGen.tests.at(get_20_c).methods.begin().value().testCases,
+            testGen.tests.at(get_20x_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                 return testCase.returnValue.view->getEntryValue(nullptr) == "20";
             }}),
@@ -287,9 +287,9 @@ TEST_F(TargetsTest, Valid_Target_Test_get_libstatic) {
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
 
-    checkMinNumberOfTestsInFile(testGen, get_20_c, 1);
+    checkMinNumberOfTestsInFile(testGen, get_20x_c, 1);
     checkTestCasePredicates(
-            testGen.tests.at(get_20_c).methods.begin().value().testCases,
+            testGen.tests.at(get_20x_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                 return testCase.returnValue.view->getEntryValue(nullptr) == "200";
             }}),
