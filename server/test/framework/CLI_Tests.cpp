@@ -11,6 +11,7 @@
 #include <protobuf/testgen.grpc.pb.h>
 
 #include <set>
+#include <map>
 
 namespace {
     using grpc::Channel;
@@ -105,7 +106,7 @@ namespace {
     {
         std::size_t count{};
         for (std::string::size_type pos{};
-             inout.npos != (pos = inout.find(what.data(), pos, what.length()));
+             std::string::npos != (pos = inout.find(what.data(), pos, what.length()));
              pos += with.length(), ++count) {
             inout.replace(pos, what.length(), with.data(), with.length());
         }
@@ -120,8 +121,45 @@ namespace {
         return content;
     }
 
-    void compareFiles(const fs::path &golden, const fs::path &real) {
-        ASSERT_EQ(getNormalizedContent(golden), getNormalizedContent(real));
+    std::string filterUnstableParams(const std::string &context) {
+        std::stringstream ins(context);
+        std::stringstream outs;
+        std::string line;
+        while (getline(ins, line)) {
+            if (line.find(R"x("startLine")x") != std::string::npos) {
+                outs << "[startLine replacement]" << "\n";
+            } else if (line.find(R"x( (test)")x") != std::string::npos) {
+                outs << "[test name replacement]" << "\n";
+            } else {
+                outs << line;
+            }
+        }
+        return outs.str();
+    }
+
+    std::map<std::string, std::string> getOrderedRecords(const json &rep) {
+        json results = rep["runs"][0]["results"];
+        std::map<std::string, std::string> records;
+        for (const auto &it : results) {
+            std::string problemDescription = it["message"]["text"];
+
+            std::string srcFile = it["locations"][0]["physicalLocation"]["artifactLocation"]["uri"];
+            int lineNo = it["locations"][0]["physicalLocation"]["region"]["startLine"];
+
+            std::stringstream key;
+            key << problemDescription << "\n"
+                << srcFile << ":" << lineNo;
+
+            records.insert(std::pair(key.str(), filterUnstableParams(it.dump(2))));
+        }
+        return records;
+    }
+
+    void compareSARIFFiles(const fs::path &golden, const fs::path &real) {
+        json gjs = json::parse(getNormalizedContent(golden));
+        json rjs = json::parse(getNormalizedContent(real));
+
+        EXPECT_EQ(getOrderedRecords(gjs), getOrderedRecords(rjs));
     }
 
     TEST_F(CLI_Test, Generate_Project_Tests) {
@@ -131,8 +169,9 @@ namespace {
                          buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
 
-        compareFiles( suitePath / "goldenImage" / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME,
-                      suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+        compareSARIFFiles(
+            suitePath / "goldenImage" / sarif::SARIF_DIR_NAME /sarif::SARIF_FILE_NAME,
+            suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
     }
 
     TEST_F(CLI_Test, Generate_File_Tests) {
