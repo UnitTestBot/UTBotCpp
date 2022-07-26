@@ -95,6 +95,19 @@ jobs:
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
 
+      - name: Run CLion integration tests
+        run: |
+          chmod +x docker/action-scripts/runClionIntegrationTests.sh 
+          ./docker/action-scripts/runClionIntegrationTests.sh
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-report
+          path: |
+            /github/home/logs
+            clion-plugin/build/reports/tests/**/*
+
   build-utbot-and-generate-test:
     needs: matrix-prep
     strategy:
@@ -166,3 +179,4 @@ jobs:
         run: |
           rm -r /home/runner/work/UTBotCpp/UTBotCpp/c-example/build
           env make -f /home/runner/work/UTBotCpp/UTBotCpp/c-example/tests/lib/floats/floating_point_plain.mk run GTEST_FLAGS="--gtest_filter=*.plain_isnan_test_1" CLANG="/usr/bin/clang-10" CLANGXX="/usr/bin/clang++-10" GTEST="/gtest"
+
