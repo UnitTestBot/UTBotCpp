@@ -24,6 +24,13 @@ void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
     LOG_S(INFO) << "total test files generated: " << totalTestsCounter;
 }
 
+void CLITestsWriter::writeReport(const std::string &content,
+                                 const std::string &message,
+                                 const fs::path &pathToStore) const {
+    TestsWriter::writeReport(content, message, pathToStore);
+    LOG_S(INFO) << message;
+}
+
 bool CLITestsWriter::writeTestFile(const tests::Tests &tests, const fs::path &testDirPath) {
     fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;
     FileSystemUtils::writeToFile(testFilePath, tests.code);

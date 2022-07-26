@@ -16,6 +16,10 @@ public:
                                 std::function<void(tests::Tests &)> &&prepareTests,
                                 std::function<void()> &&prepareTotal) override;
 
+    void writeReport(const std::string &content,
+                     const std::string &message,
+                     const fs::path &pathToStore) const override;
+
 private:
     static bool writeTestFile(const tests::Tests &tests, const fs::path &testDirPath);
 };
