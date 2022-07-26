@@ -8,16 +8,18 @@ import org.utbot.cpp.clion.plugin.client.handlers.CoverageAndResultsHandler
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.testFilePathToSourceFilePath
 import testsgen.Testgen
-import testsgen.TestsGenServiceGrpcKt
+import testsgen.Testgen.CoverageAndResultsResponse
+import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class RunWithCoverageRequest(
+    request: Testgen.CoverageAndResultsRequest,
     project: Project,
-    request: Testgen.CoverageAndResultsRequest
-): BaseRequest<Testgen.CoverageAndResultsRequest, Flow<Testgen.CoverageAndResultsResponse>>(request, project) {
-    override val logMessage: String = "Sending request to get tests RESULTS and COVERAGE."
+): BaseRequest<Testgen.CoverageAndResultsRequest, Flow<CoverageAndResultsResponse>>(request, project) {
 
-    override suspend fun Flow<Testgen.CoverageAndResultsResponse>.handle(cancellationJob: Job?) {
-        request.testFilter.testFilePath
+    override val logMessage: String = "Sending request to get tests run results and coverage"
+
+    override suspend fun Flow<CoverageAndResultsResponse>.handle(cancellationJob: Job?) {
+        //TODO: I do not understand this condition here
         if (cancellationJob?.isActive == true) {
             CoverageAndResultsHandler(
                 project,
@@ -29,7 +31,6 @@ class RunWithCoverageRequest(
         }
     }
 
-    override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.CoverageAndResultsResponse> {
-        return createTestsCoverageAndResult(request)
-    }
+    override suspend fun TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<CoverageAndResultsResponse> =
+        createTestsCoverageAndResult(request)
 }

@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.grpc
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
 import testsgen.Testgen
 import testsgen.Util

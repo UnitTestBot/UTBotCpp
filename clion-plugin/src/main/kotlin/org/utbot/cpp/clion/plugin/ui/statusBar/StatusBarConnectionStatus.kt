@@ -13,8 +13,8 @@ import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.Consumer
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
-import org.utbot.cpp.clion.plugin.actions.ConfigureProjectAction
-import org.utbot.cpp.clion.plugin.actions.ReconfigureProjectAction
+import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
+import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
