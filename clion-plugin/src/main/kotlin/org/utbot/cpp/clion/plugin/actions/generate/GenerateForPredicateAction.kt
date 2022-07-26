@@ -41,7 +41,82 @@ import java.util.function.Supplier
  * For asking comparison operator and return value we use popups.
  */
 class GenerateForPredicateAction : BaseGenerateTestsAction() {
-    // helper function to create list popup
+    override fun actionPerformed(e: AnActionEvent) {
+        // when we gathered all needed information for predicate request, assemble it and execute it.
+        fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
+            PredicateRequest(
+                getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
+                e.activeProject()
+            ).apply {
+                e.client.executeRequest(this)
+            }
+
+        // ask for comparison operator to use in predicate
+        fun chooseComparisonOperator(
+            validationType: ValidationType,
+            proceedWithComparisonOperator: (comparisonOperator: String) -> Unit,
+        ) {
+            when (validationType) {
+                ValidationType.STRING,
+                ValidationType.BOOL -> {
+                    proceedWithComparisonOperator("==")
+                    return
+                }
+                ValidationType.UNSUPPORTED -> {
+                    notifyError(
+                        "Unsupported return type for \'Generate Tests With Prompted Result\' feature: \n" +
+                                "supported types are integers, booleans, characters, floats and strings"
+                    )
+                    return
+                }
+                ValidationType.UNRECOGNIZED -> {
+                    notifyError(
+                        "Could not recognise return type for 'Generate Tests With Prompted Result' feature: \n" +
+                                "supported types are integers, booleans, characters, floats and strings"
+                    )
+                    return
+                }
+                else -> {
+                    val operators = listOf("==", "<=", "=>", "<", ">")
+                    createListPopup("Select predicate", operators) { comparisonOperator ->
+                        proceedWithComparisonOperator(comparisonOperator)
+                    }.showInBestPositionFor(e.dataContext)
+                }
+            }
+        }
+
+        // ask for return value of the function to compare with
+        fun chooseReturnValue(
+            validationType: ValidationType,
+            proceedWithValueToCompare: (valueToCompare: String) -> Unit,
+        ) {
+            val popup = when (validationType) {
+                ValidationType.BOOL -> createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
+                else -> createTextFieldPopup(validationType) { returnValue -> proceedWithValueToCompare(returnValue) }
+            }
+            popup.showInBestPositionFor(e.dataContext)
+        }
+        //ask server for return type
+        FunctionReturnTypeRequest(
+            getFunctionGrpcRequest(e),
+            e.activeProject(),
+        ) { functionReturnType ->
+            val validationType = functionReturnType.validationType
+            // then ask for comparison operator to use from user
+            chooseComparisonOperator(validationType) { comparisonOperator ->
+                // then ask for return value to compare with from user
+                chooseReturnValue(validationType) { valueToCompare ->
+                    // when we have all needed information, assemble and execute
+                    sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
+                }
+            }
+        }.apply {
+            e.client.executeRequest(this)
+        }
+    }
+
+    override fun isDefined(e: AnActionEvent): Boolean = e.project != null
+
     private fun createListPopup(title: String, items: List<String>, onChoose: (String) -> Unit): JBPopup {
         return JBPopupFactory.getInstance().createPopupChooserBuilder(items)
             .setResizable(false)
@@ -56,7 +131,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
     private fun createTrueFalsePopup(onChoose: (String) -> Unit) =
         createListPopup("Select bool value", listOf("true", "false")) { onChoose(it) }
 
-    // helper function to create popup with input textfield, used for asking return value
+    //creates popup with input textfield, used for asking return value
     private fun createTextFieldPopup(type: ValidationType, onChoose: (String) -> Unit): JBPopup {
         val textField = ExtendableTextField()
         textField.minimumSize = Dimension(100, textField.width)
@@ -103,85 +178,8 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         return popup
     }
 
-    override fun actionPerformed(e: AnActionEvent) {
-        // when we gathered all needed information for predicate request, assemble it and execute it.
-        fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
-            PredicateRequest(
-                getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
-                e.activeProject()
-            ).apply {
-                e.client.executeRequest(this)
-            }
-
-        // ask for comparison operator to use in predicate
-        fun chooseComparisonOperator(
-            validationType: ValidationType,
-            proceedWithComparisonOperator: (comparisonOperator: String) -> Unit,
-        ) {
-            when (validationType) {
-                ValidationType.STRING,
-                ValidationType.BOOL -> {
-                    proceedWithComparisonOperator("==")
-                    return
-                }
-                ValidationType.UNSUPPORTED -> {
-                    notifyError(
-                        "Unsupported return type for \'Generate Tests With Prompted Result\' feature: \n" +
-                                "supported types are integers, booleans, characters, floats and strings"
-                    )
-                    return
-                }
-                ValidationType.UNRECOGNIZED -> {
-                    notifyError(
-                        "Could not recognise return type for 'Generate Tests With Prompted Result' feature: \n" +
-                                "supported types are integers, booleans, characters, floats and strings"
-                    )
-                    return
-                }
-                else -> {
-                    val operators = listOf("==", "<=", "=>", "<", ">")
-                    createListPopup("Select predicate", operators) { comparisonOperator ->
-                        proceedWithComparisonOperator(comparisonOperator)
-                    }.showInBestPositionFor(e.dataContext)
-                }
-            }
-        }
-
-        // ask for return value to compare with
-        fun chooseReturnValue(
-            validationType: ValidationType,
-            proceedWithValueToCompare: (valueToCompare: String) -> Unit,
-        ) {
-            val popup = when (validationType) {
-                ValidationType.BOOL -> createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
-                else -> createTextFieldPopup(validationType) { returnValue -> proceedWithValueToCompare(returnValue) }
-            }
-            popup.showInBestPositionFor(e.dataContext)
-        }
-
-        // first ask server for return type
-        FunctionReturnTypeRequest(
-            getFunctionGrpcRequest(e),
-            e.activeProject(),
-        ) { functionReturnType ->
-            val validationType = functionReturnType.validationType
-            // then ask for comparison operator to use from user
-            chooseComparisonOperator(validationType) { comparisonOperator ->
-                // then ask for return value to compare with from user
-                chooseReturnValue(validationType) { valueToCompare ->
-                    // when we have all needed information, assemble and execute
-                    sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
-                }
-            }
-        }.apply {
-            e.client.executeRequest(this)
-        }
-    }
-
-    override fun isDefined(e: AnActionEvent): Boolean = e.project != null
-
     companion object {
-        //TODO: why don't we have DOUBLE and BYTE here? - because server does support them
+        //Note: server does not support some types like byte or boolean
         val defaultReturnValues = mapOf(
             ValidationType.INT8_T to "0",
             ValidationType.INT16_T to "0",
