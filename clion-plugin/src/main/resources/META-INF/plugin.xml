@@ -14,7 +14,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <codeInsight.lineMarkerProvider language="ObjectiveC"
                                         implementationClass="org.utbot.cpp.clion.plugin.ui.testsResults.UTBotTestRunLineMarkerProvider"/>
-        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllSettings"/>
+        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings"/>
         <applicationService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotPluginSpecificSettings"/>
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <postStartupActivity implementation="org.utbot.cpp.clion.plugin.UTBotStartupActivity"/>

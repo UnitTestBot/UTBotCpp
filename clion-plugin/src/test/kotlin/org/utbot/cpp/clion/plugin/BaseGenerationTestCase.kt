@@ -8,7 +8,6 @@ import com.intellij.testFramework.fixtures.CodeInsightTestFixture
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.testFramework.fixtures.impl.TempDirTestFixtureImpl
 import com.intellij.util.io.delete
-import kotlin.io.path.name
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
@@ -16,14 +15,14 @@ import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.logger.SystemWriter
-import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.logger
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.name
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SwingEdtInterceptor::class)
@@ -59,15 +58,13 @@ abstract class BaseGenerationTestCase {
     val fixture: CodeInsightTestFixture = createFixture()
     val project: Project
         get() = fixture.project
-    val settings: UTBotAllSettings
-        get() = project.utbotSettings
     val client: Client
         get() = project.getClient()
     val targetsController = UTBotTargetsController(project)
 
     init {
-        settings.buildDirRelativePath = buildDirName
-        settings.testDirPath = testsDirectoryPath.toString()
+        project.settings.storedSettings.buildDirRelativePath = buildDirName
+        project.settings.storedSettings.testDirPath = testsDirectoryPath.toString()
         project.logger.writers.let {
             it.clear()
             it.add(SystemWriter())
@@ -114,7 +111,7 @@ abstract class BaseGenerationTestCase {
     @AfterEach
     fun tearDown() {
         logger.info("tearDown is called!")
-        project.utbotSettings.buildDirPath.delete(recursively = true)
+        project.settings.buildDirPath.delete(recursively = true)
         testsDirectoryPath.delete(recursively = true)
     }
 

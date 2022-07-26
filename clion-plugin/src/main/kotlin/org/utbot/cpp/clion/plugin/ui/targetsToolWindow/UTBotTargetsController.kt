@@ -2,22 +2,21 @@ package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
+import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.relativize
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
 
 class UTBotTargetsController(val project: Project) {
-    private val utbotSettings = project.utbotSettings
-    private val listModel = CollectionListModel(mutableListOf<UTBotTarget>(UTBotTarget.autoTarget))
+    private val utbotSettings = project.settings
+    private val listModel = CollectionListModel(mutableListOf(UTBotTarget.autoTarget))
     private val client: Client
      get() = project.getClient()
     private val logger = project.logger
@@ -74,12 +73,12 @@ class UTBotTargetsController(val project: Project) {
 
     fun selectionChanged(selectedTarget: UTBotTarget) {
         // when user selects target update model
-        utbotSettings.targetPath = selectedTarget.path
+        project.settings.storedSettings.targetPath = selectedTarget.path
     }
 
     fun setTargetByName(targetName: String) {
         val target = targets.find { it.name == targetName } ?: error("No such target!")
-        utbotSettings.targetPath = target.path
+        project.settings.storedSettings.targetPath = target.path
     }
 
     private fun connectToEvents() {
@@ -87,8 +86,8 @@ class UTBotTargetsController(val project: Project) {
             // if user specifies some custom target path in settings, it will be added if not already present
             connection.subscribe(
                 UTBotSettingsChangedListener.TOPIC,
-                UTBotSettingsChangedListener { settings: UTBotAllSettings ->
-                    val possiblyNewTargetPath = settings.targetPath
+                UTBotSettingsChangedListener {
+                    val possiblyNewTargetPath = project.settings.storedSettings.targetPath
                     addTargetPathIfNotPresent(possiblyNewTargetPath)
                 })
             // when we reconnected to server, the targets should be updated, so we request them from server

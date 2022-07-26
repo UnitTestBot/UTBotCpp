@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
@@ -13,7 +14,6 @@ import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyUnknownResponse
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import org.utbot.cpp.clion.plugin.utils.refreshAndFindIOFile
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
 import testsgen.Testgen
 
 abstract class ProjectConfigResponseHandler(
@@ -87,7 +87,7 @@ class CreateBuildDirHandler(
             }
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.utbotSettings.buildDirPath.toString())
+        refreshAndFindIOFile(project.settings.buildDirPath.toString())
     }
 }
 
@@ -106,6 +106,6 @@ class GenerateJsonHandler(
             )
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.utbotSettings.buildDirPath.toString())
+        refreshAndFindIOFile(project.settings.buildDirPath.toString())
     }
 }

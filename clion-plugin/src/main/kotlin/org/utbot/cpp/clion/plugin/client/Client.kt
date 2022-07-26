@@ -1,34 +1,29 @@
 package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
-
-import testsgen.Testgen
-
 import com.intellij.openapi.project.Project
-
+import io.grpc.Status
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-
-import io.grpc.Status
-import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
-
-import kotlinx.coroutines.Job
+import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
-import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
+import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
 import org.utbot.cpp.clion.plugin.utils.hasChildren
 import org.utbot.cpp.clion.plugin.utils.logger
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import testsgen.Testgen
 
 /**
  * Sends requests to grpc server via stub
@@ -38,13 +33,12 @@ class Client(
     clientId: String,
     private val loggingChannels: List<LoggingChannel>
 ) : Disposable,
-    GrpcClient(project.utbotSettings.port, project.utbotSettings.serverName, clientId) {
+    GrpcClient(projectIndependentSettings.port, projectIndependentSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT
         private set
 
     private val messageBus = project.messageBus
     private var newClient = true
-    private val settings = project.utbotSettings
     private val logger = project.logger
 
     /*
@@ -67,7 +61,7 @@ class Client(
     val servicesCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     init {
-        logger.info { "Connecting to server on host: ${settings.serverName} , port: ${settings.port}" }
+        logger.info { "Connecting to server on host: ${projectIndependentSettings.serverName} , port: ${projectIndependentSettings.port}" }
         startPeriodicHeartBeat()
     }
 

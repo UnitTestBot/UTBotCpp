@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.grpc
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
 import testsgen.Testgen
@@ -88,13 +89,12 @@ private fun getPredicateGrpcRequest(predicate: String, returnValue: String, type
         .build()
 
 private fun getProjectGrpcRequest(project: Project): Testgen.ProjectRequest {
-    val settings = project.allSettings()
     return Testgen.ProjectRequest.newBuilder()
         .setSettingsContext(getSettingsContextMessage(project))
         .setProjectContext(getProjectContextMessage(project))
-        .setTargetPath(settings.convertedTargetPath)
-        .addAllSourcePaths(settings.convertedSourcePaths)
-        .setSynchronizeCode(settings.isRemoteScenario)
+        .setTargetPath(project.settings.convertedTargetPath)
+        .addAllSourcePaths(project.settings.convertedSourcePaths)
+        .setSynchronizeCode(project.settings.isRemoteScenario)
         .build()
 }
 

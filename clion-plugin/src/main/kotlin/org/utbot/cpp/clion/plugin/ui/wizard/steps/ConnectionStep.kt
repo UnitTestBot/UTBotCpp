@@ -26,12 +26,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.client.GrpcClient
-import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizardStep
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.toWSLPathOnWindows
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
 import org.utbot.cpp.clion.plugin.utils.validateOnInput
 
 class ObservableValue<T>(initialValue: T) {
@@ -100,9 +100,9 @@ class ConnectionStep(
     init {
         useDefaults.addOnChangeListener { newValue ->
             if (newValue) {
-                portTextField.text = UTBotAllSettings.DEFAULT_PORT.toString()
-                hostTextField.text = UTBotAllSettings.DEFAULT_HOST
-                remotePathTextField.text = project.utbotSettings.projectPath
+                portTextField.text = UTBotAllProjectSettings.DEFAULT_PORT.toString()
+                hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
+                remotePathTextField.text = project.settings.projectPath
                 if (isWindows)
                     remotePathTextField.text = toWSLPathOnWindows(remotePathTextField.text)
             }
@@ -114,7 +114,7 @@ class ConnectionStep(
         runCatching {
             GrpcClient(port, host, "DummyId").use { client ->
                 serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
-                if (serverVersion != UTBotAllSettings.clientVersion)
+                if (serverVersion != UTBotAllProjectSettings.clientVersion)
                     return ConnectionStatus.warning
                 return ConnectionStatus.connected
             }
@@ -181,7 +181,7 @@ class ConnectionStep(
 
             row("Host") {
                 textField().also {
-                    it.bindText(settingsModel::serverName)
+                    it.bindText(settingsModel.globalSettings::serverName)
                     hostTextField = it.component
                 }.columns(COLUMNS_MEDIUM).enabledIf(object : ComponentPredicate() {
                     override fun invoke() = !useDefaults.value
@@ -196,7 +196,7 @@ class ConnectionStep(
                     0..65535,
                     1
                 ).also {
-                    it.bindIntText(settingsModel::port)
+                    it.bindIntText(settingsModel.globalSettings::port)
                 }.columns(COLUMNS_MEDIUM).applyToComponent {
                     portTextField = this
                 }.enabledIf(object : ComponentPredicate() {
@@ -232,7 +232,7 @@ class ConnectionStep(
                 val warningMessage: () -> String = {
                     "⚠️ Warning! Versions are different" +
                             if (serverVersion != null)
-                                ": Server: $serverVersion Client: ${UTBotAllSettings.clientVersion}"
+                                ": Server: $serverVersion Client: ${UTBotAllProjectSettings.clientVersion}"
                             else ""
                 }
                 label(warningMessage()).visibleIf(
@@ -257,7 +257,7 @@ class ConnectionStep(
         addHtml("media/remote_path.html")
         panel {
             row {
-                textField().bindText(settingsModel::remotePath).columns(COLUMNS_LARGE).applyToComponent {
+                textField().bindText(settingsModel.projectSettings::remotePath).columns(COLUMNS_LARGE).applyToComponent {
                     remotePathTextField = this
                 }.enabledIf(object : ComponentPredicate() {
                     override fun invoke() = !useDefaults.value

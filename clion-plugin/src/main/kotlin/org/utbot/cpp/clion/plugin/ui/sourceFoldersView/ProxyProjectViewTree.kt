@@ -4,10 +4,10 @@ import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.project.Project
-import javax.swing.tree.DefaultTreeModel
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.tree.DefaultTreeModel
 
 open class ProxyProjectViewTree(
     treeModel: DefaultTreeModel,
@@ -33,9 +33,9 @@ open class ProxyProjectViewTree(
     }
 
     protected open fun createUpdater() = object : BaseUpdater(myPane.selectedDirectories.toList()) {
-        override fun getCurrentMarkedDirs(): Set<String> = project.utbotSettings.sourceDirs
+        override fun getCurrentMarkedDirs(): Set<String> = project.settings.storedSettings.sourceDirs
         override fun setCurrentMarkedDirs(value: Set<String>) {
-            project.utbotSettings.sourceDirs = value.toMutableSet()
+            project.settings.storedSettings.sourceDirs = value.toMutableSet()
         }
     }
 

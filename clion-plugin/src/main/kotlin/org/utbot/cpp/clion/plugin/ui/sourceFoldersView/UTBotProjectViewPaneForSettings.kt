@@ -3,12 +3,13 @@ package org.utbot.cpp.clion.plugin.ui.sourceFoldersView
 import com.intellij.ide.projectView.impl.AbstractProjectTreeStructure
 import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.project.Project
-import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.ObservableValue
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import javax.swing.tree.DefaultTreeModel
 
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
     private val sourceDirs: ObservableValue<Set<String>> = initObservableDirectories()
+    private val settings = myProject.settings.storedSettings
 
     override fun createTree(treeModel: DefaultTreeModel): ProjectViewTree {
         return object : ProxyProjectViewTree(treeModel, myProject, this@UTBotProjectViewPaneForSettings) {
@@ -22,7 +23,7 @@ open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewP
     }
 
     private fun initObservableDirectories(): ObservableValue<Set<String>> {
-        return ObservableValue(myProject.utbotSettings.sourceDirs).also {
+        return ObservableValue(settings.sourceDirs).also {
             it.addOnChangeListener {
                 updateFromRoot(true)
             }
@@ -30,14 +31,14 @@ open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewP
     }
 
     fun apply() {
-        myProject.utbotSettings.sourceDirs = sourceDirs.value
+        settings.sourceDirs = sourceDirs.value
     }
 
     fun reset() {
-        sourceDirs.value = myProject.utbotSettings.sourceDirs
+        sourceDirs.value = settings.sourceDirs
     }
 
-    fun isModified() = myProject.utbotSettings.sourceDirs != sourceDirs.value
+    fun isModified() = settings.sourceDirs != sourceDirs.value
 
     override fun createStructure() = object : AbstractProjectTreeStructure(myProject) {
         override fun getProviders() = listOf(UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.path in sourceDirs.value}))

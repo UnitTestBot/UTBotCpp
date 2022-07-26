@@ -1,6 +1,5 @@
 package org.utbot.cpp.clion.plugin.settings
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
@@ -25,9 +24,10 @@ import java.awt.Dimension
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings for Generating Tests"
 ) {
-    private val utbotSettings: UTBotAllSettings get() = myProject.service()
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
+
+    private val settings = myProject.settings.storedSettings
 
     init {
         myProject.messageBus.connect()
@@ -38,7 +38,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     override fun createPanel() = panel
 
-    fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String): Row {
+    private fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String): Row {
         return row(name) {
             textFieldWithBrowseButton(
                 chooserTitle,
@@ -53,15 +53,15 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
         return panel {
             group("Connection Settings") {
                 row(UTBot.message("settings.project.port")) {
-                    intTextField().bindIntText(utbotSettings::port).applyToComponent {
+                    intTextField().bindIntText(projectIndependentSettings::port).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
                 }.rowComment(UTBot.message("deployment.utbotPort.description"))
                 row(UTBot.message("settings.project.serverName")) {
-                    textField().bindText(utbotSettings::serverName)
+                    textField().bindText(projectIndependentSettings::serverName)
                 }.rowComment(UTBot.message("deployment.utbotHost.description"))
                 row(UTBot.message("settings.project.remotePath")) {
-                    textField().bindText(utbotSettings::remotePath).columns(COLUMNS_LARGE)
+                    textField().bindText(settings::remotePath).columns(COLUMNS_LARGE)
                 }.rowComment(UTBot.message("deployment.remotePath.description"))
             }
 
@@ -72,22 +72,22 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         myProject,
                         FileChooserDescriptorFactory.createSingleFileDescriptor()
                     ).bindText(
-                        getter = { utbotSettings.projectPath ?: "" },
-                        setter = { value -> utbotSettings.projectPath = value })
+                        getter = { myProject.settings.projectPath ?: "" },
+                        setter = { value -> myProject.settings.projectPath = value })
                         .columns(COLUMNS_LARGE)
                 }.rowComment(UTBot.message("settings.project.projectPath.info"))
                 createPathChooser(
-                    utbotSettings::buildDirRelativePath,
+                    settings::buildDirRelativePath,
                     UTBot.message("settings.project.buildDir"),
                     UTBot.message("settings.project.buildDir.browse.title")
                 ).rowComment(UTBot.message("paths.buildDirectory.description"))
                 createPathChooser(
-                    utbotSettings::targetPath,
+                    settings::targetPath,
                     UTBot.message("settings.project.target"),
                     UTBot.message("settings.project.target.browse.title")
                 ).rowComment(UTBot.message("paths.target.description"))
                 createPathChooser(
-                    utbotSettings::testDirPath,
+                    settings::testDirPath,
                     UTBot.message("settings.project.testsDir"),
                     UTBot.message("settings.project.testsDir.browse.title")
                 ).rowComment(UTBot.message("paths.testsDirectory.description"))
@@ -106,8 +106,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 row {
                     label("Try to get paths from CMake model: ")
                     button("Detect Paths") {
-                        utbotSettings.predictPaths()
-                        utbotSettings.fireUTBotSettingsChanged()
+                        myProject.settings.predictPaths()
+                        myProject.settings.fireUTBotSettingsChanged()
                     }
                 }.rowComment("Queries CMake configurations in order to get source paths, build path. Also predicts tests folder")
             }
@@ -115,8 +115,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             group("CMake") {
                 row(UTBot.message("settings.project.cmakeOptions")) {
                     commandLineEditor(
-                        { utbotSettings.cmakeOptions },
-                        { utbotSettings.cmakeOptions = it }
+                        { settings.cmakeOptions },
+                        { settings.cmakeOptions = it }
                     )
                 }.rowComment(UTBot.message("paths.cmakeOptions.description"))
             }
@@ -136,22 +136,22 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             group("Generator settings") {
                 val checkBoxes = listOf(
                     CheckBoxInfo(
-                        utbotSettings::useStubs,
+                        settings::useStubs,
                         UTBot.message("stubs.useStubs.title"),
                         UTBot.message("stubs.useStubs.description")
                     ),
                     CheckBoxInfo(
-                        utbotSettings::verbose,
+                        settings::verbose,
                         UTBot.message("testsGeneration.verboseFormatting.title"),
                         UTBot.message("testsGeneration.verboseFormatting.description")
                     ),
                     CheckBoxInfo(
-                        utbotSettings::useDeterministicSearcher,
+                        settings::useDeterministicSearcher,
                         UTBot.message("advanced.useDeterministicSearcher.title"),
                         UTBot.message("advanced.useDeterministicSearcher.description")
                     ),
                     CheckBoxInfo(
-                        utbotSettings::generateForStaticFunctions,
+                        settings::generateForStaticFunctions,
                         UTBot.message("testsGeneration.generateForStaticFunctions.title"),
                         UTBot.message("testsGeneration.generateForStaticFunctions.description")
                     )
@@ -161,13 +161,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 }
 
                 row(UTBot.message("advanced.timeoutPerFunction.title")) {
-                    intTextField().bindIntText(utbotSettings::timeoutPerFunction).applyToComponent {
+                    intTextField().bindIntText(settings::timeoutPerFunction).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
                 }.rowComment(UTBot.message("advanced.timeoutPerFunction.description"))
 
                 row(UTBot.message("advanced.timeoutPerTest.title")) {
-                    intTextField().bindIntText(utbotSettings::timeoutPerFunction).applyToComponent {
+                    intTextField().bindIntText(settings::timeoutPerFunction).applyToComponent {
                         maximumSize = TEXT_FIELD_MAX_SIZE
                     }
                 }.rowComment(UTBot.message("advanced.timeoutPerTest.description"))
@@ -182,7 +182,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     override fun apply() {
         panel.apply()
-        utbotSettings.fireUTBotSettingsChanged()
+        myProject.settings.fireUTBotSettingsChanged()
     }
 
     override fun reset() {

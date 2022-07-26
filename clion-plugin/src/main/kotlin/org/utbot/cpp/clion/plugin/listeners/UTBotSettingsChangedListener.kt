@@ -1,7 +1,7 @@
 package org.utbot.cpp.clion.plugin.listeners
 
 import com.intellij.util.messages.Topic
-import org.utbot.cpp.clion.plugin.settings.UTBotAllSettings
+import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 
 fun interface UTBotSettingsChangedListener {
     companion object {
@@ -11,5 +11,5 @@ fun interface UTBotSettingsChangedListener {
         )
     }
 
-    fun settingsChanged(settings: UTBotAllSettings)
+    fun settingsChanged(settings: UTBotAllProjectSettings)
 }

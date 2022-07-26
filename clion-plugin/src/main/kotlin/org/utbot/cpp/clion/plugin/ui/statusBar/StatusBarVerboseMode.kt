@@ -6,7 +6,7 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.util.Consumer
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -51,7 +51,7 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun getTooltipText() = VerboseModeWidgetFactory.STATUS_BAR_DISPLAY_NAME
 
     override fun getClickConsumer() = Consumer<MouseEvent> { _ ->
-        val settings = statusBar?.project!!.utbotSettings
+        val settings = statusBar?.project!!.settings.storedSettings
         settings.verbose = !settings.verbose
         statusBar?.updateWidget(ID())
     }
@@ -59,7 +59,7 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun getText(): String {
         if (statusBar == null)
             return ""
-        return if (statusBar?.project!!.utbotSettings.verbose) "✔ UTBot: verbose formatting" else "❌ UTBot: verbose formatting"
+        return if (statusBar?.project!!.settings.storedSettings.verbose) "✔ UTBot: verbose formatting" else "❌ UTBot: verbose formatting"
     }
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
