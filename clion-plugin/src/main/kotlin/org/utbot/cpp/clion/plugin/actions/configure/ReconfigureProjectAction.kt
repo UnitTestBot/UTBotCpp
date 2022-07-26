@@ -1,22 +1,20 @@
-package org.utbot.cpp.clion.plugin.actions
+package org.utbot.cpp.clion.plugin.actions.configure
 
-import com.intellij.notification.Notification
-import com.intellij.notification.NotificationAction
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
+import org.utbot.cpp.clion.plugin.utils.activeProject
 import testsgen.Testgen
 
-class ReconfigureProjectAction: NotificationAction(UTBot.message("projectConfigure.reconfigure")) {
-    override fun actionPerformed(e: AnActionEvent, notification: Notification) {
-        actionPerformed(e)
-    }
+class ReconfigureProjectAction: AnAction(UTBot.message("projectConfigure.reconfigure")) {
 
     override fun actionPerformed(e: AnActionEvent) {
+        val project = e.activeProject()
         CheckProjectConfigurationRequest(
-            e.project!!,
-            getProjectConfigGrpcRequest(e.project!!, Testgen.ConfigMode.ALL),
+            getProjectConfigGrpcRequest(project, Testgen.ConfigMode.ALL),
+            project,
         ).execute()
     }
 

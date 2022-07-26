@@ -5,7 +5,7 @@ import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
 import org.utbot.cpp.clion.plugin.Clang
 import org.utbot.cpp.clion.plugin.CppCompiler
 import org.utbot.cpp.clion.plugin.Gcc
-import org.utbot.cpp.clion.plugin.actions.GenerateForProjectAction
+import org.utbot.cpp.clion.plugin.actions.generate.GenerateForProjectAction
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
 
