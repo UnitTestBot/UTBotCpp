@@ -223,12 +223,13 @@ void BuildDatabase::createClangCompileCommandsJson(const fs::path &target, const
 }
 
 void BuildDatabase::updateTarget(std::string target) {
-    auto new_target = GenerationUtils::findTarget(getAllTargets(), target);
+    if (target == GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
+        return;
+    }
 
+    auto new_target = GenerationUtils::findTarget(getAllTargets(), target);
     if (new_target.has_value()) {
         target = new_target.value();
-    } else if (target == GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
-        return;
     } else {
         throw CompilationDatabaseException("Can't find target: " + target);
     }

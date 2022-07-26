@@ -20,7 +20,7 @@ namespace {
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, int kleeTimeout = 60) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                            srcPaths, pathToFile, lineNum, true, false, kleeTimeout);
+                                                            srcPaths, pathToFile, lineNum, std::nullopt, true, false, kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);

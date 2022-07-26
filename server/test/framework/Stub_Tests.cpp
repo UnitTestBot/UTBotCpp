@@ -111,7 +111,7 @@ namespace {
 
     TEST_F(Stub_Test, Project_Stubs_Test) {
         auto stubsWriter = std::make_unique<ServerStubsWriter>(nullptr, false);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, true);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, std::nullopt, true);
         auto testGen = std::make_unique<ProjectTestGen>(*request, writer.get(), TESTMODE);
         std::vector<fs::path> stubSources = { calc_sum_c, calc_mult_c, literals_foo_c };
         Status status =
@@ -122,7 +122,7 @@ namespace {
 
     TEST_F(Stub_Test, Implicit_Stubs_Test) {
         auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         literals_foo_c, true);
+                                         literals_foo_c, std::nullopt, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
 
@@ -135,7 +135,7 @@ namespace {
     TEST_F(Stub_Test, Pregenerated_Stubs_Test) {
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             literals_foo_c, true);
+                                             literals_foo_c, std::nullopt, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -146,7 +146,7 @@ namespace {
 
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                              srcPaths, literals_foo_c, true);
+                                              srcPaths, literals_foo_c, std::nullopt, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -159,7 +159,7 @@ namespace {
 
     TEST_F(Stub_Test, Multimodule_Lib_Heuristic_Test) {
         auto request = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
-                                                       { foreign, calc, suitePath, literals }, true);
+                                                       { foreign, calc, suitePath, literals }, std::nullopt, true);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(foreign_bar_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -183,7 +183,7 @@ namespace {
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                       srcPaths, literals_foo_c, true);
+                                                       srcPaths, literals_foo_c, std::nullopt, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -218,7 +218,7 @@ namespace {
 
     TEST_F(Stub_Test, Run_Tests_For_Unused_Function) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                   srcPaths, calc_sum_c, true);
+                                                   srcPaths, calc_sum_c, std::nullopt, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(calc_sum_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -239,7 +239,7 @@ namespace {
 
     TEST_F(Stub_Test, File_Tests_Without_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                       srcPaths, literals_foo_c, false);
+                                                       srcPaths, literals_foo_c, std::nullopt, false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
 
@@ -270,7 +270,7 @@ namespace {
     }
 
     TEST_F(Stub_Test, DISABLED_Sync_Stub_When_Source_Changed_Test) {
-        auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, true);
+        auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, std::nullopt, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -279,11 +279,11 @@ namespace {
         modifySources(sourcesToModify);
         std::string stubCode = modifyStubFile(sum_stub_c);
 
-        auto request2 = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, true);
+        auto request2 = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, std::nullopt, true);
         auto testGen2 = FileTestGen(*request2, writer.get(), TESTMODE);
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             literals_foo_c, true);
+                                             literals_foo_c, std::nullopt, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -292,7 +292,7 @@ namespace {
         }
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                              srcPaths, literals_foo_c, true);
+                                              srcPaths, literals_foo_c, std::nullopt, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 

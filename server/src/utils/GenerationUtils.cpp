@@ -65,22 +65,24 @@ GenerationUtils::findTarget(const std::vector<std::shared_ptr<BuildDatabase::Tar
         return !(output == name || output.stem() == name || output.stem() == "lib" + name);
     });
     if (candidates.empty()) {
-        LOG_S(WARNING) << "Couldn't find appropriate target. List of available targets:\n";
+        std::stringstream ss;
+        ss << "Couldn't find appropriate target. List of available targets:\n";
         for (const auto &target : allTargets) {
-            LOG_S(WARNING) << target->getOutput() << "\n";
+            ss << target->getOutput() << "\n";
         }
-        LOG_S(WARNING) << "\n";
+        LOG_S(WARNING) << ss.str();
         return std::nullopt;
     } else if (candidates.size() == 1) {
         return candidates[0]->getOutput();
     } else {
-        LOG_S(WARNING) << "There are multiple candidates for given target. "
+        std::stringstream ss;
+        ss << "There are multiple candidates for given target. "
                           "Please, specify full path of your preferred target. "
                           "List of candidates:\n";
         for (const auto &candidate : candidates) {
-            LOG_S(WARNING) << candidate->getOutput() << "\n";
+            ss << candidate->getOutput() << "\n";
         }
-        LOG_S(WARNING) << "\n";
+        LOG_S(WARNING) << ss.str();
         return std::nullopt;
     }
 }
