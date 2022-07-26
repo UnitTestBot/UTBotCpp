@@ -69,6 +69,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
+                                                         const std::optional<std::string> &target = std::nullopt,
                                                          bool useStubs = false,
                                                          bool verbose = true,
                                                          int kleeTimeout = 60);
@@ -78,14 +79,21 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
+                                                   const std::optional<std::string> &target = std::nullopt,
                                                    bool useStubs = false,
-                                                   bool verbose = true);
+                                                   bool verbose = true,
+                                                   int kleeTimeout = 60);
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
+                                                   const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
-                                                   int line, bool useStubs,
-                                                   bool verbose, int kleeTimeout);
+                                                   const std::vector<fs::path> &srcPaths,
+                                                   const fs::path &filePath,
+                                                   int line,
+                                                   const std::optional<std::string> &target = std::nullopt,
+                                                   bool useStubs = false,
+                                                   bool verbose = true,
+                                                   int kleeTimeout = 60);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                      const fs::path &projectPath,
@@ -93,6 +101,8 @@ namespace testUtils {
                                                      const std::vector<fs::path> &srcPaths,
                                                      const fs::path &filePath,
                                                      int line,
+                                                     const std::optional<std::string> &target = std::nullopt,
+                                                     bool useStubs = false,
                                                      bool verbose = true,
                                                      int kleeTimeout = 60);
 
