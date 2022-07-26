@@ -212,11 +212,15 @@ class UTBotAllSettings(val project: Project) {
 
     val convertedProjectPath: String get() = projectPath.convertToRemotePathIfNeeded(project)
 
-    //TODO: it seems to be a kind of boolshit to me
     private val isLocalHost: Boolean
-        get() = serverName == "localhost" || serverName == "127.0.0.01"
+        get() = serverName == "localhost" || serverName == "127.0.0.1"
 
-    //TODO: it is unclear, requires a comment
+    /**
+     * If this property returns true, plugin must convert path sent and returned from server.
+     * @see [String.convertToRemotePathIfNeeded], [String.convertFromRemotePathIfNeeded]
+     *
+     * If we are on Windows, this is not a server, so it is always a remote scenario.
+     */
     val isRemoteScenario: Boolean
         get() = !(remotePath == projectPath && isLocalHost) || isWindows
 

@@ -15,6 +15,7 @@ import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
+import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
 import java.awt.Dimension
 import java.awt.event.KeyAdapter
@@ -22,9 +23,26 @@ import java.awt.event.KeyEvent
 import java.math.BigInteger
 import java.util.function.Supplier
 
+/**
+ * Action to take needed information from user and trigger generation for predicate.
+ *
+ * Predicate request generates tests that satisfy some condition (predicate) for
+ * function return type. E.g. tests where return value (function return type is int)
+ * is smaller than 10.
+ *
+ * To assemble predicate request we need to know function return type.
+ * For that we send request to server @see [FunctionReturnTypeRequest].
+ * Depending on return type we ask user what comparison operator to use.
+ * For example, if return type is bool, we suggest == or !=, if it is
+ * not bool, then available operators are: ==, <=, >=, <, >. @see [chooseComparisonOperator]
+ * Then we ask user for a value to compare with, @see [chooseReturnValue].
+ * Then we assemble the predicate request and launch its execution @see [sendPredicateToServer].
+ *
+ * For asking comparison operator and return value we use popups.
+ */
 class GenerateForPredicateAction : BaseGenerateTestsAction() {
-
     override fun actionPerformed(e: AnActionEvent) {
+        // when we gathered all needed information for predicate request, assemble it and execute it.
         fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
             PredicateRequest(
                 getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
@@ -33,7 +51,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 e.client.executeRequest(this)
             }
 
-        //TODO: this code requires some comments
+        // ask for comparison operator to use in predicate
         fun chooseComparisonOperator(
             validationType: ValidationType,
             proceedWithComparisonOperator: (comparisonOperator: String) -> Unit,
@@ -42,6 +60,20 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 ValidationType.STRING,
                 ValidationType.BOOL -> {
                     proceedWithComparisonOperator("==")
+                    return
+                }
+                ValidationType.UNSUPPORTED -> {
+                    notifyError(
+                        "Unsupported return type for \'Generate Tests With Prompted Result\' feature: \n" +
+                                "supported types are integers, booleans, characters, floats and strings"
+                    )
+                    return
+                }
+                ValidationType.UNRECOGNIZED -> {
+                    notifyError(
+                        "Could not recognise return type for 'Generate Tests With Prompted Result' feature: \n" +
+                                "supported types are integers, booleans, characters, floats and strings"
+                    )
                     return
                 }
                 else -> {
@@ -53,6 +85,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
             }
         }
 
+        // ask for return value of the function to compare with
         fun chooseReturnValue(
             validationType: ValidationType,
             proceedWithValueToCompare: (valueToCompare: String) -> Unit,
@@ -63,14 +96,17 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
             }
             popup.showInBestPositionFor(e.dataContext)
         }
-
+        //ask server for return type
         FunctionReturnTypeRequest(
             getFunctionGrpcRequest(e),
             e.activeProject(),
         ) { functionReturnType ->
             val validationType = functionReturnType.validationType
+            // then ask for comparison operator to use from user
             chooseComparisonOperator(validationType) { comparisonOperator ->
+                // then ask for return value to compare with from user
                 chooseReturnValue(validationType) { valueToCompare ->
+                    // when we have all needed information, assemble and execute
                     sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
                 }
             }
@@ -95,6 +131,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
     private fun createTrueFalsePopup(onChoose: (String) -> Unit) =
         createListPopup("Select bool value", listOf("true", "false")) { onChoose(it) }
 
+    //creates popup with input textfield, used for asking return value
     private fun createTextFieldPopup(type: ValidationType, onChoose: (String) -> Unit): JBPopup {
         val textField = ExtendableTextField()
         textField.minimumSize = Dimension(100, textField.width)
@@ -142,7 +179,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
     }
 
     companion object {
-        //TODO: why don't we have DOUBLE and BYTE here?
+        //Note: server does not support some types like byte or boolean
         val defaultReturnValues = mapOf(
             ValidationType.INT8_T to "0",
             ValidationType.INT16_T to "0",
