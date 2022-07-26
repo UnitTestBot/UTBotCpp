@@ -40,7 +40,7 @@ class ClientManager(val project: Project): Disposable {
         fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)
             .joinToString("") { Random.nextInt(0, RANDOM_SEQUENCE_MAX_VALUE).toString() }
 
-        return "${(System.getenv("USER") ?: "unknownUser")}-${createRandomSequence()}"
+        return "${(System.getenv("USER") ?: "user")}-${createRandomSequence()}"
     }
 
     companion object {
