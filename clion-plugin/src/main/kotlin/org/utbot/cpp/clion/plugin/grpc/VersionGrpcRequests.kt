@@ -2,5 +2,5 @@ package org.utbot.cpp.clion.plugin.grpc
 
 import testsgen.Testgen
 
-//TODO: hardcoding the version is a bad practice, determine it somehow
-fun getVersionGrpcRequest(): Testgen.VersionInfo = Testgen.VersionInfo.newBuilder().setVersion("2022.7").build()
+//TODO: when plugin is ready for release, take version from publish github action.
+fun getVersionGrpcRequest(): Testgen.VersionInfo = Testgen.VersionInfo.newBuilder().setVersion("0.0.1").build()

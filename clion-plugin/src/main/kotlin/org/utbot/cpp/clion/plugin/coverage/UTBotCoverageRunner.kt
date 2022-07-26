@@ -13,16 +13,16 @@ import testsgen.Testgen
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.Path
 
 /**
  * This class is used to convert from our representation of coverage to IntelliJ's [ProjectData]
  */
 class UTBotCoverageRunner : CoverageRunner() {
     private val log = Logger.getInstance(this::class.java)
-    private fun getLineCount(filePath: String): Int {
+    private fun getLineCount(filePath: Path): Int {
         var lineCount: Int
-        Files.lines(Paths.get(filePath), StandardCharsets.UTF_8).use { stream -> lineCount = stream.count().toInt() }
+        Files.lines(filePath, StandardCharsets.UTF_8).use { stream -> lineCount = stream.count().toInt() }
         return lineCount
     }
 
@@ -40,12 +40,12 @@ class UTBotCoverageRunner : CoverageRunner() {
             if (filePathFromServer.isNotEmpty()) {
                 isAnyCoverage = true
                 val localFilePath = filePathFromServer.convertFromRemotePathIfNeeded(baseCoverageSuite.project)
-                if (!Paths.get(localFilePath).exists()) {
+                if (!localFilePath.exists()) {
                     log.warn("Skipping $localFilePath in coverage processing as it does not exist!")
                     continue
                 }
                 val lines = arrayOfNulls<LineData>(getLineCount(localFilePath))
-                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath))
+                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath.toAbsolutePath().toString()))
                 fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {
                     rangesList.filterNotNull().forEach {
                             val lineData = LineData(it.line + 1, null)

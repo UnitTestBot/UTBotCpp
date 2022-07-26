@@ -63,7 +63,7 @@ class TestsResultsStorage(val project: Project) {
             it.file?.toNioPath()
         }
         for (testResult in storage.values) {
-            if (Paths.get(testResult.testFilePath.convertFromRemotePathIfNeeded(project)) in currentlyOpenedFilePaths) {
+            if (testResult.testFilePath.convertFromRemotePathIfNeeded(project) in currentlyOpenedFilePaths) {
                 return true
             }
         }

@@ -10,7 +10,6 @@ import org.utbot.cpp.clion.plugin.utils.refreshAndFindIOFile
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Path
-import java.nio.file.Paths
 
 class TestsStreamHandler(
     project: Project,
@@ -36,10 +35,10 @@ class TestsStreamHandler(
 
     private fun handleSourceCode(sources: List<Util.SourceCode>, isStubs: Boolean = false) {
         sources.forEach { sourceCode ->
-            val filePath: String = sourceCode.filePath.convertFromRemotePathIfNeeded(project)
+            val filePath: Path = sourceCode.filePath.convertFromRemotePathIfNeeded(project)
 
             if (!isStubs)
-                myGeneratedTestFilesLocalFS.add(Paths.get(filePath))
+                myGeneratedTestFilesLocalFS.add(filePath)
 
             if (sourceCode.code.isNotEmpty()) {
                 project.logger.trace { "Creating generated test file: $filePath." }
@@ -50,7 +49,7 @@ class TestsStreamHandler(
             }
 
             var infoMessage = "Generated " + if (isStubs) "stub" else "test" + " file"
-            if (isGeneratedFileTestSourceFile(filePath))
+            if (isGeneratedFileTestSourceFile(filePath.toString()))
                 infoMessage += " with ${sourceCode.regressionMethodsNumber} tests in regression suite" +
                         " and ${sourceCode.errorMethodsNumber} tests in error suite"
             project.logger.info { "$infoMessage: $filePath" }

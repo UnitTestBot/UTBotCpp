@@ -3,11 +3,11 @@ package org.utbot.cpp.clion.plugin.utils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.psi.PsiDirectory
+import com.intellij.util.io.createFile
 import kotlin.io.path.div
+import kotlin.io.path.writeText
 import org.apache.commons.io.FilenameUtils
 import org.utbot.cpp.clion.plugin.grpc.allSettings
-import java.io.File
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
@@ -22,9 +22,9 @@ fun relativize(from: String, to: String): String {
     return fromPath.relativize(toPath).toString()
 }
 
-fun refreshAndFindIOFile(file: File) {
+fun refreshAndFindIOFile(file: Path) {
     ApplicationManager.getApplication().invokeLater {
-        LocalFileSystem.getInstance()?.refreshAndFindFileByIoFile(file)
+        LocalFileSystem.getInstance()?.refreshAndFindFileByNioFile(file)
     }
 }
 
@@ -54,12 +54,13 @@ fun List<Path>.getLongestCommonPathFromRoot(): Path? {
     return this.reduce(::getCommonPathFromRoot)
 }
 
-fun refreshAndFindIOFile(filePath: String) = refreshAndFindIOFile(File(filePath))
+fun refreshAndFindIOFile(filePath: String) = refreshAndFindIOFile(Paths.get(filePath))
 
-fun createFileAndMakeDirs(filePath: String, text: String) {
-    with(File(filePath)) {
-        parentFile?.mkdirs()
-        createNewFile()
+fun createFileAndMakeDirs(filePath: Path, text: String) {
+    if (!Files.isRegularFile(filePath))
+        error("File expected! But got: $filePath")
+    with(filePath) {
+        createFile()
         writeText(text)
     }
 }
@@ -102,9 +103,6 @@ fun String.fileNameOrNull(): String? {
 private const val DOT_SEP = "_dot_"
 private const val TEST_SUFFIX = "_test"
 
-fun testFilePathToSourceFilePath(path: String, project: Project): Path =
-    testFilePathToSourceFilePath(Paths.get(path), project)
-
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
     val relativeToProject = Paths.get(project.utbotSettings.testDirPath).relativize(path.parent)
     return (Paths.get(project.utbotSettings.projectPath) / relativeToProject / testFileNameToSourceFileName(path))
@@ -136,38 +134,23 @@ fun restoreExtensionFromSuffix(path: Path, defaultExt: String = ".c"): Path {
     return path.parent.resolve(fnWithExt)
 }
 
+/**
+ * Convert windows path to wsl path.
+ * For example: C:\a\b -> /mnt/c/a/b.
+ * @param filePath - windows path to be converted
+ */
 fun toWSLPathOnWindows(filePath: String) = filePath
     .replace("""^(\w):""".toRegex()) { matchResult -> "/mnt/${matchResult.groupValues[1].lowercase()}" }
     .replace("""\\+""".toRegex(), "/")
     .replace("""/+""".toRegex(), "/")
 
-fun Set<String>.addDirectoriesRecursive(dirsToAdd: List<PsiDirectory>): Set<String> {
-    val newSourceFolders = this.toMutableSet()
-    dirsToAdd.forEach { dir ->
-        newSourceFolders.add(dir.virtualFile.path)
-        dir.virtualFile.toNioPath().visitAllDirectories {
-            newSourceFolders.add(it.toString())
-        }
-    }
-    return newSourceFolders
-}
 
-fun Set<String>.removeDirectoriesRecursive(dirsToRemove: List<PsiDirectory>): Set<String> {
-    val newSourceFolders = this.toMutableSet()
-    dirsToRemove.forEach { dir ->
-        newSourceFolders.add(dir.virtualFile.path)
-        dir.virtualFile.toNioPath().visitAllDirectories {
-            newSourceFolders.remove(it.toString())
-        }
-    }
-    return newSourceFolders
-}
 
 /**
  * Convert absolute path on this machine to corresponding absolute path on remote host
  * if path to project on a remote machine was specified in the settings.
  *
- * If [isRemoteScenario] == false, this function returns [path] unchanged.
+ * If UTBotSettings.isRemoteScenario == false, this function returns this path unchanged.
  *
  */
 fun String.convertToRemotePathIfNeeded(project: Project): String {
@@ -176,24 +159,22 @@ fun String.convertToRemotePathIfNeeded(project: Project): String {
     return this
 }
 
-fun String.convertToRemotePath(project: Project): String {
+private fun String.convertToRemotePath(project: Project): String {
     val relativeToProjectPath = this.getRelativeToProjectPath(project)
     return FilenameUtils.separatorsToUnix(Paths.get(project.allSettings().remotePath, relativeToProjectPath).toString())
 }
 
 /**
- * Convert absolute path on docker container to corresponding absolute path on local machine.
+ * Convert absolute path on remote host to corresponding absolute path on local machine.
  *
- * If remote path == "", this function returns [path] unchanged.
+ * If UTBotSettings.isRemoteScenario == false, this function returns [path] unchanged.
  *
- * @param path - absolute path in Docker to be converted
+ * @param path - unix path absolute path from remote server to be converted
  */
-//TODO: it seems that this method should return Path, not String
-//TODO: update documentation after refactoring
-fun String.convertFromRemotePathIfNeeded(project: Project): String {
+fun String.convertFromRemotePathIfNeeded(project: Project): Path {
     if (project.allSettings().isRemoteScenario)
-        return this.convertFromRemotePath(project)
-    return this
+        return Paths.get(this.convertFromRemotePath(project))
+    return Paths.get(this)
 }
 
 private fun String.convertFromRemotePath(project: Project): String {

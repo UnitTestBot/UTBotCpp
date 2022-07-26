@@ -21,11 +21,29 @@ import java.awt.event.KeyEvent
 import java.math.BigInteger
 import java.util.function.Supplier
 
+/**
+ * Action to take needed information from user and trigger generation for predicate.
+ *
+ * Predicate request generates tests that satisfy some condition (predicate) for
+ * function return type. E.g. tests where return value (function return type is int)
+ * is smaller than 10.
+ *
+ * To assemble predicate request we need to know function return type.
+ * For that we send request to server @see [FunctionReturnTypeRequest].
+ * Depending on return type we ask user what comparison operator to use.
+ * For example, if return type is bool, we suggest == or !=, if it is
+ * not bool, then available operators are: ==, <=, >=, <, >. @see [chooseComparisonOperator]
+ * Then we ask user for a value to compare with, @see [chooseReturnValue].
+ * Then we assemble the predicate request and launch its execution @see [sendPredicateToServer].
+ *
+ * For asking comparison operator and return value we use popups.
+ */
 class GenerateForPredicateAction : GenerateTestsBaseAction() {
     override fun updateIfServerAvailable(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = (e.project != null)
     }
 
+    // helper function to create list popup
     fun createListPopup(title: String, list: List<String>, onChoose: (String) -> Unit): JBPopup {
         return JBPopupFactory.getInstance().createPopupChooserBuilder(list)
             .setResizable(false)
@@ -40,6 +58,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
     fun createTrueFalsePopup(onChoose: (String) -> Unit) = createListPopup("Select bool value",
         listOf("true", "false")) { onChoose(it) }
 
+    // helper function to create popup with input textfield, used for asking return value
     fun createTextFieldPopup(type: ValidationType, onChoose: (String) -> Unit): JBPopup {
         val textField = ExtendableTextField()
         textField.minimumSize = Dimension(100, textField.width)
@@ -87,7 +106,8 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
 
-        fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) {
+        // when we gathered all needed information for predicate request, assemble it and execute it.
+        fun assemblePredicateRequestAndExecute(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) {
             val predicateRequest = getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare)
             PredicateRequest(
                 predicateRequest,
@@ -97,6 +117,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
             }
         }
 
+        // ask for comparison operator to use in predicate
         fun chooseComparisonOperator(type: ValidationType, proceedWithComparisonOperator: (comparisonOperator: String) -> Unit) {
             when (type) {
                 ValidationType.STRING, ValidationType.BOOL -> {
@@ -111,6 +132,7 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
             }
         }
 
+        // ask for return value to compare with
         fun chooseReturnValue(type: ValidationType, proceedWithValueToCompare: (valueToCompare: String) -> Unit) {
             val popup = if (type == ValidationType.BOOL) {
                 createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
@@ -120,14 +142,18 @@ class GenerateForPredicateAction : GenerateTestsBaseAction() {
             popup.showInBestPositionFor(e.dataContext)
         }
 
+        // first ask server for return type
         FunctionReturnTypeRequest(
             e.project!!,
             getFunctionGrpcRequest(e)
         ) { functionReturnType ->
             val type = functionReturnType.validationType
+            // then ask for comparison operator to use from user
             chooseComparisonOperator(type) { comparisonOperator ->
+                // then ask for return value to compare with from user
                 chooseReturnValue(type) { valueToCompare ->
-                    sendPredicateToServer(type, valueToCompare, comparisonOperator)
+                    // when we have all needed information, assemble and execute
+                    assemblePredicateRequestAndExecute(type, valueToCompare, comparisonOperator)
                 }
             }
         }.apply {
