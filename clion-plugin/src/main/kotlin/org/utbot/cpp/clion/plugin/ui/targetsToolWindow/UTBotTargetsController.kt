@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.utbot.cpp.clion.plugin.utils.getProjectTargetsRequest
+import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -39,7 +39,7 @@ class UTBotTargetsController(val project: Project) {
         logger.trace { "Requesting project targets from server!" }
         ProjectTargetsRequest(
             project,
-            getProjectTargetsRequest(project),
+            getProjectTargetsGrpcRequest(project),
         ) { targetsResponse ->
             invokeOnEdt {
                 listModel.apply {

@@ -212,8 +212,13 @@ class UTBotAllSettings(val project: Project) {
 
     val convertedProjectPath: String get() = projectPath.convertToRemotePathIfNeeded(project)
 
-    fun isLocalHost() = serverName == "localhost" || serverName == "127.0.0.01"
-    fun isRemoteScenario() = !(remotePath == projectPath && isLocalHost()) || isWindows()
+    //TODO: it seems to be a kind of boolshit to me
+    private val isLocalHost: Boolean
+        get() = serverName == "localhost" || serverName == "127.0.0.01"
+
+    //TODO: it is unclear, requires a comment
+    val isRemoteScenario: Boolean
+        get() = !(remotePath == projectPath && isLocalHost) || isWindows
 
     fun predictPaths() {
         logger.info("predict paths was called")
