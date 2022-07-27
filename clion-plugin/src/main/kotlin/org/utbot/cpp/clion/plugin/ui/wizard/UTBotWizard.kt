@@ -26,12 +26,17 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep
         setSize(400, 400)
     }
 
+    /**
+     * Commits settings changes made in wizard and sends a notification.
+     */
     override fun doOKAction() {
-        // commit changes made in wizard and notify
+        project.settings.storedSettings.fromSettingsModel(mySettingsModel)
+        projectIndependentSettings.fromSettingsModel(mySettingsModel)
+
         with(project.settings) {
-            project.settings.fromModel(mySettingsModel)
             fireUTBotSettingsChanged()
         }
+
         super.doOKAction()
     }
 

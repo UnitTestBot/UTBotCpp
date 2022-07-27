@@ -53,11 +53,6 @@ class UTBotAllProjectSettings(val project: Project) {
             return !(storedSettings.remotePath == projectPath && isLocalHost) || isWindows
         }
 
-    fun fromModel(model: UTBotSettingsModel) {
-        storedSettings.fromSettingsModel(model)
-        projectIndependentSettings.fromSettingsModel(model)
-    }
-
     fun fireUTBotSettingsChanged() {
         project.messageBus.syncPublisher(UTBotSettingsChangedListener.TOPIC).settingsChanged(this)
     }

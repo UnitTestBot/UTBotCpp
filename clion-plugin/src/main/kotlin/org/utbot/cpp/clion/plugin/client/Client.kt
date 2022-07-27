@@ -17,7 +17,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
-import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
@@ -85,18 +84,6 @@ class Client(
     }
 
     fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
-
-    fun doHandShake() {
-        requestsCS.launch {
-            // Logger.info("sending HandShake request!")
-            try {
-                stub.handshake(getVersionGrpcRequest())
-                logger.info { "Handshake successful!" }
-            } catch (e: Exception) {
-                logger.warn { "HandShake failed with the following error: ${e.message}" }
-            }
-        }
-    }
 
     private fun provideLoggingChannels() {
         for (channel in loggingChannels) {
