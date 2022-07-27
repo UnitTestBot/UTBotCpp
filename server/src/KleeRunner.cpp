@@ -71,7 +71,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         fileToMethods[method.sourceFilePath].push_back(method);
     }
 
-    nlohmann::json sarifResults;
+    nlohmann::json sarifResults = nlohmann::json::array();
 
     std::function<void(tests::Tests &tests)> prepareTests = [&](tests::Tests &tests) {
         fs::path filePath = tests.sourceFilePath;

@@ -77,6 +77,7 @@ namespace sarif {
                                     const fs::path &relPathInProject = getInProjectPath(projectContext.projectPath, srcPath);
                                     const fs::path &fullPathInProject = projectContext.projectPath / relPathInProject;
                                     if (Paths::isSubPathOf(projectContext.buildDir(), fullPathInProject)) {
+                                        LOG_S(DEBUG) << "Full path " << fullPathInProject << " is in build - skip it";
                                         continue;
                                     }
                                     if (!relPathInProject.empty() && fs::exists(fullPathInProject)) {
@@ -119,7 +120,7 @@ namespace sarif {
                                         codeFlowsLocations["locations"].push_back(locationWrapper);
                                     } else {
                                         // the rest is the KLEE calls that are not applicable for navigation
-                                        LOG_S(INFO) << "Skip path in stack frame :" << srcPath;
+                                        LOG_S(DEBUG) << "Skip path in stack frame :" << srcPath;
                                     }
                                 }
                             }
