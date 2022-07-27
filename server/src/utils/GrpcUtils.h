@@ -2,7 +2,6 @@
 #define UNITTESTBOT_GRPCUTILS_H
 
 #include "ProjectContext.h"
-#include "ProjectTarget.h"
 #include "utils/path/FileSystemPath.h"
 
 #include <protobuf/testgen.grpc.pb.h>

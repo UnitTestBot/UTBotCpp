@@ -3,7 +3,6 @@
 
 #include "gtest/gtest.h"
 
-#include "ProjectTarget.h"
 #include "Server.h"
 #include "Tests.h"
 #include "coverage/Coverage.h"

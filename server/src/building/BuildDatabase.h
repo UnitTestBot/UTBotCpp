@@ -205,6 +205,7 @@ private:
     fs::path buildCommandsJsonPath;
     fs::path linkCommandsJsonPath;
     fs::path compileCommandsJsonPath;
+    std::optional<std::string> target;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
@@ -229,6 +230,7 @@ private:
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
     fs::path newDirForFile(fs::path const& file) const;
     fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
+    CollectionUtils::FileSet getSourceFilesForTarget(const std::string &_target);
 
     using sharedLibrariesMap = std::unordered_map<std::string, CollectionUtils::MapFileTo<fs::path>>;
 

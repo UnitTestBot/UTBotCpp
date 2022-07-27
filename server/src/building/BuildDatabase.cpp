@@ -733,3 +733,11 @@ fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
                                                    this->projectContext.projectPath);
     return Paths::createNewDirForFile(file, base, this->serverBuildDir);
 }
+
+CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const std::string &_target) {
+    return CollectionUtils::transformTo<CollectionUtils::FileSet>(
+            getArchiveObjectFiles(_target),
+            [this](fs::path const &objectPath) {
+                return getClientCompilationUnitInfo(objectPath)->getSourcePath();
+            });
+}
