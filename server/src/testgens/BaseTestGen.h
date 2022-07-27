@@ -2,7 +2,6 @@
 #define UNITTESTBOT_BASETESTGEN_H
 
 #include "ProjectContext.h"
-#include "ProjectTarget.h"
 #include "SettingsContext.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
@@ -33,7 +32,6 @@ public:
     std::vector<Stubs> synchronizedStubs;
     types::TypeMaps types;
 
-    std::optional<fs::path> targetPath;
     CollectionUtils::FileSet targetSources;
 
     virtual std::string toString() = 0;
@@ -42,9 +40,9 @@ public:
 
     bool isBatched() const;
 
-    bool hasAutoTarget() const;
-    fs::path const &getTargetPath() const;
-    void setTargetPath(fs::path _targetPath);
+//    bool hasAutoTarget() const;
+//    fs::path const &getTargetPath() const;
+//    void setTargetPath(fs::path _targetPath);
 
     virtual ~BaseTestGen() = default;
 protected:
@@ -55,7 +53,7 @@ protected:
 
     void setInitializedTestsMap();
 
-    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
+//    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
 
     void updateTargetSources();
 };
