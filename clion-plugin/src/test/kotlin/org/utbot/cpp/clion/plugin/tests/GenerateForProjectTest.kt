@@ -8,13 +8,14 @@ import org.utbot.cpp.clion.plugin.Gcc
 import org.utbot.cpp.clion.plugin.actions.generate.GenerateForProjectAction
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
+import org.utbot.cpp.clion.plugin.settings.settings
 
 class GenerateForProjectTest : BaseGenerationTestCase() {
     private val logger = setupLogger()
     private fun doTest(compiler: CppCompiler, isVerbose: Boolean, targetNames: List<String> = emptyList()) {
         logger.info ( "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}")
 
-        settings.verbose = isVerbose
+        project.settings.storedSettings.verbose = isVerbose
         compiler.buildProject(projectPath, buildDirName)
 
         for (targetName in targetNames) {

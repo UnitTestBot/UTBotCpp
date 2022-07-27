@@ -7,9 +7,9 @@ import com.intellij.ide.projectView.impl.ProjectViewPane
 import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileSystemItem
-import javax.swing.tree.DefaultTreeModel
 import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
+import org.utbot.cpp.clion.plugin.settings.settings
+import javax.swing.tree.DefaultTreeModel
 
 open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun enableDnD() = Unit
@@ -43,7 +43,7 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun createStructure() = object : AbstractProjectTreeStructure(myProject) {
         // replace directory nodes with our UTBotNodes, which check source dirs during node.update
         override fun getProviders() = listOf(
-            UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.path in myProject.utbotSettings.sourceDirs })
+            UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.path in myProject.settings.storedSettings.sourceDirs })
         )
     }
 }

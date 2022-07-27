@@ -4,15 +4,17 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
+import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.BuildOptionsStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.ConnectionStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.IntroStrep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.SuccessStep
-import org.utbot.cpp.clion.plugin.utils.utbotSettings
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
-    private val mySettingsModel = project.utbotSettings.asModel()
+    private val mySettingsModel = UTBotSettingsModel(project.settings.storedSettings, projectIndependentSettings)
 
     init {
         addStep(IntroStrep())
@@ -24,13 +26,18 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep
         setSize(400, 400)
     }
 
+    /**
+     * Commits settings changes made in wizard and sends a notification.
+     */
     override fun doOKAction() {
-        super.doOKAction()
-        // commit changes made during wizard and notify
-        with(project.utbotSettings) {
-            project.utbotSettings.applyModel(mySettingsModel)
+        project.settings.storedSettings.fromSettingsModel(mySettingsModel)
+        projectIndependentSettings.fromSettingsModel(mySettingsModel)
+
+        with(project.settings) {
             fireUTBotSettingsChanged()
         }
+
+        super.doOKAction()
     }
 
     override fun proceedToNextStep() {

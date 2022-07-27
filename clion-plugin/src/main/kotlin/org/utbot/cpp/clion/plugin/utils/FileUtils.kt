@@ -7,7 +7,7 @@ import com.intellij.util.io.createFile
 import kotlin.io.path.div
 import kotlin.io.path.writeText
 import org.apache.commons.io.FilenameUtils
-import org.utbot.cpp.clion.plugin.grpc.allSettings
+import org.utbot.cpp.clion.plugin.settings.settings
 import java.nio.file.FileVisitResult
 import java.nio.file.Files
 import java.nio.file.InvalidPathException
@@ -104,8 +104,8 @@ private const val DOT_SEP = "_dot_"
 private const val TEST_SUFFIX = "_test"
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
-    val relativeToProject = Paths.get(project.utbotSettings.testDirPath).relativize(path.parent)
-    return (Paths.get(project.utbotSettings.projectPath) / relativeToProject / testFileNameToSourceFileName(path))
+    val relativeToProject = Paths.get(project.settings.storedSettings.testDirPath).relativize(path.parent)
+    return (Paths.get(project.settings.projectPath) / relativeToProject / testFileNameToSourceFileName(path))
 }
 
 fun testFileNameToSourceFileName(path: Path): Path {
@@ -154,14 +154,14 @@ fun toWSLPathOnWindows(filePath: String) = filePath
  *
  */
 fun String.convertToRemotePathIfNeeded(project: Project): String {
-    if (project.allSettings().isRemoteScenario)
+    if (project.settings.isRemoteScenario)
         return this.convertToRemotePath(project)
     return this
 }
 
 private fun String.convertToRemotePath(project: Project): String {
     val relativeToProjectPath = this.getRelativeToProjectPath(project)
-    return FilenameUtils.separatorsToUnix(Paths.get(project.allSettings().remotePath, relativeToProjectPath).toString())
+    return FilenameUtils.separatorsToUnix(Paths.get(project.settings.storedSettings.remotePath, relativeToProjectPath).toString())
 }
 
 /**
@@ -172,15 +172,14 @@ private fun String.convertToRemotePath(project: Project): String {
  * @param path - unix path absolute path from remote server to be converted
  */
 fun String.convertFromRemotePathIfNeeded(project: Project): Path {
-    if (project.allSettings().isRemoteScenario)
+    if (project.settings.isRemoteScenario)
         return Paths.get(this.convertFromRemotePath(project))
     return Paths.get(this)
 }
 
 private fun String.convertFromRemotePath(project: Project): String {
-    val settings = project.allSettings()
-    val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(settings.remotePath, this))
-    return FilenameUtils.separatorsToSystem(Paths.get(settings.projectPath, relativeToProjectPath).toString())
+    val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(project.settings.storedSettings.remotePath, this))
+    return FilenameUtils.separatorsToSystem(Paths.get(project.settings.storedSettings.projectPath, relativeToProjectPath).toString())
 }
 
-private fun String.getRelativeToProjectPath(project: Project): String = relativize(project.allSettings().projectPath, this)
+private fun String.getRelativeToProjectPath(project: Project): String = relativize(project.settings.projectPath, this)

@@ -9,6 +9,7 @@ import org.utbot.cpp.clion.plugin.Gcc
 import org.utbot.cpp.clion.plugin.assertAllFilesNotEmptyRecursively
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
+import org.utbot.cpp.clion.plugin.settings.settings
 
 class GenerateForLineTest: BaseGenerationTestCase() {
     private val logger = setupLogger()
@@ -17,7 +18,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
         compiler.buildProject(projectPath, buildDirName)
         setTarget(targetName)
-        settings.verbose = isVerbose
+        project.settings.storedSettings.verbose = isVerbose
 
         fixture.configureFromTempProjectFile("/lib/basic_functions.c")
         fixture.editor.moveCursorToLine(lineNumber)
