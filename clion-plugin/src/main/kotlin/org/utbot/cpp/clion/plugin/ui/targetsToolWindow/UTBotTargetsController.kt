@@ -8,6 +8,7 @@ import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
+import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
@@ -15,7 +16,9 @@ import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.relativize
 
 class UTBotTargetsController(val project: Project) {
-    private val utbotSettings = project.settings
+    private val settings: UTBotAllProjectSettings
+        get() = project.settings
+
     private val listModel = CollectionListModel(mutableListOf(UTBotTarget.autoTarget))
     private val client: Client
      get() = project.getClient()
@@ -26,7 +29,7 @@ class UTBotTargetsController(val project: Project) {
 
     init {
         requestTargetsFromServer()
-        // addTargetPathIfNotPresent(utbotSettings.targetPath)
+        // addTargetPathIfNotPresent(settings.targetPath)
         connectToEvents()
     }
 
@@ -61,7 +64,7 @@ class UTBotTargetsController(val project: Project) {
                 UTBotTarget(
                     possiblyNewTargetPath,
                     "custom target",
-                    relativize(utbotSettings.projectPath, possiblyNewTargetPath)
+                    relativize(settings.projectPath, possiblyNewTargetPath)
                 )
             )
         }
@@ -73,12 +76,12 @@ class UTBotTargetsController(val project: Project) {
 
     fun selectionChanged(selectedTarget: UTBotTarget) {
         // when user selects target update model
-        project.settings.storedSettings.targetPath = selectedTarget.path
+        settings.storedSettings.targetPath = selectedTarget.path
     }
 
     fun setTargetByName(targetName: String) {
         val target = targets.find { it.name == targetName } ?: error("No such target!")
-        project.settings.storedSettings.targetPath = target.path
+        settings.storedSettings.targetPath = target.path
     }
 
     private fun connectToEvents() {
@@ -87,7 +90,7 @@ class UTBotTargetsController(val project: Project) {
             connection.subscribe(
                 UTBotSettingsChangedListener.TOPIC,
                 UTBotSettingsChangedListener {
-                    val possiblyNewTargetPath = project.settings.storedSettings.targetPath
+                    val possiblyNewTargetPath = settings.storedSettings.targetPath
                     addTargetPathIfNotPresent(possiblyNewTargetPath)
                 })
             // when we reconnected to server, the targets should be updated, so we request them from server

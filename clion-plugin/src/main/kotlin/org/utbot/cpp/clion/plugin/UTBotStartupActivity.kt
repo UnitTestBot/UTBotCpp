@@ -14,7 +14,7 @@ import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 
 class UTBotStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
-        // start plugin and connect to server on project opening
+
         project.getClient()
         guessPathsOnFirstProjectOpen(project)
         showWizardOnFirstProjectOpen(project)

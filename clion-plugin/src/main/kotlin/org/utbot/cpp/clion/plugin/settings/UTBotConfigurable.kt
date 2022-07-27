@@ -27,7 +27,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
 
-    private val settings = myProject.settings.storedSettings
+    private val settings: UTBotProjectStoredSettings.State
+        get() = myProject.settings.storedSettings
 
     init {
         myProject.messageBus.connect()

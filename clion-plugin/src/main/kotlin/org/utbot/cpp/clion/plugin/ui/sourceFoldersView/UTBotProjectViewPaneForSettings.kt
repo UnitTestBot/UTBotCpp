@@ -3,13 +3,16 @@ package org.utbot.cpp.clion.plugin.ui.sourceFoldersView
 import com.intellij.ide.projectView.impl.AbstractProjectTreeStructure
 import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.ObservableValue
 import javax.swing.tree.DefaultTreeModel
 
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
     private val sourceDirs: ObservableValue<Set<String>> = initObservableDirectories()
-    private val settings = myProject.settings.storedSettings
+
+    private val settings: UTBotProjectStoredSettings.State
+        get() = myProject.settings.storedSettings
 
     override fun createTree(treeModel: DefaultTreeModel): ProjectViewTree {
         return object : ProxyProjectViewTree(treeModel, myProject, this@UTBotProjectViewPaneForSettings) {
