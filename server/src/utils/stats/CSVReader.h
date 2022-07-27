@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 #include <istream>
-#include <utils/StringUtils.h>
+
+#include "utils/StringUtils.h"
 #include "loguru.h"
 
 namespace StatsUtils {

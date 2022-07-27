@@ -30,11 +30,11 @@
 #include "utils/LogUtils.h"
 #include "utils/ServerUtils.h"
 #include "utils/stats/TestsGenerationStats.h"
+#include "utils/stats/TestsExecutionStats.h"
 #include "utils/TypeUtils.h"
 
 #include <thread>
 #include <fstream>
-#include <utils/stats/TestsExecutionStats.h>
 
 using TypeUtils::isSameType;
 

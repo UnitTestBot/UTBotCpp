@@ -1,4 +1,4 @@
-#include <Paths.h>
+#include "Paths.h"
 #include "TestsExecutionStats.h"
 #include "utils/StringUtils.h"
 
@@ -49,23 +49,11 @@ namespace StatsUtils {
         {
             // total number of tests
             out.push_back(StringUtils::stringFormat("%u", totalTestsNum));
-            // number of passed tests
-            uint32_t passedTestsNum = CollectionUtils::getOrDefault(testsWithStatusNum,
-                                                                    testsgen::TestStatus::TEST_PASSED, 0u);
-            out.push_back(StringUtils::stringFormat("%u", passedTestsNum));
-            // number of failed tests
-            uint32_t failedTestsNum = CollectionUtils::getOrDefault(testsWithStatusNum,
-                                                                    testsgen::TestStatus::TEST_FAILED, 0u);
-            out.push_back(StringUtils::stringFormat("%u", failedTestsNum));
-            // number of death tests
-            uint32_t deathTestsNum = CollectionUtils::getOrDefault(testsWithStatusNum,
-                                                                   testsgen::TestStatus::TEST_DEATH, 0u);
-            out.push_back(StringUtils::stringFormat("%u", deathTestsNum));
-            // number of interrupted tests
-            uint32_t interruptedTestsNum = CollectionUtils::getOrDefault(testsWithStatusNum,
-                                                                         testsgen::TestStatus::TEST_INTERRUPTED,
-                                                                         0u);
-            out.push_back(StringUtils::stringFormat("%u", interruptedTestsNum));
+            for (const auto &testStatus: {testsgen::TestStatus::TEST_PASSED, testsgen::TestStatus::TEST_FAILED,
+                                          testsgen::TestStatus::TEST_DEATH, testsgen::TestStatus::TEST_INTERRUPTED}) {
+                uint32_t testsNum = CollectionUtils::getOrDefault(testsWithStatusNum, testStatus, 0u);
+                out.push_back(StringUtils::stringFormat("%u", testsNum));
+            }
         }
 
         // COVERAGE
@@ -96,7 +84,7 @@ namespace StatsUtils {
     TestsExecutionStatsFileMap::TestsExecutionStatsFileMap(const utbot::ProjectContext &projectContext,
                                                            const Coverage::TestResultMap &testsResultMap,
                                                            const Coverage::CoverageMap &coverageMap)
-            : FileStats(projectContext) {
+            : FileStatsMap(projectContext) {
         for (auto const &[testPath, testsResult]: testsResultMap) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testPath);
             Coverage::FileCoverage fileCoverage = CollectionUtils::getOrDefault(coverageMap,

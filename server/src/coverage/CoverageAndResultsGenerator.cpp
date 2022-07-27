@@ -1,10 +1,10 @@
-#include <utils/stats/TestsExecutionStats.h>
-#include <utils/FileSystemUtils.h>
 #include "CoverageAndResultsGenerator.h"
 
 #include "TimeExecStatistics.h"
 #include "exceptions/CoverageGenerationException.h"
+#include "utils/FileSystemUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/stats/TestsExecutionStats.h"
 
 #include "loguru.h"
 

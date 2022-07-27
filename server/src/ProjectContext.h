@@ -18,23 +18,16 @@ public:
                    fs::path testDirPath,
                    fs::path buildDirRelativePath);
 
-    ProjectContext(std::string projectName,
-                   fs::path projectPath,
-                   fs::path testDirPath,
-                   fs::path buildDirRelativePath,
-                   fs::path resultDirRelativePath);
-
     explicit ProjectContext(const testsgen::ProjectContext &projectContext);
 
     ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir);
+
+    [[nodiscard]] fs::path buildDir() const;
 
     const std::string projectName;
     const fs::path projectPath;
     const fs::path testDirPath;
     const fs::path buildDirRelativePath;
-    const fs::path buildDir;
-    const fs::path resultsDirRelativePath;
-    const fs::path resultsDirPath;
 };
 }
 

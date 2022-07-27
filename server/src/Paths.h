@@ -415,13 +415,19 @@ namespace Paths {
 
     //endregion
 
-    //region stats
+    //region utbot-report
+
+    inline fs::path getUTBotReportDir(const utbot::ProjectContext &projectContext) {
+        return projectContext.projectPath / "utbot-report";
+    }
+
     inline fs::path getGenerationStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return projectContext.resultsDirPath / "generation-stats.csv";
+        return getUTBotReportDir(projectContext) / "generation-stats.csv";
     }
     inline fs::path getExecutionStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return projectContext.resultsDirPath / "execution-stats.csv";
+        return getUTBotReportDir(projectContext) / "execution-stats.csv";
     }
+
     //endregion
 
     bool isHeadersEqual(const fs::path &srcPath, const fs::path &headerPath);

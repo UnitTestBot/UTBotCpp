@@ -4,12 +4,13 @@
 #include <chrono>
 #include <unordered_map>
 #include <utility>
-#include <protobuf/testgen.grpc.pb.h>
-#include <coverage/Coverage.h>
-#include <ProjectContext.h>
+
+#include "protobuf/testgen.grpc.pb.h"
+#include "coverage/Coverage.h"
+#include "ProjectContext.h"
 #include "loguru.h"
 #include "utils/StringUtils.h"
-#include "utils/stats/FileStats.h"
+#include "utils/stats/FileStatsMap.h"
 
 namespace StatsUtils {
 
@@ -39,7 +40,7 @@ namespace StatsUtils {
         uint32_t noCoverageLinesNum = 0;
     };
 
-    class TestsExecutionStatsFileMap : public FileStats<TestsExecutionStats> {
+    class TestsExecutionStatsFileMap : public FileStatsMap<TestsExecutionStats> {
     public:
         TestsExecutionStatsFileMap(const utbot::ProjectContext &projectContext,
                                    const Coverage::TestResultMap &testsResultMap,

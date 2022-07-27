@@ -7,11 +7,11 @@
 #include "Tests.h"
 #include "streams/tests/TestsWriter.h"
 #include "utils/stats/KleeStats.h"
+#include "utils/stats/TestsGenerationStats.h"
 
 #include <grpcpp/grpcpp.h>
 
 #include <vector>
-#include <utils/stats/TestsGenerationStats.h>
 
 class KleeRunner {
 public:

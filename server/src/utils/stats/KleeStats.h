@@ -2,6 +2,7 @@
 #define UTBOTCPP_KLEESTATS_H
 
 #include <chrono>
+#include <istream>
 
 namespace StatsUtils {
     class KleeStats {
@@ -10,6 +11,8 @@ namespace StatsUtils {
         KleeStats(std::chrono::milliseconds kleeTime, std::chrono::milliseconds solverTime,
                   std::chrono::milliseconds resolutionTime) :
                 kleeTime(kleeTime), solverTime(solverTime), resolutionTime(resolutionTime) {}
+
+        explicit KleeStats(std::istream &kleeStatsReport);
 
         KleeStats &operator+=(const KleeStats &other);
 

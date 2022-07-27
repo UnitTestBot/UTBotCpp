@@ -3,12 +3,10 @@
 #include "utils/FileSystemUtils.h"
 
 #include "loguru.h"
-#include <utils/stats/TestsExecutionStats.h>
-#include <utils/StringFormat.h>
-#include <utils/stats/CSVPrinter.h>
+#include "Paths.h"
 
-CLICoverageAndResultsWriter::CLICoverageAndResultsWriter(const fs::path &resultsDirectory)
-    : resultsDirectory(resultsDirectory), CoverageAndResultsWriter(nullptr) {
+CLICoverageAndResultsWriter::CLICoverageAndResultsWriter()
+    : CoverageAndResultsWriter(nullptr) {
 }
 
 std::string statusToString(testsgen::TestStatus status) {
@@ -53,7 +51,7 @@ void CLICoverageAndResultsWriter::writeResponse(const utbot::ProjectContext &pro
     }
     ss << "Totals:\n";
     ss << totals;
-    fs::path resultsFilePath = resultsDirectory / "tests-result.log";
+    fs::path resultsFilePath = Paths::getUTBotReportDir(projectContext) / "tests-result.log";
     FileSystemUtils::writeToFile(resultsFilePath, ss.str());
     LOG_S(INFO) << ss.str();
 }

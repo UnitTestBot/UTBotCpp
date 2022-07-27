@@ -40,12 +40,10 @@ namespace StatsUtils {
         }
         // Tests in different suites
         {
-            out.push_back(StringUtils::stringFormat("%d", CollectionUtils::getOrDefault(numTestsInSuite,
-                                                                                        (std::string) "regression",
-                                                                                        0u)));
-            out.push_back(StringUtils::stringFormat("%d", CollectionUtils::getOrDefault(numTestsInSuite,
-                                                                                        (std::string) "error",
-                                                                                        0u)));
+            for (const auto &suite : {"regression", "error"}) {
+                out.push_back(StringUtils::stringFormat("%d", CollectionUtils::getOrDefault(numTestsInSuite,
+                                                                                            (std::string)suite, 0u)));
+            }
         }
         // Covered functions
         {

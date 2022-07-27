@@ -12,12 +12,8 @@ namespace StatsUtils {
         for (const auto &key: keys) {
             parsedCSV[key] = {};
         }
-        while (true) {
-            std::string row;
-            std::getline(istream, row);
-            if (row.empty()) {
-                break;
-            }
+        std::string row;
+        while (std::getline(istream, row)) {
             std::vector<std::string> values = StringUtils::split(row, sep);
             if (values.size() != keys.size()) {
                 LOG_S(WARNING) << "Cannot parse CSV. Invalid format";

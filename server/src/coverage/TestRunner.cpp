@@ -41,9 +41,9 @@ TestRunner::TestRunner(
 std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
                                                        const fs::path &testFilePath) {
     auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile, "run", "--gtest_list_tests", {"GTEST_FILTER=*"});
-    auto [out, status, _] = cmdGetAllTests.run(projectContext.buildDir, false);
+    auto [out, status, _] = cmdGetAllTests.run(projectContext.buildDir(), false);
     if (status != 0) {
-        auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.buildDir, true);
+        auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.buildDir(), true);
         progressWriter->writeProgress(StringUtils::stringFormat("command %s failed.\n"
                                                                 "see: \"%s\"",
                                                                 cmdGetAllTests.getFailedCommand(),
@@ -131,7 +131,6 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
     MEASURE_FUNCTION_EXECUTION_TIME
     ExecUtils::throwIfCancelled();
 
-    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
     const auto buildRunCommands = coverageTool->getBuildRunCommands(testsToLaunch, withCoverage);
     ExecUtils::doWorkWithProgress(buildRunCommands, progressWriter, "Running tests",
                               [this, testTimeout] (BuildRunCommand const &buildRunCommand) {
@@ -150,13 +149,6 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
                                       exceptions.emplace_back(e);
                                   }
                               });
-    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
-//    StatsUtils::TestsExecutionStatsFileMap testsExecutionStats(projectContext, coverageGenerator.getTestResultMap(),
-//                                                               coverageGenerator.getCoverageMap());
-//    printer::CSVPrinter printer = testsExecutionStats.toCSV();
-//    FileSystemUtils::writeToFile(Paths::getExecutionStatsCSVPath(projectContext), printer.getStream().str());
-//    LOG_S(INFO) << StringUtils::stringFormat("See execution stats here: %s",
-//                                             Paths::getExecutionStatsCSVPath(projectContext));
     LOG_S(DEBUG) << "All run commands were executed";
     return Status::OK;
 }
@@ -181,7 +173,7 @@ bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs
     if (fs::exists(makefile)) {
         auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "build", "", {});
         LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
-        auto[out, status, logFilePath] = command.run(projectContext.buildDir, true);
+        auto[out, status, logFilePath] = command.run(projectContext.buildDir(), true);
         if (status != 0) {
             return false;
         }
@@ -200,10 +192,11 @@ size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const
     return fail_count;
 }
 
-testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command, const std::optional <std::chrono::seconds> &testTimeout) {
-    auto res = command.runCommand.run(projectContext.buildDir, true, true, testTimeout);
+testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command,
+                                               const std::optional <std::chrono::seconds> &testTimeout) {
+    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
+    auto res = command.runCommand.run(projectContext.buildDir(), true, true, testTimeout);
     GTestLogger::log(res.output);
-
     testsgen::TestResultObject testRes;
     testRes.set_testfilepath(command.unitTest.testFilePath);
     testRes.set_testname(command.unitTest.testname);
@@ -226,7 +219,6 @@ testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command, c
     } else {
         testRes.set_status(testsgen::TEST_PASSED);
     }
-    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
     return testRes;
 }
 

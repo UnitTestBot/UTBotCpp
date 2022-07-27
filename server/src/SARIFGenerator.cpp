@@ -76,7 +76,7 @@ namespace sarif {
                                     const fs::path &srcPath = fs::path(stack_match[3]);
                                     const fs::path &relPathInProject = getInProjectPath(projectContext.projectPath, srcPath);
                                     const fs::path &fullPathInProject = projectContext.projectPath / relPathInProject;
-                                    if (Paths::isSubPathOf(projectContext.buildDir, fullPathInProject)) {
+                                    if (Paths::isSubPathOf(projectContext.buildDir(), fullPathInProject)) {
                                         continue;
                                     }
                                     if (!relPathInProject.empty() && fs::exists(fullPathInProject)) {

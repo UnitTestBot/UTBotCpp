@@ -11,12 +11,12 @@
 #include "utils/KleeUtils.h"
 #include "utils/LogUtils.h"
 #include "utils/stats/CSVReader.h"
+#include "utils/stats/TestsGenerationStats.h"
 
 #include "loguru.h"
 
 #include <fstream>
 #include <utility>
-#include <utils/stats/TestsGenerationStats.h>
 
 using namespace tests;
 
@@ -24,23 +24,6 @@ namespace {
     void clearUnusedData(const fs::path &kleeDir) {
         fs::remove(kleeDir / "assembly.ll");
         fs::remove(kleeDir / "run.istats");
-    }
-
-    StatsUtils::KleeStats parseKleeStatsReport(const std::string &kleeStatsReport) {
-        std::stringstream ss(kleeStatsReport);
-        StatsUtils::CSVTable parsedCSV = StatsUtils::readCSV(ss, ',');
-        std::map<std::string, std::chrono::milliseconds> timeStats;
-        std::vector<std::string> keys = {"Time(s)", "TSolver(s)", "TResolve(s)"};
-        std::vector<std::chrono::milliseconds> timeValues;
-        for (const auto &key: keys) {
-            if (!CollectionUtils::containsKey(parsedCSV, key)) {
-                LOG_S(WARNING) << StringUtils::stringFormat("Key %s not found in klee-stats report", key);
-                return {};
-            }
-            std::chrono::milliseconds totalTime((int)(1000 * std::stof(parsedCSV[key].back())));
-            timeValues.emplace_back(totalTime);
-        }
-        return { timeValues[0], timeValues[1], timeValues[2] };
     }
 
     StatsUtils::KleeStats writeKleeStats(const fs::path &kleeOut) {
@@ -53,10 +36,10 @@ namespace {
             LOG_S(ERROR) << out;
             return {};
         } else {
-            LOG_S(DEBUG) << "klee-stats report:";
-            LOG_S(DEBUG) << '\n' << out;
+            LOG_S(DEBUG) << "klee-stats report:" << '\n' << out;
         }
-        return parseKleeStatsReport(out);
+        std::stringstream ss(out);
+        return StatsUtils::KleeStats(ss);
     }
 }
 
@@ -181,50 +164,49 @@ static void processMethod(MethodKtests &ktestChunk,
                 std::vector<ConcretizedObject> kTestObjects(
                     ktestData->objects, ktestData->objects + ktestData->n_objects);
 
-                    std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
-                        kTestObjects, [](const ConcretizedObject &kTestObject) {
-                            return UTBotKTestObject{ kTestObject };
-                        });
+                std::vector<UTBotKTestObject> objects = CollectionUtils::transform(
+                    kTestObjects, [](const ConcretizedObject &kTestObject) {
+                        return UTBotKTestObject{ kTestObject };
+                    });
 
                 std::vector<std::string> errorDescriptors = CollectionUtils::transform(
-                        errorDescriptorFiles, [](const fs::path &errorFile) {
-                            std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
-                            std::string content((std::istreambuf_iterator<char>(fileWithError)),
-                                                std::istreambuf_iterator<char>());
+                    errorDescriptorFiles, [](const fs::path &errorFile) {
+                        std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
+                        std::string content((std::istreambuf_iterator<char>(fileWithError)),
+                                            std::istreambuf_iterator<char>());
 
-                            const std::string &errorId = errorFile.stem().extension().string();
-                            if (!errorId.empty()) {
-                                // skip leading dot
-                                content += "\n" + sarif::ERROR_ID_KEY + ":" + errorId.substr(1);
-                            }
-                            return content;
-                        });
-
+                        const std::string &errorId = errorFile.stem().extension().string();
+                        if (!errorId.empty()) {
+                            // skip leading dot
+                            content += "\n" + sarif::ERROR_ID_KEY + ":" + errorId.substr(1);
+                        }
+                        return content;
+                    });
 
                 ktestChunk[method].emplace_back(objects, status, errorDescriptors);
-                }
             }
         }
-        if (hasTimeout) {
-            std::string message = StringUtils::stringFormat(
-                "Some tests for function '%s' were skipped, as execution of function is "
-                "out of timeout.",
-                method.methodName);
-            tests.commentBlocks.emplace_back(std::move(message));
-        }
-        if (hasError) {
-            std::string message = StringUtils::stringFormat(
-                "Some tests for function '%s' were skipped, as execution of function leads "
-                "KLEE to the internal error. See console log for more details.",
-                method.methodName);
-            tests.commentBlocks.emplace_back(std::move(message));
-        }
+    }
+    if (hasTimeout) {
+        std::string message = StringUtils::stringFormat(
+            "Some tests for function '%s' were skipped, as execution of function is "
+            "out of timeout.",
+            method.methodName);
+        tests.commentBlocks.emplace_back(std::move(message));
+    }
+    if (hasError) {
+        std::string message = StringUtils::stringFormat(
+            "Some tests for function '%s' were skipped, as execution of function leads "
+            "KLEE to the internal error. See console log for more details.",
+            method.methodName);
+        tests.commentBlocks.emplace_back(std::move(message));
+    }
 
-        if (!CollectionUtils::containsKey(ktestChunk, method) || ktestChunk.at(method).empty()) {
-            tests.commentBlocks.emplace_back(StringUtils::stringFormat(
-                "Tests for %s were not generated. Maybe the function is too complex.",
-                method.methodName));
-        }
+    if (!CollectionUtils::containsKey(ktestChunk, method) || ktestChunk.at(method).empty()) {
+        tests.commentBlocks.emplace_back(StringUtils::stringFormat(
+            "Tests for %s were not generated. Maybe the function is too complex.",
+            method.methodName));
+    }
 }
 
 void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
@@ -237,9 +219,9 @@ void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMet
     for (const auto &testMethod : testMethods) {
         if (testMethod.sourceFilePath != tests.sourceFilePath) {
             std::string message = StringUtils::stringFormat(
-                    "While generating tests for source file: %s tried to generate tests for method %s "
-                    "from another source file: %s. This can cause invalid generation.\n",
-                    tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+                "While generating tests for source file: %s tried to generate tests for method %s "
+                "from another source file: %s. This can cause invalid generation.\n",
+                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
             LOG_S(WARNING) << message;
         }
 

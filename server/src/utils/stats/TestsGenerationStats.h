@@ -6,7 +6,7 @@
 
 #include "utils/stats/KleeStats.h"
 #include "utils/CollectionUtils.h"
-#include "utils/stats/FileStats.h"
+#include "utils/stats/FileStatsMap.h"
 #include "utils/StringUtils.h"
 #include "Tests.h"
 
@@ -30,12 +30,12 @@ namespace StatsUtils {
         [[nodiscard]] std::vector<std::string> toStrings() const;
     };
 
-    class TestsGenerationStatsFileMap : public FileStats<TestsGenerationStats> {
+    class TestsGenerationStatsFileMap : public FileStatsMap<TestsGenerationStats> {
     public:
         TestsGenerationStatsFileMap() = delete;
 
         TestsGenerationStatsFileMap(utbot::ProjectContext projectContext, std::chrono::milliseconds preprocessingTime)
-                : FileStats(std::move(projectContext)), preprocessingTime(preprocessingTime) {}
+                : FileStatsMap(std::move(projectContext)), preprocessingTime(preprocessingTime) {}
 
         void addFileStats(const KleeStats &kleeStats, const tests::Tests &tests);
 

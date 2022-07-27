@@ -5,17 +5,13 @@
 
 class CLICoverageAndResultsWriter : public CoverageAndResultsWriter {
 public:
-    explicit CLICoverageAndResultsWriter(const fs::path &resultsDirectory);
+    CLICoverageAndResultsWriter();
 
     virtual void writeResponse(const utbot::ProjectContext &projectContext,
                                const Coverage::TestResultMap &testsResultMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
                                std::optional<std::string> errorMessage) override;
-
-
-private:
-    fs::path resultsDirectory;
 };
 
 
