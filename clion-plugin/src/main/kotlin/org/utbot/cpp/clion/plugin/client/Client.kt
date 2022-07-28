@@ -15,6 +15,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -39,6 +40,8 @@ class Client(
     private val messageBus = project.messageBus
     private var newClient = true
     private val logger = project.logger
+    var isDisposed = false
+        private set
 
     /*
      * need to provide handler explicitly, otherwise the exception is thrown:
@@ -64,7 +67,16 @@ class Client(
         startPeriodicHeartBeat()
     }
 
-    fun executeRequest(request: Request) {
+    fun executeRequestIfNotDisposed(request: Request) {
+        if (isDisposed) {
+            // if client is disposed, then connection settings were changed, and requests issued to this client
+            // are no longer relevant, so we don't execute them
+            return
+        }
+        executeRequestImpl(request)
+    }
+
+    private fun executeRequestImpl(request: Request) {
         requestsCS.launch {
             try {
                 request.execute(stub, coroutineContext[Job])
@@ -74,12 +86,12 @@ class Client(
         }
     }
 
-    fun configureProject() {
+    private fun configureProject() {
         CheckProjectConfigurationRequest(
             getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
             project,
         ).also {
-            executeRequest(it)
+            this.executeRequestIfNotDisposed(it)
         }
     }
 
@@ -168,7 +180,6 @@ class Client(
     override fun dispose() {
         logger.trace { "Disposing client!" }
         // when project is closed, cancel all running coroutines
-        // cancelAllRequestsAndWaitForCancellation()
         requestsCS.cancel()
         servicesCS.cancel()
         // release resources associated with grpc
@@ -176,6 +187,8 @@ class Client(
         logger.trace { "Finished disposing client!" }
     }
 
+    // should be used only in tests
+    @TestOnly
     fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
         runBlocking {
             withTimeout(timeout) {

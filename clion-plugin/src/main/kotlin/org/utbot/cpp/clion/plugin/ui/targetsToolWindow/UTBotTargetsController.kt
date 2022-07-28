@@ -2,7 +2,6 @@ package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -10,7 +9,7 @@ import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.utils.getClient
+import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.relativize
@@ -20,8 +19,6 @@ class UTBotTargetsController(val project: Project) {
         get() = project.settings
 
     private val listModel = CollectionListModel(mutableListOf(UTBotTarget.autoTarget))
-    private val client: Client
-     get() = project.getClient()
     private val logger = project.logger
 
     val targets: List<UTBotTarget>
@@ -29,16 +26,12 @@ class UTBotTargetsController(val project: Project) {
 
     init {
         requestTargetsFromServer()
-        // addTargetPathIfNotPresent(settings.targetPath)
         connectToEvents()
     }
 
     fun requestTargetsFromServer() {
-        if (!client.isServerAvailable()) {
-            logger.error { "Could not request targets from server: server is unavailable!" }
-            return
-        }
-        logger.trace { "Requesting project targets from server!" }
+        val currentClient = project.getCurrentClient()
+
         ProjectTargetsRequest(
             project,
             getProjectTargetsGrpcRequest(project),
@@ -53,8 +46,13 @@ class UTBotTargetsController(val project: Project) {
                     listModel.replaceAll(oldTargetList.distinct())
                 }
             }
-        }.let {
-            client.executeRequest(it)
+        }.let { targetsRequest ->
+            if (!currentClient.isServerAvailable()) {
+                logger.error { "Could not request targets from server: server is unavailable!" }
+                return
+            }
+            logger.trace { "Requesting project targets from server!" }
+            currentClient.executeRequestIfNotDisposed(targetsRequest)
         }
     }
 

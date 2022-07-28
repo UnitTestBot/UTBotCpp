@@ -14,7 +14,7 @@ import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
-import org.utbot.cpp.clion.plugin.utils.client
+import org.utbot.cpp.clion.plugin.utils.currentClient
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
 import java.awt.Dimension
@@ -48,7 +48,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
                 e.activeProject()
             ).apply {
-                e.client.executeRequest(this)
+                e.currentClient.executeRequestIfNotDisposed(this)
             }
 
         // ask for comparison operator to use in predicate
@@ -111,7 +111,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
             }
         }.apply {
-            e.client.executeRequest(this)
+            e.currentClient.executeRequestIfNotDisposed(this)
         }
     }
 

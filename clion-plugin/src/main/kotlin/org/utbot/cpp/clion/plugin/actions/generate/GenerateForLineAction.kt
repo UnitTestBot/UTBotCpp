@@ -11,7 +11,7 @@ class GenerateForLineAction : BaseGenerateTestsAction() {
         LineRequest(
             getLineGrpcRequest(e),
             e.activeProject(),
-        ).execute()
+        ).executeUsingCurrentClient()
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

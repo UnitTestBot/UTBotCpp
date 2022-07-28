@@ -8,7 +8,7 @@ import org.utbot.cpp.clion.plugin.utils.activeProject
 
 class ConfigureProjectAction : AnAction(UTBot.message("projectConfigure.configure")) {
 
-    override fun actionPerformed(e: AnActionEvent) = CheckProjectConfigurationRequest(e.activeProject()).execute()
+    override fun actionPerformed(e: AnActionEvent) = CheckProjectConfigurationRequest(e.activeProject()).executeUsingCurrentClient()
 
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null

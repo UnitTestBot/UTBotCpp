@@ -17,7 +17,7 @@ import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.logger.SystemWriter
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
-import org.utbot.cpp.clion.plugin.utils.getClient
+import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.logger
 import java.io.File
 import java.nio.file.Path
@@ -59,7 +59,7 @@ abstract class BaseGenerationTestCase {
     val project: Project
         get() = fixture.project
     val client: Client
-        get() = project.getClient()
+        get() = project.getCurrentClient()
     val targetsController = UTBotTargetsController(project)
 
     init {

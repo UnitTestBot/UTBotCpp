@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.actions.FocusAction
 import org.utbot.cpp.clion.plugin.client.Request
 import org.utbot.cpp.clion.plugin.client.handlers.TestsStreamHandler
-import org.utbot.cpp.clion.plugin.utils.getClient
+import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.getLongestCommonPathFromRoot
 import org.utbot.cpp.clion.plugin.utils.isHeader
 import org.utbot.cpp.clion.plugin.utils.logger
@@ -30,8 +30,8 @@ abstract class BaseRequest<X, Y>(val request: X, val project: Project) : Request
 
     abstract suspend fun Y.handle(cancellationJob: Job?)
 
-    fun execute() {
-        project.getClient().executeRequest(this)
+    fun executeUsingCurrentClient() {
+        project.getCurrentClient().executeRequestIfNotDisposed(this)
     }
 
     open fun logRequest() {

@@ -12,7 +12,7 @@ class GenerateForFunctionAction : BaseGenerateTestsAction() {
         FunctionRequest(
             getFunctionGrpcRequest(e),
             e.activeProject()
-        ).execute()
+        ).executeUsingCurrentClient()
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

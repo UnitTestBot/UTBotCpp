@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.actions.generate
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import org.utbot.cpp.clion.plugin.utils.client
+import org.utbot.cpp.clion.plugin.utils.currentClient
 
 abstract class BaseGenerateTestsAction : AnAction() {
 
@@ -10,7 +10,7 @@ abstract class BaseGenerateTestsAction : AnAction() {
         val isDefined: Boolean = isDefined(e)
 
         e.presentation.isVisible = isDefined
-        e.presentation.isEnabled = isDefined && e.client.isServerAvailable()
+        e.presentation.isEnabled = isDefined && e.currentClient.isServerAvailable()
     }
 
     /**

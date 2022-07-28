@@ -11,7 +11,7 @@ class GenerateForFolderAction : BaseGenerateTestsAction() {
         FolderRequest(
             getFolderGrpcRequest(e),
             e.activeProject()
-        ).execute()
+        ).executeUsingCurrentClient()
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

@@ -15,7 +15,7 @@ class ReconfigureProjectAction: AnAction(UTBot.message("projectConfigure.reconfi
         CheckProjectConfigurationRequest(
             getProjectConfigGrpcRequest(project, Testgen.ConfigMode.ALL),
             project,
-        ).execute()
+        ).executeUsingCurrentClient()
     }
 
     override fun update(e: AnActionEvent) {
