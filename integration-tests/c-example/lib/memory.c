@@ -1,5 +1,5 @@
-#include "stdlib.h"
-#include "string.h"
+#include <stdlib.h>
+#include <string.h>
 
 int out_of_bound_access_to_heap(int num) {
     int *p = calloc(5, sizeof(int));

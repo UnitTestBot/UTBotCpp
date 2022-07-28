@@ -3,11 +3,11 @@
 
 void print_sign(int a) {
     if (a < 0) {
-        printf("'a' is negative");
+        printf("'a' is negative\n");
     } else if (a > 0) {
-        printf("'a' is positive");
+        printf("'a' is positive\n");
     } else {
-        printf("'a' is zero");
+        printf("'a' is zero\n");
     }
 }
 
