@@ -1595,4 +1595,18 @@ namespace {
         ASSERT_EQ(1, cases.size());
         ASSERT_FALSE(cases[0].isError());
     }
+
+    TEST_P(Parameterized_Server_Test, Stats_Test) {
+        std::string suite = "small-project";
+        setSuite(suite);
+        srcPaths = {};
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+        setTargetForFirstSource(testGen);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+
+    }
 }

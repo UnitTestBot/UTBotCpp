@@ -332,10 +332,6 @@ Commands::ProjectContextOptionGroup::ProjectContextOptionGroup(CLI::App *command
     projectContextOptions->add_option(
         "-b,--build-dir", buildDir,
         "Relative path to build directory with compile_commands.json and/or coverage.json.", true);
-
-    projectContextOptions->add_option(
-        "--results-dir", resultsDir,
-        "Relative path to results directory. Coverage and run results are saved here.", true);
 }
 
 CLI::Option_group *Commands::ProjectContextOptionGroup::getProjectContextOptions() const {
@@ -359,10 +355,6 @@ std::string Commands::ProjectContextOptionGroup::getTestDirectory() const {
 
 std::string Commands::ProjectContextOptionGroup::getBuildDirectory() const {
     return buildDir;
-}
-
-std::string Commands::ProjectContextOptionGroup::getResultsDirectory() const {
-    return resultsDir;
 }
 
 Commands::SettingsContextOptionGroup::SettingsContextOptionGroup(CLI::App *command) {

@@ -114,6 +114,7 @@ file(GLOB ALL_SOURCES
         "${PROJECT_SOURCE_DIR}/src/streams/tests/*"
         "${PROJECT_SOURCE_DIR}/src/testgens/*"
         "${PROJECT_SOURCE_DIR}/src/utils/*"
+        "${PROJECT_SOURCE_DIR}/src/utils/stats/*"
         "${PROJECT_SOURCE_DIR}/src/stubs/*"
         "${PROJECT_SOURCE_DIR}/src/visitors/*"
         "${PROJECT_SOURCE_DIR}/src/commands/*"

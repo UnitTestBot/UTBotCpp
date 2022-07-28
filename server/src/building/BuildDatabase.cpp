@@ -103,7 +103,7 @@ void BuildDatabase::createClangCompileCommandsJson(const fs::path &buildCommands
         objectInfo->command.removeWerror();
         fs::path outputFile = objectInfo->getOutputFile();
         fs::path kleeFilePathTemplate =
-            Paths::createNewDirForFile(sourceFile, projectContext.buildDir, serverBuildDir);
+            Paths::createNewDirForFile(sourceFile, projectContext.buildDir(), serverBuildDir);
         fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
         objectInfo->kleeFilesInfo = std::make_shared<KleeFilesInfo>(kleeFile);
 
@@ -676,7 +676,7 @@ std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() co
     return *it;
 }
 fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
-    fs::path base = Paths::longestCommonPrefixPath(this->projectContext.buildDir,
+    fs::path base = Paths::longestCommonPrefixPath(this->projectContext.buildDir(),
                                                    this->projectContext.projectPath);
     return Paths::createNewDirForFile(file, base, this->serverBuildDir);
 }

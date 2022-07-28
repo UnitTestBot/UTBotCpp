@@ -22,11 +22,12 @@ public:
 
     ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir);
 
+    [[nodiscard]] fs::path buildDir() const;
+
     const std::string projectName;
     const fs::path projectPath;
     const fs::path testDirPath;
     const fs::path buildDirRelativePath;
-    const fs::path buildDir;
 };
 }
 

@@ -28,9 +28,7 @@ GenerationUtils::generateCoverageAndResults(
     std::unique_ptr<CoverageAndResultsRequest> request,
     std::unique_ptr<testsgen::SettingsContext> settingsContext,
     bool withCoverage) {
-    auto coverageAndResultsWriter = std::make_unique<CLICoverageAndResultsWriter>(
-        fs::path(request->projectcontext().projectpath()) /
-        request->projectcontext().resultsdirrelativepath());
+    auto coverageAndResultsWriter = std::make_unique<CLICoverageAndResultsWriter>();
     auto coverageGenerator = std::make_unique<CoverageAndResultsGenerator>(
         request.get(), coverageAndResultsWriter.get());
     auto status = coverageGenerator->generate(withCoverage, *settingsContext);
