@@ -12,6 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -21,7 +22,6 @@ import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
-import org.utbot.cpp.clion.plugin.utils.hasChildren
 import org.utbot.cpp.clion.plugin.utils.logger
 import testsgen.Testgen
 
@@ -52,15 +52,15 @@ class Client(
         exception.printStackTrace()
     }
 
-    val dispatcher = Dispatchers.IO
+    private val dispatcher = Dispatchers.IO
 
     // coroutine scope for requests that don't have a lifetime of a plugin, e.g. generation requests
     // this division is needed for testing: when in test we send a generate request to server, we need to wait
     // until it completes, the indicator that all such requests have completed is that this scope has no children
-    val requestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
+    private val requestsCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     // coroutine scope for suspending functions that can live entire plugin lifetime, e.g. server logs, gtest logs, heartbeat
-    val servicesCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
+    private val servicesCS: CoroutineScope = CoroutineScope(dispatcher + excHandler + SupervisorJob())
 
     init {
         logger.info { "Connecting to server on host: ${projectIndependentSettings.serverName} , port: ${projectIndependentSettings.port}" }
@@ -192,7 +192,8 @@ class Client(
     fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
         runBlocking {
             withTimeout(timeout) {
-                while (requestsCS.hasChildren()) {
+                val hasChildJobs = requestsCS.coroutineContext.job.children.any()
+                while (hasChildJobs) {
                     delay(DELAY_TIME)
                 }
             }
@@ -200,6 +201,7 @@ class Client(
     }
 
     companion object {
+        //TODO: why don't use process this setting similarly to "isFirstLaunch"? Why is it a property of the client?
         var IS_TEST_MODE = false
         const val HEARTBEAT_INTERVAL: Long = 500L
         const val SERVER_TIMEOUT: Long = 300000L

@@ -1,19 +1,20 @@
+@file:Suppress("UnstableApiUsage")
+
 package org.utbot.cpp.clion.plugin.ui.wizard.steps
 
-import com.intellij.openapi.project.Project
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
-import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizardStep
+import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 
-class BuildOptionsStep(private val settingsModel: UTBotSettingsModel) : UTBotWizardStep() {
+class BuildOptionsStep(private val settingsModel: UTBotSettingsModel) : UTBotBaseWizardStep() {
     override fun createUI() {
-        addHtml("media/build_dir.html")
+        addHtml("media/options_wizard_text.html")
         panel {
-            row("Relative Path to Build Folder") {
+            row("Relative path to Build directory") {
                 textField().bindText(settingsModel.projectSettings::buildDirRelativePath).columns(COLUMNS_LARGE)
             }
         }.addToUI()

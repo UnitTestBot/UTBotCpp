@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collect
 import org.utbot.cpp.clion.plugin.grpc.getDummyGrpcRequest
 import org.utbot.cpp.clion.plugin.grpc.getLogChannelGrpcRequest
-import org.utbot.cpp.clion.plugin.ui.userLog.OutputProvider
+import org.utbot.cpp.clion.plugin.ui.services.OutputProvider
 import org.utbot.cpp.clion.plugin.ui.userLog.UTBotConsole
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger

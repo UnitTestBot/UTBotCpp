@@ -9,9 +9,13 @@ import kotlinx.coroutines.Job
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 
-class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = null, val project: Project) : AbstractProgressIndicatorExBase(true) {
-    val task = UTBotRequestTaskInfo(name)
+class UTBotRequestProgressIndicator(
+    private val taskDisplayName: String,
+    private val requestJob: Job? = null,
+    private val project: Project,
+) : AbstractProgressIndicatorExBase(true) {
 
+    private val requestTask = UTBotRequestTaskInfo(taskDisplayName)
     init {
         isIndeterminate = false
     }
@@ -20,34 +24,32 @@ class UTBotRequestProgressIndicator(val name: String, var requestJob: Job? = nul
         val frame = WindowManagerEx.getInstanceEx().findFrameFor(project) ?: return
         val statusBar = frame.statusBar as? StatusBarEx ?: return
         invokeOnEdt {
-            statusBar.addProgress(this, task)
+            statusBar.addProgress(this, requestTask)
         }
         super.start()
     }
 
+    //TODO: do we really need this function?
     override fun stop() {
         requestJob?.cancel()
         super.stop()
     }
 
-    fun complete() {
-        finish(task)
-    }
+    fun finish() = finish(requestTask)
 
     override fun cancel() {
         requestJob?.cancel()
-        notifyInfo("Successfully canceled: $name")
-        finish(task)
+        finish(requestTask)
         super.cancel()
+        notifyInfo("Successfully canceled: $taskDisplayName")
+    }
+
+    private class UTBotRequestTaskInfo(private val titleText: String) : TaskInfo {
+        override fun getTitle() = titleText
+        override fun getCancelText() = "Cancelling Request"
+        override fun getCancelTooltipText() = ""
+        override fun isCancellable() = true
     }
 }
 
-class UTBotRequestTaskInfo(val titleText: String) : TaskInfo {
-    override fun getTitle() = titleText
 
-    override fun getCancelText() = "Cancelling Request"
-
-    override fun getCancelTooltipText() = ""
-
-    override fun isCancellable() = true
-}
