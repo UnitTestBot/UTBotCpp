@@ -35,7 +35,7 @@ namespace sarif {
             }
             ++p;
         }
-        if (foundStartFragment && p == path.end()) {
+        if (p == path.end()) {
             while (s != src.end()) {
                 relToProject = relToProject / *s;
                 ++s;
