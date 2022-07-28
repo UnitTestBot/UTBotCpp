@@ -73,10 +73,10 @@ namespace testUtils {
         CoverageLines actualLinesCovered;
         CoverageLines actualLinesUncovered;
         for (const auto &[filePath, fileCoverage] : coverageMap) {
-            for(const auto &sourceLine : fileCoverage.fullCoverageLines) {
+            for (const auto &sourceLine : fileCoverage.fullCoverageLines) {
                 actualLinesCovered[filePath].insert(sourceLine.line);
             }
-            for(const auto &sourceLine : fileCoverage.noCoverageLines) {
+            for (const auto &sourceLine : fileCoverage.noCoverageLines) {
                 actualLinesUncovered[filePath].insert(sourceLine.line);
             }
         }
@@ -138,14 +138,14 @@ namespace testUtils {
             }
             const auto status = testResultMap.at(filename).at(testname).status();
             EXPECT_TRUE((testsgen::TestStatus::TEST_PASSED == status) ||
-            (testsgen::TestStatus::TEST_DEATH == status));
+                        (testsgen::TestStatus::TEST_DEATH == status));
         }
     }
 
 
     void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
                        const std::vector<UnitTest> &tests,
-                       const StatusCountMap &expectedStatusCountMap) {
+                            const StatusCountMap &expectedStatusCountMap) {
         StatusCountMap actualStatusCountMap;
         for (auto const &[filename, suitename, testname] : tests) {
             if (suitename == tests::Tests::ERROR_SUITE_NAME) {
@@ -154,14 +154,14 @@ namespace testUtils {
             const auto status = testResultMap.at(filename).at(testname).status();
             actualStatusCountMap[status]++;
         }
-        for (const auto& [status, count] : actualStatusCountMap) {
+        for (const auto &[status, count] : actualStatusCountMap) {
             ASSERT_GE(count, expectedStatusCountMap.at(status));
         }
     }
 
-    int getNumberOfTests(const tests::TestsMap &tests) {
+    size_t getNumberOfTests(const tests::TestsMap &tests) {
         auto testFilePaths = CollectionUtils::getKeys(tests);
-        int testsCounter = 0;
+        size_t testsCounter = 0;
         for (const auto &[filename, cases] : tests) {
             for (const auto &[_, methodDescription] : cases.methods) {
                 int size = methodDescription.testCases.size();
@@ -171,28 +171,69 @@ namespace testUtils {
         return testsCounter;
     }
 
-    void checkMinNumberOfTests(const tests::TestsMap &tests, int minNumber) {
-        int testsCounter = getNumberOfTests(tests);
+    size_t getNumberOfTestsForFile(const BaseTestGen &testGen, const std::string &fileName) {
+        auto tests = testGen.tests.find(fileName);
+        size_t testsCounter = 0;
+        if (tests != testGen.tests.end()) {
+            for (const auto &[methodName, methodDescription]: tests.value().methods) {
+                testsCounter += methodDescription.testCases.size();
+            }
+        }
+        return testsCounter;
+    }
+
+    void checkMinNumberOfTests(const tests::TestsMap &tests, size_t minNumber) {
+        size_t testsCounter = getNumberOfTests(tests);
         EXPECT_LE(minNumber, testsCounter) << "Number of test cases is too small";
     }
 
     void checkMinNumberOfTests(const std::vector<tests::Tests::MethodTestCase> &testCases,
-                               int minNumber) {
+                               size_t minNumber) {
         EXPECT_LE(minNumber, testCases.size()) << "Number of test cases is too small";
+    }
+
+    void checkNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number) {
+        size_t testCounter = getNumberOfTestsForFile(testGen, fileName);
+        EXPECT_EQ(number, testCounter)
+                            << "Number of test cases in \"" << fileName << "\" not equal to predicate";
+    }
+
+    void
+    checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number) {
+        size_t testCounter = getNumberOfTestsForFile(testGen, fileName);
+        EXPECT_LE(number, testCounter)
+                            << "Number of test cases in \"" << fileName << "\" not equal to predicate";
     }
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
+                                                         const std::optional<std::string> &target,
                                                          bool useStubs,
                                                          bool verbose,
                                                          int kleeTimeout) {
         auto projectContext = GrpcUtils::createProjectContext(
-            projectName, projectPath, projectPath / "tests", buildDirRelativePath);
-        auto settingsContext = GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
+                projectName, projectPath, projectPath / "tests", buildDirRelativePath);
+        auto settingsContext =
+                GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
+
+
+        auto buildDatabase = BuildDatabase::create(utbot::ProjectContext(*projectContext),
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+        auto rootTargets = buildDatabase->getRootTargets();
+        auto it = std::find_if(rootTargets.begin(), rootTargets.end(),
+                               [&target](std::shared_ptr<BuildDatabase::TargetInfo> linkUnitInfo) {
+                                   return linkUnitInfo->getOutput().filename() == target;
+                               });
+        assert(it != rootTargets.end());
+        std::string new_target = it->get()->getOutput();
+
+
         return GrpcUtils::createProjectRequest(std::move(projectContext),
-                                               std::move(settingsContext), srcPaths);
+                                               std::move(settingsContext),
+                                               srcPaths,
+                                               new_target);
     }
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
@@ -200,34 +241,43 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
+                                                   const std::optional<std::string> &target,
                                                    bool useStubs,
-                                                   bool verbose) {
+                                                   bool verbose,
+                                                   int kleeTimeout) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, useStubs, verbose);
+                                                   srcPaths, target, useStubs, verbose, kleeTimeout);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
-                                                   const std::string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
-                                                   int line, bool useStubs,
-                                                   bool verbose, int kleeTimeout) {
-        auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, useStubs, verbose, kleeTimeout);
-        auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
-        return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
-    }
-
-    std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
+                                                   const std::optional<std::string> &target,
+                                                   bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout) {
+        auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
+                                                   srcPaths, target, useStubs, verbose, kleeTimeout);
+        auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
+        return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
+    }
+
+    std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
+                                                     const fs::path &projectPath,
+                                                     const std::string &buildDirRelativePath,
+                                                     const std::vector<fs::path> &srcPaths,
+                                                     const fs::path &filePath,
+                                                     int line,
+                                                     const std::optional<std::string> &target,
+                                                     bool useStubs,
+                                                     bool verbose,
+                                                     int kleeTimeout) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, false, verbose, kleeTimeout);
+                                             srcPaths, filePath, line, target, useStubs, verbose, kleeTimeout);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 
@@ -361,5 +411,4 @@ namespace testUtils {
         fs::path sourcePath = *testGen.testingMethodsSourcePaths.begin();
         testGen.setTargetForSource(sourcePath);
     }
-
 }

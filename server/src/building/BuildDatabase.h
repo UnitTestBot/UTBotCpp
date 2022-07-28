@@ -38,13 +38,17 @@ public:
 
     struct BaseFileInfo {
         BaseFileInfo() = default;
+
         virtual ~BaseFileInfo() = default;
+
+        // Object files and libraries that current command depends on
+        CollectionUtils::OrderedFileSet files;
 
         // Libraries that current command depends on, but those are already installed and not built
         // within project
         CollectionUtils::OrderedFileSet installedFiles;
 
-        virtual void addFile(fs::path file) = 0;
+        void addFile(fs::path file);
     };
 
     /*
@@ -54,9 +58,6 @@ public:
     struct ObjectFileInfo : BaseFileInfo {
         // Compilation command
         utbot::CompileCommand command;
-
-        // Object files and libraries that current command depends on
-        CollectionUtils::OrderedFileSet files;
 
         // Example of executable or a library which contains current objectFile
         fs::path linkUnit;
@@ -72,8 +73,6 @@ public:
         [[nodiscard]] fs::path getOutputFile() const;
 
         void setOutputFile(const fs::path &file);
-
-        void addFile(fs::path file) override;
     };
 
     /*
@@ -86,24 +85,23 @@ public:
         // Linkage command
         std::vector<utbot::LinkCommand> commands;
 
-        // Source files, object files and libraries that current command depends on
-        CollectionUtils::OrderedFileSet files;
-
         // Units which contains current library
         std::vector<fs::path> parentLinkUnits;
-
-        void addFile(fs::path file) override;
 
         // Executable or a library, the result of a command
         [[nodiscard]] fs::path getOutput() const;
     };
 
 public:
-    BuildDatabase(const fs::path &buildCommandsJsonPath,
-                  fs::path serverBuildDir,
-                  utbot::ProjectContext projectContext);
+    BuildDatabase(fs::path _buildCommandsJsonPath,
+                  fs::path _serverBuildDir,
+                  utbot::ProjectContext _projectContext,
+                  std::string _target);
 
-    static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext);
+    static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext,
+                                                 const std::string &target);
+
+    void updateTarget(const std::string &target);
 
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
@@ -200,10 +198,12 @@ public:
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
 private:
-    fs::path serverBuildDir;
-    utbot::ProjectContext projectContext;
-    fs::path linkCommandsJsonPath;
-    fs::path compileCommandsJsonPath;
+    const fs::path serverBuildDir;
+    const utbot::ProjectContext projectContext;
+    const fs::path buildCommandsJsonPath;
+    const fs::path linkCommandsJsonPath;
+    const fs::path compileCommandsJsonPath;
+    const fs::path target;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
@@ -212,6 +212,9 @@ private:
     std::unordered_map<std::shared_ptr<const BuildDatabase::TargetInfo>, CollectionUtils::FileSet>
         linkUnitToStubFiles;
 
+    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
+    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> linkCommands_temp;
+
     static bool conflictPriorityMore(const std::shared_ptr<ObjectFileInfo> &left,
                                      const std::shared_ptr<ObjectFileInfo> &right);
 
@@ -219,13 +222,13 @@ private:
     void addLocalSharedLibraries();
     void fillTargetInfoParents();
     static fs::path getCorrespondingBitcodeFile(const fs::path &filepath);
-    void createClangCompileCommandsJson(const fs::path &buildCommandsJsonPath,
-                                        const nlohmann::json &compileCommandsJson);
+    void initObjects(const nlohmann::json &compileCommandsJson);
     void initInfo(const nlohmann::json &linkCommandsJson);
+    void createClangCompileCommandsJson(const fs::path _target);
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
     fs::path newDirForFile(fs::path const& file) const;
-    fs::path
-    createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
+    fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
+    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
     using sharedLibrariesMap = std::unordered_map<std::string, CollectionUtils::MapFileTo<fs::path>>;
 
@@ -233,6 +236,7 @@ private:
                                 BaseFileInfo &info,
                                 sharedLibrariesMap &sharedLibraryFiles,
                                 bool objectFiles = false);
+    bool isAutoTarget() const;
 };
 
 #endif //UNITTESTBOT_BUILDDATABASE_H

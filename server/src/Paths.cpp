@@ -27,7 +27,7 @@ namespace Paths {
         CollectionUtils::FileSet filtered =
             CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
                 return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
-                    return path.parent_path() == dirPath && fs::exists(path) && filter(path);
+                    return isSubPathOf(dirPath, path) && fs::exists(path) && filter(path);
                 });
             });
         return filtered;

@@ -353,7 +353,7 @@ namespace printer {
                           { dynamicLinkCommand.toStringWithChangingDirectory() });
         } else {
             utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands.front();
-            dynamicLinkCommand.setLinker(cxxLinker);
+            dynamicLinkCommand.setCompiler(cxxLinker);
             dynamicLinkCommand.setOutput(testExecutablePath);
             dynamicLinkCommand.erase_if([&](std::string const &argument) {
                 return CollectionUtils::contains(rootLinkUnitInfo->files, argument) ||
@@ -386,7 +386,7 @@ namespace printer {
                             sharedOutput.value().parent_path())));
             dynamicLinkCommand.addFlagToBegin("$(LDFLAGS)");
 
-            dynamicLinkCommand.setLinker(getRelativePathForLinker(cxxLinker));
+            dynamicLinkCommand.setCompiler(getRelativePathForLinker(cxxLinker));
             dynamicLinkCommand.setOutput(
                     getRelativePath(testExecutablePath));
 
@@ -514,13 +514,13 @@ namespace printer {
                 }
                 if (!linkCommand.isArchiveCommand()) {
                     if (isExecutable && !transformExeToLib) {
-                        linkCommand.setLinker(Paths::getLd());
+                        linkCommand.setCompiler(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
                             transformCompilerFlagsToLinkerFlags(argument);
                         }
                     } else {
-                        linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
-                                CompilationUtils::getCompilerName(linkCommand.getLinker())));
+                        linkCommand.setCompiler(CompilationUtils::getBundledCompilerPath(
+                                CompilationUtils::getCompilerName(linkCommand.getCompiler())));
                     }
                     std::vector <std::string> libraryDirectoriesFlags;
                     for (std::string &argument : linkCommand.getCommandLine()) {
@@ -555,7 +555,7 @@ namespace printer {
                     }
                 }
 
-                linkCommand.setLinker(getRelativePathForLinker(linkCommand.getLinker()));
+                linkCommand.setCompiler(getRelativePathForLinker(linkCommand.getCompiler()));
 
                 for (std::string &argument : linkCommand.getCommandLine()) {
                     tryChangeToRelativePath(argument);
