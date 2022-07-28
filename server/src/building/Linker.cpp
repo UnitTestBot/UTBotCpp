@@ -451,8 +451,9 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
             auto command = kleeGenerator->getCompileCommandForKlee(sourcePath, {}, {});
             command->setSourcePath(stubPath);
             command->setOutput(bitcodeFile);
+            auto commandWithChangingDirectory = utbot::CompileCommand(command.value(), true);
             makefilePrinter.declareTarget(bitcodeFile, { stubPath },
-                                          { command.value().toStringWithChangingDirectory() });
+                                          { commandWithChangingDirectory.toStringWithChangingDirectory() });
             return bitcodeFile;
         });
     makefilePrinter.declareVariable(STUB_BITCODE_FILES_NAME,
