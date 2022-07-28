@@ -98,12 +98,12 @@ public:
     BuildDatabase(fs::path _buildCommandsJsonPath,
                   fs::path _serverBuildDir,
                   utbot::ProjectContext _projectContext,
-                  const std::string &target);
+                  std::string _target);
 
     static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext,
                                                  const std::string &target);
 
-    void updateTarget(std::string target);
+    void updateTarget(const std::string &target);
 
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
@@ -200,12 +200,12 @@ public:
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
 private:
-    fs::path serverBuildDir;
-    utbot::ProjectContext projectContext;
-    fs::path buildCommandsJsonPath;
-    fs::path linkCommandsJsonPath;
-    fs::path compileCommandsJsonPath;
-    std::optional<std::string> target;
+    const fs::path serverBuildDir;
+    const utbot::ProjectContext projectContext;
+    const fs::path buildCommandsJsonPath;
+    const fs::path linkCommandsJsonPath;
+    const fs::path compileCommandsJsonPath;
+    const fs::path target;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
@@ -226,11 +226,11 @@ private:
     static fs::path getCorrespondingBitcodeFile(const fs::path &filepath);
     void initObjects(const nlohmann::json &compileCommandsJson);
     void initInfo(const nlohmann::json &linkCommandsJson);
-    void createClangCompileCommandsJson(const fs::path &target, const fs::path &buildCommandsJsonPath);
+    void createClangCompileCommandsJson(const fs::path _target);
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
     fs::path newDirForFile(fs::path const& file) const;
     fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
-    CollectionUtils::FileSet getSourceFilesForTarget(const std::string &_target);
+    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
     using sharedLibrariesMap = std::unordered_map<std::string, CollectionUtils::MapFileTo<fs::path>>;
 
@@ -238,6 +238,7 @@ private:
                                 BaseFileInfo &info,
                                 sharedLibrariesMap &sharedLibraryFiles,
                                 bool objectFiles = false);
+    bool isAutoTarget() const;
 };
 
 #endif //UNITTESTBOT_BUILDDATABASE_H
