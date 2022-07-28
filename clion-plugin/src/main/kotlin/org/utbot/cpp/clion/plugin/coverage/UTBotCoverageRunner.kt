@@ -44,14 +44,20 @@ class UTBotCoverageRunner : CoverageRunner() {
                     log.warn("Skipping $localFilePath in coverage processing as it does not exist!")
                     continue
                 }
-                val lines = arrayOfNulls<LineData>(getLineCount(localFilePath))
+                val linesCount = getLineCount(localFilePath)
+                val lines = arrayOfNulls<LineData>(linesCount)
                 val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath.toAbsolutePath().toString()))
                 fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {
-                    rangesList.filterNotNull().forEach {
-                            val lineData = LineData(it.line + 1, null)
+                    rangesList.filterNotNull().forEach { sourceLine ->
+                            val numberInFile = sourceLine.line - 1
+                            if (numberInFile >= linesCount) {
+                                log.warn("Skipping $localFilePath:${numberInFile} in coverage processing! Number of lines in file is $linesCount!")
+                                return@forEach
+                            }
+                            val lineData = LineData(sourceLine.line + 1, null)
                             lineData.hits = status.toInt()
                             lineData.setStatus(status)
-                            lines[it.line-1] = lineData
+                            lines[numberInFile] = lineData
                             classData.registerMethodSignature(lineData)
                     }
                 }
