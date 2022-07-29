@@ -1,6 +1,5 @@
 package org.utbot.cpp.clion.plugin.grpc
 
-import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.settings.settings
 import testsgen.Testgen
@@ -24,6 +23,3 @@ fun getProjectContextMessage(project: Project): Testgen.ProjectContext = Testgen
     .setResultsDirRelativePath("") // this path is used only by command line interface, server doesn't require it.
     .setTestDirPath(project.settings.convertedTestDirPath)
     .build()
-
-fun AnActionEvent.activeProject() = this.project
-    ?: error("A project related to action event $this not found")

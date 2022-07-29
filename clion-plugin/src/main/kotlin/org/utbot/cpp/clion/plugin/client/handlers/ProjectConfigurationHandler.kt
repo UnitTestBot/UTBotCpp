@@ -15,7 +15,7 @@ import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyUnknownResponse
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
-import org.utbot.cpp.clion.plugin.utils.refreshAndFindIOFile
+import org.utbot.cpp.clion.plugin.utils.refreshAndFindNioFile
 import testsgen.Testgen
 
 abstract class ProjectConfigResponseHandler(
@@ -58,8 +58,9 @@ class CheckProjectConfigurationHandler(
                 val missingFileName =
                     if (response.type == Testgen.ProjectConfigStatus.LINK_COMMANDS_JSON_NOT_FOUND) "link_commands.json" else "compile_commands.json"
                 notifyError(
-                    "Project is not configured properly: $missingFileName is missing in the build folder.",
-                    project, AskServerToGenerateJsonForProjectConfiguration()
+                    "Project is not configured properly: file $missingFileName is missed in the build directory",
+                    project,
+                    AskServerToGenerateJsonForProjectConfiguration(),
                 )
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_SAME_AS_PROJECT -> {
@@ -97,7 +98,7 @@ class CreateBuildDirHandler(
             }
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.settings.buildDirPath.toString())
+        refreshAndFindNioFile(project.settings.buildDirPath)
     }
 }
 
@@ -116,6 +117,6 @@ class GenerateJsonHandler(
             )
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindIOFile(project.settings.buildDirPath.toString())
+        refreshAndFindNioFile(project.settings.buildDirPath)
     }
 }

@@ -8,7 +8,7 @@ import org.utbot.cpp.clion.plugin.client.Request
 import org.utbot.cpp.clion.plugin.client.handlers.TestsStreamHandler
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.getLongestCommonPathFromRoot
-import org.utbot.cpp.clion.plugin.utils.isHeader
+import org.utbot.cpp.clion.plugin.utils.isHeaderFile
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import testsgen.Testgen
@@ -61,7 +61,7 @@ abstract class BaseTestsRequest<R>(request: R, project: Project, private val pro
     }
 
     open fun getFocusTarget(generatedTestFiles: List<Path>): Path? {
-        return generatedTestFiles.filter { !isHeader(it.fileName.toString()) }.getLongestCommonPathFromRoot()
+        return generatedTestFiles.filter { !isHeaderFile(it.fileName.toString()) }.getLongestCommonPathFromRoot()
     }
 
     override fun logRequest() {

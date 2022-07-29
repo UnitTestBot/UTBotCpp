@@ -14,9 +14,9 @@ data class UTBotTarget(val path: String, val name: String, val description: Stri
 
     companion object {
         val autoTarget = UTBotTarget(
-            "/utbot/auto/target/path",
-            "UTBot: auto",
-            "Finds any target that contains the code under testing"
+            path = "/utbot/auto/target/path",
+            name = "UTBot: auto",
+            description = "Finds any target that contains the code under testing"
         )
     }
 }

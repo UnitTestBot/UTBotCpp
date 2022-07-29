@@ -14,7 +14,7 @@ class RunWithCoverageAction(val element: PsiElement) : BaseGenerateTestsAction()
     override fun actionPerformed(e: AnActionEvent) {
         logger.debug("Action RunWithCoverageAction was called")
 
-        val testArgs = TestNameAndTestSuite.getFromPsiElement(element)
+        val testArgs = TestNameAndTestSuite.create(element)
         val suiteName = testArgs.suite
         val testedMethodName = testArgs.name
         val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path

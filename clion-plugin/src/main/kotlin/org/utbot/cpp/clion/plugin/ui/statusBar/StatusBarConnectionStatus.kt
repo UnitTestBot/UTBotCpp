@@ -28,17 +28,13 @@ class ConnectionStatusBarWidgetFactory : StatusBarWidgetFactory {
 
     override fun getDisplayName() = STATUS_BAR_DISPLAY_NAME
 
-    override fun isAvailable(p0: Project): Boolean = true
+    override fun isAvailable(project: Project): Boolean = true
 
-    override fun createWidget(p0: Project): StatusBarWidget {
-        return UTBotStatusBarWidget()
-    }
+    override fun createWidget(project: Project): StatusBarWidget = UTBotStatusBarWidget()
 
-    override fun disposeWidget(p0: StatusBarWidget) {}
+    override fun disposeWidget(widget: StatusBarWidget) {}
 
-    override fun canBeEnabledOn(p0: StatusBar): Boolean {
-        return p0.project != null
-    }
+    override fun canBeEnabledOn(statusBar: StatusBar): Boolean = statusBar.project != null
 
     companion object {
         const val STATUS_BAR_DISPLAY_NAME = "UTBot"
@@ -69,16 +65,16 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
 
     override fun getClickConsumer() = Consumer<MouseEvent> { event ->
         val component = event.component
+
         val popup = StatusBarActionsPopup.getPopup(DataManager.getInstance().getDataContext(component))
+        //TODO: this is a kind of peacedeath
         val dimension = popup.content.preferredSize
+        val popupLocation = Point(0, -dimension.height)
 
-        val at = Point(0, -dimension.height)
-        popup.show(RelativePoint(component, at))
+        popup.show(RelativePoint(component, popupLocation))
     }
 
-    override fun getText(): String {
-        return "UTBot: $myConnectionStatusText"
-    }
+    override fun getText(): String = "UTBot: $myConnectionStatusText"
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
 
@@ -92,17 +88,16 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
 object StatusBarActionsPopup {
     fun getPopup(dataContext: DataContext): ListPopup {
         val actions = getActions()
-        val popup = JBPopupFactory.getInstance()
+
+        return JBPopupFactory.getInstance()
             .createActionGroupPopup(
                 ConnectionStatusBarWidgetFactory.STATUS_BAR_DISPLAY_NAME, actions,
                 dataContext, JBPopupFactory.ActionSelectionAid.SPEEDSEARCH, false,
                 ActionPlaces.POPUP
             )
-
-        return popup
     }
 
-    fun getActions(): DefaultActionGroup {
+    private fun getActions(): DefaultActionGroup {
         val actionGroup = DefaultActionGroup()
         actionGroup.isPopup = true
 
@@ -113,6 +108,7 @@ object StatusBarActionsPopup {
         actionGroup.add(AskServerToGenerateJsonForProjectConfiguration())
         actionGroup.addSeparator()
         actionGroup.addAction(ReconfigureProjectAction())
+
         return actionGroup
     }
 }

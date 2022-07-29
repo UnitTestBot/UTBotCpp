@@ -15,17 +15,13 @@ class VerboseModeWidgetFactory : StatusBarWidgetFactory {
 
     override fun getDisplayName() = STATUS_BAR_DISPLAY_NAME
 
-    override fun isAvailable(p0: Project): Boolean = true
+    override fun isAvailable(project: Project): Boolean = true
 
-    override fun createWidget(p0: Project): StatusBarWidget {
-        return UTBotStatusBarVerboseWidget()
-    }
+    override fun createWidget(project: Project): StatusBarWidget = UTBotStatusBarVerboseWidget()
 
-    override fun disposeWidget(p0: StatusBarWidget) {}
+    override fun disposeWidget(widget: StatusBarWidget) {}
 
-    override fun canBeEnabledOn(p0: StatusBar): Boolean {
-        return p0.project != null
-    }
+    override fun canBeEnabledOn(statusBar: StatusBar): Boolean = statusBar.project != null
 
     companion object {
         const val STATUS_BAR_ID = "UTBot: verbose mode"
@@ -57,10 +53,10 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     }
 
     override fun getText(): String {
-        if (statusBar == null)
-            return ""
-        return if (statusBar?.project!!.settings.storedSettings.verbose) "✔ UTBot: verbose formatting" else "❌ UTBot: verbose formatting"
+        val project = statusBar?.project ?: return ""
+        return if (project.settings.storedSettings.verbose) "✔ UTBot: verbose formatting" else "❌ UTBot: verbose formatting"
     }
+
 
     override fun getAlignment(): Float = Component.CENTER_ALIGNMENT
 

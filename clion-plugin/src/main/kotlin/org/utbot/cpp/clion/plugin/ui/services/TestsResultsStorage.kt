@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.ui.testsResults
+package org.utbot.cpp.clion.plugin.ui.services
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.icons.AllIcons
@@ -12,9 +12,9 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
 import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
+import org.utbot.cpp.clion.plugin.ui.testsResults.TestNameAndTestSuite
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import testsgen.Testgen
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
@@ -59,9 +59,10 @@ class TestsResultsStorage(val project: Project) {
     }
 
     private fun shouldForceUpdate(): Boolean {
-        val currentlyOpenedFilePaths = FileEditorManager.getInstance(project).selectedEditors.mapNotNull {
-            it.file?.toNioPath()
-        }
+        val currentlyOpenedFilePaths = FileEditorManager.getInstance(project)
+            .selectedEditors
+            .mapNotNull { it.file?.toNioPath() }
+
         for (testResult in storage.values) {
             if (testResult.testFilePath.convertFromRemotePathIfNeeded(project) in currentlyOpenedFilePaths) {
                 return true
@@ -80,8 +81,7 @@ class TestsResultsStorage(val project: Project) {
             return AllIcons.RunConfigurations.TestState.Run_run
         }
 
-        val testName: String = TestNameAndTestSuite.getFromPsiElement(element).name
-
+        val testName: String = TestNameAndTestSuite.create(element).name
         if (!storage.contains(testName) || testName.isEmpty()) {
             return AllIcons.RunConfigurations.TestState.Run
         }
