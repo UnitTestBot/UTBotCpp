@@ -192,8 +192,7 @@ class Client(
     fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
         runBlocking {
             withTimeout(timeout) {
-                val hasChildJobs = requestsCS.coroutineContext.job.children.any()
-                while (hasChildJobs) {
+                while (requestsCS.coroutineContext.job.children.any()) {
                     delay(DELAY_TIME)
                 }
             }
@@ -201,7 +200,6 @@ class Client(
     }
 
     companion object {
-        //TODO: why don't use process this setting similarly to "isFirstLaunch"? Why is it a property of the client?
         var IS_TEST_MODE = false
         const val HEARTBEAT_INTERVAL: Long = 500L
         const val SERVER_TIMEOUT: Long = 300000L
