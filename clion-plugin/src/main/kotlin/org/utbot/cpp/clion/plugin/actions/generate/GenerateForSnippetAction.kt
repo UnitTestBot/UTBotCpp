@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.actions.generate
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.client.requests.SnippetRequest
+import org.utbot.cpp.clion.plugin.client.requests.test.SnippetRequest
 import org.utbot.cpp.clion.plugin.grpc.getSnippetGrpcRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 

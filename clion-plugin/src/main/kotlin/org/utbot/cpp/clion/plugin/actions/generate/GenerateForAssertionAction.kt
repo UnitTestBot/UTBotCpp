@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.actions.generate
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.client.requests.AssertionRequest
+import org.utbot.cpp.clion.plugin.client.requests.test.AssertionRequest
 import org.utbot.cpp.clion.plugin.grpc.getAssertionGrpcRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 

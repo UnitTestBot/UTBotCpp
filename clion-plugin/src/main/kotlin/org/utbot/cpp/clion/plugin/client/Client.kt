@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
+import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -31,7 +32,7 @@ import testsgen.Testgen
 class Client(
     val project: Project,
     clientId: String,
-    private val loggingChannels: List<LoggingChannel>
+    private val loggingChannels: List<LogChannel>
 ) : Disposable,
     GrpcClient(projectIndependentSettings.port, projectIndependentSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT

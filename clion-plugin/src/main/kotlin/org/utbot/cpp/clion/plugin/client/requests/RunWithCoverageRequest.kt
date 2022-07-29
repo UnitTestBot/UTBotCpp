@@ -19,7 +19,6 @@ class RunWithCoverageRequest(
     override val logMessage: String = "Sending request to get tests run results and coverage"
 
     override suspend fun Flow<CoverageAndResultsResponse>.handle(cancellationJob: Job?) {
-        //TODO: I do not understand this condition here
         if (cancellationJob?.isActive == true) {
             CoverageAndResultsHandler(
                 project,
