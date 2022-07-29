@@ -62,14 +62,12 @@ class CoverageAndResultsHandler(
         )
 
         manager.coverageGathered(suite)
-        notify(response)
+        notifyCoverageReceived()
     }
 
-    private fun notify(reponse: Testgen.CoverageAndResultsResponse) {
-        sourceFilePath ?: return
-        notifyInfo(
-            "Coverage received!", project,
-            FocusAction(sourceFilePath)
-        )
+    private fun notifyCoverageReceived() {
+        if (sourceFilePath != null) {
+            notifyInfo("Coverage received!", project, FocusAction(sourceFilePath))
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.client.requests
+package org.utbot.cpp.clion.plugin.client.requests.test
 
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job

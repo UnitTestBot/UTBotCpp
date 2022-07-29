@@ -2,7 +2,7 @@ package org.utbot.cpp.clion.plugin.actions.generate
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import org.utbot.cpp.clion.plugin.client.requests.FileRequest
+import org.utbot.cpp.clion.plugin.client.requests.test.FileRequest
 import org.utbot.cpp.clion.plugin.grpc.getFileGrpcRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.isCPPorCFileName

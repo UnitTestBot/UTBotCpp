@@ -3,6 +3,9 @@ package org.utbot.cpp.clion.plugin.client
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.client.channels.GTestLogChannelImpl
+import org.utbot.cpp.clion.plugin.client.channels.LogChannel
+import org.utbot.cpp.clion.plugin.client.channels.ServerLogChannelImpl
 import kotlin.random.Random
 import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.utils.logger
@@ -10,7 +13,7 @@ import org.utbot.cpp.clion.plugin.utils.logger
 @Service
 class ClientManager(val project: Project): Disposable {
     private val clientId = generateClientID()
-    private val loggingChannels = listOf<LoggingChannel>(GTestChannel(project), ServerLogChannel(project))
+    private val loggingChannels = listOf<LogChannel>(GTestLogChannelImpl(project), ServerLogChannelImpl(project))
     var client: Client = Client(project, clientId, loggingChannels)
         private set
 
@@ -32,9 +35,7 @@ class ClientManager(val project: Project): Disposable {
         }
     }
 
-    override fun dispose() {
-        client.dispose()
-    }
+    override fun dispose() = client.dispose()
 
     private fun generateClientID(): String {
         fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)

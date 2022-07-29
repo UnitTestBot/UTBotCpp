@@ -68,9 +68,7 @@ class UTBotTargetsController(val project: Project) {
         }
     }
 
-    fun createTargetsToolWindow(): UTBotTargetsToolWindow {
-        return UTBotTargetsToolWindow(listModel, this)
-    }
+    fun createTargetsToolWindow(): UTBotTargetsToolWindow = UTBotTargetsToolWindow(listModel, this)
 
     fun selectionChanged(selectedTarget: UTBotTarget) {
         // when user selects target update model

@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.client.requests
+package org.utbot.cpp.clion.plugin.client.requests.test
 
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
@@ -13,9 +13,8 @@ class FunctionRequest(
 ) : BaseTestsRequest<Testgen.FunctionRequest>(request, project, UTBot.message("requests.function.description.progress")) {
 
     override val logMessage: String = "Sending request to generate tests for function."
-    override fun getInfoMessage(): String {
-        return "Tests for function are generated!"
-    }
+    override fun getInfoMessage(): String = "Tests for function are generated!"
+
     override suspend fun TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.TestsResponse> =
         generateFunctionTests(request)
 }

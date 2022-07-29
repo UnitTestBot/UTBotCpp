@@ -7,9 +7,10 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.client.handlers.CreateBuildDirHandler
+import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import testsgen.Testgen
-import testsgen.TestsGenServiceGrpcKt
+import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class CreateBuildDirRequest(
     val client: Client,
@@ -19,12 +20,11 @@ class CreateBuildDirRequest(
 
     constructor(e: AnActionEvent) : this(
         e.project?.getCurrentClient() ?: error("project is null for event: $e"),
-        getProjectConfigGrpcRequest(e.project!!, Testgen.ConfigMode.CREATE_BUILD_DIR)
+        getProjectConfigGrpcRequest(e.activeProject(), Testgen.ConfigMode.CREATE_BUILD_DIR)
     )
 
-    override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> {
-        return this.configureProject(request)
-    }
+    override suspend fun TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> =
+        this.configureProject(request)
 
     override suspend fun Flow<Testgen.ProjectConfigResponse>.handle(cancellationJob: Job?) {
         if (cancellationJob?.isActive == true) {

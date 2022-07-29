@@ -11,7 +11,7 @@ import javax.swing.ListSelectionModel
 
 class UTBotTargetsToolWindow(
     listModel: CollectionListModel<UTBotTarget>,
-    val controller: UTBotTargetsController
+    private val controller: UTBotTargetsController,
 ): SimpleToolWindowPanel(true, true) {
     private val uiList = JBList(listModel)
 
@@ -34,9 +34,9 @@ class UTBotTargetsToolWindow(
             selected: Boolean,
             hasFocus: Boolean
         ) {
-            append(target.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+            append(target.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" ")
-            append(target.description, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            append(target.description, SimpleTextAttributes.GRAYED_ATTRIBUTES)
         }
     }
 }
