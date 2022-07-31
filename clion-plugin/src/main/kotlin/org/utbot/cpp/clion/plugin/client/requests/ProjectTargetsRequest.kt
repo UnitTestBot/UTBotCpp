@@ -2,15 +2,27 @@ package org.utbot.cpp.clion.plugin.client.requests
 
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import org.utbot.cpp.clion.plugin.utils.logger
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class ProjectTargetsRequest(
     project: Project,
     request: Testgen.ProjectTargetsRequest,
-    val processTargets: suspend (Testgen.ProjectTargetsResponse)->Unit
+    val processTargets: suspend (Testgen.ProjectTargetsResponse)->Unit,
+    val onError: suspend (Throwable) -> Unit
 ): BaseRequest<Testgen.ProjectTargetsRequest, Testgen.ProjectTargetsResponse>(request, project) {
     override val logMessage: String = "Sending request to get PROJECT TARGETS."
+
+    override suspend fun execute(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub, cancellationJob: Job?) {
+        try {
+            super.execute(stub, cancellationJob)
+        } catch (e: Throwable) {
+            onError(e)
+        }
+    }
+
     override suspend fun Testgen.ProjectTargetsResponse.handle(cancellationJob: Job?) {
         processTargets(this)
     }

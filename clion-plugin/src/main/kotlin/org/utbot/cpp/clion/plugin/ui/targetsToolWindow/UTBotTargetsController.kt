@@ -1,5 +1,6 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
@@ -13,13 +14,16 @@ import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.relativize
+import testsgen.Testgen
 
+@Service
 class UTBotTargetsController(val project: Project) {
     private val settings: UTBotAllProjectSettings
         get() = project.settings
 
-    private val listModel = CollectionListModel(mutableListOf(UTBotTarget.autoTarget))
+    private val listModel = CollectionListModel(mutableListOf<UTBotTarget>())
     private val logger = project.logger
+    val targetsToolWindow: UTBotTargetsToolWindow by lazy { UTBotTargetsToolWindow(listModel, this) }
 
     val targets: List<UTBotTarget>
         get() = listModel.toList()
@@ -32,23 +36,35 @@ class UTBotTargetsController(val project: Project) {
     fun requestTargetsFromServer() {
         val currentClient = project.getCurrentClient()
 
+        invokeOnEdt {
+            listModel.removeAll()
+            targetsToolWindow.setBusy(true)
+        }
         ProjectTargetsRequest(
             project,
             getProjectTargetsGrpcRequest(project),
-        ) { targetsResponse ->
-            invokeOnEdt {
-                listModel.apply {
-                    val oldTargetList = toList()
-                    oldTargetList.addAll(
-                        targetsResponse.targetsList.map { projectTarget ->
-                            UTBotTarget(projectTarget, project)
-                        })
-                    listModel.replaceAll(oldTargetList.distinct())
+            processTargets = { targetsResponse: Testgen.ProjectTargetsResponse ->
+                invokeOnEdt {
+                    targetsToolWindow.setBusy(false)
+
+                    listModel.apply {
+                        listModel.replaceAll(
+                            targetsResponse.targetsList.map { projectTarget ->
+                                UTBotTarget(projectTarget, project)
+                            })
+                    }
                 }
-            }
-        }.let { targetsRequest ->
+            },
+            onError = {
+                invokeOnEdt {
+                    targetsToolWindow.setBusy(false)
+                }
+            }).let { targetsRequest ->
             if (!currentClient.isServerAvailable()) {
                 logger.error { "Could not request targets from server: server is unavailable!" }
+                invokeOnEdt {
+                    targetsToolWindow.setBusy(false)
+                }
                 return
             }
             logger.trace { "Requesting project targets from server!" }
@@ -66,10 +82,6 @@ class UTBotTargetsController(val project: Project) {
                 )
             )
         }
-    }
-
-    fun createTargetsToolWindow(): UTBotTargetsToolWindow {
-        return UTBotTargetsToolWindow(listModel, this)
     }
 
     fun selectionChanged(selectedTarget: UTBotTarget) {
@@ -96,7 +108,7 @@ class UTBotTargetsController(val project: Project) {
                 UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
                 object : UTBotEventsListener {
                     override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                        if (newStatus != oldStatus && newStatus == ConnectionStatus.CONNECTED) {
+                        if (newStatus != oldStatus) {
                             requestTargetsFromServer()
                         }
                     }

@@ -1,5 +1,6 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -12,7 +13,7 @@ class UTBotTargetsToolWindowFactory : ToolWindowFactory {
         logger.info("createToolWindowContent was called")
         val contentManager = toolWindow.contentManager
         val content = contentManager.factory.createContent(
-            UTBotTargetsController(project).createTargetsToolWindow(), null, false
+            project.service<UTBotTargetsController>().targetsToolWindow, null, false
         )
         toolWindow.contentManager.addContent(content)
     }

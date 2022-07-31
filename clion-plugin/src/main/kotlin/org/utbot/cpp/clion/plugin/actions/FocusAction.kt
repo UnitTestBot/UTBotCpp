@@ -14,13 +14,13 @@ class FocusAction(val path: Path) : AnAction("Show") {
             ?: error("Focus action should be disabled for path $path")
 
         val project = e.activeProject()
-        val projectInstance = PsiManager.getInstance(project)
+        val psiManager = PsiManager.getInstance(project)
 
 
         if (virtualFile.isDirectory) {
-            projectInstance.findDirectory(virtualFile)?.navigate(true)
+            psiManager.findDirectory(virtualFile)?.navigate(true)
         } else {
-            projectInstance.findFile(virtualFile)?.navigate(true)
+            psiManager.findFile(virtualFile)?.navigate(true)
         }
     }
 

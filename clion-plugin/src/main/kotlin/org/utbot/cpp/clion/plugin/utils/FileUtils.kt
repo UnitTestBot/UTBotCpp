@@ -28,6 +28,7 @@ fun refreshAndFindIOFile(file: Path) {
     }
 }
 
+// todo: add some tests
 fun getCommonPathFromRoot(p1: Path, p2: Path): Path {
     if (p1 == p2) {
         return p1
@@ -57,8 +58,6 @@ fun List<Path>.getLongestCommonPathFromRoot(): Path? {
 fun refreshAndFindIOFile(filePath: String) = refreshAndFindIOFile(Paths.get(filePath))
 
 fun createFileAndMakeDirs(filePath: Path, text: String) {
-    if (!Files.isRegularFile(filePath))
-        error("File expected! But got: $filePath")
     with(filePath) {
         createFile()
         writeText(text)

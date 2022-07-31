@@ -32,6 +32,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotWizardStep
     override fun doOKAction() {
         project.settings.storedSettings.fromSettingsModel(mySettingsModel)
         projectIndependentSettings.fromSettingsModel(mySettingsModel)
+        projectIndependentSettings.fireConnectionSettingsChanged()
 
         with(project.settings) {
             fireUTBotSettingsChanged()
