@@ -16,10 +16,6 @@ open class ProxyProjectViewTree(
 ) : ProjectViewTree(treeModel), DataProvider {
 
     init {
-        setup()
-    }
-
-    fun setup() {
         // disable node expansion on double click
         setToggleClickCount(0)
         // change marked/unmarked status on double click
@@ -40,14 +36,14 @@ open class ProxyProjectViewTree(
     }
 
     override fun getData(dataId: String): Any? {
-        if (dataId == key) {
-            return createUpdater()
+        if (dataId != UTBOT_DIRS_KEY) {
+            return null
         }
-        return null
+        return createUpdater()
     }
 
     companion object {
-        const val key = "UTBotDirectories"
-        val UTBOT_DIRS = DataKey.create<DirectoriesStatusUpdater>(key)
+        const val UTBOT_DIRS_KEY = "UTBotDirectories"
+        val UTBOT_DIRS = DataKey.create<DirectoriesStatusUpdater>(UTBOT_DIRS_KEY)
     }
 }

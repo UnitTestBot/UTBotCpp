@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package org.utbot.cpp.clion.plugin.ui.wizard.steps
 
 import com.intellij.openapi.Disposable
@@ -17,128 +19,50 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.selected
 import com.intellij.ui.layout.ComponentPredicate
-import javax.swing.JComponent
-import javax.swing.event.DocumentEvent
-import kotlin.properties.Delegates
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.client.GrpcClient
+import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizardStep
-import org.utbot.cpp.clion.plugin.utils.isWindows
-import org.utbot.cpp.clion.plugin.utils.toWSLPathOnWindows
-import org.utbot.cpp.clion.plugin.utils.validateOnInput
+import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
+import org.utbot.cpp.clion.plugin.utils.toWslFormat
+import org.utbot.cpp.clion.plugin.utils.validateInput
+import javax.swing.JComponent
+import javax.swing.event.DocumentEvent
+import kotlin.properties.Delegates
 
-class ObservableValue<T>(initialValue: T) {
-    private val changeListeners: MutableList<(T) -> Unit> = mutableListOf()
-    var value: T by Delegates.observable(initialValue) { _, _, newVal ->
-        changeListeners.forEach {
-            it(newVal)
-        }
-    }
-
-    fun addOnChangeListener(listener: (T) -> Unit) {
-        changeListeners.add(listener)
-    }
+enum class ConnectionStatus {
+    Connected,
+    Connecting,
+    Failed,
+    Suspicious,
 }
-
-class NotConnectedWarningDialog(project: Project) : DialogWrapper(project) {
-    init {
-        title = "❌ Server is unreachable!"
-        super.init()
-    }
-
-    override fun createCenterPanel(): JComponent {
-        return panel {
-            row {
-                text(
-                    """UTBot failed to establish connection with specified server. 
-                       If you wish to continue anyway, press "Ok" button.
-                    """.trimMargin(), TEXT_LENGTH
-                )
-            }
-            row {
-                text(
-                    """In any case, you will need to specify correct port and host of UTBot server to use the plugin.
-                       You can do it via CLion Settings -> Tools -> UTBot Settings
-                    """.trimIndent(), TEXT_LENGTH
-                )
-            }
-        }
-    }
-
-    companion object {
-        const val TEXT_LENGTH = 100
-    }
-}
-
 
 class ConnectionStep(
-    val project: Project,
+    private val project: Project,
     private val settingsModel: UTBotSettingsModel,
-    private val parentDisposable: Disposable
-) : UTBotWizardStep() {
+    private val parentDisposable: Disposable,
+) : UTBotBaseWizardStep() {
     private lateinit var hostTextField: JBTextField
     private lateinit var portTextField: JBTextField
     private lateinit var remotePathTextField: JBTextField
+
     private var serverVersion: String? = null
 
-    private val cs = CoroutineScope(Dispatchers.IO + SupervisorJob())
-
-    enum class ConnectionStatus {
-        connected, connecting, failed, warning
-    }
-
-    private val connectionStatus = ObservableValue<ConnectionStatus>(ConnectionStatus.failed)
-    private val useDefaults = ObservableValue<Boolean>(false)
+    private val connectionStatus = ObservableValue(ConnectionStatus.Failed)
+    private val useConnectionDefaults = ObservableValue(false)
 
     init {
-        useDefaults.addOnChangeListener { newValue ->
+        useConnectionDefaults.addOnChangeListener { newValue ->
             if (newValue) {
                 portTextField.text = UTBotAllProjectSettings.DEFAULT_PORT.toString()
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = project.settings.projectPath
-                if (isWindows)
-                    remotePathTextField.text = toWSLPathOnWindows(remotePathTextField.text)
+                remotePathTextField.text = project.settings.projectPath.toWslFormat()
             }
-        }
-    }
-
-    private suspend fun pingServer(port: Int, host: String): ConnectionStatus {
-        connectionStatus.value = ConnectionStatus.connecting
-        runCatching {
-            GrpcClient(port, host, "DummyId").use { client ->
-                serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
-                if (serverVersion != UTBotAllProjectSettings.clientVersion)
-                    return ConnectionStatus.warning
-                return ConnectionStatus.connected
-            }
-        }.getOrElse { exception ->
-            when (exception) {
-                is io.grpc.StatusException -> return ConnectionStatus.failed
-                else -> {
-                    connectionStatus.value = ConnectionStatus.failed
-                    throw exception
-                }
-            }
-        }
-    }
-
-    override fun canProceedToNextStep(): Boolean {
-        if (connectionStatus.value == ConnectionStatus.failed) {
-            return NotConnectedWarningDialog(project).showAndGet()
-        }
-        return true
-    }
-
-    private fun pingServer() {
-        cs.launch {
-            connectionStatus.value = pingServer(portTextField.text.toInt(), hostTextField.text)
         }
     }
 
@@ -147,35 +71,23 @@ class ConnectionStep(
         pingServer()
     }
 
-    private fun setupValidation() {
-        portTextField.validateOnInput(parentDisposable) {
-            val value = portTextField.text.toUShortOrNull()
-            if (value == null) {
-                connectionStatus.value = ConnectionStatus.failed
-                ValidationInfo("Number from 0 to 65535 is expected!", portTextField)
-            } else {
-                pingServer()
-                null
-            }
+    override fun canProceedToNextStep(): Boolean {
+        if (connectionStatus.value != ConnectionStatus.Failed) {
+            return true
         }
 
-        hostTextField.document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(e: DocumentEvent) {
-                pingServer()
-            }
-        })
+        return NotConnectedWarningDialog(project).showAndGet()
     }
 
     override fun createUI() {
         addHtml("media/connection.html")
         panel {
-
             row {
-                checkBox("Default server configuration on localhost (or WSL2)")
-                    .bindSelected(getter = { useDefaults.value }, setter = { newValue ->
-                        useDefaults.value = newValue
+                checkBox("Default server configuration on localhost (or WSL2):")
+                    .bindSelected(getter = { useConnectionDefaults.value }, setter = { newValue ->
+                        useConnectionDefaults.value = newValue
                     }).selected.addListener { newValue ->
-                        useDefaults.value = newValue
+                        useConnectionDefaults.value = newValue
                     }
             }
 
@@ -184,9 +96,9 @@ class ConnectionStep(
                     it.bindText(settingsModel.globalSettings::serverName)
                     hostTextField = it.component
                 }.columns(COLUMNS_MEDIUM).enabledIf(object : ComponentPredicate() {
-                    override fun invoke() = !useDefaults.value
+                    override fun invoke() = !useConnectionDefaults.value
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        useDefaults.addOnChangeListener { newValue -> listener(!newValue) }
+                        useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
                     }
                 })
             }
@@ -200,52 +112,50 @@ class ConnectionStep(
                 }.columns(COLUMNS_MEDIUM).applyToComponent {
                     portTextField = this
                 }.enabledIf(object : ComponentPredicate() {
-                    override fun invoke() = !useDefaults.value
+                    override fun invoke() = !useConnectionDefaults.value
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        useDefaults.addOnChangeListener { newValue -> listener(!newValue) }
+                        useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
                     }
                 })
             }
 
             row {
                 cell(JBLabel(AnimatedIcon.Default())).visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = connectionStatus.value == ConnectionStatus.connecting
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.Connecting
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.connecting) }
+                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.Connecting) }
                     }
                 })
 
                 label("✔️ Successfully pinged server!").visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = connectionStatus.value == ConnectionStatus.connected
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.Connected
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.connected) }
+                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.Connected) }
                     }
                 })
 
                 label("❌ Failed to establish connection!").visibleIf(object : ComponentPredicate() {
-                    override fun invoke() = connectionStatus.value == ConnectionStatus.failed
+                    override fun invoke() = connectionStatus.value == ConnectionStatus.Failed
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.failed) }
+                        connectionStatus.addOnChangeListener { listener(it == ConnectionStatus.Failed) }
                     }
                 })
 
                 val warningMessage: () -> String = {
-                    "⚠️ Warning! Versions are different" +
-                            if (serverVersion != null)
-                                ": Server: $serverVersion Client: ${UTBotAllProjectSettings.clientVersion}"
-                            else ""
+                    "⚠️ Warning! Versions are different or not defined:" +
+                            "Client: ${UTBotAllProjectSettings.clientVersion} Server: ${serverVersion ?: "not defined"}"
                 }
                 label(warningMessage()).visibleIf(
                     object : ComponentPredicate() {
-                        override fun invoke() = connectionStatus.value == ConnectionStatus.warning
+                        override fun invoke() = connectionStatus.value == ConnectionStatus.Suspicious
                         override fun addListener(listener: (Boolean) -> Unit) {
                             connectionStatus.addOnChangeListener {
-                                listener(it == ConnectionStatus.warning)
+                                listener(it == ConnectionStatus.Suspicious)
                             }
                         }
                     }).applyToComponent {
                     connectionStatus.addOnChangeListener { newStatus ->
-                        if (newStatus == ConnectionStatus.warning)
+                        if (newStatus == ConnectionStatus.Suspicious)
                             this.text = warningMessage()
                     }
                 }
@@ -260,12 +170,101 @@ class ConnectionStep(
                 textField().bindText(settingsModel.projectSettings::remotePath).columns(COLUMNS_LARGE).applyToComponent {
                     remotePathTextField = this
                 }.enabledIf(object : ComponentPredicate() {
-                    override fun invoke() = !useDefaults.value
+                    override fun invoke() = !useConnectionDefaults.value
                     override fun addListener(listener: (Boolean) -> Unit) {
-                        useDefaults.addOnChangeListener { newValue -> listener(!newValue) }
+                        useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
                     }
                 })
             }
         }.addToUI()
+    }
+
+    private suspend fun pingServer(port: Int, host: String): ConnectionStatus {
+        connectionStatus.value = ConnectionStatus.Connecting
+        runCatching {
+            GrpcClient(port, host, "DummyId").use { client ->
+                serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
+
+                if (serverVersion != UTBotAllProjectSettings.clientVersion)
+                    return ConnectionStatus.Suspicious
+                return ConnectionStatus.Connected
+            }
+        }.getOrElse { exception ->
+            when (exception) {
+                is io.grpc.StatusException -> return ConnectionStatus.Failed
+                else -> {
+                    connectionStatus.value = ConnectionStatus.Failed
+                    throw exception
+                }
+            }
+        }
+    }
+
+    private fun pingServer() {
+        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+            connectionStatus.value = pingServer(portTextField.text.toInt(), hostTextField.text)
+        }
+    }
+
+    private fun setupValidation() {
+        portTextField.validateInput(parentDisposable) {
+            val value = portTextField.text.toUShortOrNull()
+            if (value == null) {
+                connectionStatus.value = ConnectionStatus.Failed
+                ValidationInfo("Number from 0 to 65535 is expected!", portTextField)
+            } else {
+                pingServer()
+                null
+            }
+        }
+
+        hostTextField.document.addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(e: DocumentEvent) {
+                pingServer()
+            }
+        })
+    }
+}
+
+internal class ObservableValue<T>(initialValue: T) {
+    private val changeListeners: MutableList<(T) -> Unit> = mutableListOf()
+    var value: T by Delegates.observable(initialValue) { _, _, newVal ->
+        changeListeners.forEach {
+            it(newVal)
+        }
+    }
+
+    fun addOnChangeListener(listener: (T) -> Unit) {
+        changeListeners.add(listener)
+    }
+}
+
+internal class NotConnectedWarningDialog(project: Project) : DialogWrapper(project) {
+    init {
+        title = "❌ Server is unreachable!"
+        super.init()
+    }
+
+    override fun createCenterPanel(): JComponent = panel {
+        row {
+            text(
+                """UTBot failed to establish connection with specified server. 
+                   If you wish to continue anyway, press "Ok" button.
+                """.trimMargin(),
+                MAX_LINE_LENGTH
+            )
+        }
+        row {
+            text(
+                """In any case, you will need to specify correct port and host of UTBot server to use the plugin.
+                   You can do it via CLion Settings -> Tools -> UTBot Settings
+                """.trimIndent(),
+                MAX_LINE_LENGTH
+            )
+        }
+    }
+
+    companion object {
+        const val MAX_LINE_LENGTH = 100
     }
 }

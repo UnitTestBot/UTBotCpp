@@ -1,7 +1,8 @@
-package org.utbot.cpp.clion.plugin.client.requests
+package org.utbot.cpp.clion.plugin.client.requests.test
 
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
+import org.utbot.cpp.clion.plugin.client.requests.BaseRequest
 import testsgen.Testgen
 import testsgen.Testgen.FunctionTypeResponse
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub

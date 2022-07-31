@@ -4,9 +4,9 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
-import org.utbot.cpp.clion.plugin.utils.createFileAndMakeDirs
+import org.utbot.cpp.clion.plugin.utils.createFileWithText
 import org.utbot.cpp.clion.plugin.utils.logger
-import org.utbot.cpp.clion.plugin.utils.refreshAndFindIOFile
+import org.utbot.cpp.clion.plugin.utils.refreshAndFindNioFile
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Path
@@ -42,7 +42,7 @@ class TestsStreamHandler(
 
             if (sourceCode.code.isNotEmpty()) {
                 project.logger.trace { "Creating generated test file: $filePath." }
-                createFileAndMakeDirs(
+                createFileWithText(
                     filePath,
                     sourceCode.code
                 )
@@ -54,7 +54,7 @@ class TestsStreamHandler(
                         " and ${sourceCode.errorMethodsNumber} tests in error suite"
             project.logger.info { "$infoMessage: $filePath" }
 
-            refreshAndFindIOFile(filePath)
+            refreshAndFindNioFile(filePath)
         }
     }
 

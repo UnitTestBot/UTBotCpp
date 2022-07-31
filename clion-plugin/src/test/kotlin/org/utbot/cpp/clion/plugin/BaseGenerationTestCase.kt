@@ -37,7 +37,7 @@ abstract class BaseGenerationTestCase {
      * This class solves the problem, by using [testsDirectory]
      * instead of some generated temp directory.
      */
-    class TestFixtureProxy(val testsDirectory: Path) : TempDirTestFixtureImpl() {
+    class TestFixtureProxy(private val testsDirectory: Path) : TempDirTestFixtureImpl() {
         override fun doCreateTempDirectory(): Path {
             return testsDirectory
         }
@@ -65,7 +65,7 @@ abstract class BaseGenerationTestCase {
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
         project.settings.storedSettings.testDirPath = testsDirectoryPath.toString()
-        project.logger.writers.let {
+        project.logger.logWriters.let {
             it.clear()
             it.add(SystemWriter())
         }

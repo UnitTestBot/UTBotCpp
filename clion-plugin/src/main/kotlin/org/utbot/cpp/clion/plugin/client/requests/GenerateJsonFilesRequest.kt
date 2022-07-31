@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.client.handlers.GenerateJsonHandler
+import org.utbot.cpp.clion.plugin.utils.activeProject
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
@@ -17,7 +18,7 @@ class GenerateJsonFilesRequest(
     override val logMessage: String = "Sending request to check project configuration."
 
     constructor(project: Project): this(project, getProjectConfigGrpcRequest(project, Testgen.ConfigMode.GENERATE_JSON_FILES))
-    constructor(e: AnActionEvent): this(e.project!!)
+    constructor(e: AnActionEvent): this(e.activeProject())
 
     override suspend fun TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> {
         return this.configureProject(request)

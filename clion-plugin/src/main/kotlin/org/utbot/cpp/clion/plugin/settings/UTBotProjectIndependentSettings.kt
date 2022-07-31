@@ -12,8 +12,8 @@ import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
  */
 @Service
 @State(
-    name = "UtBotGlobalSettings",
-    storages = [Storage("utbot-global-settings.xml")]
+    name = "UTBotProjectIndependentSettings",
+    storages = [Storage("utbot-project-independent-settings.xml")]
 )
 class UTBotProjectIndependentSettings : PersistentStateComponent<UTBotProjectIndependentSettings.State> {
     data class State(

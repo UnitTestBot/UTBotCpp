@@ -63,9 +63,9 @@ class UTBotTargetsToolWindow(
             selected: Boolean,
             hasFocus: Boolean
         ) {
-            append(target.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+            append(target.name, SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES)
             append(" ")
-            append(target.description, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            append(target.description, SimpleTextAttributes.GRAYED_ATTRIBUTES)
         }
     }
 }

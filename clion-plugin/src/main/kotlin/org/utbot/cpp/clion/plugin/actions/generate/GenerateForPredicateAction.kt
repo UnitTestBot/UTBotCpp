@@ -11,8 +11,8 @@ import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.grpc.getFunctionGrpcRequest
 import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
-import org.utbot.cpp.clion.plugin.client.requests.FunctionReturnTypeRequest
-import org.utbot.cpp.clion.plugin.client.requests.PredicateRequest
+import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
+import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.currentClient
 import org.utbot.cpp.clion.plugin.utils.notifyError

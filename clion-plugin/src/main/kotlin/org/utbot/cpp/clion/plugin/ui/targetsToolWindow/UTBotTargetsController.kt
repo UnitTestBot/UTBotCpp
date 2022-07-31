@@ -22,7 +22,7 @@ class UTBotTargetsController(val project: Project) {
         get() = project.settings
 
     private val listModel = CollectionListModel(mutableListOf<UTBotTarget>())
-    private val logger = project.logger
+    private val logger get() = project.logger
     val targetsToolWindow: UTBotTargetsToolWindow by lazy { UTBotTargetsToolWindow(listModel, this) }
 
     val targets: List<UTBotTarget>

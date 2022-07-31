@@ -13,6 +13,7 @@ class CheckProjectConfigurationRequest(
     request: Testgen.ProjectConfigRequest,
     project: Project,
 ): BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request, project) {
+
     override val logMessage: String = "Sending request to check project configuration."
 
     constructor(project: Project): this(getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK), project)

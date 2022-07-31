@@ -12,8 +12,8 @@ import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
  */
 @Service
 @State(
-    name = "UtBotSettings",
-    storages = [Storage("utbot-settings.xml")]
+    name = "UTBotProjectStoredSettings",
+    storages = [Storage("utbot-project-stored-settings.xml")]
 )
 class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponent<UTBotProjectStoredSettings.State> {
     private var myState = State()

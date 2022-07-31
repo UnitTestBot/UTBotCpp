@@ -27,7 +27,7 @@ abstract class StreamHandlerWithProgress<T>(
     override fun onFinish() {
         super.onFinish()
         invokeOnEdt {
-            indicator.complete()
+            indicator.finish()
         }
     }
 

@@ -14,14 +14,12 @@ class UTBotDirectoryNode(
     settings: ViewSettings?,
     private val isMarked: (PsiDirectory)->Boolean
 ) : PsiDirectoryNode(project, directory, settings) {
+
     override fun update(presentation: PresentationData) {
         super.update(presentation)
         presentation.apply {
-            if (isMarked(value)) {
-                setIcon(UTBotIcons.SOURCE_FOLDER)
-            } else {
-                setIcon(AllIcons.Nodes.Folder)
-            }
+            val icon = if (isMarked(value)) UTBotIcons.SOURCE_FOLDER else AllIcons.Nodes.Folder
+            setIcon(icon)
         }
     }
 }
