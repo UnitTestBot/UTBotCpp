@@ -26,7 +26,7 @@ class UTBotAllProjectSettings(val project: Project) {
                 // so we should guess the project path
                 storedSettings.projectPath = project.guessProjectDir()?.path
             return storedSettings.projectPath
-            ?: error("Could not guess project path! Should be specified in settings by user")
+            ?: error("Could not guess project path! Should be specified in settings")
         }
         set(value) {
             storedSettings.projectPath = value
@@ -49,7 +49,7 @@ class UTBotAllProjectSettings(val project: Project) {
 
     /**
      * If this property returns true, plugin must convert path sent and returned from server.
-     * @see [String.convertToRemotePathIfNeeded], [String.convertFromRemotePathIfNeeded]
+     * @see [String.convertToRemotePathIfNeeded] and [String.convertFromRemotePathIfNeeded]
      *
      * If we are on Windows, this is not a server, so it is always a remote scenario.
      */
@@ -74,7 +74,7 @@ class UTBotAllProjectSettings(val project: Project) {
         try {
             storedSettings.testDirPath = Paths.get(projectPath, "tests").toString()
         } catch (e: IllegalStateException) {
-            notifyWarning("Guessing settings failed: could not guess project path! Please specify project path in settings!")
+            notifyWarning("Guessing settings failed: could not guess project path! Please specify it in settings!")
         }
 
         val cmakeRunConfiguration = CMakeAppRunConfiguration.getSelectedConfigurationAndTarget(project)?.first

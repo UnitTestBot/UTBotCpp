@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package org.utbot.cpp.clion.plugin.settings
 
 import com.intellij.openapi.diagnostic.Logger
@@ -22,7 +24,7 @@ import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import java.awt.Dimension
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
-    "Project Settings for Generating Tests"
+    "Project Settings to generate tests"
 ) {
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
@@ -49,7 +51,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
         }
     }
 
-    fun createMainPanel(): DialogPanel {
+    private fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
         return panel {
             group("Connection Settings") {
@@ -73,7 +75,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         myProject,
                         FileChooserDescriptorFactory.createSingleFileDescriptor()
                     ).bindText(
-                        getter = { myProject.settings.projectPath ?: "" },
+                        getter = { myProject.settings.projectPath },
                         setter = { value -> myProject.settings.projectPath = value })
                         .columns(COLUMNS_LARGE)
                 }.rowComment(UTBot.message("settings.project.projectPath.info"))
@@ -110,7 +112,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         myProject.settings.predictPaths()
                         myProject.settings.fireUTBotSettingsChanged()
                     }
-                }.rowComment("Queries CMake configurations in order to get source paths, build path. Also predicts tests folder")
+                }.rowComment("Queries CMake configurations to get source paths and build path. Also predicts tests folder")
             }
 
             group("CMake") {

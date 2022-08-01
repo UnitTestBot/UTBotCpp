@@ -6,7 +6,7 @@ import testsgen.Testgen
 fun interface UTBotTestResultsReceivedListener {
     companion object {
         val TOPIC = Topic.create(
-            "UTBot settings changed",
+            "UTBot test results received",
             UTBotTestResultsReceivedListener::class.java
         )
     }
