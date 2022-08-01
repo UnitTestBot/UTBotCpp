@@ -8,6 +8,7 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 
 open class ProxyProjectViewTree(
     treeModel: DefaultTreeModel,
@@ -32,6 +33,7 @@ open class ProxyProjectViewTree(
         override fun getCurrentMarkedDirs(): Set<String> = project.settings.storedSettings.sourceDirs
         override fun setCurrentMarkedDirs(value: Set<String>) {
             project.settings.storedSettings.sourceDirs = value.toMutableSet()
+            project.messageBus.syncPublisher(SourceFoldersListener.TOPIC).sourceFoldersChanged(value)
         }
     }
 
