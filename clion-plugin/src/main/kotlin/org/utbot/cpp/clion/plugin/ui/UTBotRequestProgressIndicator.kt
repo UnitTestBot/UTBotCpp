@@ -29,9 +29,9 @@ class UTBotRequestProgressIndicator(
         super.start()
     }
 
-    //TODO: do we really need this function?
     override fun stop() {
         requestJob?.cancel()
+        finish()
         super.stop()
     }
 

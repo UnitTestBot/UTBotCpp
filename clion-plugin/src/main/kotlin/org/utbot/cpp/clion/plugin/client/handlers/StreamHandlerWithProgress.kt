@@ -50,7 +50,7 @@ abstract class StreamHandlerWithProgress<T>(
         super.onCompletion(exception)
         if (exception != null) {
             invokeOnEdt {
-                indicator.cancel()
+                indicator.stop()
             }
         }
     }
