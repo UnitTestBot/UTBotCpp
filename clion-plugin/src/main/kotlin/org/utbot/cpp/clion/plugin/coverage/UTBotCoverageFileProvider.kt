@@ -8,15 +8,9 @@ import com.intellij.coverage.CoverageFileProvider
  * don't need this class but for compatibility with api this class must be implemented.
  */
 class UTBotCoverageFileProvider : CoverageFileProvider {
-    override fun getCoverageDataFilePath(): String? {
-        return null
-    }
+    override fun getCoverageDataFilePath(): String? = null
 
-    override fun ensureFileExists(): Boolean {
-        return true
-    }
+    override fun ensureFileExists(): Boolean = true
 
-    override fun isValid(): Boolean {
-        return true
-    }
+    override fun isValid(): Boolean = true
 }

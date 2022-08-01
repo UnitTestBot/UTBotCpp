@@ -29,7 +29,7 @@ class ConsoleToolWindow(val project: Project) : SimpleToolWindowPanel(true, true
         val provider = project.service<OutputProvider>()
         for (channel in listOf(
             provider.clientOutputChannel,
-            provider.gtestOutputChannel,
+            provider.gTestOutputChannel,
             provider.serverOutputChannel
         )) {
             mainUI.addTab(channel.type.title, channel.uiComponent)

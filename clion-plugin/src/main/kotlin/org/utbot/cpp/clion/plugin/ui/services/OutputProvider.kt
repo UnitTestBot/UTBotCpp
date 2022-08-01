@@ -21,7 +21,7 @@ import javax.swing.JPanel
 @Service
 class OutputProvider(val project: Project) : Disposable {
     val clientOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.CLIENT_LOG) }
-    val gtestOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.GTEST_LOG) }
+    val gTestOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.GTEST_LOG) }
     val serverOutputChannel: OutputChannel by lazy { createOutputChannel(OutputType.SERVER_LOG) }
 
     data class OutputChannel(val uiComponent: Component, val outputConsole: UTBotConsole, val type: OutputType)

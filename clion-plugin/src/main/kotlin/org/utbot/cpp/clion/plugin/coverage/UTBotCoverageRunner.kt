@@ -70,22 +70,14 @@ class UTBotCoverageRunner : CoverageRunner() {
         return if (isAnyCoverage) projectData else null
     }
 
-    override fun getPresentableName(): String {
-        return "UTBot: Coverage runner"
-    }
+    override fun getPresentableName(): String = "UTBot: Coverage runner"
 
-    override fun getId(): String {
-        return "UTBotCoverageRunner"
-    }
+    override fun getId(): String = "UTBotCoverageRunner"
 
     // actually no coverage file exists, but this method must be implemented, see UTBotCoverageFileProvider
-    override fun getDataFileExtension(): String {
-        return "txt"
-    }
+    override fun getDataFileExtension(): String = "txt"
 
-    override fun acceptsCoverageEngine(engine: CoverageEngine): Boolean {
-        return engine is UTBotCoverageEngine
-    }
+    override fun acceptsCoverageEngine(engine: CoverageEngine): Boolean = engine is UTBotCoverageEngine
 
     companion object {
         fun provideQualifiedNameForFile(absolutePath: String) = absolutePath

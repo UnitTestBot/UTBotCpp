@@ -19,7 +19,7 @@ data class UTBotTarget(val path: String, val name: String, val description: Stri
         val autoTarget = UTBotTarget(
             path = "/utbot/auto/target/path",
             name = "UTBot: auto",
-            description = "Finds any target that contains the code under testing"
+            description = "Finds any target that contains the code under test"
         )
     }
 }
