@@ -6,7 +6,7 @@
 namespace printer {
     class CSVPrinter {
     public:
-        explicit CSVPrinter(const std::vector<std::string> &header, std::string sep);
+        explicit CSVPrinter(const std::vector<std::string> &header, char sep);
         bool printRow(const std::vector<std::string> &row);
         bool printTotal(const std::vector<std::string> &total);
         std::stringstream getStream() {
@@ -16,9 +16,8 @@ namespace printer {
     private:
         std::stringstream ss;
         std::size_t numColumns;
-        std::string sep;
+        char sep;
     };
 }
-
 
 #endif //UTBOTCPP_CSVPRINTER_H

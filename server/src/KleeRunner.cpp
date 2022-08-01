@@ -32,12 +32,10 @@ namespace {
                                                             "--table-format=readable-csv"});
         auto[out, status, _] = ShellExecTask::runShellCommandTask(kleeStatsParams);
         if (status != 0) {
-            LOG_S(ERROR) << "klee-stats call failed:";
-            LOG_S(ERROR) << out;
+            LOG_S(ERROR) << "klee-stats call failed:" << "\n" << out;
             return {};
-        } else {
-            LOG_S(DEBUG) << "klee-stats report:" << '\n' << out;
         }
+        LOG_S(DEBUG) << "klee-stats report:" << '\n' << out;
         std::stringstream ss(out);
         return StatsUtils::KleeStats(ss);
     }

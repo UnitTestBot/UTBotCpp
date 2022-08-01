@@ -5,8 +5,8 @@
 #include "loguru.h"
 
 namespace printer {
-    CSVPrinter::CSVPrinter(const std::vector <std::string> &header, std::string sep) :
-            sep(std::move(sep)), numColumns(header.size()) {
+    CSVPrinter::CSVPrinter(const std::vector <std::string> &header, char sep) :
+            sep(sep), numColumns(header.size()) {
         printRow(header);
     }
 
@@ -15,7 +15,7 @@ namespace printer {
             LOG_S(WARNING) << "Failed to create csv: row size and header size differs";
             return false;
         }
-        ss << StringUtils::joinWith(row, sep) << '\n';
+        ss << StringUtils::joinWith(row, std::string(1, sep)) << '\n';
         return true;
     }
 

@@ -1,12 +1,11 @@
-#include <utils/stats/TestsExecutionStats.h>
 #include "TestRunner.h"
-
 #include "GTestLogger.h"
 #include "Paths.h"
 #include "TimeExecStatistics.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/JsonUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/stats/TestsExecutionStats.h"
 
 #include "loguru.h"
 

@@ -37,7 +37,7 @@ namespace StatsUtils {
         printer::CSVPrinter toCSV() {
             std::vector<std::string> header = {"File"};
             CollectionUtils::extend(header, getHeader());
-            printer::CSVPrinter printer(header, ",");
+            printer::CSVPrinter printer(header, ',');
             for (const auto &[filePath, fileStats]: statsMap) {
                 std::vector<std::string> row = {fs::relative(filePath, projectContext.projectPath).string()};
                 CollectionUtils::extend(row, fileStats.toStrings());
