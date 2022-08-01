@@ -123,7 +123,7 @@ namespace printer {
         CollectionUtils::FileSet const *stubSources,
         std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable)
         : RelativeMakefilePrinter(pathToShellVariable),
-          projectContext(std::move(projectContext)), buildDatabase(buildDatabase), rootPath(std::move(rootPath)),
+          projectContext(std::move(projectContext)), buildDatabase(std::move(buildDatabase)), rootPath(std::move(rootPath)),
           primaryCompiler(std::move(primaryCompiler)),
           primaryCxxCompiler(CompilationUtils::toCppCompiler(this->primaryCompiler)),
           primaryCompilerName(CompilationUtils::getCompilerName(this->primaryCompiler)),

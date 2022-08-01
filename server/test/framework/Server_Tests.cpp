@@ -64,8 +64,7 @@ namespace {
         void generateFiles(const fs::path &sourceFile,
                            const utbot::ProjectContext &projectContext) {
             fs::path serverBuildDir = buildPath / "temp";
-            auto buildDatabase = std::make_shared<BuildDatabase>(buildPath, serverBuildDir, projectContext,
-                                                                 GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+            auto buildDatabase = std::make_shared<BuildDatabase>(buildPath, serverBuildDir, projectContext);
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
             fs::path root = buildDatabase->getRootForSource(sourceFile);

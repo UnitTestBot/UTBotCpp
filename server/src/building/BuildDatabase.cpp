@@ -31,102 +31,111 @@ static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
     return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
 }
 
+//BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
+//                             fs::path _serverBuildDir,
+//                             utbot::ProjectContext _projectContext,
+//                             bool createClangCC) :
+//        serverBuildDir(std::move(_serverBuildDir)),
+//        projectContext(std::move(_projectContext)),
+//        buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
+//        linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
+//        compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")) {
+//    if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
+//        throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
+//    }
+//
+//    auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
+//    auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
+//
+//    initObjects(compileCommandsJson);
+//    initInfo(linkCommandsJson);
+//    filterInstalledFiles();
+//    addLocalSharedLibraries();
+//    fillTargetInfoParents();
+//    if (createClangCC) {
+//        createClangCompileCommandsJson();
+//    }
+//    target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+//}
+
 BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
                              fs::path _serverBuildDir,
                              utbot::ProjectContext _projectContext,
+                             const std::string &_target,
                              bool createClangCC) :
         serverBuildDir(std::move(_serverBuildDir)),
         projectContext(std::move(_projectContext)),
         buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
         linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
         compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")) {
-    if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
-        throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
+
+    if (target == GrpcUtils::UTBOT_AUTO_TARGET_PATH || target.empty()) {
+        if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
+            throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
+        }
+
+        auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
+        auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
+
+        initObjects(compileCommandsJson);
+        initInfo(linkCommandsJson);
+        filterInstalledFiles();
+        addLocalSharedLibraries();
+        fillTargetInfoParents();
+        if (createClangCC) {
+            createClangCompileCommandsJson();
+        }
+        target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+    } else {
+        BuildDatabase autoTargetBuildDatabase(buildCommandsJsonPath, serverBuildDir, projectContext,
+                                              GrpcUtils::UTBOT_AUTO_TARGET_PATH, false);
+
+        if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
+            throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
+        }
+
+    //    fs::path target;
+        {
+            auto new_target = GenerationUtils::findTarget(autoTargetBuildDatabase.getAllTargets(), _target);
+            if (new_target.has_value()) {
+                target = new_target.value();
+            } else {
+                throw CompilationDatabaseException("Can't find target: " + _target);
+            }
+        }
+
+    //    CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
+    //    CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
+    //    CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
+        {
+            auto objectFilesList = autoTargetBuildDatabase.getArchiveObjectFiles(target);
+            for (const auto &objectFilePath: objectFilesList) {
+                auto objectFileInfo = autoTargetBuildDatabase.getClientCompilationObjectInfo(objectFilePath);
+                sourceFileInfos[objectFileInfo->getSourcePath()].push_back(objectFileInfo);
+                LOG_IF_S(DEBUG, sourceFileInfos[objectFileInfo->getSourcePath()].size() > 1)
+                << "Multiple compile commands for file \"" << objectFileInfo->getSourcePath() << "\" in target \""
+                << target.string() << "\"";
+                objectFileInfos[objectFileInfo->getOutputFile()] = objectFileInfo;
+                objectFileTargets[objectFileInfo->getOutputFile()] =
+                        autoTargetBuildDatabase.objectFileTargets[objectFileInfo->getOutputFile()];
+            }
+        }
+    //    CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
+    //    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
+        {
+            auto targetFilesList = autoTargetBuildDatabase.getArchiveTargetFiles(target);
+            for (const auto &objectFilePath: targetFilesList) {
+                targetInfos[objectFilePath] = autoTargetBuildDatabase.targetInfos[objectFilePath];
+                linkUnitToStubFiles[objectFilePath] = autoTargetBuildDatabase.linkUnitToStubFiles[objectFilePath];
+            }
+        }
+    //    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
+
+        compileCommands_temp = autoTargetBuildDatabase.compileCommands_temp;
     }
-
-    auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
-    auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
-
-    initObjects(compileCommandsJson);
-    initInfo(linkCommandsJson);
-    filterInstalledFiles();
-    addLocalSharedLibraries();
-    fillTargetInfoParents();
     if (createClangCC) {
         createClangCompileCommandsJson();
     }
-    target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
-}
-
-BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
-                             fs::path _serverBuildDir,
-                             utbot::ProjectContext _projectContext,
-                             const std::string &_target) :
-        serverBuildDir(std::move(_serverBuildDir)),
-        projectContext(std::move(_projectContext)),
-        buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
-        linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
-        compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")) {
-
-
-    BuildDatabase autoTargetBuildDatabase(buildCommandsJsonPath, serverBuildDir, projectContext, false);
-    if (_target == GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
-        target = std::move(autoTargetBuildDatabase.target);
-        sourceFileInfos = std::move(autoTargetBuildDatabase.sourceFileInfos);
-        objectFileInfos = std::move(autoTargetBuildDatabase.objectFileInfos);
-        objectFileTargets = std::move(autoTargetBuildDatabase.objectFileTargets);
-        targetInfos = std::move(autoTargetBuildDatabase.targetInfos);
-        linkUnitToStubFiles = std::move(autoTargetBuildDatabase.linkUnitToStubFiles);
-        compileCommands_temp = std::move(autoTargetBuildDatabase.compileCommands_temp);
-
-        createClangCompileCommandsJson();
-        return;
-    }
-
-    if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
-        throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
-    }
-
-//    fs::path target;
-    {
-        auto new_target = GenerationUtils::findTarget(autoTargetBuildDatabase.getAllTargets(), _target);
-        if (new_target.has_value()) {
-            target = new_target.value();
-        } else {
-            throw CompilationDatabaseException("Can't find target: " + _target);
-        }
-    }
-
-//    CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
-//    CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
-//    CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
-    {
-        auto objectFilesList = autoTargetBuildDatabase.getArchiveObjectFiles(target);
-        for (const auto &objectFilePath: objectFilesList) {
-            auto objectFileInfo = autoTargetBuildDatabase.getClientCompilationObjectInfo(objectFilePath);
-            sourceFileInfos[objectFileInfo->getSourcePath()].push_back(objectFileInfo);
-            LOG_IF_S(DEBUG, sourceFileInfos[objectFileInfo->getSourcePath()].size() > 1)
-            << "Multiple compile commands for file \"" << objectFileInfo->getSourcePath() << "\" in target \""
-            << target.string() << "\"";
-            objectFileInfos[objectFileInfo->getOutputFile()] = objectFileInfo;
-            objectFileTargets[objectFileInfo->getOutputFile()] =
-                    autoTargetBuildDatabase.objectFileTargets[objectFileInfo->getOutputFile()];
-        }
-    }
-//    CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
-//    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
-    {
-        auto targetFilesList = autoTargetBuildDatabase.getArchiveTargetFiles(target);
-        for (const auto &objectFilePath: targetFilesList) {
-            targetInfos[objectFilePath] = autoTargetBuildDatabase.targetInfos[objectFilePath];
-            linkUnitToStubFiles[objectFilePath] = autoTargetBuildDatabase.linkUnitToStubFiles[objectFilePath];
-        }
-    }
-//    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
-
-    compileCommands_temp = autoTargetBuildDatabase.compileCommands_temp;
-
-    createClangCompileCommandsJson();
 }
 
 std::shared_ptr<BuildDatabase> BuildDatabase::create(const utbot::ProjectContext &projectContext,

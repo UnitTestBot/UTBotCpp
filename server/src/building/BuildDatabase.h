@@ -95,15 +95,16 @@ public:
     };
 
 public:
-    BuildDatabase(fs::path _buildCommandsJsonPath,
-                  fs::path _serverBuildDir,
-                  utbot::ProjectContext _projectContext,
-                  bool createClangCC = true);
+//    BuildDatabase(fs::path _buildCommandsJsonPath,
+//                  fs::path _serverBuildDir,
+//                  utbot::ProjectContext _projectContext,
+//                  bool createClangCC = true);
 
     BuildDatabase(fs::path _buildCommandsJsonPath,
                   fs::path _serverBuildDir,
                   utbot::ProjectContext _projectContext,
-                  const std::string &_target);
+                  const std::string &_target = "",
+                  bool createClangCC = true);
 
     static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext,
                                                  const std::string &target);
