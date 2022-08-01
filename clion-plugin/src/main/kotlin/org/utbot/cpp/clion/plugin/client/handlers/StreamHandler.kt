@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
 import org.utbot.cpp.clion.plugin.utils.notifyError
+import java.util.concurrent.CancellationException
 
 /**
  * Base class for handling stream of server responses
@@ -38,8 +39,10 @@ abstract class StreamHandler<T>(
     open fun onCompletion(exception: Throwable?) {
         if (exception != null) {
             logger.warn(exception.message)
-            exception.printStackTrace()
-            exception.message?.let { notifyError(it, project) }
+            if (exception !is CancellationException) {
+                exception.printStackTrace()
+                exception.message?.let { notifyError(it, project) }
+            }
         }
     }
 
