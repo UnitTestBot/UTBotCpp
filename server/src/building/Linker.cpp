@@ -84,13 +84,13 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
     return stubsSetResult;
 }
 
-std::vector<fs::path> Linker::getTargetList(const fs::path &sourceFile, const fs::path &objectFile) const {
-    if (testGen.hasAutoTarget()) {
-        return testGen.buildDatabase->autoTargetListForFile(sourceFile, objectFile);
-    } else {
-        return {testGen.getTargetPath()};
-    }
-}
+//std::vector<fs::path> Linker::getTargetList(const fs::path &sourceFile, const fs::path &objectFile) const {
+//    if (testGen.hasAutoTarget()) {
+//        return testGen.buildDatabase->targetListForFile(sourceFile, objectFile);
+//    } else {
+//        return {testGen.buildDatabase->getTargetPath()};
+//    }
+//}
 
 void Linker::linkForOneFile(const fs::path &sourceFilePath) {
     ExecUtils::throwIfCancelled();
@@ -104,7 +104,8 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
     if (!testGen.buildDatabase->isFirstObjectFileForSource(objectFile)) {
         return;
     }
-    std::vector <fs::path> targets = getTargetList(sourceFilePath, objectFile);
+//    std::vector <fs::path> targets = getTargetList(sourceFilePath, objectFile);
+    std::vector <fs::path> targets = testGen.buildDatabase->targetListForFile(sourceFilePath, objectFile);
     LOG_S(DEBUG) << "Linking bitcode for file " << sourceFilePath.filename();
     for (size_t i = 0; i < targets.size(); i++) {
         const auto& target = targets[i];
@@ -121,7 +122,7 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
             if (i + 1 == targets.size()) {
                 addToGenerated({ objectFile }, {});
                 fs::path possibleBitcodeFileName =
-                    testGen.buildDatabase->getBitcodeFile(testGen.getTargetPath());
+                    testGen.buildDatabase->getBitcodeFile(testGen.buildDatabase->getTargetPath());
                 brokenLinkFiles.insert(possibleBitcodeFileName);
             }
         }
@@ -129,7 +130,7 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
 }
 
 Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
-    auto requestTarget = testGen.getTargetPath();
+    auto requestTarget = testGen.buildDatabase->getTargetPath();
     LOG_IF_S(ERROR, target != GrpcUtils::UTBOT_AUTO_TARGET_PATH && requestTarget != target)
         << "Try link target that not specified by user";
     testGen.setTargetPath(target);
@@ -183,7 +184,8 @@ void Linker::linkForProject() {
                                    << sourceFile;
                     return;
                 }
-                std::vector <fs::path> targets = getTargetList(sourceFile, objectFile);
+//                std::vector <fs::path> targets = getTargetList(sourceFile, objectFile);
+                std::vector <fs::path> targets = testGen.buildDatabase->targetListForFile(sourceFile, objectFile);
                 bool success = false;
                 for (const auto &target : targets) {
                     if (!CollectionUtils::contains(triedTargets, target)) {

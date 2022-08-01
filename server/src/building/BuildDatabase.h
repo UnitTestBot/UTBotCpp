@@ -98,18 +98,23 @@ public:
     BuildDatabase(fs::path _buildCommandsJsonPath,
                   fs::path _serverBuildDir,
                   utbot::ProjectContext _projectContext,
-                  std::string _target);
+                  bool createClangCC = true);
+
+    BuildDatabase(fs::path _buildCommandsJsonPath,
+                  fs::path _serverBuildDir,
+                  utbot::ProjectContext _projectContext,
+                  const std::string &_target);
 
     static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext,
                                                  const std::string &target);
 
-    void updateTarget(const std::string &target);
+//    void updateTarget(const fs::path &_target);
 
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
 
     /**
-     * @brief Returns all object files that are contained in a library or executable
+     * @brief Returns all object files files that are contained in a library or executable
      *
      * Recursively iterates over all libraries inside current library or executable. Returns all
      * found object files
@@ -118,6 +123,35 @@ public:
      * @throws CompilationDatabaseException if files are wrong
      */
     [[nodiscard]] CollectionUtils::FileSet getArchiveObjectFiles(const fs::path &archive) const;
+
+    /**
+     * @brief Returns all target that are contained in a library or executable
+     *
+     * Recursively iterates over all libraries inside current library or executable. Returns all
+     * found target
+     * @param archive Executable or a library for which to find target files
+     * @return Set of paths to targets path.
+     * @throws CompilationDatabaseException if files are wrong
+     */
+    [[nodiscard]] CollectionUtils::FileSet getArchiveTargetFiles(const fs::path &archive) const;
+
+    /**
+     * @brief Returns compile command information for object file
+     *
+     * @param filepath Path to object file
+     * @return ObjectFileInfo for object file
+     * @throws CompilationDatabaseException if files are wrong
+     */
+    [[nodiscard]] std::shared_ptr<ObjectFileInfo> getClientCompilationObjectInfo(const fs::path &filepath) const;
+
+    /**
+     * @brief Returns compile command information for current source file
+     *
+     * @param filepath Path to source file or object file
+     * @return ObjectFileInfo for current source file
+     * @throws CompilationDatabaseException if files are wrong
+     */
+    [[nodiscard]] std::shared_ptr<ObjectFileInfo> getClientCompilationSourceInfo(const fs::path &filepath) const;
 
     /**
      * @brief Returns compile command information for current source file or object file
@@ -193,29 +227,32 @@ public:
     std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
 
     std::vector<fs::path>
-    autoTargetListForFile(const fs::path &sourceFilePath, const fs::path &objectFile) const;
+    targetListForFile(const fs::path &sourceFilePath, const fs::path &objectFile) const;
 
     std::vector<std::shared_ptr<TargetInfo>>
-    getTargetsForSourceFile(fs::path const&sourceFilePath) const;
+    getTargetsForSourceFile(fs::path const &sourceFilePath) const;
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
+
+    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
+
+    bool hasAutoTarget() const;
+
+    fs::path getTargetPath() const;
 private:
     const fs::path serverBuildDir;
     const utbot::ProjectContext projectContext;
     const fs::path buildCommandsJsonPath;
     const fs::path linkCommandsJsonPath;
     const fs::path compileCommandsJsonPath;
-    const fs::path target;
+    fs::path target;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
-
-    std::unordered_map<std::shared_ptr<const BuildDatabase::TargetInfo>, CollectionUtils::FileSet>
-        linkUnitToStubFiles;
+    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
 
     std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
-    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> linkCommands_temp;
 
     static bool conflictPriorityMore(const std::shared_ptr<ObjectFileInfo> &left,
                                      const std::shared_ptr<ObjectFileInfo> &right);
@@ -226,11 +263,10 @@ private:
     static fs::path getCorrespondingBitcodeFile(const fs::path &filepath);
     void initObjects(const nlohmann::json &compileCommandsJson);
     void initInfo(const nlohmann::json &linkCommandsJson);
-    void createClangCompileCommandsJson(const fs::path _target);
+    void createClangCompileCommandsJson();
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
     fs::path newDirForFile(fs::path const& file) const;
     fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
-    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
     using sharedLibrariesMap = std::unordered_map<std::string, CollectionUtils::MapFileTo<fs::path>>;
 
@@ -238,7 +274,6 @@ private:
                                 BaseFileInfo &info,
                                 sharedLibrariesMap &sharedLibraryFiles,
                                 bool objectFiles = false);
-    bool isAutoTarget() const;
 };
 
 #endif //UNITTESTBOT_BUILDDATABASE_H

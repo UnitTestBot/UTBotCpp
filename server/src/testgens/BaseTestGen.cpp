@@ -45,30 +45,17 @@ void BaseTestGen::setInitializedTestsMap() {
 }
 
 void BaseTestGen::setTargetPath(fs::path _targetPath) {
-    if (targetPath != _targetPath) {
-        targetPath = std::move(_targetPath);
-        if (!hasAutoTarget()) {
-            updateTargetSources();
+    if (buildDatabase->getTargetPath() != _targetPath) {
+        if (_targetPath != GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
+            updateTargetSources(_targetPath);
         }
     }
 }
 
-void BaseTestGen::updateTargetSources() {
-    buildDatabase->updateTarget(getTargetPath());
-    targetSources = CollectionUtils::transformTo<CollectionUtils::FileSet>(
-            buildDatabase->getArchiveObjectFiles(getTargetPath()), [this](fs::path const &objectPath) {
-            return buildDatabase->getClientCompilationUnitInfo(objectPath)->getSourcePath();
-        });
+void BaseTestGen::updateTargetSources(fs::path _targetPath) {
+    targetSources = buildDatabase->getSourceFilesForTarget(_targetPath);
     for (auto it = tests.begin(); it != tests.end(); it++) {
         tests::Tests &test = it.value();
         test.isFilePresentedInCommands = CollectionUtils::contains(targetSources, test.sourceFilePath);
     }
-}
-
-fs::path const &BaseTestGen::getTargetPath() const {
-    return targetPath.value();
-}
-
-bool BaseTestGen::hasAutoTarget() const {
-    return getTargetPath() == GrpcUtils::UTBOT_AUTO_TARGET_PATH;
 }

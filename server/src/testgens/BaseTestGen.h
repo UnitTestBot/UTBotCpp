@@ -40,9 +40,8 @@ public:
 
     bool isBatched() const;
 
-//    bool hasAutoTarget() const;
 //    fs::path const &getTargetPath() const;
-//    void setTargetPath(fs::path _targetPath);
+    void setTargetPath(fs::path _targetPath);
 
     virtual ~BaseTestGen() = default;
 protected:
@@ -53,9 +52,9 @@ protected:
 
     void setInitializedTestsMap();
 
-//    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
+    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
 
-    void updateTargetSources();
+    void updateTargetSources(fs::path _targetPath);
 };
 
 

@@ -2,7 +2,7 @@
 
 namespace GrpcUtils {
     static const std::string UTBOT_AUTO_TARGET = "UTBot: auto";
-//    const std::string UTBOT_AUTO_TARGET_PATH = fs::path("/utbot/auto/target/path");
+    const std::string UTBOT_AUTO_TARGET_PATH = fs::path("/utbot/auto/target/path");
     static inline const std::string UTBOT_AUTO_TARGET_DESCRIPTION = "Finds any target that contains the code under testing";
 
     std::unique_ptr<testsgen::SnippetRequest>

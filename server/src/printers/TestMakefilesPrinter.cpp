@@ -35,7 +35,7 @@ namespace printer {
             TestMakefilesPrinter(
                     testGen.projectContext,
                     testGen.buildDatabase,
-                    testGen.getTargetPath(),
+                    testGen.buildDatabase->getTargetPath(),
                     CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
                             testGen.compilationDatabase->getBuildCompilerPath())),
                     stubSources) {

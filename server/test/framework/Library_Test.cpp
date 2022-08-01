@@ -24,8 +24,7 @@ namespace {
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
-            Status status =
-                Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return { testGen, status };
         }
     };

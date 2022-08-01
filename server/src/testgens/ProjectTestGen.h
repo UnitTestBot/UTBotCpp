@@ -18,7 +18,7 @@ public:
 
     const testsgen::ProjectRequest *getRequest() const;
 
-//    void setTargetForSource(fs::path const &sourcePath) override;
+    void setTargetForSource(fs::path const &sourcePath) override;
 
 private:
     testsgen::ProjectRequest const *const request;
