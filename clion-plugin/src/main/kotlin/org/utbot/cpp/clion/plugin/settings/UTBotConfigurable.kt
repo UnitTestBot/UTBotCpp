@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.LabelPosition
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.bindIntText
@@ -95,7 +96,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                     UTBot.message("settings.project.testsDir.browse.title")
                 ).rowComment(UTBot.message("paths.testsDirectory.description"))
 
-                row(UTBot.message("settings.project.sourcePaths")) {
+                row {
                     val pane = UTBotProjectViewPaneForSettings(myProject)
                     cell(pane.createComponent()).onApply {
                         pane.apply()
@@ -103,8 +104,9 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                         pane.reset()
                     }.onIsModified {
                         pane.isModified()
-                    }
+                    }.label(UTBot.message("settings.project.sourcePaths"), LabelPosition.TOP)
                 }.bottomGap(BottomGap.SMALL).rowComment(UTBot.message("paths.sourceDirectories.description"))
+
 
                 row {
                     label("Try to get paths from CMake model: ")

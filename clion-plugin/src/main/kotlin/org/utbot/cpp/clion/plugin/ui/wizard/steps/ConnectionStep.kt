@@ -34,6 +34,8 @@ import org.utbot.cpp.clion.plugin.utils.validateInput
 import javax.swing.JComponent
 import javax.swing.event.DocumentEvent
 import kotlin.properties.Delegates
+import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
+import org.utbot.cpp.clion.plugin.utils.isWindows
 
 enum class ConnectionStatus {
     Connected,
@@ -61,7 +63,8 @@ class ConnectionStep(
             if (newValue) {
                 portTextField.text = UTBotAllProjectSettings.DEFAULT_PORT.toString()
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = project.settings.projectPath.toWslFormat()
+                remotePathTextField.text = if (isWindows) project.settings.projectPath.toWslFormat()
+                    else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
             }
         }
     }
@@ -167,9 +170,10 @@ class ConnectionStep(
         addHtml("media/remote_path.html")
         panel {
             row {
-                textField().bindText(settingsModel.projectSettings::remotePath).columns(COLUMNS_LARGE).applyToComponent {
-                    remotePathTextField = this
-                }.enabledIf(object : ComponentPredicate() {
+                textField().bindText(settingsModel.projectSettings::remotePath).columns(COLUMNS_LARGE)
+                    .applyToComponent {
+                        remotePathTextField = this
+                    }.enabledIf(object : ComponentPredicate() {
                     override fun invoke() = !useConnectionDefaults.value
                     override fun addListener(listener: (Boolean) -> Unit) {
                         useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
