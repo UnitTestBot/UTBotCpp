@@ -22,7 +22,7 @@ your project you need to send the request for project configuration.
 
 ### Choose source folders
 
-The server needs to know the folders source files are located in.
+To generate tests for project, server needs to know the folders source files are located in.
 The source folders are marked with green icons in the project view:
 
 ![](images/plugin_usage/source-folders.png)
