@@ -69,7 +69,7 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
         // Show and log the results in UI
         {
             let firstTest = true;
-            const SarifReportFiles = [];
+            const SarifReportFiles: Uri[] = [];
             for (const test of testsSourceList) {
                 const localPath = pathUtils.substituteLocalPath(test.getFilepath());
 
@@ -98,7 +98,10 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                     if (!sarifExt.isActive) {
                         await sarifExt.activate();
                     }
-                    sarifExt.exports.openLogs(SarifReportFiles);
+                    // SARIF plugin doesn't monitor the file change event
+                    // To refresh the report we close and open report
+                    await sarifExt.exports.closeLogs(SarifReportFiles)
+                        .then(sarifExt.exports.openLogs(SarifReportFiles));
                 }
             }
         }
