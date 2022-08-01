@@ -1,5 +1,6 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
@@ -11,9 +12,9 @@ class UTBotTargetsToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         logger.info("createToolWindowContent was called")
         val contentManager = toolWindow.contentManager
-        val utbotToolWindow = UTBotTargetsController(project).createTargetsToolWindow()
-
-        val content = contentManager.factory.createContent(utbotToolWindow, null, false,)
-        contentManager.addContent(content)
+        val content = contentManager.factory.createContent(
+            project.service<UTBotTargetsController>().targetsToolWindow, null, false
+        )
+        toolWindow.contentManager.addContent(content)
     }
 }

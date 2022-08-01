@@ -1,9 +1,11 @@
 package org.utbot.cpp.clion.plugin.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 
 /**
  * Settings that are the same for all projects
@@ -22,6 +24,11 @@ class UTBotProjectIndependentSettings : PersistentStateComponent<UTBotProjectInd
             port = model.globalSettings.port
             serverName = model.globalSettings.serverName
         }
+
+        fun fireConnectionSettingsChanged() {
+            ApplicationManager.getApplication().messageBus.syncPublisher(ConnectionSettingsListener.TOPIC)
+                .connectionSettingsChanged(port, serverName)
+        }
     }
 
     private var myState: State = State()
@@ -29,4 +36,5 @@ class UTBotProjectIndependentSettings : PersistentStateComponent<UTBotProjectInd
     override fun loadState(state: State) {
         myState = state
     }
+
 }

@@ -20,8 +20,14 @@ class UTBotAllProjectSettings(val project: Project) {
         get() = project.service<UTBotProjectStoredSettings>().state
 
     var projectPath: String
-        get() = storedSettings.projectPath ?: project.guessProjectDir()?.path
-        ?: error("Could not guess project path! Should be specified in settings by user")
+        get() {
+            // if true then there is nothing persisted in xml files and plugin was launched for the first time
+            if (storedSettings.projectPath == null)
+                // so we should guess the project path
+                storedSettings.projectPath = project.guessProjectDir()?.path
+            return storedSettings.projectPath
+            ?: error("Could not guess project path! Should be specified in settings by user")
+        }
         set(value) {
             storedSettings.projectPath = value
         }
@@ -49,7 +55,8 @@ class UTBotAllProjectSettings(val project: Project) {
      */
     val isRemoteScenario: Boolean
         get() {
-            val isLocalHost = projectIndependentSettings.serverName == "localhost" || projectIndependentSettings.serverName == "127.0.0.01"
+            val isLocalHost =
+                projectIndependentSettings.serverName == "localhost" || projectIndependentSettings.serverName == "127.0.0.01"
             return !(storedSettings.remotePath == projectPath && isLocalHost) || isWindows
         }
 

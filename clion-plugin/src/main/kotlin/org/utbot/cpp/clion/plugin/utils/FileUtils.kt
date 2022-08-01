@@ -3,9 +3,9 @@ package org.utbot.cpp.clion.plugin.utils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.io.createFile
-import java.nio.file.Files
-import java.nio.file.Path
+import com.intellij.util.io.exists
 import kotlin.io.path.writeText
+import java.nio.file.Path
 
 fun refreshAndFindNioFile(file: Path) {
     ApplicationManager.getApplication().invokeLater {
@@ -14,11 +14,9 @@ fun refreshAndFindNioFile(file: Path) {
 }
 
 fun createFileWithText(filePath: Path, text: String) {
-    if (!Files.isRegularFile(filePath))
-        error("File expected! But got: $filePath")
-
     with(filePath) {
-        createFile()
+        if (!exists())
+            createFile()
         writeText(text)
     }
 }
@@ -26,4 +24,10 @@ fun createFileWithText(filePath: Path, text: String) {
 fun isCPPorCFileName(fileName: String) = """.*\.(cpp|hpp|c|h)""".toRegex().matches(fileName)
 fun isCPPFileName(fileName: String) = """.*\.(cpp|hpp|h)""".toRegex().matches(fileName)
 
+
 fun isHeaderFile(fileName: String) = """.*\.([ch])""".toRegex().matches(fileName)
+fun isHeaderFile(path: Path) = isHeaderFile(path.fileName.toString())
+
+fun isSarifReport(fileName: String) = fileName.endsWith(".sarif")
+
+fun isSarifReport(path: Path) = isSarifReport(path.fileName.toString())
