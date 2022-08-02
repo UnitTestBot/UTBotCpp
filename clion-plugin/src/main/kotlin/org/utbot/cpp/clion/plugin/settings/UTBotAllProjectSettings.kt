@@ -3,7 +3,6 @@ package org.utbot.cpp.clion.plugin.settings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
@@ -19,14 +18,10 @@ class UTBotAllProjectSettings(val project: Project) {
     val storedSettings: UTBotProjectStoredSettings.State
         get() = project.service<UTBotProjectStoredSettings>().state
 
+    // todo: maybe remove this property and access directly
     var projectPath: String
         get() {
-            // if true then there is nothing persisted in xml files and plugin was launched for the first time
-            if (storedSettings.projectPath == null)
-                // so we should guess the project path
-                storedSettings.projectPath = project.guessProjectDir()?.path
             return storedSettings.projectPath
-            ?: error("Could not guess project path! Should be specified in settings")
         }
         set(value) {
             storedSettings.projectPath = value
@@ -67,12 +62,13 @@ class UTBotAllProjectSettings(val project: Project) {
     fun predictPaths() {
         fun getSourceFoldersFromSources(sources: Collection<File>) = sources.map { it.parent }.toMutableSet()
 
-        storedSettings.remotePath = projectPath
-        storedSettings.buildDirRelativePath = "build-utbot"
+        storedSettings.remotePath = UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
+        storedSettings.buildDirRelativePath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
         storedSettings.targetPath = UTBotTarget.autoTarget.path
 
         try {
-            storedSettings.testDirPath = Paths.get(projectPath, "tests").toString()
+            storedSettings.testDirPath =
+                Paths.get(projectPath, UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
         } catch (e: IllegalStateException) {
             notifyWarning("Guessing settings failed: could not guess project path! Please specify it in settings!")
         }
