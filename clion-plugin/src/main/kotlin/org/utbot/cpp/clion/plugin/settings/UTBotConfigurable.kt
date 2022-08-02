@@ -27,6 +27,7 @@ import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import org.utbot.cpp.clion.plugin.utils.isWindows
+import org.utbot.cpp.clion.plugin.utils.path
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
 import java.awt.Dimension
 
@@ -106,23 +107,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 .applyToComponent {
                     isLocalOrWsl.addOnChangeListener { newValue ->
                         if (newValue)
-                            this.text = if (isWindows) myProject.settings.projectPath.toWslFormat() else ""
+                            this.text = if (isWindows) myProject.path.toWslFormat() else ""
                     }
                 }.enabledIf(enabledIfNotLocalOrWslScenario)
         }.rowComment(UTBot.message("deployment.remotePath.description"))
     }
 
     private fun Panel.createPathsSettings() {
-        row(UTBot.message("settings.project.projectPath")) {
-            textFieldWithBrowseButton(
-                UTBot.message("settings.project.projectPath.title"),
-                myProject,
-                FileChooserDescriptorFactory.createSingleFileDescriptor()
-            ).bindText(
-                getter = { myProject.settings.projectPath },
-                setter = { value -> myProject.settings.projectPath = value })
-                .columns(COLUMNS_LARGE)
-        }.rowComment(UTBot.message("settings.project.projectPath.info"))
         createPathChooser(
             settings::buildDirRelativePath,
             UTBot.message("settings.project.buildDir"),

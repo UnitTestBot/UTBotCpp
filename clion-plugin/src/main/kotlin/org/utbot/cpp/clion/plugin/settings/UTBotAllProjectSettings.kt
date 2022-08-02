@@ -9,6 +9,7 @@ import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
+import org.utbot.cpp.clion.plugin.utils.path
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -18,17 +19,8 @@ class UTBotAllProjectSettings(val project: Project) {
     val storedSettings: UTBotProjectStoredSettings.State
         get() = project.service<UTBotProjectStoredSettings>().state
 
-    // todo: maybe remove this property and access directly
-    var projectPath: String
-        get() {
-            return storedSettings.projectPath
-        }
-        set(value) {
-            storedSettings.projectPath = value
-        }
-
     val buildDirPath: Path
-        get() = Paths.get(projectPath).resolve(storedSettings.buildDirRelativePath)
+        get() = Paths.get(project.path).resolve(storedSettings.buildDirRelativePath)
 
     val convertedSourcePaths: List<String>
         get() = storedSettings.sourceDirs.map { it.convertToRemotePathIfNeeded(project) }
@@ -40,7 +32,7 @@ class UTBotAllProjectSettings(val project: Project) {
         get() = if (storedSettings.targetPath == UTBotTarget.autoTarget.path) storedSettings.targetPath
         else storedSettings.targetPath.convertToRemotePathIfNeeded(project)
 
-    val convertedProjectPath: String get() = projectPath.convertToRemotePathIfNeeded(project)
+    val convertedProjectPath: String get() = project.path.convertToRemotePathIfNeeded(project)
 
     /**
      * If this property returns true, plugin must convert path sent and returned from server.
@@ -52,7 +44,7 @@ class UTBotAllProjectSettings(val project: Project) {
         get() {
             val isLocalHost =
                 projectIndependentSettings.serverName == "localhost" || projectIndependentSettings.serverName == "127.0.0.01"
-            return !(storedSettings.remotePath == projectPath && isLocalHost) || isWindows
+            return !(storedSettings.remotePath == UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO && isLocalHost) || isWindows
         }
 
     fun fireUTBotSettingsChanged() {
@@ -68,7 +60,7 @@ class UTBotAllProjectSettings(val project: Project) {
 
         try {
             storedSettings.testDirPath =
-                Paths.get(projectPath, UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
+                Paths.get(project.path, UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
         } catch (e: IllegalStateException) {
             notifyWarning("Guessing settings failed: could not guess project path! Please specify it in settings!")
         }

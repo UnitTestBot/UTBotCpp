@@ -13,6 +13,7 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.path
 import org.utbot.cpp.clion.plugin.utils.relativize
 import testsgen.Testgen
 
@@ -78,7 +79,7 @@ class UTBotTargetsController(val project: Project) {
                 UTBotTarget(
                     possiblyNewTargetPath,
                     "custom target",
-                    relativize(settings.projectPath, possiblyNewTargetPath)
+                    relativize(project.path, possiblyNewTargetPath)
                 )
             )
         }

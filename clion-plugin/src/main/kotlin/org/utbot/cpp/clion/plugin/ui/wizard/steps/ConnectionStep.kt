@@ -35,6 +35,7 @@ import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.isWindows
+import org.utbot.cpp.clion.plugin.utils.path
 
 enum class ConnectionStatus {
     Connected,
@@ -62,7 +63,7 @@ class ConnectionStep(
             if (newValue) {
                 portComponent.number = UTBotAllProjectSettings.DEFAULT_PORT
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = if (isWindows) project.settings.projectPath.toWslFormat()
+                remotePathTextField.text = if (isWindows) project.path.toWslFormat()
                     else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
             }
         }

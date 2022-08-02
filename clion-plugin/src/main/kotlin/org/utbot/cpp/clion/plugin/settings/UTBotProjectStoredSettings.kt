@@ -7,6 +7,7 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
+import org.utbot.cpp.clion.plugin.utils.path
 import java.nio.file.Paths
 
 /**
@@ -22,7 +23,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
 
     // serialized by the ide
     data class State(
-        var projectPath: String = "",
         var buildDirRelativePath: String = DEFAULT_RELATIVE_PATH_TO_BUILD_DIR,
         var testDirPath: String = "",
         var targetPath: String = UTBotTarget.autoTarget.path,
@@ -52,12 +52,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             timeoutPerTest = model.projectSettings.timeoutPerTest
         }
     }
-
-    var projectPath: String
-        get() = myState.projectPath
-        set(value) {
-            myState.projectPath = value
-        }
 
     var sourceDirs: Set<String>
         get() = myState.sourceDirs
@@ -145,9 +139,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
     // called when during component initialization if there is no persisted state.
     // See java docs for PersistingStateComponent
     override fun noStateLoaded() {
-        myState.projectPath =
-            project.guessProjectDir()?.path ?: error("Could not guess project path! Should be specified in settings")
-        myState.testDirPath = Paths.get(myState.projectPath).resolve(DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
+        myState.testDirPath = Paths.get(project.path).resolve(DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
         myState.remotePath = REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
     }
 
