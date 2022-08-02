@@ -49,8 +49,6 @@ class CoverageAndResultsHandler(
         project.messageBus.syncPublisher(UTBotTestResultsReceivedListener.TOPIC)
             .testResultsReceived(response.testRunResultsList)
 
-        logCoverageResponse(response)
-
         val engine = CoverageEngine.EP_NAME.findExtension(UTBotCoverageEngine::class.java)
             ?: error("UTBotEngine instance is not found!")
         val coverageRunner = CoverageRunner.getInstance(UTBotCoverageRunner::class.java)
@@ -65,14 +63,6 @@ class CoverageAndResultsHandler(
 
         manager.coverageGathered(suite)
         notifyCoverageReceived()
-    }
-
-    private fun logCoverageResponse(response: Testgen.CoverageAndResultsResponse) {
-        if (response.errorMessage.isNotEmpty())
-            project.logger.warn { response.errorMessage }
-        if (response.coveragesList.isEmpty())
-            project.logger.error { "No coverage received from server!" }
-        project.logger.trace {  "coverage list: \n${response.coveragesList}" }
     }
 
     private fun notifyCoverageReceived() {
