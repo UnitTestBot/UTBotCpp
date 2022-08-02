@@ -53,6 +53,90 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         }
     }
 
+    var projectPath: String
+        get() = myState.projectPath
+        set(value) {
+            myState.projectPath = value
+        }
+
+    var sourceDirs: Set<String>
+        get() = myState.sourceDirs
+        set(value) {
+            myState.sourceDirs = value
+        }
+
+    var cmakeOptions: String
+        get() = myState.cmakeOptions
+        set(value) {
+            myState.cmakeOptions = value
+        }
+
+    var generateForStaticFunctions: Boolean
+        get() = myState.generateForStaticFunctions
+        set(value) {
+            myState.generateForStaticFunctions = value
+        }
+
+    var useStubs: Boolean
+        get() = myState.useStubs
+        set(value) {
+            myState.useStubs = value
+        }
+
+    var useDeterministicSearcher: Boolean
+        get() = myState.useDeterministicSearcher
+        set(value) {
+            myState.useDeterministicSearcher = value
+        }
+
+    var isLocalOrWslScenario: Boolean
+        get() = myState.isLocalOrWslScenario
+        set(value) {
+            myState.isLocalOrWslScenario = value
+        }
+
+    var verbose: Boolean
+        get() = myState.verbose
+        set(value) {
+            myState.verbose = value
+        }
+
+    var timeoutPerFunction: Int
+        get() = myState.timeoutPerFunction
+        set(value) {
+            myState.timeoutPerFunction = value
+        }
+
+    var timeoutPerTest: Int
+        get() = myState.timeoutPerTest
+        set(value) {
+            myState.timeoutPerTest = value
+        }
+
+    var testDirPath: String
+        get() = myState.testDirPath
+        set(value) {
+            myState.testDirPath = value
+        }
+
+    var remotePath: String
+        get() = myState.remotePath
+        set(value) {
+            myState.remotePath = value
+        }
+
+    var targetPath: String
+        get() = myState.remotePath
+        set(value) {
+            myState.remotePath = value
+        }
+
+    var buildDirRelativePath: String
+        get() = myState.buildDirRelativePath
+        set(value) {
+            myState.buildDirRelativePath = value
+        }
+
     override fun getState() = myState
     override fun loadState(state: State) {
         myState = state

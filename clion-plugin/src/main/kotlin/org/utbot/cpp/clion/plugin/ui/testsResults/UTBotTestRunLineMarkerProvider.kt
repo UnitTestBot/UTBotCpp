@@ -45,7 +45,7 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
 
             private fun getStatusIcon(element: PsiElement): Icon {
                 // return icon for Running All Tests
-                if (!isAllTests(element)) {
+                if (isAllTests(element)) {
                     return AllIcons.RunConfigurations.TestState.Run_run
                 }
 

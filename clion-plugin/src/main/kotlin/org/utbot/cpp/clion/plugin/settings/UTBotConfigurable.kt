@@ -2,6 +2,7 @@
 
 package org.utbot.cpp.clion.plugin.settings
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
@@ -35,8 +36,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
 
-    private val settings: UTBotProjectStoredSettings.State
-        get() = myProject.settings.storedSettings
+    private val settings: UTBotProjectStoredSettings = myProject.service()
 
     private val isLocalOrWsl = ObservableValue(settings.isLocalOrWslScenario)
 
@@ -62,10 +62,10 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
         return panel {
-            group("Connection Settings") { this.createConnectionSettings() }
-            group("Paths") { this.createPathsSettings() }
-            group("CMake") { this.createCMakeSettings() }
-            group("Generator Settings") { this.createGeneratorSettings() }
+            group("Connection Settings") { createConnectionSettings() }
+            group("Paths") { createPathsSettings() }
+            group("CMake") { createCMakeSettings() }
+            group("Generator Settings") { createGeneratorSettings() }
         }
     }
 
@@ -221,7 +221,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             spinner(
                 UTBotProjectStoredSettings.TIMEOUT_PER_TEST_MIN_VALUE..
                         UTBotProjectStoredSettings.TIMEOUT_PER_TEST_MAX_VALUE
-            ).bindIntValue(settings::timeoutPerFunction).applyToComponent {
+            ).bindIntValue(settings::timeoutPerTest).applyToComponent {
                 maximumSize = TEXT_FIELD_MAX_SIZE
             }
         }.rowComment(UTBot.message("advanced.timeoutPerTest.description"))

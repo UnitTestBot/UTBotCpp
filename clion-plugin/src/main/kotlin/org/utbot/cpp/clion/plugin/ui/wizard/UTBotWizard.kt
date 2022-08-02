@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.ui.wizard
 import com.intellij.ide.BrowserUtil
 import com.intellij.ide.wizard.AbstractWizard
 import com.intellij.openapi.project.Project
+import javax.swing.JButton
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
@@ -24,6 +25,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
         super.init()
         isResizable = true
         setSize(400, 400)
+        getButton(myOKAction)?.text = "Finish"
     }
 
     /**
