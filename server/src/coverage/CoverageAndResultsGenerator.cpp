@@ -2,7 +2,9 @@
 
 #include "TimeExecStatistics.h"
 #include "exceptions/CoverageGenerationException.h"
+#include "utils/FileSystemUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/stats/TestsExecutionStats.h"
 
 #include "loguru.h"
 
@@ -34,18 +36,20 @@ grpc::Status CoverageAndResultsGenerator::generate(bool withCoverage,
         runTests(withCoverage, settingsContext.timeoutPerTest);
         if (withCoverage) {
             collectCoverage();
+            StatsUtils::TestsExecutionStatsFileMap testsExecutionStats(projectContext, testResultMap, coverageMap);
+            printer::CSVPrinter printer = testsExecutionStats.toCSV();
+            FileSystemUtils::writeToFile(Paths::getExecutionStatsCSVPath(projectContext), printer.getStream().str());
+            LOG_S(INFO) << StringUtils::stringFormat("See execution stats here: %s",
+                                                     Paths::getExecutionStatsCSVPath(projectContext));
         }
     } catch (CoverageGenerationException &e) {
         showErrors();
-        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status(StatusCode::FAILED_PRECONDITION, e.what());
     } catch (ExecutionProcessException &e) {
         exceptions.emplace_back(e);
         showErrors();
-        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status(StatusCode::FAILED_PRECONDITION, e.what());
     } catch (CancellationException &e) {
-        fs::remove(Paths::getGTestResultsJsonPath(projectContext));
         return Status::CANCELLED;
     }
     showErrors();

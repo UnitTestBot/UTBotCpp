@@ -1,8 +1,11 @@
+#include <fstream>
 #include "TestUtils.h"
 
 #include "environment/EnvironmentPaths.h"
 #include "tasks/ShellExecTask.h"
-
+#include "utils/stats/CSVReader.h"
+#include "utils/CollectionUtils.h"
+#include "utils/StringUtils.h"
 
 namespace testUtils {
     static std::string getMessageForTestCaseNotMatching(
@@ -362,4 +365,36 @@ namespace testUtils {
         testGen.setTargetForSource(sourcePath);
     }
 
+    static void checkStatsCSV(const fs::path &statsPath, const std::vector<std::string> &header,
+                              const std::vector<fs::path> &containedFiles) {
+        EXPECT_TRUE(fs::exists(statsPath));
+        std::ifstream inputStream(statsPath);
+        StatsUtils::CSVTable csvTable = StatsUtils::readCSV(inputStream, ',');
+        for (const auto &label : header) {
+            EXPECT_TRUE(CollectionUtils::containsKey(csvTable, label)) <<
+                StringUtils::stringFormat("Label %s absent in header in CSV %s", label, statsPath);
+        }
+        EXPECT_EQ(csvTable.size(), header.size());
+        for (const auto &fileName : containedFiles) {
+            EXPECT_TRUE(CollectionUtils::contains(csvTable["File"], fileName)) <<
+                StringUtils::stringFormat("File %s is absent in CSV %s", fileName, statsPath);
+        }
+        EXPECT_TRUE(CollectionUtils::contains(csvTable["File"], "Total:"));
+        EXPECT_EQ(csvTable["File"].size(), containedFiles.size() + 1);
+    }
+
+    void checkGenerationStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles) {
+        std::vector<std::string> header = {"File", "Klee Time (s)", "Solver Time (s)", "Resolution Time (s)",
+                                           "Regression Tests Generated", "Error Tests Generated",
+                                           "Covered Functions", "Total functions"};
+        checkStatsCSV(statsPath, header, containedFiles);
+    }
+
+    void checkExecutionStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles) {
+        std::vector<std::string> header = {"File", "Google Test Execution Time (s)",
+                                           "Total Tests Number", "Passed Tests Number", "Failed Tests Number",
+                                           "Death Tests Number", "Interrupted Tests Number",
+                                           "Total Lines Number", "Covered Lines Number", "Line Coverage Ratio (%)"};
+        checkStatsCSV(statsPath, header, containedFiles);
+    }
 }

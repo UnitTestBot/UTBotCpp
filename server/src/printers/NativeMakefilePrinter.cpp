@@ -530,7 +530,7 @@ namespace printer {
                                 getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
                             const fs::path &absolutePath = optionalLibraryAbsolutePath.value();
-                            if (Paths::isSubPathOf(projectContext.buildDir, absolutePath)) {
+                            if (Paths::isSubPathOf(projectContext.buildDir(), absolutePath)) {
                                 fs::path recompiledDir =
                                         Paths::getRecompiledFile(projectContext, absolutePath);
                                 std::string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
