@@ -54,13 +54,13 @@
         </group>
 
         <action id="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
-                class="org.utbot.cpp.clion.plugin.actions.mark.MarkSourceFolderAction" text="Mark As UTBot Folders"
+                class="org.utbot.cpp.clion.plugin.actions.mark.MarkSourceFolderAction" text="UTBot: Mark As UTBot Folders"
                 description="Marks selected folders as UTBot folders">
             <add-to-group group-id="actions.UTBot.projectTree" anchor="first"/>
         </action>
 
         <action id="com.huawei.utbot.cpp.actions.UnmarkSourceFolderAction"
-                class="org.utbot.cpp.clion.plugin.actions.mark.UnmarkSourceFolderAction" text="Unmark UTBot Folders"
+                class="org.utbot.cpp.clion.plugin.actions.mark.UnmarkSourceFolderAction" text="UTBot: Unmark UTBot Folders"
                 description="Unmarks selected folders as UTBot folders">
             <add-to-group group-id="actions.UTBot.projectTree" relative-to-action="com.huawei.utbot.cpp.actions.MarkSourceFolderAction"
                           anchor="after"/>
