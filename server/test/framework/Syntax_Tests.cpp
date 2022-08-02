@@ -81,7 +81,8 @@ namespace {
         std::pair<FunctionTestGen, Status> createTestForFunction(const fs::path &pathToFile,
                                                                  int lineNum, int kleeTimeout = 60) {
             auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, std::nullopt, false, false, kleeTimeout);
+                                                 srcPaths, pathToFile, lineNum, GrpcUtils::UTBOT_AUTO_TARGET_PATH,
+                                                 false, false, kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
@@ -2199,7 +2200,8 @@ namespace {
 
     TEST_F(Syntax_Test, Run_Tests_For_Linked_List) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, linked_list_c, std::nullopt, true, false);
+                                                    srcPaths, linked_list_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true,
+                                                    false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(linked_list_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -2232,7 +2234,7 @@ namespace {
 
     TEST_F(Syntax_Test, Run_Tests_For_Tree) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, tree_c, std::nullopt, true, false);
+                                                    srcPaths, tree_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(tree_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());

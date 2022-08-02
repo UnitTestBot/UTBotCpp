@@ -212,7 +212,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
-                                                         const std::optional<std::string> &target,
+                                                         const std::string &target,
                                                          bool useStubs,
                                                          bool verbose,
                                                          int kleeTimeout) {
@@ -222,21 +222,20 @@ namespace testUtils {
                 GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
 
 
-        auto buildDatabase = BuildDatabase::create(utbot::ProjectContext(*projectContext),
-                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
-        auto rootTargets = buildDatabase->getRootTargets();
-        auto it = std::find_if(rootTargets.begin(), rootTargets.end(),
-                               [&target](std::shared_ptr<BuildDatabase::TargetInfo> linkUnitInfo) {
-                                   return linkUnitInfo->getOutput().filename() == target;
-                               });
-        assert(it != rootTargets.end());
-        std::string new_target = it->get()->getOutput();
-
+//        auto buildDatabase = BuildDatabase::create(utbot::ProjectContext(*projectContext),
+//                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+//        auto rootTargets = buildDatabase->getRootTargets();
+//        auto it = std::find_if(rootTargets.begin(), rootTargets.end(),
+//                               [&target](std::shared_ptr<BuildDatabase::TargetInfo> linkUnitInfo) {
+//                                   return linkUnitInfo->getOutput().filename() == target;
+//                               });
+//        assert(it != rootTargets.end());
+//        std::string new_target = it->get()->getOutput();
 
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
-                                               new_target);
+                                               target);
     }
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
@@ -244,7 +243,7 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
-                                                   const std::optional<std::string> &target,
+                                                   const std::string &target,
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout) {
@@ -259,7 +258,7 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   const std::optional<std::string> &target,
+                                                   const std::string &target,
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout) {
@@ -275,7 +274,7 @@ namespace testUtils {
                                                      const std::vector<fs::path> &srcPaths,
                                                      const fs::path &filePath,
                                                      int line,
-                                                     const std::optional<std::string> &target,
+                                                     const std::string &target,
                                                      bool useStubs,
                                                      bool verbose,
                                                      int kleeTimeout) {

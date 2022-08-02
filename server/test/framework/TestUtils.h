@@ -68,7 +68,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
-                                                         const std::optional<std::string> &target = std::nullopt,
+                                                         const std::string &target = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                          bool useStubs = false,
                                                          bool verbose = true,
                                                          int kleeTimeout = 60);
@@ -78,7 +78,7 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
-                                                   const std::optional<std::string> &target = std::nullopt,
+                                                   const std::string &target = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
                                                    bool verbose = true,
                                                    int kleeTimeout = 60);
@@ -89,7 +89,7 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   const std::optional<std::string> &target = std::nullopt,
+                                                   const std::string &target = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
                                                    bool verbose = true,
                                                    int kleeTimeout = 60);
@@ -100,7 +100,7 @@ namespace testUtils {
                                                      const std::vector<fs::path> &srcPaths,
                                                      const fs::path &filePath,
                                                      int line,
-                                                     const std::optional<std::string> &target = std::nullopt,
+                                                     const std::string &target = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                      bool useStubs = false,
                                                      bool verbose = true,
                                                      int kleeTimeout = 60);

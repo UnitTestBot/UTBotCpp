@@ -28,19 +28,21 @@ namespace {
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, bool verbose = true) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, std::nullopt, false, verbose, 0);
+                                                            srcPaths, pathToFile, lineNum,
+                                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, verbose, 0);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(pathToFile);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-            return { testGen, status };
+            return {testGen, status};
         }
 
         std::pair<FolderTestGen, Status>
         createTestForFolder(const fs::path &pathToFolder, bool useStubs = true, bool verbose = true) {
             auto folderRequest = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
-                                                                srcPaths, std::nullopt,useStubs, verbose, 0);
+                                                                 srcPaths, GrpcUtils::UTBOT_AUTO_TARGET_PATH, useStubs,
+                                                                 verbose, 0);
             auto request = GrpcUtils::createFolderRequest(std::move(folderRequest), pathToFolder);
             auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
 

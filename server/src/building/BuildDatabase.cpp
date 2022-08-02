@@ -69,7 +69,7 @@ BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
         linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
         compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")) {
 
-    if (target == GrpcUtils::UTBOT_AUTO_TARGET_PATH || target.empty()) {
+    if (_target == GrpcUtils::UTBOT_AUTO_TARGET_PATH || _target.empty()) {
         if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
             throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
         }
@@ -789,9 +789,9 @@ BuildDatabase::getTargetsForSourceFile(const fs::path &sourceFilePath) const {
 
 std::vector<fs::path> BuildDatabase::targetListForFile(const fs::path &sourceFilePath,
                                                        const fs::path &objectFile) const {
-    if (hasAutoTarget()) {
-        return {target};
-    }
+//    if (!hasAutoTarget()) {
+//        return {target};
+//    }
     auto result = CollectionUtils::transformTo<std::vector<fs::path>>(
             getTargetsForSourceFile(sourceFilePath),
             [&](const std::shared_ptr<const BuildDatabase::TargetInfo> &targetInfo) {
