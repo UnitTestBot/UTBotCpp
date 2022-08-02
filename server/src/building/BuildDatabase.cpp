@@ -89,13 +89,12 @@ BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
     } else {
         BuildDatabase autoTargetBuildDatabase(buildCommandsJsonPath, serverBuildDir, projectContext,
                                               GrpcUtils::UTBOT_AUTO_TARGET_PATH, false);
-
-        if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
-            throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
-        }
-
     //    fs::path target;
-        {
+        //TODO target incorrect name now
+        if (Paths::isSourceFile(_target)) {
+            fs::path root = autoTargetBuildDatabase.getRootForSource(_target);
+            target = root;
+        } else {
             auto new_target = GenerationUtils::findTarget(autoTargetBuildDatabase.getAllTargets(), _target);
             if (new_target.has_value()) {
                 target = new_target.value();

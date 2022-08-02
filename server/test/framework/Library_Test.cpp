@@ -21,7 +21,7 @@ namespace {
         createTestForFunction(const fs::path &pathToFile, int lineNum, int kleeTimeout = 60) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
                                                             srcPaths, pathToFile, lineNum,
-                                                            "", true, false,
+                                                            pathToFile, true, false,
                                                             kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
