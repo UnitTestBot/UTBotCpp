@@ -5,9 +5,9 @@ import com.intellij.ide.projectView.impl.ProjectViewTree
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.ui.wizard.steps.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.ui.ObservableValue
 
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
     private val sourceDirs: ObservableValue<Set<String>> = initObservableDirectories()

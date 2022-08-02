@@ -10,6 +10,7 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.RawCommandLineEditor
 import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.layout.PropertyBinding
+import javax.swing.JSpinner
 import javax.swing.JTextField
 import javax.swing.event.DocumentEvent
 

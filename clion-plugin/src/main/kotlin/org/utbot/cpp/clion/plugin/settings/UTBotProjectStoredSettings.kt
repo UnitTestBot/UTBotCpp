@@ -32,6 +32,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var generateForStaticFunctions: Boolean = true,
         var useStubs: Boolean = true,
         var useDeterministicSearcher: Boolean = true,
+        var isLocalOrWslScenario: Boolean = false,
         var verbose: Boolean = false,
         var timeoutPerFunction: Int = 0,
         var timeoutPerTest: Int = 30
@@ -73,5 +74,9 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         const val REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO = ""
         const val DEFAULT_RELATIVE_PATH_TO_TEST_DIR = "utbot-tests"
         const val DEFAULT_RELATIVE_PATH_TO_BUILD_DIR = "utbot-build"
+        const val TIMEOUT_PER_TEST_MAX_VALUE = 1000
+        const val TIMEOUT_PER_TEST_MIN_VALUE = 0
+        const val TIMEOUT_PER_FUNCTION_MAX_VALUE = 1000
+        const val TIMEOUT_PER_FUNCTION_MIN_VALUE = 0
     }
 }

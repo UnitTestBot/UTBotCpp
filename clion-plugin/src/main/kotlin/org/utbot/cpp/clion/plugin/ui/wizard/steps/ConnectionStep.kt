@@ -5,14 +5,14 @@ package org.utbot.cpp.clion.plugin.ui.wizard.steps
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.AnimatedIcon
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.JBIntSpinner
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.COLUMNS_MEDIUM
-import com.intellij.ui.dsl.builder.bindIntText
+import com.intellij.ui.dsl.builder.bindIntValue
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
@@ -30,11 +30,10 @@ import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
-import org.utbot.cpp.clion.plugin.utils.validateInput
 import javax.swing.JComponent
 import javax.swing.event.DocumentEvent
-import kotlin.properties.Delegates
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
+import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.isWindows
 
 enum class ConnectionStatus {
@@ -50,7 +49,7 @@ class ConnectionStep(
     private val parentDisposable: Disposable,
 ) : UTBotBaseWizardStep() {
     private lateinit var hostTextField: JBTextField
-    private lateinit var portTextField: JBTextField
+    private lateinit var portComponent: JBIntSpinner
     private lateinit var remotePathTextField: JBTextField
 
     private var serverVersion: String? = null
@@ -61,7 +60,7 @@ class ConnectionStep(
     init {
         useConnectionDefaults.addOnChangeListener { newValue ->
             if (newValue) {
-                portTextField.text = UTBotAllProjectSettings.DEFAULT_PORT.toString()
+                portComponent.number = UTBotAllProjectSettings.DEFAULT_PORT
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
                 remotePathTextField.text = if (isWindows) project.settings.projectPath.toWslFormat()
                     else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
@@ -107,13 +106,13 @@ class ConnectionStep(
             }
 
             row("Port") {
-                intTextField(
+                spinner(
                     0..65535,
                     1
                 ).also {
-                    it.bindIntText(settingsModel.globalSettings::port)
-                }.columns(COLUMNS_MEDIUM).applyToComponent {
-                    portTextField = this
+                    it.bindIntValue(settingsModel.globalSettings::port)
+                }.applyToComponent {
+                    portComponent = this
                 }.enabledIf(object : ComponentPredicate() {
                     override fun invoke() = !useConnectionDefaults.value
                     override fun addListener(listener: (Boolean) -> Unit) {
@@ -164,7 +163,7 @@ class ConnectionStep(
                 }
             }
 
-            setupValidation()
+            setupPingOnPortOrHostChange()
         }.addToUI()
 
         addHtml("media/remote_path.html")
@@ -206,40 +205,19 @@ class ConnectionStep(
 
     private fun pingServer() {
         CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
-            connectionStatus.value = pingServer(portTextField.text.toInt(), hostTextField.text)
+            connectionStatus.value = pingServer(portComponent.number, hostTextField.text)
         }
     }
 
-    private fun setupValidation() {
-        portTextField.validateInput(parentDisposable) {
-            val value = portTextField.text.toUShortOrNull()
-            if (value == null) {
-                connectionStatus.value = ConnectionStatus.Failed
-                ValidationInfo("Number from 0 to 65535 is expected!", portTextField)
-            } else {
-                pingServer()
-                null
-            }
-        }
-
+    private fun setupPingOnPortOrHostChange() {
         hostTextField.document.addDocumentListener(object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
                 pingServer()
             }
         })
-    }
-}
-
-internal class ObservableValue<T>(initialValue: T) {
-    private val changeListeners: MutableList<(T) -> Unit> = mutableListOf()
-    var value: T by Delegates.observable(initialValue) { _, _, newVal ->
-        changeListeners.forEach {
-            it(newVal)
+        portComponent.addChangeListener {
+            pingServer()
         }
-    }
-
-    fun addOnChangeListener(listener: (T) -> Unit) {
-        changeListeners.add(listener)
     }
 }
 
