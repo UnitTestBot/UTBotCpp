@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileSystemItem
 import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
 
 open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
@@ -27,7 +28,7 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
 
     override fun getWeight(): Int = 5
 
-    // required by IJ api, but not used. Otherwise there are exceptions
+    // required by IJ api, but not used. Otherwise, there are exceptions
     override fun createSelectInTarget(): SelectInTarget {
         return object : ProjectPaneSelectInTarget(myProject) {
             override fun toString(): String = "UTBot: Directories"
@@ -43,7 +44,7 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun createStructure() = object : AbstractProjectTreeStructure(myProject) {
         // replace directory nodes with our UTBotNodes, which check source dirs during node.update
         override fun getProviders() = listOf(
-            UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.path in myProject.settings.storedSettings.sourceDirs })
+            UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.localPath.toString() in myProject.settings.storedSettings.sourceDirs })
         )
     }
 }

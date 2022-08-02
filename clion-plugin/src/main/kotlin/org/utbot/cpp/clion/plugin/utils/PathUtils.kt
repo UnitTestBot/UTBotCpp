@@ -1,6 +1,7 @@
 package org.utbot.cpp.clion.plugin.utils
 
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import org.apache.commons.io.FilenameUtils
 import org.utbot.cpp.clion.plugin.settings.settings
 import java.nio.file.FileVisitResult
@@ -155,6 +156,9 @@ private fun removeSuffix(path: Path, suffix: String): Path {
         }
     )
 }
+
+val VirtualFile.localPath: Path get() = this.fileSystem.getNioPath(this) ?: error("Could not get filesystem path from $this")
+
 
 private const val DOT_SEP = "_dot_"
 private const val TEST_SUFFIX = "_test"

@@ -15,6 +15,7 @@ import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
+import org.apache.commons.io.FilenameUtils
 import org.utbot.cpp.clion.plugin.utils.isCPPorCFileName
 import java.io.File
 
@@ -112,7 +113,7 @@ class UTBotCoverageEngine : CoverageEngine() {
      */
     override fun getQualifiedNames(sourceFile: PsiFile): MutableSet<String> {
         return sourceFile.virtualFile?.path?.let {
-            mutableSetOf(UTBotCoverageRunner.provideQualifiedNameForFile(it))
+            mutableSetOf(UTBotCoverageRunner.provideQualifiedNameForFile(FilenameUtils.separatorsToSystem(it)))
         } ?: mutableSetOf()
     }
 

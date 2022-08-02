@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.ObservableValue
+import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
 
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
@@ -44,6 +45,6 @@ open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewP
     fun isModified() = settings.sourceDirs != sourceDirs.value
 
     override fun createStructure() = object : AbstractProjectTreeStructure(myProject) {
-        override fun getProviders() = listOf(UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.path in sourceDirs.value}))
+        override fun getProviders() = listOf(UTBotTreeStructureProvider(isMarked = { dir -> dir.virtualFile.localPath.toString() in sourceDirs.value}))
     }
 }

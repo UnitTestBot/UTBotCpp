@@ -69,10 +69,10 @@ class CoverageAndResultsHandler(
 
     private fun logCoverageResponse(response: Testgen.CoverageAndResultsResponse) {
         if (response.errorMessage.isNotEmpty())
-            logger.warn(response.errorMessage)
+            project.logger.warn { response.errorMessage }
         if (response.coveragesList.isEmpty())
-            logger.error("No coverage received from server!")
-        logger.trace("coverage list: \n${response.coveragesList}")
+            project.logger.error { "No coverage received from server!" }
+        project.logger.trace {  "coverage list: \n${response.coveragesList}" }
     }
 
     private fun notifyCoverageReceived() {

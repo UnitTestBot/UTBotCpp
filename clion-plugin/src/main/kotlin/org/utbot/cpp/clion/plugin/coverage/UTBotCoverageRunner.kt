@@ -46,19 +46,20 @@ class UTBotCoverageRunner : CoverageRunner() {
                 }
                 val linesCount = getLineCount(localFilePath)
                 val lines = arrayOfNulls<LineData>(linesCount)
-                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath.toAbsolutePath().toString()))
+                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath.toString()))
                 fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {
                     rangesList.filterNotNull().forEach { sourceLine ->
-                            val numberInFile = sourceLine.line - 1
-                            if (numberInFile >= linesCount) {
-                                log.warn("Skipping $localFilePath:${numberInFile} in coverage processing! Number of lines in file is $linesCount!")
-                                return@forEach
-                            }
-                            val lineData = LineData(sourceLine.line + 1, null)
-                            lineData.hits = status.toInt()
-                            lineData.setStatus(status)
-                            lines[numberInFile] = lineData
-                            classData.registerMethodSignature(lineData)
+                        val numberInFile = sourceLine.line - 1
+                        if (numberInFile >= linesCount) {
+                            log.warn("Skipping $localFilePath:${numberInFile} in coverage processing! Number of lines in file is $linesCount!")
+                            return@forEach
+                        }
+                        val lineData = LineData(sourceLine.line + 1, null)
+                        lineData.hits = status.toInt()
+                        lineData.setStatus(status)
+                        // todo: leave comments what is going on
+                        lines[numberInFile + 1] = lineData
+                        classData.registerMethodSignature(lineData)
                     }
                 }
                 processRanges(simplifiedCovInfo.fullCoverageLinesList, LineCoverage.FULL)

@@ -100,8 +100,9 @@ class UTBotTargetsController(val project: Project) {
             connection.subscribe(
                 UTBotSettingsChangedListener.TOPIC,
                 UTBotSettingsChangedListener {
-                    val possiblyNewTargetPath = settings.storedSettings.targetPath
-                    addTargetPathIfNotPresent(possiblyNewTargetPath)
+                    // todo: remove custom target
+                    // val possiblyNewTargetPath = settings.storedSettings.targetPath
+                    // addTargetPathIfNotPresent(possiblyNewTargetPath)
                 })
             // when we reconnected to server, the targets should be updated, so we request them from server
             connection.subscribe(
