@@ -29,10 +29,9 @@ namespace {
         createTestForFunction(const fs::path &pathToFile, int lineNum, bool verbose = true) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
                                                             srcPaths, pathToFile, lineNum,
-                                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, verbose, 0);
+                                                            pathToFile, false, verbose, 0);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(pathToFile);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return {testGen, status};
@@ -90,10 +89,11 @@ namespace {
     TEST_F(Regression_Test, Incomplete_Array_Type) {
         fs::path folderPath = suitePath / "SAT-760";
         auto projectRequest = testUtils::createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath });
+            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath },
+            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-        testUtils::setTargetForFirstSource(testGen);
+//        testUtils::setTargetForFirstSource(testGen);
 
         fs::path source1 = folderPath / "SAT-760_1.c";
         fs::path source2 = folderPath / "SAT-760_2.c";

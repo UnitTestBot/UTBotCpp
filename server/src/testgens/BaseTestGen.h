@@ -24,6 +24,7 @@ public:
 
     fs::path compileCommandsJsonPath;
     std::shared_ptr<CompilationDatabase> compilationDatabase;
+    std::shared_ptr<BuildDatabase> baseBuildDatabase;
     std::shared_ptr<BuildDatabase> buildDatabase;
 
     CollectionUtils::FileSet sourcePaths, testingMethodsSourcePaths;
@@ -40,7 +41,6 @@ public:
 
     bool isBatched() const;
 
-//    fs::path const &getTargetPath() const;
     void setTargetPath(fs::path _targetPath);
 
     virtual ~BaseTestGen() = default;

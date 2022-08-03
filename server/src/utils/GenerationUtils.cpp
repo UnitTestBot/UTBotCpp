@@ -62,11 +62,11 @@ GenerationUtils::findTarget(const std::vector<std::shared_ptr<BuildDatabase::Tar
     }
     auto candidates = CollectionUtils::filterOut(allTargets, [&name](auto const &target) {
         fs::path output = target->getOutput();
-        return !(output == name || output.stem() == name || output.stem() == "lib" + name);
+        return !(output == name || output.stem() == name || output.stem() == "lib" + name || output.filename() == name);
     });
     if (candidates.empty()) {
         std::stringstream ss;
-        ss << "Couldn't find appropriate target. List of available targets:\n";
+        ss << "Couldn't find \"" << name << "\" target. List of available targets:\n";
         for (const auto &target : allTargets) {
             ss << target->getOutput() << "\n";
         }

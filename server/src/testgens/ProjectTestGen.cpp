@@ -16,8 +16,8 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     fs::create_directories(projectContext.testDirPath);
     compileCommandsJsonPath = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
             projectContext.projectPath, projectContext.buildDirRelativePath);
-    buildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext,
-                                                    request.targetpath());
+    baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext, false);
+    buildDatabase = baseBuildDatabase->createBaseForTarget(request.targetpath());
     compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
     if (autoSrcPaths) {
         autoDetectSourcePathsIfNotEmpty();
@@ -26,6 +26,7 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     }
     testingMethodsSourcePaths = sourcePaths;
     setInitializedTestsMap();
+    updateTargetSources(buildDatabase->getTargetPath());
 }
 
 std::string ProjectTestGen::toString() {

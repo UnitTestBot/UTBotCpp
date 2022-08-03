@@ -161,16 +161,15 @@ namespace {
     TEST_F(Stub_Test, Multimodule_Lib_Heuristic_Test) {
         auto request = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
                                                        {foreign, calc, suitePath, literals},
-                                                       GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                                       foreign_bar_c, true);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(foreign_bar_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
 
-        auto root = testGen.buildDatabase->getRootForSource(foreign_bar_c);
-        auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(root);
-        auto stubFiles = testGen.buildDatabase->getStubFiles(linkUnitInfo);
+        auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
+        auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
+        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
         utbot::ProjectContext projectContext{ projectName, suitePath, getTestDirectory(),
                                               buildDirRelativePath };
         auto stubCandidates = { calc_sum_c };

@@ -95,21 +95,13 @@ public:
     };
 
 public:
-//    BuildDatabase(fs::path _buildCommandsJsonPath,
-//                  fs::path _serverBuildDir,
-//                  utbot::ProjectContext _projectContext,
-//                  bool createClangCC = true);
-
     BuildDatabase(fs::path _buildCommandsJsonPath,
                   fs::path _serverBuildDir,
                   utbot::ProjectContext _projectContext,
-                  const std::string &_target = "",
-                  bool createClangCC = true);
+                  bool createClangCC);
 
-    static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext,
-                                                 const std::string &target);
-
-//    void updateTarget(const fs::path &_target);
+    static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext);
+    std::shared_ptr<BuildDatabase> createBaseForTarget(const std::string &target);
 
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
@@ -181,6 +173,7 @@ public:
      * @throws CompilationDatabaseException if file is wrong
      */
     [[nodiscard]] fs::path getRootForSource(const fs::path &path) const;
+    [[nodiscard]] fs::path getRootForFirstSource() const;
     [[nodiscard]] fs::path getBitcodeForSource(const fs::path &sourceFile) const;
     [[nodiscard]] fs::path getBitcodeFile(const fs::path &filepath) const;
 
@@ -241,6 +234,9 @@ public:
 
     fs::path getTargetPath() const;
 private:
+    BuildDatabase(BuildDatabase& baseBuildDatabase,
+                  const std::string &_target);
+
     const fs::path serverBuildDir;
     const utbot::ProjectContext projectContext;
     const fs::path buildCommandsJsonPath;

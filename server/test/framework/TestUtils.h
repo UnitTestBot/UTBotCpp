@@ -134,7 +134,7 @@ namespace testUtils {
 
     std::vector<char *> createArgvVector(const std::vector<std::string> &args);
 
-    void setTargetForFirstSource(ProjectTestGen &testGen);
+//    void setTargetForFirstSource(ProjectTestGen &testGen);
 
     void checkGenerationStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles);
 

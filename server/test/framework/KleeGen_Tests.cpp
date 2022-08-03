@@ -54,7 +54,7 @@ namespace {
             fs::path testsDirPath = tmpDirPath / "test";
             utbot::ProjectContext projectContext{ suite.name, "", testsDirPath,
                                                   buildDirRelativePath };
-            auto buildDatabase = std::make_shared<BuildDatabase>(suite.buildPath, suite.buildPath, projectContext);
+            auto buildDatabase = std::make_shared<BuildDatabase>(suite.buildPath, suite.buildPath, projectContext, true);
             utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
             KleeGenerator generator(std::move(projectContext),
                                     std::move(settingsContext), tmpDirPath,

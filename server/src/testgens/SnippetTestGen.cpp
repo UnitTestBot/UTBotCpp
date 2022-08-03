@@ -18,9 +18,8 @@ SnippetTestGen::SnippetTestGen(const testsgen::SnippetRequest &request,
     printer::CCJsonPrinter::createDummyBuildDB(sourcePaths, serverBuildDir);
     compileCommandsJsonPath = serverBuildDir;
     utbot::ProjectContext projectContext{request, serverBuildDir};
-    buildDatabase =
-            std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext,
-                                            serverBuildDir / SNIPPET_TARGET);
+    baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext, false);
+    buildDatabase = baseBuildDatabase->createBaseForTarget(serverBuildDir / SNIPPET_TARGET);
     compilationDatabase = CompilationUtils::getCompilationDatabase(serverBuildDir);
     setTargetForSource(filePath);
     setInitializedTestsMap();

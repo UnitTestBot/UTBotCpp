@@ -19,7 +19,7 @@ std::vector<fs::path> StubSourcesFinder::find(const fs::path& testedFilePath) {
 }
 
 std::vector<fs::path> StubSourcesFinder::excludeFind(const fs::path &testedFilePath,
-                                                const fs::path &rootPath) {
+                                                     const fs::path &rootPath) {
     auto allBitcodeFiles = buildDatabase->getArchiveObjectFiles(rootPath);
     CollectionUtils::FileSet libraryBitcodeFiles = getLibraryBitcodeFiles(testedFilePath);
     std::vector<fs::path> stubSources;

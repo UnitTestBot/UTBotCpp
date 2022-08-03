@@ -409,10 +409,10 @@ namespace testUtils {
         return argv;
     }
 
-    void setTargetForFirstSource(ProjectTestGen &testGen) {
-        fs::path sourcePath = *testGen.testingMethodsSourcePaths.begin();
-        testGen.setTargetForSource(sourcePath);
-    }
+//    void setTargetForFirstSource(ProjectTestGen &testGen) {
+//        fs::path sourcePath = *testGen.testingMethodsSourcePaths.begin();
+//        testGen.setTargetForSource(sourcePath);
+//    }
 
     static void checkStatsCSV(const fs::path &statsPath, const std::vector<std::string> &header,
                               const std::vector<fs::path> &containedFiles) {
