@@ -22,11 +22,14 @@ class UTBotAllProjectSettings(val project: Project) {
     val buildDirPath: Path
         get() = Paths.get(project.path).resolve(storedSettings.buildDirRelativePath)
 
+    val testsDirPath: Path
+        get() = Paths.get(project.path).resolve(storedSettings.testsDirRelativePath)
+
     val convertedSourcePaths: List<String>
         get() = storedSettings.sourceDirs.map { it.convertToRemotePathIfNeeded(project) }
 
     val convertedTestDirPath: String
-        get() = storedSettings.testDirPath.convertToRemotePathIfNeeded(project)
+        get() = testsDirPath.toString().convertToRemotePathIfNeeded(project)
 
     val convertedTargetPath: String
         get() = if (storedSettings.targetPath == UTBotTarget.autoTarget.path) storedSettings.targetPath
@@ -57,13 +60,6 @@ class UTBotAllProjectSettings(val project: Project) {
         storedSettings.remotePath = UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
         storedSettings.buildDirRelativePath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
         storedSettings.targetPath = UTBotTarget.autoTarget.path
-
-        try {
-            storedSettings.testDirPath =
-                Paths.get(project.path, UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
-        } catch (e: IllegalStateException) {
-            notifyWarning("Guessing settings failed: could not guess project path! Please specify it in settings!")
-        }
 
         val cmakeRunConfiguration = CMakeAppRunConfiguration.getSelectedConfigurationAndTarget(project)?.first
         val buildConfigurationSources = cmakeRunConfiguration?.cMakeTarget?.buildConfigurations?.map { it.sources }

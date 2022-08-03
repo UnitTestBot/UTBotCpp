@@ -60,7 +60,7 @@ fun String.fileNameOrNull(): String? {
 }
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
-    val relativeToProject = Paths.get(project.settings.storedSettings.testDirPath).relativize(path.parent)
+    val relativeToProject = project.settings.testsDirPath.relativize(path.parent)
     return (Paths.get(project.path) / relativeToProject / testFileNameToSourceFileName(path))
 }
 

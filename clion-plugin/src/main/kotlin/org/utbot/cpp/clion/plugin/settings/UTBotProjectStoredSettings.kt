@@ -5,10 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
-import org.utbot.cpp.clion.plugin.utils.path
-import java.nio.file.Paths
 
 /**
  * Settings that are specific to each project
@@ -24,7 +21,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
     // serialized by the ide
     data class State(
         var buildDirRelativePath: String = DEFAULT_RELATIVE_PATH_TO_BUILD_DIR,
-        var testDirPath: String = "",
+        var testsDirRelativePath: String = DEFAULT_TESTS_DIR_RELATIVE_PATH,
         var targetPath: String = UTBotTarget.autoTarget.path,
         var remotePath: String = REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO,
         var sourceDirs: Set<String> = setOf(),
@@ -39,7 +36,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
             buildDirRelativePath = model.projectSettings.buildDirRelativePath
-            testDirPath = model.projectSettings.testDirPath
+            testsDirRelativePath = model.projectSettings.testsDirRelativePath
             targetPath = model.projectSettings.targetPath
             remotePath = model.projectSettings.remotePath
             sourceDirs = model.projectSettings.sourceDirs
@@ -107,10 +104,10 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             myState.timeoutPerTest = value
         }
 
-    var testDirPath: String
-        get() = myState.testDirPath
+    var testDirRelativePath: String
+        get() = myState.testsDirRelativePath
         set(value) {
-            myState.testDirPath = value
+            myState.testsDirRelativePath = value
         }
 
     var remotePath: String
@@ -139,7 +136,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
     // called when during component initialization if there is no persisted state.
     // See java docs for PersistingStateComponent
     override fun noStateLoaded() {
-        myState.testDirPath = Paths.get(project.path).resolve(DEFAULT_RELATIVE_PATH_TO_TEST_DIR).toString()
         myState.remotePath = REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
     }
 
@@ -147,8 +143,8 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
     companion object {
         val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")
         // local means no conversion of paths is needed. This is the case for when server runs locally on Linux
+        const val DEFAULT_TESTS_DIR_RELATIVE_PATH = "tests"
         const val REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO = ""
-        const val DEFAULT_RELATIVE_PATH_TO_TEST_DIR = "utbot-tests"
         const val DEFAULT_RELATIVE_PATH_TO_BUILD_DIR = "utbot-build"
         const val TIMEOUT_PER_TEST_MAX_VALUE = 1000
         const val TIMEOUT_PER_TEST_MIN_VALUE = 0

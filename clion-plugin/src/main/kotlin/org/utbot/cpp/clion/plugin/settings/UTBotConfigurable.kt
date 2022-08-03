@@ -124,11 +124,10 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             UTBot.message("settings.project.target"),
             UTBot.message("settings.project.target.browse.title")
         ).rowComment(UTBot.message("paths.target.description"))
-        createPathChooser(
-            settings::testDirPath,
-            UTBot.message("settings.project.testsDir"),
-            UTBot.message("settings.project.testsDir.browse.title")
-        ).rowComment(UTBot.message("paths.testsDirectory.description"))
+
+        row(UTBot.message("settings.project.testsDir")) {
+            textField().bindText(settings::testDirRelativePath).columns(COLUMNS_LARGE)
+        }.rowComment(UTBot.message("paths.testsDir.description"))
 
         row {
             val pane = UTBotProjectViewPaneForSettings(myProject)

@@ -60,7 +60,7 @@ abstract class BaseGenerationTestCase {
 
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
-        project.settings.storedSettings.testDirPath = testsDirectoryPath.toString()
+        project.settings.storedSettings.testsDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
         project.logger.logWriters.let {
             it.clear()
             it.add(SystemWriter())
