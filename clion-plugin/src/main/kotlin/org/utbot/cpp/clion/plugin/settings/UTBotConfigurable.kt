@@ -30,6 +30,7 @@ import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.path
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
 import java.awt.Dimension
+import java.nio.file.Paths
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings to Generate Tests"
@@ -119,11 +120,14 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             UTBot.message("settings.project.buildDir"),
             UTBot.message("settings.project.buildDir.browse.title")
         ).rowComment(UTBot.message("paths.buildDirectory.description"))
-        createPathChooser(
-            settings::targetPath,
-            UTBot.message("settings.project.target"),
-            UTBot.message("settings.project.target.browse.title")
-        ).rowComment(UTBot.message("paths.target.description"))
+
+        row(UTBot.message("settings.project.target")) {
+            textField().bindText(getter = {
+                Paths.get(myProject.path).relativize(Paths.get(settings.targetPath)).toString()
+            },
+                setter = {}
+            ).columns(COLUMNS_LARGE).enabled(false)
+        }.rowComment(UTBot.message("paths.target.description"))
 
         row(UTBot.message("settings.project.testsDir")) {
             textField().bindText(settings::testDirRelativePath).columns(COLUMNS_LARGE)

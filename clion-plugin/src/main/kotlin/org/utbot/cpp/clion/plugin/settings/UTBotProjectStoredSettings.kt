@@ -4,8 +4,10 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
+import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
 
 /**
  * Settings that are specific to each project
@@ -117,9 +119,13 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         }
 
     var targetPath: String
-        get() = myState.remotePath
+        get() {
+            if (isTargetUpToDate())
+                return myState.targetPath
+            return UTBotTarget.autoTarget.path
+        }
         set(value) {
-            myState.remotePath = value
+            myState.targetPath = value
         }
 
     var buildDirRelativePath: String
@@ -127,6 +133,10 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         set(value) {
             myState.buildDirRelativePath = value
         }
+
+    private fun isTargetUpToDate(): Boolean {
+        return project.service<UTBotTargetsController>().isTargetUpToDate(myState.targetPath)
+    }
 
     override fun getState() = myState
     override fun loadState(state: State) {

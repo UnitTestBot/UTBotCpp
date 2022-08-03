@@ -16,6 +16,7 @@ import javax.swing.JList
 import javax.swing.ListSelectionModel
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.RefreshTargetsAction
+import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
 
 class UTBotTargetsToolWindow(
@@ -45,6 +46,10 @@ class UTBotTargetsToolWindow(
 
     fun setBusy(busy: Boolean) {
         uiList.setPaintBusy(busy)
+    }
+
+    fun setSelectedTarget(utBotTarget: UTBotTarget) {
+        uiList.setSelectedValue(utBotTarget, true)
     }
 
     private fun createActionToolBar(isHorizontal: Boolean = false): ActionToolbar {
