@@ -46,10 +46,6 @@ abstract class BaseGenerationTestCase {
         override fun deleteOnTearDown() = false
     }
 
-    init {
-        Client.IS_TEST_MODE = true
-    }
-
     val projectPath: Path =
         Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     val testsDirectoryPath: Path = projectPath.resolve("cl-plugin-test-tests")

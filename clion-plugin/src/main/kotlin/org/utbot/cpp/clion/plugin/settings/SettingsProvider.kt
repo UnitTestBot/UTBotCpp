@@ -8,6 +8,3 @@ val Project.settings: UTBotAllProjectSettings
 
 val projectIndependentSettings: UTBotProjectIndependentSettings.State
     get() = service<UTBotProjectIndependentSettings>().state
-
-val pluginSettings: UTBotPluginSpecificSettings
-    get() = service()
