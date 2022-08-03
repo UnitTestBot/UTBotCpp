@@ -135,7 +135,7 @@ class UTBotCoverageEngine : CoverageEngine() {
      * Checks whether coverage should be shown for file based on [CoverageSuitesBundle].
      * It is used in [CoverageDataManager.applyInformationToEditor].
      *
-     * For example, see JavaCoverageEngine: We may not want to show com.huawei.utbot.cpp.clion.coverage for files in test
+     * For example, see JavaCoverageEngine: We may not want to show coverage for files in test
      * folders, if suite.isTrackTestFolders == false, we may check it here and return false.
      *
      * For now all files are accepted.
