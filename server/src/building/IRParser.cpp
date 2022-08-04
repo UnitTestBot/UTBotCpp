@@ -21,9 +21,6 @@ bool IRParser::parseModule(const fs::path &rootBitcode, tests::TestsMap &tests) 
         llvm::LLVMContext context;
         auto module = getModule(rootBitcode, context);
         if (module) {
-            for(const auto& fff : module->getFunctionList()) {
-                LOG_S(ERROR) << "function ffffffffff:  " << fff.getName().str();
-            }
             for (auto it = tests.begin(); it != tests.end(); it++) {
                 fs::path const &sourceFile = it.key();
                 tests::Tests &test = it.value();

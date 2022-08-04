@@ -15,6 +15,8 @@ StubGen::StubGen(BaseTestGen &testGen) : testGen(testGen) {
 
 CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
     if (!testGen.needToBeMocked() || !testGen.settingsContext.useStubs) {
+        LOG_S(ERROR) << "??????  " << testGen.needToBeMocked()
+                     << "  " << testGen.settingsContext.useStubs;
         return {};
     }
     fs::path testedFilePath = *testGen.testingMethodsSourcePaths.begin();

@@ -104,14 +104,14 @@ BuildDatabase::BuildDatabase(BuildDatabase& baseBuildDatabase,
         }
     }
 //    CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
+//    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
     {
         auto targetFilesList = baseBuildDatabase.getArchiveTargetFiles(target);
         for (const auto &objectFilePath: targetFilesList) {
             targetInfos[objectFilePath] = baseBuildDatabase.targetInfos[objectFilePath];
+            linkUnitToStubFiles[objectFilePath] = baseBuildDatabase.linkUnitToStubFiles[objectFilePath];
         }
     }
-//    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
-    linkUnitToStubFiles = baseBuildDatabase.linkUnitToStubFiles;
 
 //    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
     compileCommands_temp = baseBuildDatabase.compileCommands_temp;

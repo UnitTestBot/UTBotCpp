@@ -17,6 +17,9 @@ BaseTestGen::BaseTestGen(const testsgen::ProjectContext &projectContext,
 }
 
 bool BaseTestGen::needToBeMocked() const {
+    LOG_S(ERROR) << "??????  " << TypeUtils::isSameType<LineTestGen>(*this)
+            << "  " << TypeUtils::isSameType<FileTestGen>(*this)
+            << "  " << TypeUtils::isSameType<FolderTestGen>(*this);
     return TypeUtils::isSameType<LineTestGen>(*this) ||
            TypeUtils::isSameType<FileTestGen>(*this) ||
            TypeUtils::isSameType<FolderTestGen>(*this);

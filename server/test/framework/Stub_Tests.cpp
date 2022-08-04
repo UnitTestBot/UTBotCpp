@@ -170,21 +170,19 @@ namespace {
         auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
         auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
         auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
-        utbot::ProjectContext projectContext{ projectName, suitePath, getTestDirectory(),
-                                              buildDirRelativePath };
         auto stubCandidates = { calc_sum_c };
         auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
-            stubCandidates, [&projectContext](fs::path const &path) {
-              return Paths::sourcePathToStubPath(projectContext, path);
+            stubCandidates, [&testGen](fs::path const &path) {
+              return Paths::sourcePathToStubPath(testGen.projectContext, path);
             });
         EXPECT_EQ(expectedStubFiles, stubFiles);
     }
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                                    srcPaths, literals_foo_c, literals_foo_c, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(literals_foo_c);
+//        testGen.setTargetForSource(literals_foo_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 5);
