@@ -8,6 +8,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.LabelPosition
@@ -25,6 +26,7 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
+import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.path
@@ -39,6 +41,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val panel by lazy { createMainPanel() }
 
     private val settings: UTBotProjectStoredSettings = myProject.service()
+    private lateinit var portTextfield: JBTextField
+    private lateinit var serverNameTextField: JBTextField
 
     private val isLocalOrWsl = ObservableValue(settings.isLocalOrWslScenario)
 
@@ -74,6 +78,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private fun Panel.createConnectionSettings() {
         row(UTBot.message("settings.project.port")) {
             intTextField().bindIntText(projectIndependentSettings::port).applyToComponent {
+                portTextfield = this
                 maximumSize = TEXT_FIELD_MAX_SIZE
             }
         }.rowComment(UTBot.message("deployment.utbotPort.description"))
@@ -96,6 +101,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
         row(UTBot.message("settings.project.serverName")) {
             textField().bindText(projectIndependentSettings::serverName).applyToComponent {
+                serverNameTextField = this
                 isLocalOrWsl.addOnChangeListener { newValue ->
                     if (newValue)
                         this.text = "localhost"
@@ -124,8 +130,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
         row(UTBot.message("settings.project.target")) {
             textField().bindText(
                 getter = {
-                    //TODO: it is not very good to relative paths in UI component
-                    Paths.get(myProject.path).relativize(Paths.get(settings.targetPath)).toString()
+                    settings.uiTargetPath
                 },
                 setter = {}
             ).columns(COLUMNS_LARGE).enabled(false)
@@ -228,8 +233,12 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     }
 
     override fun apply() {
+        val wereConnectionSettingsModified =
+            portTextfield.text != projectIndependentSettings.port.toString() || serverNameTextField.text != projectIndependentSettings.serverName
         panel.apply()
         myProject.settings.fireUTBotSettingsChanged()
+        if (wereConnectionSettingsModified)
+            projectIndependentSettings.fireConnectionSettingsChanged()
     }
 
     override fun reset() {

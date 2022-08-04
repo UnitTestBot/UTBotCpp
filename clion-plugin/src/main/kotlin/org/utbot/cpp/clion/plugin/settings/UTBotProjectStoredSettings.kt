@@ -8,6 +8,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.utils.path
+import java.nio.file.Paths
 
 /**
  * Settings that are specific to each project
@@ -122,6 +124,12 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             myState.targetPath = value
         }
 
+    val uiTargetPath: String
+        get() = if (targetPath == UTBotTarget.autoTarget.path)
+            UTBotTarget.autoTarget.path
+        else
+            Paths.get(project.path).relativize(Paths.get(targetPath)).toString()
+
     var buildDirRelativePath: String
         get() = myState.buildDirRelativePath
         set(value) {
@@ -146,6 +154,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
 
     companion object {
         val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")
+
         // local means no conversion of paths is needed. This is the case for when server runs locally on Linux
         const val DEFAULT_TESTS_DIR_RELATIVE_PATH = "tests"
         const val REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO = ""
