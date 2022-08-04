@@ -91,7 +91,7 @@ abstract class BaseGenerationTestCase {
         targetsController.requestTargetsFromServer()
         waitForRequestsToFinish()
         PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-        targetsController.setTargetByName(targetName)
+        targetsController.setTargetPathByName(targetName)
     }
 
     /**

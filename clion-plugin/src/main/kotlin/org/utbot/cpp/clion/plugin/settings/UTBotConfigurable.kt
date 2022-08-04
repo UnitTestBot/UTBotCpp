@@ -122,9 +122,11 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
         ).rowComment(UTBot.message("paths.buildDirectory.description"))
 
         row(UTBot.message("settings.project.target")) {
-            textField().bindText(getter = {
-                Paths.get(myProject.path).relativize(Paths.get(settings.targetPath)).toString()
-            },
+            textField().bindText(
+                getter = {
+                    //TODO: it is not very good to relative paths in UI component
+                    Paths.get(myProject.path).relativize(Paths.get(settings.targetPath)).toString()
+                },
                 setter = {}
             ).columns(COLUMNS_LARGE).enabled(false)
         }.rowComment(UTBot.message("paths.target.description"))

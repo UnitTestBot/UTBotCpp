@@ -19,29 +19,28 @@ class UTBotTargetsController(val project: Project) {
     private val settings: UTBotAllProjectSettings
         get() = project.settings
 
-    private val listModel = CollectionListModel(mutableListOf<UTBotTarget>())
     private val logger get() = project.logger
+
     private var areTargetsUpToDate = false
-    val targetsToolWindow: UTBotTargetsToolWindow by lazy { UTBotTargetsToolWindow(listModel, this) }
+    private val targetsUiModel = CollectionListModel(mutableListOf<UTBotTarget>())
+    val targetsToolWindow: UTBotTargetsToolWindow by lazy { UTBotTargetsToolWindow(targetsUiModel, this) }
 
     val targets: List<UTBotTarget>
-        get() = listModel.toList()
+        get() = targetsUiModel.toList()
 
     init {
         requestTargetsFromServer()
         connectToEvents()
     }
 
-    fun isTargetUpToDate(path: String): Boolean {
-        return areTargetsUpToDate && targets.find { it.path == path } != null
-    }
+    fun isTargetUpToDate(path: String): Boolean = areTargetsUpToDate && targets.find { it.path == path } != null
 
     fun requestTargetsFromServer() {
         val currentClient = project.getCurrentClient()
         areTargetsUpToDate = false
 
         invokeOnEdt {
-            listModel.removeAll()
+            targetsUiModel.removeAll()
             targetsToolWindow.setBusy(true)
         }
         ProjectTargetsRequest(
@@ -51,8 +50,8 @@ class UTBotTargetsController(val project: Project) {
                 invokeOnEdt {
                     targetsToolWindow.setBusy(false)
 
-                    listModel.apply {
-                        listModel.replaceAll(
+                    targetsUiModel.apply {
+                        targetsUiModel.replaceAll(
                             targetsResponse.targetsList.map { projectTarget ->
                                 UTBotTarget(projectTarget, project)
                             })
@@ -60,10 +59,10 @@ class UTBotTargetsController(val project: Project) {
                     areTargetsUpToDate = true
 
                     // set selected target in ui
-                    val persistedPath = project.settings.storedSettings.targetPath
+                    val storedTargetPath = project.settings.storedSettings.targetPath
                     var targetToSelect = UTBotTarget.autoTarget
-                    if (isTargetUpToDate(persistedPath)) {
-                        targets.find { it.path == persistedPath }?.let {
+                    if (isTargetUpToDate(storedTargetPath)) {
+                        targets.find { it.path == storedTargetPath }?.let {
                             targetToSelect = it
                         }
                     }
@@ -93,7 +92,7 @@ class UTBotTargetsController(val project: Project) {
         settings.storedSettings.targetPath = selectedTarget.path
     }
 
-    fun setTargetByName(targetName: String) {
+    fun setTargetPathByName(targetName: String) {
         val target = targets.find { it.name == targetName } ?: error("No such target!")
         settings.storedSettings.targetPath = target.path
     }
