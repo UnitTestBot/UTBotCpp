@@ -211,7 +211,7 @@ WORKDIR $UTBOT_ALL/klee-uclibc
 RUN ./configure --make-llvm-lib && make -j`nproc`
 
 # Install 32bits libs AFTER LLVM compilation
-RUN apt update && apt install -y --no-install-recommends gcc-9-multilib g++-9-multilib
+RUN apt update && apt install -y --no-install-recommends sudo apt install gcc-multilib g++-multilib gcc-9-multilib g++-9-multilib
 
 # Download library for access private members
 RUN git clone https://github.com/martong/access_private.git $UTBOT_ALL/access_private
