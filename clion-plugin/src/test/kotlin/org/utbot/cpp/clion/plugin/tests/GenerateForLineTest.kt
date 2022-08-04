@@ -56,3 +56,4 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         const val IF_IN_MAX_FUNCTION_LINE = 3
     }
 }
+

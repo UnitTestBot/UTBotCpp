@@ -23,6 +23,7 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.name
+import kotlinx.coroutines.Job
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SwingEdtInterceptor::class)
@@ -95,12 +96,15 @@ abstract class BaseGenerationTestCase {
     }
 
     /**
-     * Waits until all coroutines in client#shortLivingRequestsCS scope are finished.
+     * Waits until all requests initiated during tests are finished
      */
     fun waitForRequestsToFinish() = runBlocking {
         // requests to server are asynchronous, need to wait for server to respond
-        logger.info("Waiting for requests to finish.")
-        client.waitForServerRequestsToFinish()
+        client.waitForServerRequestsToFinish(ifNotFinished = { unfinishedCoroutines: List<Job> ->
+            // some requests may be executed only on EDT, so we wk
+            PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
+            logger.info("Waiting for requests to finish: $unfinishedCoroutines")
+        })
         logger.info("Finished waiting!")
     }
 

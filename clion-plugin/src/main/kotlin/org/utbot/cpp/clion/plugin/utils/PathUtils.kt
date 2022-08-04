@@ -72,9 +72,13 @@ fun testFileNameToSourceFileName(path: Path): Path =
  * Converts windows path to wsl path.
  * For example, C:\a\b -> /mnt/c/a/b.
  */
-fun String.toWslFormat(): String {
+fun String.toWslFormatIfNeeded(): String {
     if (!isWindows) return this
+    return this.convertPathToWslFormat()
 
+}
+
+fun String.convertPathToWslFormat(): String {
     return this
         .replace("""^(\w):""".toRegex()) { matchResult -> "/mnt/${matchResult.groupValues[1].lowercase()}" }
         .replace("""\\+""".toRegex(), "/")

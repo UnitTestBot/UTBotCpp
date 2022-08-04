@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import org.utbot.cpp.clion.plugin.utils.toWslFormat
+import org.utbot.cpp.clion.plugin.utils.convertPathToWslFormat
+import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 
 class ToWslFormatTest {
     @MethodSource("inputData")
@@ -12,7 +13,7 @@ class ToWslFormatTest {
     fun doTest(path: String, expected: String) {
         Assertions.assertEquals(
             expected,
-            path.toWslFormat()
+            path.convertPathToWslFormat()
         )
     }
 

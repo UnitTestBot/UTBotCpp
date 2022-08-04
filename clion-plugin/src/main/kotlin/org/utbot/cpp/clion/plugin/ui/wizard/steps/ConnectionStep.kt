@@ -2,7 +2,6 @@
 
 package org.utbot.cpp.clion.plugin.ui.wizard.steps
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.AnimatedIcon
@@ -28,7 +27,7 @@ import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
-import org.utbot.cpp.clion.plugin.utils.toWslFormat
+import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 import javax.swing.JComponent
 import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
@@ -62,7 +61,7 @@ class ConnectionStep(
             if (newValue) {
                 portComponent.number = UTBotAllProjectSettings.DEFAULT_PORT
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = if (isWindows) project.path.toWslFormat()
+                remotePathTextField.text = if (isWindows) project.path.toWslFormatIfNeeded()
                     else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
             }
         }

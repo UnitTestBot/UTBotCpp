@@ -22,7 +22,7 @@ set -e
 
 ./server/build/utbot server > /dev/null 2>&1 &
 
-cd clion-plugin
+cd clion_plugin
 ./gradlew test --info --rerun-tasks
 
 

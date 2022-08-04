@@ -78,7 +78,7 @@ class Client(
     }
 
     private fun executeRequestImpl(request: Request) {
-        requestsCS.launch {
+        requestsCS.launch(CoroutineName(request.toString())) {
             try {
                 request.execute(stub, coroutineContext[Job])
             } catch (e: io.grpc.StatusException) {
@@ -118,7 +118,7 @@ class Client(
     }
 
     private fun startPeriodicHeartBeat() {
-        logger.info{ "The heartbeat started with interval: $HEARTBEAT_INTERVAL ms" }
+        logger.info { "The heartbeat started with interval: $HEARTBEAT_INTERVAL ms" }
         servicesCS.launch(CoroutineName("periodicHeartBeat")) {
             while (isActive) {
                 heartBeatOnce()
@@ -190,11 +190,14 @@ class Client(
 
     // should be used only in tests
     @TestOnly
-    fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT) {
+    fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT,
+                                      delayTime: Long = 1000L,
+                                      ifNotFinished: (List<Job>) -> Unit = {}) {
         runBlocking {
             withTimeout(timeout) {
-                while (requestsCS.coroutineContext.job.children.any()) {
-                    delay(DELAY_TIME)
+                while (requestsCS.coroutineContext.job.children.toList().any()) {
+                    ifNotFinished(requestsCS.coroutineContext.job.children.toList())
+                    delay(delayTime)
                 }
             }
         }
@@ -203,6 +206,5 @@ class Client(
     companion object {
         const val HEARTBEAT_INTERVAL: Long = 500L
         const val SERVER_TIMEOUT: Long = 300000L
-        const val DELAY_TIME: Long = 500L
     }
 }

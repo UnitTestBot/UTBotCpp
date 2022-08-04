@@ -26,13 +26,11 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.path
-import org.utbot.cpp.clion.plugin.utils.toWslFormat
+import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 import java.awt.Dimension
-import java.nio.file.Paths
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings to Generate Tests"
@@ -114,7 +112,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 .applyToComponent {
                     isLocalOrWsl.addOnChangeListener { newValue ->
                         if (newValue)
-                            this.text = if (isWindows) myProject.path.toWslFormat() else ""
+                            this.text = if (isWindows) myProject.path.toWslFormatIfNeeded() else ""
                     }
                 }.enabledIf(enabledIfNotLocalOrWslScenario)
         }.rowComment(UTBot.message("deployment.remotePath.description"))

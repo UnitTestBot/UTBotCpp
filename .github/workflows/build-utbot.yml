@@ -2,9 +2,9 @@ name: Build UTBot and run unit tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [ main ]
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   matrix-prep:
@@ -94,17 +94,18 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
-      - name: Setup Java
-        uses: actions/setup-java@v2
-        with:
-          distribution: zulu
-          java-version: 11
-          cache: gradle
-      - name: Run CLion Plugin Tests
+      - name: Run CLion integration tests
         run: |
-          ./server/build/utbot server > /dev/null 2>&1
-          cd clion-plugin
-          ./gradlew test --info
+          chmod +x docker/action-scripts/runClionIntegrationTests.sh 
+          ./docker/action-scripts/runClionIntegrationTests.sh
+      - name: Upload logs
+          uses: actions/upload-artifact@v2
+          if: failure()
+          with:
+            name: test-report
+            path: |
+              /github/home/logs
+              clion-plugin/build/reports/tests/**/*
 
   build-utbot-and-generate-test:
     needs: matrix-prep

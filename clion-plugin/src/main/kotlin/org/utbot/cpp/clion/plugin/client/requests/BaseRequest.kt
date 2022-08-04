@@ -14,6 +14,8 @@ import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 abstract class BaseRequest<X, Y>(val request: X, val project: Project) : Request {
     abstract val logMessage: String
 
+    override fun toString(): String = logMessage
+
     override suspend fun execute(stub: TestsGenServiceCoroutineStub, cancellationJob: Job?) {
         project.logger.info { "$logMessage \n$request" }
         stub.send(cancellationJob).handle(cancellationJob)
