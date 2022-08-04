@@ -9,7 +9,6 @@ import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.settings.storedSettings
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
@@ -61,7 +60,7 @@ class UTBotTargetsController(val project: Project) {
                     areTargetsUpToDate = true
 
                     // set selected target in ui
-                    val persistedPath = project.storedSettings.targetPath
+                    val persistedPath = project.settings.storedSettings.targetPath
                     var targetToSelect = UTBotTarget.autoTarget
                     if (isTargetUpToDate(persistedPath)) {
                         targets.find { it.path == persistedPath }?.let {

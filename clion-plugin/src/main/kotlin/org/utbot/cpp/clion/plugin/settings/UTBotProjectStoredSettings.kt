@@ -52,12 +52,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         }
     }
 
-    var sourceDirs: Set<String>
-        get() = myState.sourceDirs
-        set(value) {
-            myState.sourceDirs = value
-        }
-
     var cmakeOptions: String
         get() = myState.cmakeOptions
         set(value) {
