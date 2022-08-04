@@ -35,6 +35,7 @@ import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.isWindows
+import org.utbot.cpp.clion.plugin.utils.ourPluginVersion
 
 enum class ConnectionStatus {
     Connected,
@@ -145,7 +146,7 @@ class ConnectionStep(
 
                 val warningMessage: () -> String = {
                     "⚠️ Warning! Versions are different or not defined:" +
-                            "Client: ${UTBotAllProjectSettings.clientVersion} Server: ${serverVersion ?: "not defined"}"
+                            "Client: ${ourPluginVersion} Server: ${serverVersion ?: "not defined"}"
                 }
                 label(warningMessage()).visibleIf(
                     object : ComponentPredicate() {
@@ -188,7 +189,7 @@ class ConnectionStep(
             GrpcClient(port, host, "DummyId").use { client ->
                 serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
 
-                if (serverVersion != UTBotAllProjectSettings.clientVersion)
+                if (serverVersion != ourPluginVersion)
                     return ConnectionStatus.Suspicious
                 return ConnectionStatus.Connected
             }
