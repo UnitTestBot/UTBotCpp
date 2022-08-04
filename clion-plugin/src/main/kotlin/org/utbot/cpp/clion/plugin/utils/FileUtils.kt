@@ -1,16 +1,13 @@
 package org.utbot.cpp.clion.plugin.utils
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VfsUtil
 import com.intellij.util.io.createFile
 import com.intellij.util.io.exists
 import kotlin.io.path.writeText
 import java.nio.file.Path
 
-fun refreshAndFindNioFile(file: Path) {
-    ApplicationManager.getApplication().invokeLater {
-        LocalFileSystem.getInstance()?.refreshAndFindFileByNioFile(file)
-    }
+fun refreshAndFindNioFile(path: Path, async: Boolean = true, recursive: Boolean = true, reloadChildren: Boolean = true) {
+    VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, path.toFile())
 }
 
 fun createFileWithText(filePath: Path, text: String) {

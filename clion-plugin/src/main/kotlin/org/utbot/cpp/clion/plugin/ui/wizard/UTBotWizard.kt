@@ -19,7 +19,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
 
     init {
         addStep(IntroStep())
-        addStep(ConnectionStep(project, mySettingsModel, disposable))
+        addStep(ConnectionStep(project, mySettingsModel))
         addStep(BuildOptionsStep(mySettingsModel))
         addStep(FinalStep())
         super.init()
