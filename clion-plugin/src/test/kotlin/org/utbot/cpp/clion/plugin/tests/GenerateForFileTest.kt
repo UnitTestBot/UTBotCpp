@@ -17,7 +17,7 @@ class GenerateForFileTest : BaseGenerationTestCase() {
         project.settings.storedSettings.verbose = isVerboseMode
 
         fixture.configureFromTempProjectFile(relativeFilePath)
-        fixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForFileAction")
+        fixture.performEditorAction("org.utbot.cpp.clion.plugin.actions.GenerateForFileAction")
         waitForRequestsToFinish()
 
         testsDirectoryPath.assertFileOrDirExists()

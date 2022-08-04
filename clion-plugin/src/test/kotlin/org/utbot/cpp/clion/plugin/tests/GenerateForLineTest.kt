@@ -23,7 +23,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         fixture.configureFromTempProjectFile("/lib/basic_functions.c")
         fixture.editor.moveCursorToLine(lineNumber)
 
-        fixture.performEditorAction("com.huawei.utbot.cpp.actions.GenerateForLineAction")
+        fixture.performEditorAction("org.utbot.cpp.clion.plugin.actions.GenerateForLineAction")
         waitForRequestsToFinish()
 
         testsDirectoryPath.assertFileOrDirExists()

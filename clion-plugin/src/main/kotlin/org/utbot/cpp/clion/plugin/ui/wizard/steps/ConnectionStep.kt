@@ -27,7 +27,6 @@ import org.utbot.cpp.clion.plugin.client.GrpcClient
 import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
-import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
 import javax.swing.JComponent
@@ -35,6 +34,7 @@ import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.isWindows
+import org.utbot.cpp.clion.plugin.utils.ourPluginVersion
 import org.utbot.cpp.clion.plugin.utils.path
 
 enum class ConnectionStatus {
@@ -47,7 +47,6 @@ enum class ConnectionStatus {
 class ConnectionStep(
     private val project: Project,
     private val settingsModel: UTBotSettingsModel,
-    private val parentDisposable: Disposable,
 ) : UTBotBaseWizardStep() {
     private lateinit var hostTextField: JBTextField
     private lateinit var portComponent: JBIntSpinner
@@ -146,7 +145,7 @@ class ConnectionStep(
 
                 val warningMessage: () -> String = {
                     "⚠️ Warning! Versions are different or not defined:" +
-                            "Client: ${UTBotAllProjectSettings.clientVersion} Server: ${serverVersion ?: "not defined"}"
+                            "Client: ${ourPluginVersion} Server: ${serverVersion ?: "not defined"}"
                 }
                 label(warningMessage()).visibleIf(
                     object : ComponentPredicate() {
@@ -189,7 +188,7 @@ class ConnectionStep(
             GrpcClient(port, host, "DummyId").use { client ->
                 serverVersion = client.stub.handshake(getVersionGrpcRequest()).version
 
-                if (serverVersion != UTBotAllProjectSettings.clientVersion)
+                if (serverVersion != ourPluginVersion)
                     return ConnectionStatus.Suspicious
                 return ConnectionStatus.Connected
             }

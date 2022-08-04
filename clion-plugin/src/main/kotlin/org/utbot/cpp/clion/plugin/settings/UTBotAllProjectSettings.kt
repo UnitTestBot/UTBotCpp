@@ -70,7 +70,6 @@ class UTBotAllProjectSettings(val project: Project) {
     }
 
     companion object {
-        const val clientVersion = "0.0.1"
         const val DEFAULT_HOST = "localhost"
         const val DEFAULT_PORT = 2121
     }
