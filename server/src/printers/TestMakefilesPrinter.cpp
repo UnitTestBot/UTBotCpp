@@ -37,7 +37,7 @@ namespace printer {
                     testGen.buildDatabase,
                     testGen.buildDatabase->getTargetPath(),
                     CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
-                            testGen.compilationDatabase->getBuildCompilerPath())),
+                            testGen.buildDatabase->compilationDatabase->getBuildCompilerPath())),
                     stubSources) {
     }
 

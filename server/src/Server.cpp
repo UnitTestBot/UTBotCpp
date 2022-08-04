@@ -198,11 +198,11 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
         LOG_S(DEBUG) << logMessage;
         Fetcher fetcher(Fetcher::Options::Value::ALL,
-                        testGen.compilationDatabase, testGen.tests, &testGen.types,
+                        testGen.buildDatabase->compilationDatabase, testGen.tests, &testGen.types,
                         &sizeContext.pointerSize, &sizeContext.maximumAlignment,
                         testGen.compileCommandsJsonPath, false);
         fetcher.fetchWithProgress(testGen.progressWriter, logMessage);
-        SourceToHeaderRewriter(testGen.projectContext, testGen.compilationDatabase,
+        SourceToHeaderRewriter(testGen.projectContext, testGen.buildDatabase->compilationDatabase,
                                fetcher.getStructsToDeclare(), testGen.serverBuildDir)
             .generateTestHeaders(testGen.tests, testGen.progressWriter);
         types::TypesHandler typesHandler{ testGen.types, sizeContext };
@@ -218,7 +218,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         if (lineTestGen != nullptr) {
             if (isSameType<ClassTestGen>(testGen) && Paths::isHeaderFile(lineTestGen->filePath)) {
                 BordersFinder classFinder(lineTestGen->filePath, lineTestGen->line,
-                                          lineTestGen->compilationDatabase,
+                                          lineTestGen->buildDatabase->compilationDatabase,
                                           lineTestGen->compileCommandsJsonPath);
                 classFinder.findClass();
                 lineInfo = std::make_shared<LineInfo>(classFinder.getLineInfo());
@@ -255,7 +255,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         }
         auto generator = std::make_shared<KleeGenerator>(
             testGen.projectContext, testGen.settingsContext,
-            testGen.serverBuildDir, testGen.compilationDatabase, typesHandler,
+            testGen.serverBuildDir, testGen.buildDatabase->compilationDatabase, typesHandler,
             pathSubstitution, testGen.buildDatabase, testGen.progressWriter);
 
         ReturnTypesFetcher returnTypesFetcher{ &testGen };
@@ -311,7 +311,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
 std::shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &lineTestGen) {
     BordersFinder stmtFinder(lineTestGen.filePath, lineTestGen.line,
-                             lineTestGen.compilationDatabase,
+                             lineTestGen.buildDatabase->compilationDatabase,
                              lineTestGen.compileCommandsJsonPath);
     stmtFinder.findFunction();
     if (!stmtFinder.getLineInfo().initialized) {
@@ -551,7 +551,7 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
     static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
     LOG_S(DEBUG) << logMessage;
     Fetcher fetcher(Fetcher::Options::Value::TYPE | Fetcher::Options::Value::FUNCTION,
-                    testGen->compilationDatabase, testGen->tests, &testGen->types,
+                    testGen->buildDatabase->compilationDatabase, testGen->tests, &testGen->types,
                     &sizeContext.pointerSize, &sizeContext.maximumAlignment,
                     testGen->compileCommandsJsonPath, false);
 

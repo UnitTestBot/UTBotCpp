@@ -145,7 +145,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     auto options = Fetcher::Options::Value::FUNCTION | Fetcher::Options::Value::INCLUDE | Fetcher::Options::Value::TYPE;
 
     auto stubFetcher =
-        Fetcher(options, testGen->compilationDatabase, sourceFilesMap, &testGen->types,
+        Fetcher(options, testGen->buildDatabase->compilationDatabase, sourceFilesMap, &testGen->types,
                 &sizeContext->pointerSize, &sizeContext->maximumAlignment,
                 testGen->compileCommandsJsonPath, false);
 
@@ -157,7 +157,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     auto stubsCdb = createStubsCompilationDatabase(stubFiles, ccJsonStubDirPath);
 
     auto sourceToHeaderRewriter =
-    SourceToHeaderRewriter(testGen->projectContext, testGen->compilationDatabase,
+    SourceToHeaderRewriter(testGen->projectContext, testGen->buildDatabase->compilationDatabase,
                            stubFetcher.getStructsToDeclare(), testGen->serverBuildDir);
 
     for (const StubOperator &outdatedStub : outdatedStubs) {
@@ -203,14 +203,14 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
         sourceFilesNeedToRegenerateWrappers, testGen->progressWriter,
         "Generating wrappers", [this](fs::path const &sourceFilePath) {
             SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
-                                                          testGen->compilationDatabase, nullptr,
+                                                          testGen->buildDatabase->compilationDatabase, nullptr,
                                                           testGen->serverBuildDir);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
             printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFilePath)).print(testGen->projectContext, sourceFilePath, wrapper);
         });
 }
 const CollectionUtils::FileSet &Synchronizer::getAllFiles() const {
-    return testGen->compilationDatabase->getAllFiles();
+    return testGen->baseBuildDatabase->compilationDatabase->getAllFiles();
 }
 
 void Synchronizer::prepareDirectory(const fs::path &stubDirectory) {

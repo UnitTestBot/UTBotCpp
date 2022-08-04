@@ -18,11 +18,11 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
             projectContext.projectPath, projectContext.buildDirRelativePath);
     baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext, false);
     buildDatabase = baseBuildDatabase->createBaseForTarget(request.targetpath());
-    compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
+//    compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
     if (autoSrcPaths) {
         autoDetectSourcePathsIfNotEmpty();
     } else {
-        sourcePaths = compilationDatabase->getAllFiles();
+        sourcePaths = buildDatabase->compilationDatabase->getAllFiles();
     }
     testingMethodsSourcePaths = sourcePaths;
     setInitializedTestsMap();
@@ -54,7 +54,7 @@ void ProjectTestGen::autoDetectSourcePathsIfNotEmpty() {
     // requestSourcePaths are from settings.json
     auto requestSourcePaths = getRequestSourcePaths();
     // sourcePathsCandidates are from compile_commands.json
-    auto sourcePathsCandidates = compilationDatabase->getAllFiles();
+    auto sourcePathsCandidates = buildDatabase->compilationDatabase->getAllFiles();
     if (!requestSourcePaths.empty()) {
         sourcePaths =
                 Paths::filterPathsByDirNames(sourcePathsCandidates, requestSourcePaths, Paths::isSourceFile);

@@ -289,6 +289,7 @@ void BuildDatabase::createClangCompileCommandsJson() {
 
     fs::path clangCompileCommandsJsonPath = CompilationUtils::getClangCompileCommandsJsonPath(buildCommandsJsonPath);
     JsonUtils::writeJsonToFile(clangCompileCommandsJsonPath, compileCommandsSingleFilesJson);
+    compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
 }
 
 //void BuildDatabase::updateTarget(const fs::path &_target) {

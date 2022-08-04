@@ -114,7 +114,7 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
         if (result.isSuccess()) {
             auto [targetBitcode, stubsSet, _] = result.getOpt().value();
             addToGenerated({ objectFile }, targetBitcode);
-            auto&& targetUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(target);
+            auto&& targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
             testGen.buildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, stubsSet);
             return;
         } else {
@@ -202,7 +202,7 @@ void Linker::linkForProject() {
                                         return compilationUnitInfo->getOutputFile();
                                     });
                             addToGenerated(objectFiles, linkres.bitcodeOutput);
-                            auto &&targetUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(target);
+                            auto &&targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
                             testGen.buildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, linkres.stubsSet);
                             break;
                         } else {

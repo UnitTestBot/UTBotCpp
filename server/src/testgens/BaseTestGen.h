@@ -23,7 +23,7 @@ public:
     fs::path serverBuildDir;
 
     fs::path compileCommandsJsonPath;
-    std::shared_ptr<CompilationDatabase> compilationDatabase;
+//    std::shared_ptr<CompilationDatabase> compilationDatabase;
     std::shared_ptr<BuildDatabase> baseBuildDatabase;
     std::shared_ptr<BuildDatabase> buildDatabase;
 

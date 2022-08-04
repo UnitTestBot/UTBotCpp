@@ -233,6 +233,8 @@ public:
     bool hasAutoTarget() const;
 
     fs::path getTargetPath() const;
+
+    std::shared_ptr<CompilationDatabase> compilationDatabase;
 private:
     BuildDatabase(BuildDatabase& baseBuildDatabase,
                   const std::string &_target);
@@ -248,6 +250,7 @@ private:
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
     CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
+
 
     std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
 

@@ -167,9 +167,9 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
 
-        auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
-        auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
-        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
+        auto root = testGen.buildDatabase->getRootForSource(foreign_bar_c);
+        auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(root);
+        auto stubFiles = testGen.buildDatabase->getStubFiles(linkUnitInfo);
         auto stubCandidates = { calc_sum_c };
         auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
             stubCandidates, [&testGen](fs::path const &path) {
