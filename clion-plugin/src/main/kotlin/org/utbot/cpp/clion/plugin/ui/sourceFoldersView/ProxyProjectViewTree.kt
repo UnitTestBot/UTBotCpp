@@ -16,19 +16,6 @@ open class ProxyProjectViewTree(
     private val myPane: UTBotProjectViewPane,
 ) : ProjectViewTree(treeModel), DataProvider {
 
-    init {
-        // disable node expansion on double click
-        setToggleClickCount(0)
-        // change marked/unmarked status on double click
-        addMouseListener(object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent?) {
-                if (e?.clickCount == 2) {
-                    createUpdater().toggle()
-                }
-            }
-        })
-    }
-
     protected open fun createUpdater() = object : BaseUpdater(myPane.selectedDirectories.toList()) {
         override fun getCurrentMarkedDirs(): Set<String> = project.settings.storedSettings.sourceDirs
         override fun setCurrentMarkedDirs(value: Set<String>) {
