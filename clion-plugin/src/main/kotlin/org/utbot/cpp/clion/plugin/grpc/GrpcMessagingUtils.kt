@@ -20,6 +20,5 @@ fun getProjectContextMessage(project: Project): Testgen.ProjectContext = Testgen
     .setProjectName(project.name)
     .setProjectPath(project.settings.convertedProjectPath)
     .setBuildDirRelativePath(project.settings.storedSettings.buildDirRelativePath)
-    .setResultsDirRelativePath("") // this path is used only by command line interface, server doesn't require it.
     .setTestDirPath(project.settings.convertedTestDirPath)
     .build()
