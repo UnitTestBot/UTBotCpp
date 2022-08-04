@@ -16,15 +16,19 @@ import testsgen.Testgen
 class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
     val log = Logger.getInstance(this::class.java)
 
-    override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? {
-        return UTBotRunWithCoverageLineMarkerInfo.createFromPsiElementOrNull(element)
-    }
+    override fun getLineMarkerInfo(element: PsiElement): LineMarkerInfo<*>? =
+        UTBotRunWithCoverageLineMarkerInfo.createFromPsiElementOrNull(element)
 
-    private class UTBotRunWithCoverageLineMarkerInfo private constructor(
-            callElement: PsiElement,
-            message: String,
-            icon: Icon,
-    ) : LineMarkerInfo<PsiElement>(callElement, callElement.textRange, icon, { message }, null, GutterIconRenderer.Alignment.LEFT, { message }) {
+    private class UTBotRunWithCoverageLineMarkerInfo
+    private constructor(callElement: PsiElement, message: String, icon: Icon) : LineMarkerInfo<PsiElement>(
+        callElement,
+        callElement.textRange,
+        icon,
+        { message },
+        null,
+        GutterIconRenderer.Alignment.LEFT,
+        { message }) {
+
         override fun createGutterRenderer(): GutterIconRenderer {
             return object : LineMarkerGutterIconRenderer<PsiElement>(this) {
                 override fun isNavigateAction(): Boolean = true
@@ -32,25 +36,31 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
             }
         }
 
-
         companion object {
             fun createFromPsiElementOrNull(element: PsiElement): UTBotRunWithCoverageLineMarkerInfo? {
-                if (element.firstChild != null || (!isSingleTest(element) && !isAllTests(element)) || element.containingFile.name.endsWith(".h")) {
+                val elementRequiresIcon = element.canPlaceSingleTestIcon() || element.canPlaceAllTestsIcon()
+                if (element.firstChild != null
+                    || !elementRequiresIcon
+                    || element.containingFile.name.endsWith(".h")
+                ) {
                     return null
                 }
-                val message = if (isSingleTest(element)) "UTBot: Run with coverage" else "Run all tests with coverage"
+                val message =
+                    if (element.canPlaceSingleTestIcon()) "UTBot: Run with coverage" else "Run all tests with coverage"
 
                 return UTBotRunWithCoverageLineMarkerInfo(element, message, getStatusIcon(element))
             }
 
             private fun getStatusIcon(element: PsiElement): Icon {
                 // return icon for Running All Tests
-                if (!isAllTests(element)) {
+                if (element.canPlaceAllTestsIcon()) {
                     return AllIcons.RunConfigurations.TestState.Run_run
                 }
 
+                //TODO: it is a little strange to create smth just for a testName
                 val testName: String = TestNameAndTestSuite.create(element).name
-                val testResult: Testgen.TestResultObject? = element.project.service<TestsResultsStorage>().getTestResultByTestName(testName)
+                val testResult: Testgen.TestResultObject? =
+                    element.project.service<TestsResultsStorage>().getTestResultByTestName(testName)
 
                 // if there's no info about TestResult with the specified name, return icon for running single test
                 if (testResult == null || testName.isEmpty()) {
@@ -61,7 +71,9 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
                 return when (testResult.status) {
                     Testgen.TestStatus.TEST_FAILED -> AllIcons.RunConfigurations.TestState.Red2
                     Testgen.TestStatus.TEST_PASSED -> AllIcons.RunConfigurations.TestState.Green2
-                    else -> AllIcons.RunConfigurations.TestError
+                    Testgen.TestStatus.TEST_DEATH,
+                    Testgen.TestStatus.TEST_INTERRUPTED,
+                    Testgen.TestStatus.UNRECOGNIZED -> AllIcons.RunConfigurations.TestError
                 }
             }
         }
@@ -70,7 +82,8 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
     companion object {
         private const val RUN_SINGLE_TEST_TEXT_MARK = "TEST"
         private const val RUN_ALL_TESTS_TEXT_MARK = "UTBot"
-        private fun isSingleTest(element: PsiElement) = element.text == RUN_SINGLE_TEST_TEXT_MARK
-        private fun isAllTests(element: PsiElement) = element.text == RUN_ALL_TESTS_TEXT_MARK
+
+        private fun PsiElement.canPlaceSingleTestIcon() = this.text == RUN_SINGLE_TEST_TEXT_MARK
+        private fun PsiElement.canPlaceAllTestsIcon() = this.text == RUN_ALL_TESTS_TEXT_MARK
     }
 }

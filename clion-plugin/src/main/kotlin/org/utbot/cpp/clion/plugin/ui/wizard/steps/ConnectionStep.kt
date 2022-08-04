@@ -27,7 +27,6 @@ import org.utbot.cpp.clion.plugin.client.GrpcClient
 import org.utbot.cpp.clion.plugin.grpc.getVersionGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
 import org.utbot.cpp.clion.plugin.settings.UTBotSettingsModel
-import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
 import javax.swing.JComponent
@@ -36,6 +35,7 @@ import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.ourPluginVersion
+import org.utbot.cpp.clion.plugin.utils.path
 
 enum class ConnectionStatus {
     Connected,
@@ -47,7 +47,6 @@ enum class ConnectionStatus {
 class ConnectionStep(
     private val project: Project,
     private val settingsModel: UTBotSettingsModel,
-    private val parentDisposable: Disposable,
 ) : UTBotBaseWizardStep() {
     private lateinit var hostTextField: JBTextField
     private lateinit var portComponent: JBIntSpinner
@@ -63,7 +62,7 @@ class ConnectionStep(
             if (newValue) {
                 portComponent.number = UTBotAllProjectSettings.DEFAULT_PORT
                 hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = if (isWindows) project.settings.projectPath.toWslFormat()
+                remotePathTextField.text = if (isWindows) project.path.toWslFormat()
                     else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
             }
         }

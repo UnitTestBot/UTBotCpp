@@ -1,12 +1,11 @@
 package org.utbot.cpp.clion.plugin
 
 import com.intellij.ide.util.RunOnceUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.startup.StartupActivity
-import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.ClientManager
-import org.utbot.cpp.clion.plugin.settings.pluginSettings
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizard
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
@@ -27,10 +26,11 @@ class UTBotStartupActivity : StartupActivity {
 
 
     private fun showWizardOnFirstOpen(project: Project) {
-        if (pluginSettings.isFirstLaunch && !Client.IS_TEST_MODE) {
-            pluginSettings.isFirstLaunch = false
+        if (!ApplicationManager.getApplication().isUnitTestMode) {
             invokeOnEdt {
-                UTBotWizard(project).showAndGet()
+                RunOnceUtil.runOnceForProject(project, "Show UTBot quick-start wizard to configure project") {
+                    UTBotWizard(project).showAndGet()
+                }
             }
         }
     }

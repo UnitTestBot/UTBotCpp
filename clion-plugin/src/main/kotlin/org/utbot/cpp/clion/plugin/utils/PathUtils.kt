@@ -14,6 +14,8 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
 import kotlin.io.path.div
 
+val Project.path get() = this.basePath ?: error("Project path can't be null!")
+
 fun relativize(from: String, to: String): String {
     val toPath = Paths.get(to)
     val fromPath = Paths.get(from)
@@ -58,8 +60,8 @@ fun String.fileNameOrNull(): String? {
 }
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
-    val relativeToProject = Paths.get(project.settings.storedSettings.testDirPath).relativize(path.parent)
-    return (Paths.get(project.settings.projectPath) / relativeToProject / testFileNameToSourceFileName(path))
+    val relativeToProject = project.settings.testsDirPath.relativize(path.parent)
+    return (Paths.get(project.path) / relativeToProject / testFileNameToSourceFileName(path))
 }
 
 // todo: tests
@@ -105,13 +107,13 @@ fun String.convertFromRemotePathIfNeeded(project: Project): Path {
 
 
 private fun String.convertToRemotePath(project: Project): String {
-    val relativeToProjectPath = relativize(project.settings.projectPath, this)
+    val relativeToProjectPath = relativize(project.path, this)
     return FilenameUtils.separatorsToUnix(Paths.get(project.settings.storedSettings.remotePath, relativeToProjectPath).toString())
 }
 
 private fun String.convertFromRemotePath(project: Project): String {
     val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(project.settings.storedSettings.remotePath, this))
-    return FilenameUtils.separatorsToSystem(Paths.get(project.settings.storedSettings.projectPath, relativeToProjectPath).toString())
+    return FilenameUtils.separatorsToSystem(Paths.get(project.path, relativeToProjectPath).toString())
 }
 
 fun getCommonPathFromRoot(firstPath: Path, secondPath: Path): Path {

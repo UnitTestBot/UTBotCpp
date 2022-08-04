@@ -26,11 +26,10 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun getTooltipText() = VerboseModeWidgetFactory.STATUS_BAR_DISPLAY_NAME
 
     override fun getClickConsumer() = Consumer<MouseEvent> { _ ->
-        statusBar?.updateWidget(ID())
-
         val project = statusBar?.project ?: return@Consumer
         val settings = project.settings.storedSettings
         settings.verbose = !settings.verbose
+        statusBar?.updateWidget(ID())
     }
 
     override fun getText(): String {

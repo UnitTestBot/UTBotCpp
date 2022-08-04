@@ -2,11 +2,13 @@
 
 package org.utbot.cpp.clion.plugin.settings
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.LabelPosition
@@ -24,10 +26,13 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
+import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import org.utbot.cpp.clion.plugin.utils.isWindows
+import org.utbot.cpp.clion.plugin.utils.path
 import org.utbot.cpp.clion.plugin.utils.toWslFormat
 import java.awt.Dimension
+import java.nio.file.Paths
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings to Generate Tests"
@@ -35,8 +40,9 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val logger = Logger.getInstance("ProjectConfigurable")
     private val panel by lazy { createMainPanel() }
 
-    private val settings: UTBotProjectStoredSettings.State
-        get() = myProject.settings.storedSettings
+    private val settings: UTBotProjectStoredSettings = myProject.service()
+    private lateinit var portTextfield: JBTextField
+    private lateinit var serverNameTextField: JBTextField
 
     private val isLocalOrWsl = ObservableValue(settings.isLocalOrWslScenario)
 
@@ -62,16 +68,17 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
         return panel {
-            group("Connection Settings") { this.createConnectionSettings() }
-            group("Paths") { this.createPathsSettings() }
-            group("CMake") { this.createCMakeSettings() }
-            group("Generator Settings") { this.createGeneratorSettings() }
+            group("Connection Settings") { createConnectionSettings() }
+            group("Paths") { createPathsSettings() }
+            group("CMake") { createCMakeSettings() }
+            group("Generator Settings") { createGeneratorSettings() }
         }
     }
 
     private fun Panel.createConnectionSettings() {
         row(UTBot.message("settings.project.port")) {
             intTextField().bindIntText(projectIndependentSettings::port).applyToComponent {
+                portTextfield = this
                 maximumSize = TEXT_FIELD_MAX_SIZE
             }
         }.rowComment(UTBot.message("deployment.utbotPort.description"))
@@ -94,6 +101,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
         row(UTBot.message("settings.project.serverName")) {
             textField().bindText(projectIndependentSettings::serverName).applyToComponent {
+                serverNameTextField = this
                 isLocalOrWsl.addOnChangeListener { newValue ->
                     if (newValue)
                         this.text = "localhost"
@@ -106,38 +114,31 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 .applyToComponent {
                     isLocalOrWsl.addOnChangeListener { newValue ->
                         if (newValue)
-                            this.text = if (isWindows) myProject.settings.projectPath.toWslFormat() else ""
+                            this.text = if (isWindows) myProject.path.toWslFormat() else ""
                     }
                 }.enabledIf(enabledIfNotLocalOrWslScenario)
         }.rowComment(UTBot.message("deployment.remotePath.description"))
     }
 
     private fun Panel.createPathsSettings() {
-        row(UTBot.message("settings.project.projectPath")) {
-            textFieldWithBrowseButton(
-                UTBot.message("settings.project.projectPath.title"),
-                myProject,
-                FileChooserDescriptorFactory.createSingleFileDescriptor()
-            ).bindText(
-                getter = { myProject.settings.projectPath },
-                setter = { value -> myProject.settings.projectPath = value })
-                .columns(COLUMNS_LARGE)
-        }.rowComment(UTBot.message("settings.project.projectPath.info"))
         createPathChooser(
             settings::buildDirRelativePath,
             UTBot.message("settings.project.buildDir"),
             UTBot.message("settings.project.buildDir.browse.title")
         ).rowComment(UTBot.message("paths.buildDirectory.description"))
-        createPathChooser(
-            settings::targetPath,
-            UTBot.message("settings.project.target"),
-            UTBot.message("settings.project.target.browse.title")
-        ).rowComment(UTBot.message("paths.target.description"))
-        createPathChooser(
-            settings::testDirPath,
-            UTBot.message("settings.project.testsDir"),
-            UTBot.message("settings.project.testsDir.browse.title")
-        ).rowComment(UTBot.message("paths.testsDirectory.description"))
+
+        row(UTBot.message("settings.project.target")) {
+            textField().bindText(
+                getter = {
+                    settings.uiTargetPath
+                },
+                setter = {}
+            ).columns(COLUMNS_LARGE).enabled(false)
+        }.rowComment(UTBot.message("paths.target.description"))
+
+        row(UTBot.message("settings.project.testsDir")) {
+            textField().bindText(settings::testDirRelativePath).columns(COLUMNS_LARGE)
+        }.rowComment(UTBot.message("paths.testsDir.description"))
 
         row {
             val pane = UTBotProjectViewPaneForSettings(myProject)
@@ -221,7 +222,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             spinner(
                 UTBotProjectStoredSettings.TIMEOUT_PER_TEST_MIN_VALUE..
                         UTBotProjectStoredSettings.TIMEOUT_PER_TEST_MAX_VALUE
-            ).bindIntValue(settings::timeoutPerFunction).applyToComponent {
+            ).bindIntValue(settings::timeoutPerTest).applyToComponent {
                 maximumSize = TEXT_FIELD_MAX_SIZE
             }
         }.rowComment(UTBot.message("advanced.timeoutPerTest.description"))
@@ -232,8 +233,12 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     }
 
     override fun apply() {
+        val wereConnectionSettingsModified =
+            portTextfield.text != projectIndependentSettings.port.toString() || serverNameTextField.text != projectIndependentSettings.serverName
         panel.apply()
         myProject.settings.fireUTBotSettingsChanged()
+        if (wereConnectionSettingsModified)
+            projectIndependentSettings.fireConnectionSettingsChanged()
     }
 
     override fun reset() {

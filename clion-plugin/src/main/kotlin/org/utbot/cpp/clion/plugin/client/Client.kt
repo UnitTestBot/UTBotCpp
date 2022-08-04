@@ -201,7 +201,6 @@ class Client(
     }
 
     companion object {
-        var IS_TEST_MODE = false
         const val HEARTBEAT_INTERVAL: Long = 500L
         const val SERVER_TIMEOUT: Long = 300000L
         const val DELAY_TIME: Long = 500L

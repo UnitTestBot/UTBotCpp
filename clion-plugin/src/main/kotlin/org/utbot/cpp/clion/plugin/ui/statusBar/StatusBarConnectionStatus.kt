@@ -67,8 +67,8 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
         val component = event.component
 
         val popup = StatusBarActionsPopup.getPopup(DataManager.getInstance().getDataContext(component))
-        //TODO: this is a kind of peacedeath
         val dimension = popup.content.preferredSize
+        // the point for popup was set experimentally
         val popupLocation = Point(0, -dimension.height)
 
         popup.show(RelativePoint(component, popupLocation))

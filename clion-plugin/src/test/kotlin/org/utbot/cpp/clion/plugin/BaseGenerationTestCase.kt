@@ -46,10 +46,6 @@ abstract class BaseGenerationTestCase {
         override fun deleteOnTearDown() = false
     }
 
-    init {
-        Client.IS_TEST_MODE = true
-    }
-
     val projectPath: Path =
         Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     val testsDirectoryPath: Path = projectPath.resolve("cl-plugin-test-tests")
@@ -64,7 +60,7 @@ abstract class BaseGenerationTestCase {
 
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
-        project.settings.storedSettings.testDirPath = testsDirectoryPath.toString()
+        project.settings.storedSettings.testsDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
         project.logger.logWriters.let {
             it.clear()
             it.add(SystemWriter())
@@ -95,7 +91,7 @@ abstract class BaseGenerationTestCase {
         targetsController.requestTargetsFromServer()
         waitForRequestsToFinish()
         PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-        targetsController.setTargetByName(targetName)
+        targetsController.setTargetPathByName(targetName)
     }
 
     /**
