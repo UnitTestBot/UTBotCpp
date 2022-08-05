@@ -76,8 +76,8 @@ namespace sarif {
                                     const fs::path &srcPath = fs::path(stack_match[3]);
                                     const fs::path &relPathInProject = getInProjectPath(projectContext.projectPath, srcPath);
                                     const fs::path &fullPathInProject = projectContext.projectPath / relPathInProject;
-                                    if (Paths::isSubPathOf(projectContext.buildDir(), fullPathInProject)) {
-                                        LOG_S(DEBUG) << "Full path " << fullPathInProject << " is in build - skip it";
+                                    if (Paths::isSubPathOf(Paths::getUtbotBuildDir(projectContext), fullPathInProject)) {
+                                        LOG_S(WARNING) << "Full path " << fullPathInProject << " is in build - skip it";
                                         continue;
                                     }
                                     if (!relPathInProject.empty() && fs::exists(fullPathInProject)) {

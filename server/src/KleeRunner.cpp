@@ -95,8 +95,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         std::stringstream logStream;
         if (LogUtils::isMaxVerbosity()) {
             logStream << "Processing batch: ";
-            for (const auto &[methodName, bitcodeFile, sourceFilepath] : batch) {
-                logStream << methodName << ", ";
+            for (const auto &method : batch) {
+                logStream << method.methodName << ", ";
             }
             LOG_S(MAX) << logStream.str();
         }
@@ -207,6 +207,51 @@ static void processMethod(MethodKtests &ktestChunk,
     }
 }
 
+std::pair<std::vector<std::string>, fs::path>
+KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
+                             const tests::Tests &tests,
+                             const std::string &methodNameOrEmptyForFolder) {
+    fs::path kleeOut = Paths::kleeOutDirForEntrypoints(projectContext,
+                                                       projectTmpPath,
+                                                       tests.sourceFilePath,
+                                                       methodNameOrEmptyForFolder);
+    fs::create_directories(kleeOut.parent_path());
+
+    std::vector<std::string> argvData = { "klee",
+                                          "--entry-point=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
+                                          "--libc=klee",
+                                          "--utbot",
+                                          "--posix-runtime",
+                                          "--fp-runtime",
+                                          "--only-output-states-covering-new",
+                                          "--allocate-determ",
+                                          "--external-calls=all",
+                                          "--timer-interval=1000ms",
+                                          "--bcov-check-interval=6s",
+                                          "-istats-write-interval=5s",
+                                          "--disable-verify",
+                                          "--check-div-zero=false",
+                                          "--check-overshift=false",
+                                          "--skip-not-lazy-and-symbolic-pointers",
+                                          "--output-dir=" + kleeOut.string()};
+    if (settingsContext.useDeterministicSearcher) {
+        argvData.emplace_back("--search=dfs");
+    }
+    if (testMethod.is32bit) {
+        // 32bit project
+        argvData.emplace_back("--allocate-determ-size=" + std::to_string(1));
+        argvData.emplace_back("--allocate-determ-start-address=" + std::to_string(0x10000));
+    }
+    return {argvData, kleeOut};
+}
+
+void KleeRunner::addTailKleeInitParams(std::vector<std::string> &argvData, const std::string &bitcodeFilePath)
+{
+    argvData.emplace_back(bitcodeFilePath);
+    argvData.emplace_back("--sym-stdin");
+    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
+}
+
 void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
                                                 tests::Tests &tests,
                                                 std::vector<tests::MethodKtests> &ktests) {
@@ -223,42 +268,14 @@ void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMet
             LOG_S(WARNING) << message;
         }
 
-    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
-    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, testMethod.sourceFilePath,
-                                                   testMethod.methodName);
-    fs::create_directories(kleeOut.parent_path());
-    std::string outputDir = "--output-dir=" + kleeOut.string();
-    std::vector<std::string> argvData = { "klee",
-                                          entryPointFlag,
-                                          "--libc=klee",
-                                          "--utbot",
-                                          "--posix-runtime",
-                                          "--fp-runtime",
-                                          "--only-output-states-covering-new",
-                                          "--allocate-determ",
-                                          "--external-calls=all",
-                                          "--timer-interval=1000ms",
-                                          "--bcov-check-interval=6s",
-                                          "-istats-write-interval=5s",
-                                          "--disable-verify",
-                                          "--check-div-zero=false",
-                                          "--check-overshift=false",
-                                          "--skip-not-lazy-and-symbolic-pointers",
-                                          outputDir };
-    if (settingsContext.useDeterministicSearcher) {
-        argvData.emplace_back("--search=dfs");
-    }
-    argvData.push_back(testMethod.bitcodeFilePath);
-    argvData.emplace_back("--sym-stdin");
-    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
-
-    {
-        std::vector<char *> cargv, cenvp;
-        std::vector<std::string> tmp;
-        ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
-        LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
-        MEASURE_FUNCTION_EXECUTION_TIME
+        auto [argvData, kleeOut] = createKleeParams(testMethod, tests, testMethod.methodName);
+        addTailKleeInitParams(argvData, testMethod.bitcodeFilePath);
+        {
+            std::vector<char *> cargv, cenvp;
+            std::vector<std::string> tmp;
+            ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
+            LOG_S(ERROR) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+            MEASURE_FUNCTION_EXECUTION_TIME
 
             RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
             ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
@@ -288,51 +305,26 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         }
     }
 
-    TestMethod testMethod = testMethods[0];
-    std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.methodName, true);
-    std::string entryPointFlag = StringUtils::stringFormat("--entry-point=%s", entryPoint);
-    auto kleeOut = Paths::kleeOutDirForEntrypoints(projectContext, projectTmpPath, tests.sourceFilePath);
-    fs::create_directories(kleeOut.parent_path());
-
-    fs::path entrypoints = kleeOut.parent_path() / "entrypoints.txt";
-    std::ofstream of(entrypoints);
-    for (const auto &method : testMethods) {
-        of << KleeUtils::entryPointFunction(tests, method.methodName, true) << std::endl;
+    auto [argvData, kleeOut] = createKleeParams(testMethods[0], tests, "");
+    {
+        // additional KLEE arguments
+        argvData.emplace_back("--interactive");
+        argvData.emplace_back(KleeUtils::processNumberOption());
+        {
+            // entrypoints
+            fs::path entrypoints = kleeOut.parent_path() / "entrypoints.txt";
+            std::ofstream of(entrypoints);
+            for (const auto &method : testMethods) {
+                of << KleeUtils::entryPointFunction(tests, method.methodName, true) << std::endl;
+            }
+            argvData.emplace_back("--entrypoints-file=" + entrypoints.string());
+        }
+        if (settingsContext.timeoutPerFunction.has_value()) {
+            argvData.emplace_back(StringUtils::stringFormat(
+                "--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
+        }
+        addTailKleeInitParams(argvData, testMethods[0].bitcodeFilePath);
     }
-    of.close();
-    std::string entrypointsArg = "--entrypoints-file=" + entrypoints.string();
-
-    std::string outputDir = "--output-dir=" + kleeOut.string();
-    std::vector<std::string> argvData = { "klee",
-                                          entryPointFlag,
-                                          "--libc=klee",
-                                          "--utbot",
-                                          "--posix-runtime",
-                                          "--fp-runtime",
-                                          "--only-output-states-covering-new",
-                                          "--allocate-determ",
-                                          "--external-calls=all",
-                                          "--timer-interval=1000ms",
-                                          "--bcov-check-interval=6s",
-                                          "-istats-write-interval=5s",
-                                          "--disable-verify",
-                                          "--check-div-zero=false",
-                                          "--check-overshift=false",
-                                          "--skip-not-lazy-and-symbolic-pointers",
-                                          "--interactive",
-                                          KleeUtils::processNumberOption(),
-                                          entrypointsArg,
-                                          outputDir };
-    if (settingsContext.timeoutPerFunction.has_value()) {
-        argvData.push_back(StringUtils::stringFormat("--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
-    }
-    if (settingsContext.useDeterministicSearcher) {
-        argvData.emplace_back("--search=dfs");
-    }
-    argvData.push_back(testMethod.bitcodeFilePath);
-    argvData.emplace_back("--sym-stdin");
-    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
-
     {
         std::vector<char *> cargv, cenvp;
         std::vector<std::string> tmp;

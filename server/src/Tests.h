@@ -557,10 +557,12 @@ namespace tests {
         std::string methodName;
         fs::path bitcodeFilePath;
         fs::path sourceFilePath;
+        bool is32bit;
+
         bool operator==(const TestMethod &rhs) const;
         bool operator!=(const TestMethod &rhs) const;
 
-        TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename);
+        TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename, bool is32);
     };
 
     using MethodKtests = std::unordered_map<TestMethod, UTBotKTestList, HashUtils::TestMethodHash>;

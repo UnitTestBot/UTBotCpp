@@ -242,8 +242,10 @@ namespace Paths {
     fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
                                    const fs::path &filePath);
 
-    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                      const fs::path &srcFilePath, const std::string &methodName = "");
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
+                                      const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath,
+                                      const std::string &methodNameOrEmptyForFolder);
 
     //endregion
 

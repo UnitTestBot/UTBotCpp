@@ -17,7 +17,10 @@ namespace HashUtils {
 
     std::size_t TestMethodHash::operator()(const tests::TestMethod &testMethod) const {
         size_t seed = 0;
-        hashCombine(seed, testMethod.methodName, testMethod.bitcodeFilePath, testMethod.sourceFilePath);
+        hashCombine(seed, testMethod.methodName,
+                    testMethod.bitcodeFilePath,
+                    testMethod.sourceFilePath,
+                    testMethod.is32bit);
         return seed;
     }
 }
