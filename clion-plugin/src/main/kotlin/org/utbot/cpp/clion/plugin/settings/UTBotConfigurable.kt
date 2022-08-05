@@ -148,15 +148,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 pane.isModified()
             }.label(UTBot.message("settings.project.sourcePaths"), LabelPosition.TOP)
         }.bottomGap(BottomGap.SMALL).rowComment(UTBot.message("paths.sourceDirectories.description"))
-
-
-        row {
-            label("Try to get paths from CMake model: ")
-            button("Detect Paths") {
-                myProject.settings.predictPaths()
-                myProject.settings.fireUTBotSettingsChanged()
-            }
-        }.rowComment("Queries CMake configurations to get source paths and build path. Also predicts tests folder")
     }
 
     private fun Panel.createCMakeSettings() {

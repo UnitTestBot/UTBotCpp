@@ -46,7 +46,7 @@ class UTBotAllProjectSettings(val project: Project) {
     val isRemoteScenario: Boolean
         get() {
             val isLocalHost =
-                projectIndependentSettings.serverName == "localhost" || projectIndependentSettings.serverName == "127.0.0.01"
+                projectIndependentSettings.serverName == "localhost" || projectIndependentSettings.serverName == "127.0.0.1"
             return !(storedSettings.remotePath == UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO && isLocalHost) || isWindows
         }
 
@@ -60,13 +60,6 @@ class UTBotAllProjectSettings(val project: Project) {
         storedSettings.remotePath = UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
         storedSettings.buildDirRelativePath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
         storedSettings.targetPath = UTBotTarget.autoTarget.path
-
-        val cmakeRunConfiguration = CMakeAppRunConfiguration.getSelectedConfigurationAndTarget(project)?.first
-        val buildConfigurationSources = cmakeRunConfiguration?.cMakeTarget?.buildConfigurations?.map { it.sources }
-        //TODO: why do we use firstOrNull here?
-        val cmakeConfiguration = buildConfigurationSources?.firstOrNull() ?: emptySet()
-
-        storedSettings.sourceDirs = getSourceFoldersFromSources(cmakeConfiguration)
     }
 
     companion object {
