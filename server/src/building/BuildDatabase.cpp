@@ -52,9 +52,9 @@ BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
     filterInstalledFiles();
     addLocalSharedLibraries();
     fillTargetInfoParents();
-    if (createClangCC) {
+//    if (createClangCC) {
         createClangCompileCommandsJson();
-    }
+//    }
     target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
 }
 
@@ -289,7 +289,7 @@ void BuildDatabase::createClangCompileCommandsJson() {
 
     fs::path clangCompileCommandsJsonPath = CompilationUtils::getClangCompileCommandsJsonPath(buildCommandsJsonPath);
     JsonUtils::writeJsonToFile(clangCompileCommandsJsonPath, compileCommandsSingleFilesJson);
-    compilationDatabase = CompilationUtils::getCompilationDatabase(compileCommandsJsonPath);
+    compilationDatabase = CompilationUtils::getCompilationDatabase(clangCompileCommandsJsonPath);
 }
 
 //void BuildDatabase::updateTarget(const fs::path &_target) {
@@ -598,14 +598,14 @@ fs::path BuildDatabase::getBitcodeFile(const fs::path &filepath) const {
 
 std::shared_ptr<BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilationObjectInfo(const fs::path &filepath) const {
     if (!CollectionUtils::contains(objectFileInfos, filepath)) {
-        throw CompilationDatabaseException("File not found in compilation_commands.json: " + filepath.string());
+        throw CompilationDatabaseException("Object file not found in compilation_commands.json: " + filepath.string());
     }
     return objectFileInfos.at(filepath);
 }
 
 std::shared_ptr<BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilationSourceInfo(const fs::path &filepath) const {
     if (!CollectionUtils::contains(sourceFileInfos, filepath)) {
-        throw CompilationDatabaseException("File not found in compilation_commands.json: " + filepath.string());
+        throw CompilationDatabaseException("Source file not found in compilation_commands.json: " + filepath.string());
     }
     LOG_IF_S(DEBUG, sourceFileInfos.at(filepath).size() > 1) << "More than one compile command for: " << filepath;
     return sourceFileInfos.at(filepath)[0];

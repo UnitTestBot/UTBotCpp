@@ -15,12 +15,10 @@ StubGen::StubGen(BaseTestGen &testGen) : testGen(testGen) {
 
 CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
     if (!testGen.needToBeMocked() || !testGen.settingsContext.useStubs) {
-        LOG_S(ERROR) << "??????  " << testGen.needToBeMocked()
-                     << "  " << testGen.settingsContext.useStubs;
         return {};
     }
     fs::path testedFilePath = *testGen.testingMethodsSourcePaths.begin();
-    auto stubSources = StubSourcesFinder(testGen.buildDatabase).excludeFind(testedFilePath, target);
+    auto stubSources = StubSourcesFinder(testGen.baseBuildDatabase).excludeFind(testedFilePath, target);
     return { stubSources.begin(), stubSources.end() };
 }
 
@@ -28,8 +26,7 @@ CollectionUtils::FileSet
 StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescription> &signatures) {
     fs::path ccJsonDirPath =
             Paths::getUtbotBuildDir(testGen.projectContext) / "stubs_build_files";
-    auto stubFiles =
-        Paths::findFilesInFolder(Paths::getStubsDirPath(testGen.projectContext));
+    auto stubFiles = Paths::findFilesInFolder(Paths::getStubsDirPath(testGen.projectContext));
     stubFiles = Synchronizer::dropHeaders(stubFiles);
     CollectionUtils::erase_if(stubFiles, [this](fs::path const &stubPath) {
         fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stubPath);

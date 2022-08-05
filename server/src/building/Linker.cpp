@@ -454,7 +454,7 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
             fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stubPath);
             fs::path bitcodeFile = kleeGenerator->getBuildDatabase()->getBitcodeFile(sourcePath);
             bitcodeFile = Paths::getStubBitcodeFilePath(bitcodeFile);
-            auto command = kleeGenerator->getCompileCommandForKlee(sourcePath, {}, {});
+            auto command = kleeGenerator->getCompileCommandForKlee(sourcePath, {}, {}, true);
             command->setSourcePath(stubPath);
             command->setOutput(bitcodeFile);
             auto commandWithChangingDirectory = utbot::CompileCommand(command.value(), true);

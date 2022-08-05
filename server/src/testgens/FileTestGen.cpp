@@ -7,7 +7,7 @@ FileTestGen::FileTestGen(const testsgen::FileRequest &request,
                          bool testMode)
     : ProjectTestGen(request.projectrequest(), progressWriter, testMode, false),
       filepath(fs::weakly_canonical(request.filepath())) {
-    testingMethodsSourcePaths = { filepath  };
+    testingMethodsSourcePaths = { filepath };
     setInitializedTestsMap();
 }
 

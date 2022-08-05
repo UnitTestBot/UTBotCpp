@@ -31,7 +31,7 @@ public:
 private:
     unsigned line;
     LineInfo lineInfo{};
-    fs::path buildRootPath;
+//    fs::path buildRootPath;
     struct Borders {
         struct Position {
             unsigned line;

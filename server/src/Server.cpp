@@ -253,10 +253,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 pathSubstitution = { lineTestGen->filePath, flagFilePath };
             }
         }
-        auto generator = std::make_shared<KleeGenerator>(
-            testGen.projectContext, testGen.settingsContext,
-            testGen.serverBuildDir, testGen.buildDatabase->compilationDatabase, typesHandler,
-            pathSubstitution, testGen.buildDatabase, testGen.progressWriter);
+        auto generator = std::make_shared<KleeGenerator>(testGen, typesHandler, pathSubstitution);
 
         ReturnTypesFetcher returnTypesFetcher{ &testGen };
         returnTypesFetcher.fetch(testGen.progressWriter, synchronizer.getAllFiles());
