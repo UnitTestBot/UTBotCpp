@@ -20,16 +20,11 @@ import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.layout.ComponentPredicate
 import kotlin.reflect.KMutableProperty0
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
-import org.utbot.cpp.clion.plugin.utils.isWindows
-import org.utbot.cpp.clion.plugin.utils.path
-import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 import java.awt.Dimension
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
@@ -39,10 +34,9 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val panel by lazy { createMainPanel() }
 
     private val settings: UTBotProjectStoredSettings = myProject.service()
-    private lateinit var portTextfield: JBTextField
+    private lateinit var portTextField: JBTextField
     private lateinit var serverNameTextField: JBTextField
 
-    private val isLocalOrWsl = ObservableValue(settings.isLocalOrWslScenario)
 
     init {
         myProject.messageBus.connect()
@@ -76,45 +70,19 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private fun Panel.createConnectionSettings() {
         row(UTBot.message("settings.project.port")) {
             intTextField().bindIntText(projectIndependentSettings::port).applyToComponent {
-                portTextfield = this
+                portTextField = this
                 maximumSize = TEXT_FIELD_MAX_SIZE
             }
         }.rowComment(UTBot.message("deployment.utbotPort.description"))
 
-        row {
-            checkBox("Local or WSL scenario")
-                .bindSelected(settings::isLocalOrWslScenario)
-                .applyToComponent {
-                    this.addActionListener {
-                        isLocalOrWsl.value = !isLocalOrWsl.value
-                    }
-                }
-        }
-
-        val enabledIfNotLocalOrWslScenario = object : ComponentPredicate() {
-            override fun invoke(): Boolean = !isLocalOrWsl.value
-            override fun addListener(listener: (Boolean) -> Unit) =
-                isLocalOrWsl.addOnChangeListener { value -> listener(!value) }
-        }
-
         row(UTBot.message("settings.project.serverName")) {
             textField().bindText(projectIndependentSettings::serverName).applyToComponent {
                 serverNameTextField = this
-                isLocalOrWsl.addOnChangeListener { newValue ->
-                    if (newValue)
-                        this.text = "localhost"
-                }
-            }.enabledIf(enabledIfNotLocalOrWslScenario)
+            }
         }.rowComment(UTBot.message("deployment.utbotHost.description"))
 
         row(UTBot.message("settings.project.remotePath")) {
             textField().bindText(settings::remotePath).columns(COLUMNS_LARGE)
-                .applyToComponent {
-                    isLocalOrWsl.addOnChangeListener { newValue ->
-                        if (newValue)
-                            this.text = if (isWindows) myProject.path.toWslFormatIfNeeded() else ""
-                    }
-                }.enabledIf(enabledIfNotLocalOrWslScenario)
         }.rowComment(UTBot.message("deployment.remotePath.description"))
     }
 
@@ -223,7 +191,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     override fun apply() {
         val wereConnectionSettingsModified =
-            portTextfield.text != projectIndependentSettings.port.toString() || serverNameTextField.text != projectIndependentSettings.serverName
+            portTextField.text != projectIndependentSettings.port.toString() || serverNameTextField.text != projectIndependentSettings.serverName
         panel.apply()
         myProject.settings.fireUTBotSettingsChanged()
         if (wereConnectionSettingsModified)

@@ -33,7 +33,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var generateForStaticFunctions: Boolean = true,
         var useStubs: Boolean = true,
         var useDeterministicSearcher: Boolean = true,
-        var isLocalOrWslScenario: Boolean = false,
         var verbose: Boolean = false,
         var timeoutPerFunction: Int = 0,
         var timeoutPerTest: Int = 30
@@ -76,12 +75,6 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         get() = myState.useDeterministicSearcher
         set(value) {
             myState.useDeterministicSearcher = value
-        }
-
-    var isLocalOrWslScenario: Boolean
-        get() = myState.isLocalOrWslScenario
-        set(value) {
-            myState.isLocalOrWslScenario = value
         }
 
     var verbose: Boolean
