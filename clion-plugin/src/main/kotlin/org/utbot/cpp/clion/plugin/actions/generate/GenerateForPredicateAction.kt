@@ -224,14 +224,14 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         )
 
         private val integerBounds = mapOf(
-            ValidationType.INT8_T to intBoundsBySize(8, false),
-            ValidationType.INT16_T to intBoundsBySize(16, false),
-            ValidationType.INT32_T to intBoundsBySize(32, false),
-            ValidationType.INT64_T to intBoundsBySize(64, false),
-            ValidationType.UINT8_T to intBoundsBySize(8, true),
-            ValidationType.UINT16_T to intBoundsBySize(16, true),
-            ValidationType.UINT32_T to intBoundsBySize(32, true),
-            ValidationType.UINT64_T to intBoundsBySize(64, true)
+            ValidationType.INT8_T to intBoundsBySize(8, true),
+            ValidationType.INT16_T to intBoundsBySize(16, true),
+            ValidationType.INT32_T to intBoundsBySize(32, true),
+            ValidationType.INT64_T to intBoundsBySize(64, true),
+            ValidationType.UINT8_T to intBoundsBySize(8, false),
+            ValidationType.UINT16_T to intBoundsBySize(16, false),
+            ValidationType.UINT32_T to intBoundsBySize(32, false),
+            ValidationType.UINT64_T to intBoundsBySize(64, false)
         )
 
         sealed class ValidationResult {
