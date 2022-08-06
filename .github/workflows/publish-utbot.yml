@@ -65,6 +65,10 @@ jobs:
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
           ./docker/action-scripts/build-vsix.sh
+      - name: build CLion plugin
+        run: |
+          chmod +x docker/action-scripts/build-clion-plugin.sh
+          ./docker/action-scripts/build-clion-plugin.sh
       - name: build UTBot
         run: |
           chmod +x docker/action-scripts/build-utbot.sh

@@ -3,7 +3,6 @@
     <id>org.utbot.cpp.clion.plugin</id>
     <name>UTBotCppClion</name>
     <vendor>vol0n</vendor>
-    <version>0.0.1</version>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.clion.ide</depends>
@@ -17,7 +16,6 @@
                                         implementationClass="org.utbot.cpp.clion.plugin.ui.testsResults.UTBotTestRunLineMarkerProvider"/>
         <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings"/>
         <projectService serviceImplementation="org.utbot.cpp.clion.plugin.client.ClientManager"/>
-        <applicationService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotPluginSpecificSettings"/>
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <postStartupActivity implementation="org.utbot.cpp.clion.plugin.UTBotStartupActivity"/>
         <projectConfigurable parentId="tools" instance="org.utbot.cpp.clion.plugin.settings.UTBotConfigurable"

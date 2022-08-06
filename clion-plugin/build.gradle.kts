@@ -15,6 +15,8 @@ val grpcKotlinVersion by extra("1.1.0")
 val platformType: String by project
 val platformVersion: String by project
 
+val pluginVersion: String by extra(System.getenv("VERSION") ?: properties("pluginVersion"))
+
 buildscript {
     val protobufPlugInVersion by extra("0.8.17")
     val kotlinVersion by extra("1.5.30")
@@ -125,7 +127,7 @@ idea {
 }
 
 group = properties("pluginGroup")
-version = properties("pluginVersion")
+version = pluginVersion
 
 // Configure project's dependencies
 repositories {
@@ -206,7 +208,8 @@ tasks {
     }
 
     patchPluginXml {
-        version.set(properties("pluginVersion"))
+        println("plugin version $pluginVersion")
+        version.set(pluginVersion)
         sinceBuild.set(properties("pluginSinceBuild"))
         untilBuild.set(properties("pluginUntilBuild"))
 
