@@ -48,6 +48,14 @@ private:
     void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
                                      tests::Tests &tests,
                                      std::vector<tests::MethodKtests> &ktests);
+
+    std::pair<std::vector<std::string>, fs::path>
+    createKleeParams(const tests::TestMethod &testMethod,
+                     const tests::Tests &tests,
+                     const std::string &methodNameOrEmptyForFolder);
+
+    void addTailKleeInitParams(std::vector<std::string> &argvData,
+                               const std::string &bitcodeFilePath);
 };
 
 

@@ -168,11 +168,14 @@ namespace Paths {
         return kleeOutDir / relative;
     }
 
-    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                      const fs::path &srcFilePath, const std::string &methodName) {
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
+                                      const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath,
+                                      const std::string &methodNameOrEmptyForFolder) {
         auto kleeOutDirForFile = kleeOutDirForFilePath(projectContext, projectTmpPath, srcFilePath);
-        std::string suffix = methodName.empty() ?
-                addOrigExtensionAsSuffixAndAddNew(srcFilePath, "").filename().string() : methodName;
+        std::string suffix = methodNameOrEmptyForFolder.empty()
+                             ? addOrigExtensionAsSuffixAndAddNew(srcFilePath, "").filename().string()
+                             : methodNameOrEmptyForFolder;
         return kleeOutDirForFile / ("klee_out_" + suffix);
     }
 
