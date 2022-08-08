@@ -567,7 +567,7 @@ void BuildDatabase::ObjectFileInfo::addFile(fs::path file) {
     files.insert(std::move(file));
 }
 
-bool BuildDatabase::ObjectFileInfo::is32bit() const {
+bool BuildDatabase::ObjectFileInfo::is32bits() const {
     return CollectionUtils::contains(command.getCommandLine(), "-m32");
 }
 

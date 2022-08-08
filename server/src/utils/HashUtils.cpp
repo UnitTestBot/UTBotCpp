@@ -20,7 +20,7 @@ namespace HashUtils {
         hashCombine(seed, testMethod.methodName,
                     testMethod.bitcodeFilePath,
                     testMethod.sourceFilePath,
-                    testMethod.is32bit);
+                    testMethod.is32bits);
         return seed;
     }
 }

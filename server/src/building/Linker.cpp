@@ -271,7 +271,7 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                     testMethods.emplace_back(methodName,
                                              bitcodePath,
                                              fileName,
-                                             compilationUnitInfo->is32bit());
+                                             compilationUnitInfo->is32bits());
                 }
             }
         }
@@ -298,7 +298,7 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                             tests::TestMethod testMethod{ methodName,
                                                           bitcodeFileName.at(lineInfo->filePath),
                                                           fileName,
-                                                          compilationUnitInfo->is32bit()};
+                                                          compilationUnitInfo->is32bits()};
                             testMethods.emplace_back(testMethod);
                         }
                         if (!lineInfo->forClass)

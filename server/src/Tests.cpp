@@ -1141,12 +1141,12 @@ TestMethod::TestMethod(std::string methodName, fs::path bitcodeFile, fs::path so
     : methodName(std::move(methodName))
     , bitcodeFilePath(std::move(bitcodeFile))
     , sourceFilePath(std::move(sourceFilename))
-    , is32bit(is32)
+    , is32bits(is32)
 {}
 
 bool TestMethod::operator==(const TestMethod &rhs) const {
-    return std::tie(    methodName,     bitcodeFilePath,     sourceFilePath,     is32bit)
-        == std::tie(rhs.methodName, rhs.bitcodeFilePath, rhs.sourceFilePath, rhs.is32bit);
+    return std::tie(    methodName,     bitcodeFilePath,     sourceFilePath, is32bits)
+        == std::tie(rhs.methodName, rhs.bitcodeFilePath, rhs.sourceFilePath, rhs.is32bits);
 }
 bool TestMethod::operator!=(const TestMethod &rhs) const {
     return !(rhs == *this);

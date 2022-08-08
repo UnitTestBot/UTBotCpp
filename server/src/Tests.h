@@ -557,7 +557,7 @@ namespace tests {
         std::string methodName;
         fs::path bitcodeFilePath;
         fs::path sourceFilePath;
-        bool is32bit;
+        bool is32bits;
 
         bool operator==(const TestMethod &rhs) const;
         bool operator!=(const TestMethod &rhs) const;

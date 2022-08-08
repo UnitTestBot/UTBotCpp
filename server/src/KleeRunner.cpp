@@ -237,7 +237,7 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");
     }
-    if (testMethod.is32bit) {
+    if (testMethod.is32bits) {
         // 32bit project
         argvData.emplace_back("--allocate-determ-size=" + std::to_string(1));
         argvData.emplace_back("--allocate-determ-start-address=" + std::to_string(0x10000));
@@ -274,7 +274,7 @@ void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMet
             std::vector<char *> cargv, cenvp;
             std::vector<std::string> tmp;
             ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
-            LOG_S(ERROR) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+            LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
             MEASURE_FUNCTION_EXECUTION_TIME
 
             RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
