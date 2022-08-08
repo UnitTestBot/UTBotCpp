@@ -6,7 +6,7 @@ import com.intellij.util.io.exists
 import kotlin.io.path.writeText
 import java.nio.file.Path
 
-fun refreshAndFindNioFile(path: Path, async: Boolean = true, recursive: Boolean = true, reloadChildren: Boolean = true) {
+fun markDirtyAndRefresh(path: Path, async: Boolean = true, recursive: Boolean = true, reloadChildren: Boolean = true) {
     VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, path.toFile())
 }
 
@@ -25,6 +25,6 @@ fun isCPPFileName(fileName: String) = """.*\.(cpp|hpp|h)""".toRegex().matches(fi
 fun isHeaderFile(fileName: String) = """.*\.([ch])""".toRegex().matches(fileName)
 fun isHeaderFile(path: Path) = isHeaderFile(path.fileName.toString())
 
-fun isSarifReport(fileName: String) = fileName.endsWith(".sarif")
+fun String.isSarifReport() = this.endsWith(".sarif")
 
-fun isSarifReport(path: Path) = isSarifReport(path.fileName.toString())
+fun Path.isSarifReport() = this.fileName.toString().isSarifReport()

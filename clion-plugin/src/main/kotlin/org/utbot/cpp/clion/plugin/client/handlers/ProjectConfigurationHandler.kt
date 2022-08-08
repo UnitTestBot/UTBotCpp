@@ -15,7 +15,7 @@ import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyUnknownResponse
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
-import org.utbot.cpp.clion.plugin.utils.refreshAndFindNioFile
+import org.utbot.cpp.clion.plugin.utils.markDirtyAndRefresh
 import testsgen.Testgen
 
 abstract class ProjectConfigResponseHandler(
@@ -98,7 +98,7 @@ class CreateBuildDirHandler(
             }
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindNioFile(project.settings.buildDirPath)
+        markDirtyAndRefresh(project.settings.buildDirPath)
     }
 }
 
@@ -117,6 +117,6 @@ class GenerateJsonHandler(
             )
             else -> notifyUnknownResponse(response, project)
         }
-        refreshAndFindNioFile(project.settings.buildDirPath)
+        markDirtyAndRefresh(project.settings.buildDirPath)
     }
 }

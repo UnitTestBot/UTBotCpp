@@ -36,7 +36,7 @@ abstract class BaseTestsRequest<R>(request: R, project: Project, private val pro
     }
 
     open fun getFocusTarget(generatedTestFiles: List<Path>): Path? {
-        return generatedTestFiles.filter { !isHeaderFile(it) && !isSarifReport(it) }.getLongestCommonPathFromRoot()
+        return generatedTestFiles.filter { !isHeaderFile(it) && !it.isSarifReport() }.getLongestCommonPathFromRoot()
     }
 
     override fun logRequest() {

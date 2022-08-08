@@ -1,14 +1,17 @@
 package org.utbot.cpp.clion.plugin.client.handlers
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.exists
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
+import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
 import org.utbot.cpp.clion.plugin.utils.createFileWithText
 import org.utbot.cpp.clion.plugin.utils.isSarifReport
 import org.utbot.cpp.clion.plugin.utils.logger
-import org.utbot.cpp.clion.plugin.utils.refreshAndFindNioFile
+import org.utbot.cpp.clion.plugin.utils.markDirtyAndRefresh
+import org.utbot.cpp.clion.plugin.utils.nioPath
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Files
@@ -25,12 +28,52 @@ class TestsStreamHandler(
     private val onError: (Throwable) -> Unit = {}
 ) : StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
     private val myGeneratedTestFilesLocalFS: MutableList<Path> = mutableListOf()
-
-    override suspend fun onData(data: Testgen.TestsResponse) {
+    override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
-        handleSourceCode(data.testSourcesList)
-        if (data.hasStubs()) {
-            handleSourceCode(data.stubs.stubSourcesList, true)
+        val (testSourceCodes, sarifSourceCodes) = data.testSourcesList.map { SourceCode(it, project) }.partition {
+            !it.localPath.isSarifReport()
+        }
+        val stubSourceCodes = data.stubs.stubSourcesList.map { SourceCode(it, project) }
+
+        project.service<TestsResultsStorage>().newTestsGenerated(testSourceCodes)
+
+        sarifSourceCodes.forEach {
+            backupPreviousClientSarifReport(it.localPath)
+        }
+
+        // if local scenario: server already created files
+        if (project.settings.isRemoteScenario) {
+            writeSourceCodes(testSourceCodes, "test")
+            writeSourceCodes(sarifSourceCodes, "sarif report")
+            writeSourceCodes(stubSourceCodes, "stub")
+        }
+
+        // prepare list of generated test files for further processing
+        myGeneratedTestFilesLocalFS.addAll(testSourceCodes.map { it.localPath })
+
+        // log to user
+        testSourceCodes.forEach { sourceCode ->
+            val isTestFileSourceFile = sourceCode.localPath.endsWith("_test.cpp")
+            if (isTestFileSourceFile)
+                project.logger.info {
+                    "Generated test with ${sourceCode.regressionMethodsNumber} tests in regression suite" +
+                            " and ${sourceCode.errorMethodsNumber} tests in error suite"
+                }
+            else
+                project.logger.info { "Generated test file ${sourceCode.localPath}" }
+        }
+        sarifSourceCodes.forEach {
+            project.logger.info { "Generated SARIF file ${it.localPath}" }
+        }
+
+        // tell ide to refresh vfs and refresh project tree
+        markDirtyAndRefresh(project.nioPath)
+    }
+
+    private fun writeSourceCodes(sourceCodes: List<SourceCode>, fileKind: String) {
+        sourceCodes.forEach {
+            project.logger.info { "Write $fileKind file ${it.remotePath} to ${it.localPath}" }
+            createFileWithText(it.localPath, it.content)
         }
     }
 
@@ -38,37 +81,11 @@ class TestsStreamHandler(
         return progress
     }
 
-    private fun handleSourceCode(sources: List<Util.SourceCode>, isStubs: Boolean = false) {
-        sources.forEach { sourceCode ->
-            val filePath: Path = sourceCode.filePath.convertFromRemotePathIfNeeded(project)
-
-            if (!isStubs && !isSarifReport(filePath))
-                myGeneratedTestFilesLocalFS.add(filePath)
-
-            if (sourceCode.code.isNotEmpty()) {
-                project.logger.trace { "Creating generated test file: $filePath." }
-                createFileWithText(
-                    filePath,
-                    sourceCode.code
-                )
-            }
-
-            var infoMessage = "Generated " + if (isStubs) "stub" else "test" + " file"
-            if (isGeneratedFileTestSourceFile(filePath.toString()))
-                infoMessage += " with ${sourceCode.regressionMethodsNumber} tests in regression suite" +
-                        " and ${sourceCode.errorMethodsNumber} tests in error suite"
-            project.logger.info { "$infoMessage: $filePath" }
-
-            refreshAndFindNioFile(filePath)
-        }
-    }
-
-    fun backupPreviousClientSarifReport(localPath: String) {
+    private fun backupPreviousClientSarifReport(oldPath: Path) {
         fun Number.pad2(): String {
             return ("0$this").takeLast(2)
         }
 
-        val oldPath = Paths.get(localPath)
         if (oldPath.exists()) {
             val ctime = Files.getLastModifiedTime(oldPath)
                 .toInstant()
@@ -84,8 +101,6 @@ class TestsStreamHandler(
             Files.move(oldPath, newPath)
         }
     }
-
-    private fun isGeneratedFileTestSourceFile(fileName: String) = fileName.endsWith("_test.cpp")
 
     override fun onCompletion(exception: Throwable?) {
         super.onCompletion(exception)
