@@ -94,6 +94,11 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
+      - name: Setup Java for building CLion plugin
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
       - name: Run CLion integration tests
         run: |
           chmod +x docker/action-scripts/runClionIntegrationTests.sh 
