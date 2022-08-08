@@ -45,11 +45,10 @@ void BaseTestGen::setInitializedTestsMap() {
 }
 
 void BaseTestGen::setTargetPath(fs::path _targetPath) {
-//    if (buildDatabase->getTargetPath() != _targetPath) {
-//        if (_targetPath != GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
-//            updateTargetSources(_targetPath);
-//        }
-//    }
+    if (buildDatabase->hasAutoTarget() && buildDatabase->getTargetPath() != _targetPath) {
+        buildDatabase = std::move(baseBuildDatabase->createBaseForTarget(_targetPath));
+        updateTargetSources(_targetPath);
+    }
 }
 
 void BaseTestGen::updateTargetSources(fs::path _targetPath) {

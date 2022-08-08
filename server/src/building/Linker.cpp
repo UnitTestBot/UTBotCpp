@@ -133,7 +133,7 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     auto requestTarget = testGen.buildDatabase->getTargetPath();
     LOG_IF_S(ERROR, target != GrpcUtils::UTBOT_AUTO_TARGET_PATH && requestTarget != target)
         << "Try link target that not specified by user";
-//    testGen.setTargetPath(target);
+    testGen.setTargetPath(target);
 
     auto targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
     auto siblings = testGen.buildDatabase->getArchiveObjectFiles(target);
@@ -164,7 +164,7 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
     kleeGenerator->buildByCDb(siblingObjectsToBuild, stubSources);
     auto result = link(filesToLink, target, "", std::nullopt, stubSources, false);
     //this is done in order to restore testGen.target in case of UTBot: auto
-//    testGen.setTargetPath(requestTarget);
+    testGen.setTargetPath(requestTarget);
     return result;
 }
 
@@ -202,8 +202,8 @@ void Linker::linkForProject() {
                                         return compilationUnitInfo->getOutputFile();
                                     });
                             addToGenerated(objectFiles, linkres.bitcodeOutput);
-                            auto &&targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
-                            testGen.buildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, linkres.stubsSet);
+                            auto &&targetUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(target);
+                            testGen.baseBuildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, linkres.stubsSet);
                             break;
                         } else {
                             std::stringstream ss;

@@ -169,13 +169,13 @@ namespace {
 
         auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
         auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
-        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
-        auto stubCandidates = { calc_sum_c };
-        auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
-            stubCandidates, [&testGen](fs::path const &path) {
-              return Paths::sourcePathToStubPath(testGen.projectContext, path);
-            });
-        EXPECT_EQ(expectedStubFiles, stubFiles);
+//        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
+//        auto stubCandidates = { calc_sum_c };
+//        auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
+//            stubCandidates, [&testGen](fs::path const &path) {
+//              return Paths::sourcePathToStubPath(testGen.projectContext, path);
+//            });
+//        EXPECT_EQ(expectedStubFiles, stubFiles);
     }
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {

@@ -197,15 +197,15 @@ public:
      */
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
 
-    /**
-     * @brief Gets all stub files associated with given link unit
-     *
-     * @param linkUnitInfo link unit info (preferably library)
-     *
-     * @return set of file paths to stubs
-     */
-    CollectionUtils::FileSet
-    getStubFiles(const std::shared_ptr<const BuildDatabase::TargetInfo> &linkUnitInfo) const;
+//    /**
+//     * @brief Gets all stub files associated with given link unit
+//     *
+//     * @param linkUnitInfo link unit info (preferably library)
+//     *
+//     * @return set of file paths to stubs
+//     */
+//    CollectionUtils::FileSet
+//    getStubFiles(const std::shared_ptr<const BuildDatabase::TargetInfo> &linkUnitInfo) const;
 
     /**
      * @brief Assign set of file paths to stubs to given link unit
@@ -245,6 +245,7 @@ private:
     const fs::path linkCommandsJsonPath;
     const fs::path compileCommandsJsonPath;
     fs::path target;
+    bool isAutoTarget;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;

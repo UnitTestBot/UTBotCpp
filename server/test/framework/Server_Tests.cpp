@@ -56,31 +56,43 @@ namespace {
 
         void generateFiles(const fs::path &sourceFile, const fs::path &testsRelativeDir) {
             fs::path testsDirPath = getTestFilePath(testsRelativeDir);
-            utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
-                                                  buildDirRelativePath };
-            generateFiles(sourceFile, projectContext);
+
+            auto projectContext = GrpcUtils::createProjectContext(
+                    projectName, suitePath, testsDirPath, buildDirRelativePath);
+//            utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
+//                                                  buildDirRelativePath };
+
+            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false);
+
+            auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
+                                                           std::move(settingsContext),
+                                                           srcPaths,
+                                                           sourceFile);
+
+            auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+
+            generateFiles(sourceFile, testGen);
         }
 
-        void generateFiles(const fs::path &sourceFile,
-                           const utbot::ProjectContext &projectContext) {
+        void generateFiles(const fs::path &sourceFile, const BaseTestGen& testGen) {
             fs::path serverBuildDir = buildPath / "temp";
-            auto buildDatabase = BuildDatabase(buildPath, serverBuildDir, projectContext, false).createBaseForTarget(
-                    sourceFile);
+//            auto buildDatabase = BuildDatabase(buildPath, serverBuildDir, projectContext, false).createBaseForTarget(
+//                    sourceFile);
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
-            fs::path root = buildDatabase->getTargetPath();
-            printer::TestMakefilesPrinter testMakefilePrinter(projectContext, buildDatabase,
-                                                                 root, compilerPath, &stubsSources);
+            fs::path root = testGen.buildDatabase->getTargetPath();
+            printer::TestMakefilesPrinter testMakefilePrinter(testGen, root, compilerPath, &stubsSources);
             testMakefilePrinter.addLinkTargetRecursively(root, "");
 
             testMakefilePrinter.GetMakefiles(sourceFile).write();
 
             auto compilationDatabase = CompilationUtils::getCompilationDatabase(buildPath);
             auto structsToDeclare = std::make_shared<Fetcher::FileToStringSet>();
-            SourceToHeaderRewriter sourceToHeaderRewriter(projectContext, compilationDatabase,
+            SourceToHeaderRewriter sourceToHeaderRewriter(testGen.projectContext, compilationDatabase,
                                                           structsToDeclare, serverBuildDir);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFile);
-            printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFile)).print(projectContext, sourceFile, wrapper);
+            printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFile)).print(testGen.projectContext,
+                                                                                      sourceFile, wrapper);
         }
 
 

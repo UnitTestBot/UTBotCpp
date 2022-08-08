@@ -116,14 +116,17 @@ namespace printer {
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(
-        utbot::ProjectContext projectContext,
-        std::shared_ptr<BuildDatabase> buildDatabase,
+//        utbot::ProjectContext projectContext,
+//        std::shared_ptr<BuildDatabase> buildDatabase,
+        const BaseTestGen& testGen,
         fs::path const &rootPath,
         fs::path primaryCompiler,
         CollectionUtils::FileSet const *stubSources,
         std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable)
         : RelativeMakefilePrinter(pathToShellVariable),
-          projectContext(std::move(projectContext)), buildDatabase(std::move(buildDatabase)), rootPath(std::move(rootPath)),
+          testGen(testGen),
+//          projectContext(std::move(projectContext)), buildDatabase(std::move(buildDatabase)),
+          rootPath(std::move(rootPath)),
           primaryCompiler(std::move(primaryCompiler)),
           primaryCxxCompiler(CompilationUtils::toCppCompiler(this->primaryCompiler)),
           primaryCompilerName(CompilationUtils::getCompilerName(this->primaryCompiler)),
@@ -135,7 +138,7 @@ namespace printer {
               CompilationUtils::getCoverageLinkFlags(primaryCxxCompilerName), " ")),
           sanitizerLinkFlags(SanitizerUtils::getSanitizeLinkFlags(primaryCxxCompilerName)),
 
-          buildDirectory(Paths::getUtbotBuildDir(projectContext)),
+          buildDirectory(Paths::getUtbotBuildDir(testGen.projectContext)),
           dependencyDirectory(buildDirectory / "dependencies"),
           stubSources(stubSources) {
 
@@ -164,13 +167,13 @@ namespace printer {
     }
 
     fs::path NativeMakefilePrinter::getTemporaryDependencyFile(fs::path const &file) {
-        fs::path relativePath = fs::relative(file, projectContext.projectPath);
+        fs::path relativePath = fs::relative(file, testGen.projectContext.projectPath);
         return getRelativePath(dependencyDirectory) /
                Paths::addExtension(relativePath, ".Td");
     }
 
     fs::path NativeMakefilePrinter::getDependencyFile(fs::path const &file) {
-        fs::path relativePath = fs::relative(file, projectContext.projectPath);
+        fs::path relativePath = fs::relative(file, testGen.projectContext.projectPath);
         return getRelativePath(dependencyDirectory) /
                Paths::addExtension(relativePath, ".d");
     }
@@ -270,7 +273,7 @@ namespace printer {
     BuildResult NativeMakefilePrinter::addObjectFile(const fs::path &objectFile,
                                                      const std::string &suffixForParentOfStubs) {
 
-        auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(objectFile);
+        auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
 
         fs::path pathToCompile;
@@ -278,17 +281,17 @@ namespace printer {
         BuildResult::Type buildResultType;
         BuildResult buildResult;
         if (CollectionUtils::contains(*stubSources, sourcePath)) {
-            pathToCompile = Paths::sourcePathToStubPath(projectContext, sourcePath);
-            recompiledFile = Paths::getRecompiledFile(projectContext, pathToCompile);
+            pathToCompile = Paths::sourcePathToStubPath(testGen.projectContext, sourcePath);
+            recompiledFile = Paths::getRecompiledFile(testGen.projectContext, pathToCompile);
             buildResultType = BuildResult::Type::ALL_STUBS;
         } else {
             if (Paths::isCXXFile(sourcePath)) {
                 pathToCompile = sourcePath;
             } else {
-                pathToCompile = Paths::getWrapperFilePath(projectContext, sourcePath);
+                pathToCompile = Paths::getWrapperFilePath(testGen.projectContext, sourcePath);
             }
             recompiledFile =
-                Paths::getRecompiledFile(projectContext, compilationUnitInfo->getOutputFile());
+                Paths::getRecompiledFile(testGen.projectContext, compilationUnitInfo->getOutputFile());
             buildResultType = BuildResult::Type::NO_STUBS;
         }
 
@@ -299,7 +302,7 @@ namespace printer {
     }
 
     void NativeMakefilePrinter::addTestTarget(const fs::path &sourcePath) {
-        auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(sourcePath);
+        auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(sourcePath);
         auto testCompilationCommand = compilationUnitInfo->command;
         testCompilationCommand.setCompiler(getRelativePathForLinker(primaryCxxCompiler));
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
@@ -314,10 +317,10 @@ namespace printer {
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
 
-        fs::path testSourcePath = Paths::sourcePathToTestPath(projectContext, sourcePath);
+        fs::path testSourcePath = Paths::sourcePathToTestPath(testGen.projectContext, sourcePath);
         fs::path compilationDirectory = compilationUnitInfo->getDirectory();
-        fs::path testObjectDir = Paths::getTestObjectDir(projectContext);
-        fs::path testSourceRelativePath = fs::relative(testSourcePath, projectContext.testDirPath);
+        fs::path testObjectDir = Paths::getTestObjectDir(testGen.projectContext);
+        fs::path testSourceRelativePath = fs::relative(testSourcePath, testGen.projectContext.testDirPath);
         fs::path testObjectPathRelative = getRelativePath(
                 testObjectDir / Paths::addExtension(testSourceRelativePath, ".o"));
         testCompilationCommand.setOutput(
@@ -332,7 +335,7 @@ namespace printer {
 
         artifacts.push_back(testCompilationCommand.getOutput());
 
-        auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(rootPath);
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         std::vector<std::string> filesToLink{ "$(GTEST_MAIN)", "$(GTEST_ALL)", testCompilationCommand.getOutput(),
@@ -399,14 +402,15 @@ namespace printer {
     }
     fs::path NativeMakefilePrinter::getTestExecutablePath(const fs::path &sourcePath) const {
         return Paths::removeExtension(
-            Paths::removeExtension(Paths::getRecompiledFile(projectContext, sourcePath)));
+            Paths::removeExtension(Paths::getRecompiledFile(testGen.projectContext, sourcePath)));
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(const NativeMakefilePrinter &baseMakefilePrinter,
                                                  const fs::path &sourcePath)
         : RelativeMakefilePrinter(baseMakefilePrinter.pathToShellVariable),
-          projectContext(baseMakefilePrinter.projectContext),
-          buildDatabase(baseMakefilePrinter.buildDatabase),
+//          projectContext(baseMakefilePrinter.projectContext),
+//          buildDatabase(baseMakefilePrinter.buildDatabase),
+          testGen(baseMakefilePrinter.testGen),
           rootPath(baseMakefilePrinter.rootPath),
           primaryCompiler(baseMakefilePrinter.primaryCompiler),
           primaryCxxCompiler(baseMakefilePrinter.primaryCxxCompiler),
@@ -427,7 +431,7 @@ namespace printer {
 
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
-        auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(rootPath);
 
         fs::path coverageInfoBinary = sharedOutput.value();
         if (!Paths::isLibraryFile(coverageInfoBinary)) {
@@ -469,7 +473,7 @@ namespace printer {
             return buildResults[unitFile] = buildResult;
         }
 
-        auto linkUnitInfo = buildDatabase->getClientLinkUnitInfo(unitFile);
+        auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(unitFile);
         BuildResult::Type unitType = BuildResult::Type::NONE;
         CollectionUtils::MapFileTo<fs::path> fileMapping;
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
@@ -490,7 +494,7 @@ namespace printer {
         bool isExecutable = !Paths::isLibraryFile(unitFile);
 
         fs::path recompiledFile =
-            Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
+            Paths::getRecompiledFile(testGen.projectContext, linkUnitInfo->getOutput());
         if (isExecutable && !transformExeToLib) {
             recompiledFile = Paths::isObjectFile(recompiledFile) ?
                              recompiledFile : Paths::addExtension(recompiledFile, ".o");
@@ -530,9 +534,9 @@ namespace printer {
                                 getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
                             const fs::path &absolutePath = optionalLibraryAbsolutePath.value();
-                            if (Paths::isSubPathOf(projectContext.buildDir(), absolutePath)) {
+                            if (Paths::isSubPathOf(testGen.projectContext.buildDir(), absolutePath)) {
                                 fs::path recompiledDir =
-                                        Paths::getRecompiledFile(projectContext, absolutePath);
+                                        Paths::getRecompiledFile(testGen.projectContext, absolutePath);
                                 std::string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
                                 libraryDirectoriesFlags.push_back(directoryFlag);
                             }
@@ -614,11 +618,11 @@ namespace printer {
     void NativeMakefilePrinter::addStubs(const CollectionUtils::FileSet &stubsSet) {
         auto stubObjectFiles = CollectionUtils::transformTo<CollectionUtils::FileSet>(
             Synchronizer::dropHeaders(stubsSet), [this](fs::path const &stub) {
-                fs::path sourcePath = Paths::stubPathToSourcePath(projectContext, stub);
+                fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stub);
                 fs::path stubBuildFilePath =
-                    Paths::getStubBuildFilePath(projectContext, sourcePath);
-                auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(sourcePath);
-                fs::path target = Paths::getRecompiledFile(projectContext, stub);
+                    Paths::getStubBuildFilePath(testGen.projectContext, sourcePath);
+                auto compilationUnitInfo = testGen.baseBuildDatabase->getClientCompilationUnitInfo(sourcePath);
+                fs::path target = Paths::getRecompiledFile(testGen.projectContext, stub);
                 addCompileTarget(stub, target, *compilationUnitInfo);
                 return target;
             });

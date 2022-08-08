@@ -39,7 +39,8 @@ BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
         projectContext(std::move(_projectContext)),
         buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
         linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
-        compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")) {
+        compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")),
+        isAutoTarget(true)  {
     if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
         throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
     }
@@ -64,7 +65,8 @@ BuildDatabase::BuildDatabase(BuildDatabase& baseBuildDatabase,
         projectContext(baseBuildDatabase.projectContext),
         buildCommandsJsonPath(baseBuildDatabase.buildCommandsJsonPath),
         linkCommandsJsonPath(baseBuildDatabase.linkCommandsJsonPath),
-        compileCommandsJsonPath(baseBuildDatabase.compileCommandsJsonPath) {
+        compileCommandsJsonPath(baseBuildDatabase.compileCommandsJsonPath),
+        isAutoTarget(false) {
 
 //    BuildDatabase baseBuildDatabase(buildCommandsJsonPath, serverBuildDir, projectContext, false);
 
@@ -77,6 +79,7 @@ BuildDatabase::BuildDatabase(BuildDatabase& baseBuildDatabase,
     } else if (_target == GrpcUtils::UTBOT_AUTO_TARGET_PATH || _target.empty()) {
         fs::path root = baseBuildDatabase.getRootForFirstSource();
         target = root;
+        isAutoTarget = true;
     } else {
         auto new_target = GenerationUtils::findTarget(baseBuildDatabase.getAllTargets(), _target);
         if (new_target.has_value()) {
@@ -722,14 +725,14 @@ fs::path BuildDatabase::TargetInfo::getOutput() const {
     return commands[0].getOutput();
 }
 
-CollectionUtils::FileSet BuildDatabase::getStubFiles(
-    const std::shared_ptr<const BuildDatabase::TargetInfo> &linkUnitInfo) const {
-    auto iterator = linkUnitToStubFiles.find(linkUnitInfo->getOutput());
-    if (iterator != linkUnitToStubFiles.end()) {
-        return iterator->second;
-    }
-    return {};
-}
+//CollectionUtils::FileSet BuildDatabase::getStubFiles(
+//    const std::shared_ptr<const BuildDatabase::TargetInfo> &linkUnitInfo) const {
+//    auto iterator = linkUnitToStubFiles.find(linkUnitInfo->getOutput());
+//    if (iterator != linkUnitToStubFiles.end()) {
+//        return iterator->second;
+//    }
+//    return {};
+//}
 
 void BuildDatabase::assignStubFilesToLinkUnit(
     std::shared_ptr<const BuildDatabase::TargetInfo> linkUnitInfo,
@@ -778,9 +781,9 @@ BuildDatabase::getTargetsForSourceFile(const fs::path &sourceFilePath) const {
 
 std::vector<fs::path> BuildDatabase::targetListForFile(const fs::path &sourceFilePath,
                                                        const fs::path &objectFile) const {
-//    if (!hasAutoTarget()) {
-//        return {target};
-//    }
+    if (!hasAutoTarget()) {
+        return { target };
+    }
     auto result = CollectionUtils::transformTo<std::vector<fs::path>>(
             getTargetsForSourceFile(sourceFilePath),
             [&](const std::shared_ptr<const BuildDatabase::TargetInfo> &targetInfo) {
@@ -843,7 +846,7 @@ CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &
 }
 
 bool BuildDatabase::hasAutoTarget() const {
-    return target == GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+    return isAutoTarget;
 }
 
 fs::path BuildDatabase::getTargetPath() const {
