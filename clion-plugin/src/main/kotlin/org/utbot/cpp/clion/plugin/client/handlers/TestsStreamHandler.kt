@@ -1,27 +1,32 @@
 package org.utbot.cpp.clion.plugin.client.handlers
 
 import com.intellij.openapi.project.Project
+import com.intellij.util.io.exists
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.createFileWithText
+import org.utbot.cpp.clion.plugin.utils.isSarifReport
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.refreshAndFindNioFile
 import testsgen.Testgen
 import testsgen.Util
+import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
+import java.time.ZoneId
 
 class TestsStreamHandler(
     project: Project,
     grpcStream: Flow<Testgen.TestsResponse>,
     progressName: String,
     cancellationJob: Job,
-    private val onSuccess: (List<Path>)->Unit = {},
-    private val onError: (Throwable)->Unit = {}
-): StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
+    private val onSuccess: (List<Path>) -> Unit = {},
+    private val onError: (Throwable) -> Unit = {}
+) : StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
     private val myGeneratedTestFilesLocalFS: MutableList<Path> = mutableListOf()
 
-    override fun onData(data: Testgen.TestsResponse) {
+    override suspend fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
         handleSourceCode(data.testSourcesList)
         if (data.hasStubs()) {
@@ -37,7 +42,7 @@ class TestsStreamHandler(
         sources.forEach { sourceCode ->
             val filePath: Path = sourceCode.filePath.convertFromRemotePathIfNeeded(project)
 
-            if (!isStubs)
+            if (!isStubs && !isSarifReport(filePath))
                 myGeneratedTestFilesLocalFS.add(filePath)
 
             if (sourceCode.code.isNotEmpty()) {
@@ -55,6 +60,28 @@ class TestsStreamHandler(
             project.logger.info { "$infoMessage: $filePath" }
 
             refreshAndFindNioFile(filePath)
+        }
+    }
+
+    fun backupPreviousClientSarifReport(localPath: String) {
+        fun Number.pad2(): String {
+            return ("0$this").takeLast(2)
+        }
+
+        val oldPath = Paths.get(localPath)
+        if (oldPath.exists()) {
+            val ctime = Files.getLastModifiedTime(oldPath)
+                .toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+            val newName = "project_code_analysis-" +
+                    ctime.year.toString() +
+                    (ctime.monthValue + 1).pad2() +
+                    ctime.dayOfMonth.pad2() +
+                    ctime.hour.pad2() +
+                    ctime.minute.pad2() + ctime.second.pad2() + ".sarif";
+            val newPath = Paths.get(oldPath.parent.toString(), newName)
+            Files.move(oldPath, newPath)
         }
     }
 
