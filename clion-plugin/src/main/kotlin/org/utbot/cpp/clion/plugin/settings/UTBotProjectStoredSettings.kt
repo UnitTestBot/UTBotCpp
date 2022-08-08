@@ -151,7 +151,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         // local means no conversion of paths is needed. This is the case for when server runs locally on Linux
         const val DEFAULT_TESTS_DIR_RELATIVE_PATH = "tests"
         const val REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO = ""
-        const val DEFAULT_RELATIVE_PATH_TO_BUILD_DIR = "utbot-build"
+        const val DEFAULT_RELATIVE_PATH_TO_BUILD_DIR = "build"
         const val TIMEOUT_PER_TEST_MAX_VALUE = 1000
         const val TIMEOUT_PER_TEST_MIN_VALUE = 0
         const val TIMEOUT_PER_FUNCTION_MAX_VALUE = 1000
