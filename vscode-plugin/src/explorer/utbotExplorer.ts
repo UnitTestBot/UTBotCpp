@@ -121,7 +121,7 @@ export class UTBotExplorer {
             }
             const initSourceDirectoriesNames: Array<string> = [];
             await clearSourceDirectories();
-            await vs.workspace.fs.readDirectory(vs.Uri.parse(rootPath))
+            await vs.workspace.fs.readDirectory(vs.Uri.file(rootPath))
                 .then(resultArray => {
                     resultArray.forEach(([name, type]) => {
                         // add only non hidden directories and not a build directory by default

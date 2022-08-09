@@ -48,7 +48,7 @@ export function getRealFilePath(editorPath: string, optionalClickedPath: vs.Uri 
 }
 
 export function getRootPath(): string | undefined {
-    return vs.workspace.workspaceFolders?.[0].uri.path;
+    return vs.workspace.workspaceFolders?.[0].uri.fsPath;
 }
 
 export function fsJoin(...paths: string[]): string {
