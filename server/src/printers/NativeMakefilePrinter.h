@@ -16,8 +16,6 @@ namespace printer {
         friend class TestMakefilesPrinter;
     private:
         const BaseTestGen& testGen;
-//        const utbot::ProjectContext projectContext;
-//        std::shared_ptr<BuildDatabase> buildDatabase;
         fs::path rootPath;
 
         fs::path primaryCompiler;
@@ -69,8 +67,6 @@ namespace printer {
 
     public:
         NativeMakefilePrinter(const BaseTestGen& testGen,
-//                              utbot::ProjectContext projectContext,
-//                              std::shared_ptr<BuildDatabase> buildDatabase,
                               fs::path const &rootPath,
                               fs::path primaryCompiler,
                               CollectionUtils::FileSet const *stubSources,

@@ -62,8 +62,6 @@ private:
 
     bool isForOneFile();
 
-//    std::vector<fs::path> getTargetList(const fs::path &sourceFile, const fs::path &objectFile) const;
-
     Result<Linker::LinkResult> linkForTarget(const fs::path &target, const fs::path &sourceFilePath,
                                              const std::shared_ptr<const BuildDatabase::ObjectFileInfo> &compilationUnitInfo,
                                              const fs::path &objectFile);

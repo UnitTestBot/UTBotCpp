@@ -42,8 +42,6 @@ namespace printer {
 
     TestMakefilesPrinter::TestMakefilesPrinter(
             const BaseTestGen &testGen,
-//            utbot::ProjectContext projectContext,
-//            std::shared_ptr<BuildDatabase> buildDatabase,
             fs::path const &rootPath,
             fs::path primaryCompiler,
             CollectionUtils::FileSet const *stubSources) :

@@ -81,11 +81,10 @@ namespace {
         std::pair<FunctionTestGen, Status> createTestForFunction(const fs::path &pathToFile,
                                                                  int lineNum, int kleeTimeout = 60) {
             auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, GrpcUtils::UTBOT_AUTO_TARGET_PATH,
+                                                 srcPaths, pathToFile, lineNum, pathToFile,
                                                  false, false, kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(pathToFile);
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             size_t failed_build = TestRunner::buildTests(testGen.projectContext, testGen.tests);
             if (status.ok() && failed_build != 0) {

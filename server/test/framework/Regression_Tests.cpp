@@ -88,13 +88,10 @@ namespace {
     // struct definition, declaration, usage in separate files
     TEST_F(Regression_Test, Incomplete_Array_Type) {
         fs::path folderPath = suitePath / "SAT-760";
-        //TODO auto target
         auto projectRequest = testUtils::createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath },
-            "SAT-760");
+            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath }, "SAT-760");
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-//        testUtils::setTargetForFirstSource(testGen);
 
         fs::path source1 = folderPath / "SAT-760_1.c";
         fs::path source2 = folderPath / "SAT-760_2.c";

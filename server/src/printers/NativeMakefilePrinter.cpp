@@ -116,8 +116,6 @@ namespace printer {
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(
-//        utbot::ProjectContext projectContext,
-//        std::shared_ptr<BuildDatabase> buildDatabase,
         const BaseTestGen& testGen,
         fs::path const &rootPath,
         fs::path primaryCompiler,
@@ -125,7 +123,6 @@ namespace printer {
         std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable)
         : RelativeMakefilePrinter(pathToShellVariable),
           testGen(testGen),
-//          projectContext(std::move(projectContext)), buildDatabase(std::move(buildDatabase)),
           rootPath(std::move(rootPath)),
           primaryCompiler(std::move(primaryCompiler)),
           primaryCxxCompiler(CompilationUtils::toCppCompiler(this->primaryCompiler)),
@@ -408,8 +405,6 @@ namespace printer {
     NativeMakefilePrinter::NativeMakefilePrinter(const NativeMakefilePrinter &baseMakefilePrinter,
                                                  const fs::path &sourcePath)
         : RelativeMakefilePrinter(baseMakefilePrinter.pathToShellVariable),
-//          projectContext(baseMakefilePrinter.projectContext),
-//          buildDatabase(baseMakefilePrinter.buildDatabase),
           testGen(baseMakefilePrinter.testGen),
           rootPath(baseMakefilePrinter.rootPath),
           primaryCompiler(baseMakefilePrinter.primaryCompiler),

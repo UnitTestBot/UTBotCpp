@@ -16,36 +16,6 @@
 
 using namespace tests;
 
-//KleeGenerator::KleeGenerator(
-//    utbot::testGen.projectContext testGen.projectContext,
-//    utbot::SettingsContext settingsContext,
-//    fs::path serverBuildDir,
-//    std::shared_ptr<CompilationDatabase> compilationDatabase,
-//    types::TypesHandler &typesHandler,
-//    PathSubstitution filePathsSubstitution,
-//    std::shared_ptr<testGen.buildDatabase> testGen.buildDatabase,
-//    ProgressWriter const *progressWriter)
-//    : testGen.projectContext(std::move(testGen.projectContext)),
-//      settingsContext(std::move(settingsContext)),
-//      testGen.serverBuildDir(std::move(serverBuildDir)),
-//      compilationDatabase(std::move(compilationDatabase)),
-//      typesHandler(typesHandler),
-//      pathSubstitution(std::move(filePathsSubstitution)),
-//      testGen.buildDatabase(std::move(testGen.buildDatabase)),
-//      progressWriter(progressWriter) {
-//    try {
-//        fs::create_directories(this->testGen.serverBuildDir);
-//        fs::create_directories(Paths::getLogDir(this->testGen.projectContext.projectName));
-//    } catch (const fs::filesystem_error &e) {
-//        throw FileSystemException("create_directories failed", e);
-//    }
-//}
-//
-//auto generator = std::make_shared<KleeGenerator>(
-//        testGen.testGen.projectContext, testGen.settingsContext,
-//        testGen.serverBuildDir, testGen.testGen.buildDatabase->compilationDatabase, typesHandler,
-//        pathSubstitution, testGen.testGen.buildDatabase, testGen.progressWriter);
-
 KleeGenerator::KleeGenerator(BaseTestGen &_testGen, types::TypesHandler &typesHandler,
                              PathSubstitution filePathsSubstitution)
         : testGen(_testGen), typesHandler(typesHandler),

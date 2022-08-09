@@ -25,8 +25,6 @@ TEST_F(TargetsTest, Valid_Target_Test_ls) {
             createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "ls");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//    fs::path ls = getTargetPathByName(*testGen.buildDatabase, "ls");
-//    testGen.setTargetPath(ls);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -46,8 +44,6 @@ TEST_F(TargetsTest, Valid_Target_Test_cat) {
             createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "cat");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//    fs::path cat = getTargetPathByName(*testGen.buildDatabase, "cat");
-//    testGen.setTargetPath(cat);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -66,8 +62,6 @@ TEST_F(TargetsTest, Valid_Target_Test_dummy) {
     auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "dummy");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//    fs::path dummy = getTargetPathByName(*testGen.buildDatabase, "dummy");
-//    testGen.setTargetPath(dummy);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_FALSE(status.ok());
@@ -80,8 +74,6 @@ TEST_F(TargetsTest, Valid_Target_Test_parse) {
     auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//    fs::path autoTarget = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
-//    testGen.setTargetPath(autoTarget);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -100,8 +92,6 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10) {
             projectName, suitePath, buildDirRelativePath, srcPaths, "get_10", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
-//    fs::path get_10 = getTargetPathByName(*testGen.buildDatabase, "get_10");
-//    testGen.setTargetPath(get_10);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -225,8 +215,6 @@ TEST_F(TargetsTest, Valid_Target_Test_libshared) {
             projectName, suitePath, buildDirRelativePath, srcPaths, "libshared_get.so", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
-//    fs::path lib_shared = getTargetPathByName(*testGen.buildDatabase, "libshared_get.so");
-//    testGen.setTargetPath(lib_shared);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -267,8 +255,6 @@ TEST_F(TargetsTest, Valid_Target_Test_get_libstatic) {
             projectName, suitePath, buildDirRelativePath, srcPaths, "libstatic_get.a", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
-//    fs::path lib_static = getTargetPathByName(*testGen.buildDatabase, "libstatic_get.a");
-//    testGen.setTargetPath(lib_static);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();

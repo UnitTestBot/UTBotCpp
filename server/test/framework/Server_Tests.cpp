@@ -59,8 +59,6 @@ namespace {
 
             auto projectContext = GrpcUtils::createProjectContext(
                     projectName, suitePath, testsDirPath, buildDirRelativePath);
-//            utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
-//                                                  buildDirRelativePath };
 
             auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false);
 
@@ -76,8 +74,6 @@ namespace {
 
         void generateFiles(const fs::path &sourceFile, const BaseTestGen& testGen) {
             fs::path serverBuildDir = buildPath / "temp";
-//            auto buildDatabase = BuildDatabase(buildPath, serverBuildDir, projectContext, false).createBaseForTarget(
-//                    sourceFile);
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
             fs::path root = testGen.buildDatabase->getTargetPath();
@@ -646,7 +642,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -669,7 +664,6 @@ namespace {
         {
             auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "ex");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//            setTargetForFirstSource(testGen);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -688,8 +682,6 @@ namespace {
         {
             auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "one");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//            fs::path one = testGen.buildDatabase->getClientLinkUnitInfo(a_c)->getOutput();
-//            testGen.setTargetPath(one);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -705,8 +697,6 @@ namespace {
             auto request =
                 createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "two");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//            fs::path two = testGen.buildDatabase->getClientLinkUnitInfo(b_c)->getOutput();
-//            testGen.setTargetPath(two);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -728,7 +718,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -924,7 +913,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -946,7 +934,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -971,7 +958,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1007,7 +993,6 @@ namespace {
                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), suitePath / "inner");
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1474,7 +1459,6 @@ namespace {
                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1588,7 +1572,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1602,7 +1585,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1620,7 +1602,6 @@ namespace {
         auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//        setTargetForFirstSource(testGen);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();

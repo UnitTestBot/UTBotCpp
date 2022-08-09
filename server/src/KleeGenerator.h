@@ -33,31 +33,16 @@ class KleeGenerator {
     using TestsMap = tests::TestsMap;
 
 public:
-//    /**
-//     * @brief Also creates tmp directories for build files.
-//     * @param projectContext contains context about current project.
-//     * @param settingsContext contains context about settings applied for current request.
-//     * @param serverBuildDir Path to folder on server machine where project build dirs are located.
-//     * @param sourcesFilePaths Paths to project files. Files which are listed in
-//     * [compile_commands.json](https://clang.llvm.org/docs/JSONCompilationDatabase.html), filtered
-//     * by them.
-//     * @param compilationDatabase Pointer to compile_commands.json object.
-//     * @param typesHandler provides additional information about types.
-//     * @param filePathsSubstitution Mapping from source file path to modified file. Required for
-//     * line test generation requests.
-//     * @param buildDatabase Instance of BuildDatabase which handles link and compile commands
-//     * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
-//     * reasons.
-//     */
-//    KleeGenerator(utbot::ProjectContext projectContext,
-//                  utbot::SettingsContext settingsContext,
-//                  fs::path serverBuildDir,
-//                  std::shared_ptr<CompilationDatabase> compilationDatabase,
-//                  types::TypesHandler &typesHandler,
-//                  PathSubstitution filePathsSubstitution,
-//                  std::shared_ptr<BuildDatabase> buildDatabase = nullptr,
-//                  const ProgressWriter *progressWriter = DummyStreamWriter::getInstance());
-
+    /**
+     * @brief Also creates tmp directories for build files.
+     * @param _testGen contains context.
+     * @param typesHandler provides additional information about types.
+     * @param filePathsSubstitution Mapping from source file path to modified file. Required for
+     * line test generation requests.
+     * @param buildDatabase Instance of BuildDatabase which handles link and compile commands
+     * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
+     * reasons.
+     */
     KleeGenerator(BaseTestGen &_testGen, types::TypesHandler &typesHandler,
                   PathSubstitution filePathsSubstitution);
 
@@ -161,15 +146,9 @@ public:
                               const CollectionUtils::FileSet &stubSources) const;
 
 private:
-//    const utbot::ProjectContext projectContext;
-//    const utbot::SettingsContext settingsContext;
-    BaseTestGen &testGen;;
-//    fs::path projectTmpPath;
-//    std::shared_ptr<CompilationDatabase> compilationDatabase;
+    BaseTestGen &testGen;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
-//    std::shared_ptr<BuildDatabase> buildDatabase;
-//    const ProgressWriter *progressWriter;
 
     CollectionUtils::MapFileTo<std::vector<std::string>> failedFunctions;
 

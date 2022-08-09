@@ -167,8 +167,8 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
 
-        auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
-        auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
+//        auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
+//        auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
 //        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
 //        auto stubCandidates = { calc_sum_c };
 //        auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
@@ -182,7 +182,6 @@ namespace {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
                                                     srcPaths, literals_foo_c, literals_foo_c, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-//        testGen.setTargetForSource(literals_foo_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 5);

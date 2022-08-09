@@ -97,8 +97,7 @@ public:
 public:
     BuildDatabase(fs::path _buildCommandsJsonPath,
                   fs::path _serverBuildDir,
-                  utbot::ProjectContext _projectContext,
-                  bool createClangCC);
+                  utbot::ProjectContext _projectContext);
 
     static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext);
     std::shared_ptr<BuildDatabase> createBaseForTarget(const std::string &target);
@@ -196,16 +195,6 @@ public:
      * @return Vector of pointers to ObjectFileInfo
      */
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
-
-//    /**
-//     * @brief Gets all stub files associated with given link unit
-//     *
-//     * @param linkUnitInfo link unit info (preferably library)
-//     *
-//     * @return set of file paths to stubs
-//     */
-//    CollectionUtils::FileSet
-//    getStubFiles(const std::shared_ptr<const BuildDatabase::TargetInfo> &linkUnitInfo) const;
 
     /**
      * @brief Assign set of file paths to stubs to given link unit

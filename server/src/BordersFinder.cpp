@@ -17,7 +17,6 @@ BordersFinder::BordersFinder(const fs::path &filePath,
                              const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                              const fs::path &compileCommandsJsonPath)
         : line(line), classBorder(std::nullopt), clangToolRunner(compilationDatabase) {
-//    buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(), CompilationUtils::UTBOT_BUILD_DIR_NAME);
     lineInfo.filePath = filePath;
 }
 

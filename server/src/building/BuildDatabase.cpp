@@ -33,8 +33,7 @@ static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
 
 BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
                              fs::path _serverBuildDir,
-                             utbot::ProjectContext _projectContext,
-                             bool createClangCC) :
+                             utbot::ProjectContext _projectContext) :
         serverBuildDir(std::move(_serverBuildDir)),
         projectContext(std::move(_projectContext)),
         buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
@@ -53,9 +52,7 @@ BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
     filterInstalledFiles();
     addLocalSharedLibraries();
     fillTargetInfoParents();
-//    if (createClangCC) {
-        createClangCompileCommandsJson();
-//    }
+    createClangCompileCommandsJson();
     target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
 }
 
@@ -131,7 +128,7 @@ std::shared_ptr<BuildDatabase> BuildDatabase::create(const utbot::ProjectContext
             CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
                     projectContext.projectPath, projectContext.buildDirRelativePath);
     fs::path serverBuildDir = Paths::getUtbotBuildDir(projectContext);
-    std::shared_ptr<BuildDatabase> buildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext, true);
+    std::shared_ptr<BuildDatabase> buildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
     return buildDatabase;
 }
 

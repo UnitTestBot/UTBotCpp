@@ -221,17 +221,6 @@ namespace testUtils {
         auto settingsContext =
                 GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
 
-
-//        auto buildDatabase = BuildDatabase::create(utbot::ProjectContext(*projectContext),
-//                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
-//        auto rootTargets = buildDatabase->getRootTargets();
-//        auto it = std::find_if(rootTargets.begin(), rootTargets.end(),
-//                               [&target](std::shared_ptr<BuildDatabase::TargetInfo> linkUnitInfo) {
-//                                   return linkUnitInfo->getOutput().filename() == target;
-//                               });
-//        assert(it != rootTargets.end());
-//        std::string new_target = it->get()->getOutput();
-
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
@@ -408,11 +397,6 @@ namespace testUtils {
 
         return argv;
     }
-
-//    void setTargetForFirstSource(ProjectTestGen &testGen) {
-//        fs::path sourcePath = *testGen.testingMethodsSourcePaths.begin();
-//        testGen.setTargetForSource(sourcePath);
-//    }
 
     static void checkStatsCSV(const fs::path &statsPath, const std::vector<std::string> &header,
                               const std::vector<fs::path> &containedFiles) {
