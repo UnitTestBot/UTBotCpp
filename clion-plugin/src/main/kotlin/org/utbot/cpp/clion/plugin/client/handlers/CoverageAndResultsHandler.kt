@@ -9,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.utbot.cpp.clion.plugin.actions.FocusAction
+import org.utbot.cpp.clion.plugin.coverage.Coverage
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageSuite
@@ -20,11 +21,7 @@ import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Path
-class Coverage {
-    val fullyCovered: MutableSet<Int> = mutableSetOf()
-    val partiallyCovered: MutableSet<Int> = mutableSetOf()
-    val notCovered: MutableSet<Int> = mutableSetOf()
-}
+
 class CoverageAndResultsHandler(
     project: Project,
     grpcStream: Flow<Testgen.CoverageAndResultsResponse>,
@@ -50,19 +47,19 @@ class CoverageAndResultsHandler(
             notifyError(response.errorMessage, project)
         }
 
-        val coverage = mutableMapOf<String, Coverage>()
-        response.coveragesList.forEach {
-            val local = it.filePath.convertFromRemotePathIfNeeded(project).toString()
+        val coverage = mutableMapOf<Path, Coverage>()
+        response.coveragesList.forEach { fileCoverageSimplified ->
+            val local = fileCoverageSimplified.filePath.convertFromRemotePathIfNeeded(project).normalize()
             if (local !in coverage)
                 coverage[local] = Coverage()
-            it.fullCoverageLinesList.forEach { l ->
-                coverage[local]?.fullyCovered?.add(l.line)
+            fileCoverageSimplified.fullCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.fullyCovered?.add(sourceLine.line)
             }
-            it.partialCoverageLinesList.forEach { l ->
-                coverage[local]?.fullyCovered?.add(l.line)
+            fileCoverageSimplified.partialCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.partiallyCovered?.add(sourceLine.line)
             }
-            it.noCoverageLinesList.forEach { l ->
-                coverage[local]?.fullyCovered?.add(l.line)
+            fileCoverageSimplified.noCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.notCovered?.add(sourceLine.line)
             }
         }
 
@@ -75,12 +72,12 @@ class CoverageAndResultsHandler(
         val coverageRunner = CoverageRunner.getInstance(UTBotCoverageRunner::class.java)
         val manager = CoverageDataManager.getInstance(project)
         val suite = UTBotCoverageSuite(
+            coverage,
             engine,
             response.coveragesList,
             coverageRunner = coverageRunner,
             name = "UTBot coverage suite",
             project = project,
-            coverage = coverage
         )
 
         manager.coverageGathered(suite)
@@ -88,8 +85,6 @@ class CoverageAndResultsHandler(
     }
 
     private fun notifyCoverageReceived() {
-        if (sourceFilePath != null) {
-            notifyInfo("Coverage received!", project, FocusAction(sourceFilePath))
-        }
+        notifyInfo("Coverage received!", project, sourceFilePath?.let { FocusAction(it) })
     }
 }

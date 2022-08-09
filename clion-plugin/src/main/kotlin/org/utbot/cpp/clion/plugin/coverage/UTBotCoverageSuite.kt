@@ -6,9 +6,9 @@ import com.intellij.coverage.CoverageLogger
 import com.intellij.coverage.CoverageRunner
 import com.intellij.openapi.project.Project
 import com.intellij.rt.coverage.data.ProjectData
-import org.utbot.cpp.clion.plugin.client.handlers.Coverage
 import testsgen.Testgen
 import java.io.File
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit
  * @param covLists - coverage information returned from server.
  */
 class UTBotCoverageSuite(
+    val coverage: Map<Path, Coverage> = emptyMap(),
     coverageEngine: UTBotCoverageEngine,
     covLists: List<Testgen.FileCoverageSimplified>? = null,
     name: String? = null,
@@ -29,7 +30,6 @@ class UTBotCoverageSuite(
     trackTestFolders: Boolean = false,
     coverageRunner: CoverageRunner? = null,
     project: Project,
-    val coverage: Map<String, Coverage> = emptyMap()
 ) : BaseCoverageSuite(
     name, utbotFileProvider, lastCoverageTimeStamp, coverageByTestEnabled, tracingEnabled, trackTestFolders,
     coverageRunner, project

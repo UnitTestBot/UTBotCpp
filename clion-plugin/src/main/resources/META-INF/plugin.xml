@@ -179,5 +179,8 @@
                 description="Generates tests for file without context of a project">
             <synonym text="US"/>
         </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
+                text="UTBot: Run All Tests and Show Coverage"/>
     </actions>
 </idea-plugin>
