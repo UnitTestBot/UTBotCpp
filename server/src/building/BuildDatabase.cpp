@@ -717,10 +717,6 @@ bool BuildDatabase::ObjectFileInfo::is32bits() const {
     return CollectionUtils::contains(command.getCommandLine(), "-m32");
 }
 
-void BuildDatabase::TargetInfo::addFile(fs::path file) {
-    files.insert(std::move(file));
-}
-
 fs::path BuildDatabase::TargetInfo::getOutput() const {
     return commands[0].getOutput();
 }

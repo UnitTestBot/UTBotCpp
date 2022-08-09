@@ -70,7 +70,7 @@ TEST_F(TargetsTest, Valid_Target_Test_dummy) {
 //    testGen.setTargetPath(dummy);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_FALSE(status.ok());
 
     int numberOfTests = testUtils::getNumberOfTests(testGen.tests);
     EXPECT_EQ(0, numberOfTests);
