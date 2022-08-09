@@ -6,6 +6,7 @@ import com.intellij.coverage.CoverageLogger
 import com.intellij.coverage.CoverageRunner
 import com.intellij.openapi.project.Project
 import com.intellij.rt.coverage.data.ProjectData
+import org.utbot.cpp.clion.plugin.client.handlers.Coverage
 import testsgen.Testgen
 import java.io.File
 import java.util.*
@@ -28,6 +29,7 @@ class UTBotCoverageSuite(
     trackTestFolders: Boolean = false,
     coverageRunner: CoverageRunner? = null,
     project: Project,
+    val coverage: Map<String, Coverage> = emptyMap()
 ) : BaseCoverageSuite(
     name, utbotFileProvider, lastCoverageTimeStamp, coverageByTestEnabled, tracingEnabled, trackTestFolders,
     coverageRunner, project

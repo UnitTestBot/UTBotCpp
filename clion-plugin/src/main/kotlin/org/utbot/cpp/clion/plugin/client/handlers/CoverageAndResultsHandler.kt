@@ -13,13 +13,18 @@ import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageSuite
 import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
+import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.Path
-
+class Coverage {
+    val fullyCovered: MutableSet<Int> = mutableSetOf()
+    val partiallyCovered: MutableSet<Int> = mutableSetOf()
+    val notCovered: MutableSet<Int> = mutableSetOf()
+}
 class CoverageAndResultsHandler(
     project: Project,
     grpcStream: Flow<Testgen.CoverageAndResultsResponse>,
@@ -45,6 +50,22 @@ class CoverageAndResultsHandler(
             notifyError(response.errorMessage, project)
         }
 
+        val coverage = mutableMapOf<String, Coverage>()
+        response.coveragesList.forEach {
+            val local = it.filePath.convertFromRemotePathIfNeeded(project).toString()
+            if (local !in coverage)
+                coverage[local] = Coverage()
+            it.fullCoverageLinesList.forEach { l ->
+                coverage[local]?.fullyCovered?.add(l.line)
+            }
+            it.partialCoverageLinesList.forEach { l ->
+                coverage[local]?.fullyCovered?.add(l.line)
+            }
+            it.noCoverageLinesList.forEach { l ->
+                coverage[local]?.fullyCovered?.add(l.line)
+            }
+        }
+
         // when we received results, test statuses should be updated in the gutter
         project.messageBus.syncPublisher(UTBotTestResultsReceivedListener.TOPIC)
             .testResultsReceived(response.testRunResultsList)
@@ -58,7 +79,8 @@ class CoverageAndResultsHandler(
             response.coveragesList,
             coverageRunner = coverageRunner,
             name = "UTBot coverage suite",
-            project = project
+            project = project,
+            coverage = coverage
         )
 
         manager.coverageGathered(suite)

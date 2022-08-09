@@ -14,6 +14,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * This class is used to convert from our representation of coverage to IntelliJ's [ProjectData]
@@ -32,9 +33,43 @@ class UTBotCoverageRunner : CoverageRunner() {
     override fun loadCoverageData(sessionDataFile: File, baseCoverageSuite: CoverageSuite?): ProjectData? {
         log.debug("loadCoverageData was called!")
         val coveragesList = (baseCoverageSuite as? UTBotCoverageSuite)?.coveragesList
+        val cov = (baseCoverageSuite as? UTBotCoverageSuite)?.coverage ?: return null
         coveragesList ?: error("Coverage list is empty in loadCoverageData!")
         val projectData = ProjectData()
         var isAnyCoverage = false
+        for ((file, coverage) in cov) {
+            if (file.isNotEmpty()) {
+                isAnyCoverage = true
+                val p = Paths.get(file)
+                if (!p.exists()) {
+                    log.warn("Skipping $file in coverage processing as it does not exist!")
+                    continue
+                }
+                val linesCount = getLineCount(p)
+                val lines = arrayOfNulls<LineData>(linesCount)
+                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(p.toString()))
+                fun processRanges(rangesList: Set<Int>, status: Byte) {
+                    rangesList.forEach { sourceLine ->
+                        val numberInFile = sourceLine - 1
+                        if (numberInFile >= linesCount) {
+                            log.warn("Skipping $file:${numberInFile} in coverage processing! Number of lines in file is $linesCount!")
+                            return@forEach
+                        }
+                        val lineData = LineData(sourceLine + 1, null)
+                        lineData.hits = status.toInt()
+                        lineData.setStatus(status)
+                        // todo: leave comments what is going on
+                        lines[numberInFile + 1] = lineData
+                        classData.registerMethodSignature(lineData)
+                    }
+                }
+                processRanges(coverage.fullyCovered, LineCoverage.FULL)
+                processRanges(coverage.partiallyCovered, LineCoverage.PARTIAL)
+                processRanges(coverage.notCovered, LineCoverage.NONE)
+                classData.setLines(lines)
+            }
+        }
+        /**
         for (simplifiedCovInfo in coveragesList) {
             val filePathFromServer = simplifiedCovInfo.filePath
             if (filePathFromServer.isNotEmpty()) {
@@ -68,6 +103,7 @@ class UTBotCoverageRunner : CoverageRunner() {
                 classData.setLines(lines)
             }
         }
+        **/
         return if (isAnyCoverage) projectData else null
     }
 
