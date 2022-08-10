@@ -47,11 +47,19 @@ class CoverageAndResultsHandler(
             notifyError(response.errorMessage, project)
         }
 
-        val coverage = mutableMapOf<Path, Coverage>()
+        data class CoverageCollector(
+            val fullyCovered: MutableSet<Int> = mutableSetOf(),
+            val partiallyCovered: MutableSet<Int> = mutableSetOf(),
+            val notCovered: MutableSet<Int> = mutableSetOf()
+        ) {
+            fun toCoverage() = Coverage(fullyCovered, partiallyCovered, notCovered)
+        }
+
+        val coverage = mutableMapOf<Path, CoverageCollector>()
         response.coveragesList.forEach { fileCoverageSimplified ->
             val local = fileCoverageSimplified.filePath.convertFromRemotePathIfNeeded(project).normalize()
             if (local !in coverage)
-                coverage[local] = Coverage()
+                coverage[local] = CoverageCollector()
             fileCoverageSimplified.fullCoverageLinesList.forEach { sourceLine ->
                 coverage[local]?.fullyCovered?.add(sourceLine.line)
             }
@@ -72,7 +80,7 @@ class CoverageAndResultsHandler(
         val coverageRunner = CoverageRunner.getInstance(UTBotCoverageRunner::class.java)
         val manager = CoverageDataManager.getInstance(project)
         val suite = UTBotCoverageSuite(
-            coverage,
+            coverage.mapValues { it.value.toCoverage() },
             engine,
             response.coveragesList,
             coverageRunner = coverageRunner,
