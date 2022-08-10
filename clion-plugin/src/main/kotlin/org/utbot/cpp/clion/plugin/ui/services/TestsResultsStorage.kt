@@ -5,9 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import org.utbot.cpp.clion.plugin.client.handlers.SourceCode
 import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
@@ -36,8 +33,10 @@ class TestsResultsStorage(val project: Project) {
 
     fun getTestResultByTestName(testName: String): Testgen.TestResultObject? = storage[testName]
 
-    fun newTestsGenerated(sourceCodes: List<SourceCode>) {
-        // for tests that were regenerated forget results from previous test run
+    /**
+     * Cleans the results of previous test run if tests were regenerated.
+     */
+    fun clearTestResults(sourceCodes: List<SourceCode>) {
         val localFilePaths = sourceCodes.map { it.localPath }.toSet()
         storage.values.removeIf { it.testFilePath.convertFromRemotePathIfNeeded(project) in localFilePaths }
     }

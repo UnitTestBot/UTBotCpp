@@ -6,9 +6,12 @@ import com.intellij.util.io.exists
 import kotlin.io.path.writeText
 import java.nio.file.Path
 
-fun markDirtyAndRefresh(path: Path, async: Boolean = true, recursive: Boolean = true, reloadChildren: Boolean = true) {
-    VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, path.toFile())
-}
+fun markDirtyAndRefresh(
+    path: Path,
+    async: Boolean = true,
+    recursive: Boolean = true,
+    reloadChildren: Boolean = true,
+) = VfsUtil.markDirtyAndRefresh(async, recursive, reloadChildren, path.toFile())
 
 fun createFileWithText(filePath: Path, text: String) {
     with(filePath) {
@@ -24,7 +27,3 @@ fun isCPPFileName(fileName: String) = """.*\.(cpp|hpp|h)""".toRegex().matches(fi
 
 fun isHeaderFile(fileName: String) = """.*\.([ch])""".toRegex().matches(fileName)
 fun isHeaderFile(path: Path) = isHeaderFile(path.fileName.toString())
-
-fun String.isSarifReport() = this.endsWith(".sarif")
-
-fun Path.isSarifReport() = this.fileName.toString().isSarifReport()

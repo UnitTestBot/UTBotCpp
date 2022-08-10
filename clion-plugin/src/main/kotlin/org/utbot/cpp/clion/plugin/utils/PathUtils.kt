@@ -52,6 +52,8 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
     }
 }
 
+fun Path.isSarifReport() = this.fileName.toString().endsWith(".sarif")
+
 fun String.fileNameOrNull(): String? {
     return try {
         Paths.get(this).fileName.toString()
