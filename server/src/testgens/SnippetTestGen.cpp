@@ -19,7 +19,7 @@ SnippetTestGen::SnippetTestGen(const testsgen::SnippetRequest &request,
     compileCommandsJsonPath = serverBuildDir;
     utbot::ProjectContext projectContext{request, serverBuildDir};
     baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
-    buildDatabase = baseBuildDatabase->createBaseForTarget(serverBuildDir / SNIPPET_TARGET);
+    buildDatabase = baseBuildDatabase->createBuildDatabaseForSourceOrTarget(serverBuildDir / SNIPPET_TARGET);
     setTargetForSource(filePath);
     setInitializedTestsMap();
 }

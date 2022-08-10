@@ -35,7 +35,7 @@ class KleeGenerator {
 public:
     /**
      * @brief Also creates tmp directories for build files.
-     * @param _testGen contains context.
+     * @param _testGen contains projectContext, settingsContext, BuildDatabase.
      * @param typesHandler provides additional information about types.
      * @param filePathsSubstitution Mapping from source file path to modified file. Required for
      * line test generation requests.

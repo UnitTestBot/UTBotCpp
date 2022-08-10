@@ -46,7 +46,7 @@ void BaseTestGen::setInitializedTestsMap() {
 
 void BaseTestGen::setTargetPath(fs::path _targetPath) {
     if (buildDatabase->hasAutoTarget() && buildDatabase->getTargetPath() != _targetPath) {
-        buildDatabase = std::move(baseBuildDatabase->createBaseForTarget(_targetPath));
+        buildDatabase = std::move(baseBuildDatabase->createBuildDatabaseForSourceOrTarget(_targetPath));
         updateTargetSources(_targetPath);
     }
 }

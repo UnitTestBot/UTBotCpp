@@ -100,7 +100,7 @@ public:
                   utbot::ProjectContext _projectContext);
 
     static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext);
-    std::shared_ptr<BuildDatabase> createBaseForTarget(const std::string &target);
+    std::shared_ptr<BuildDatabase> createBuildDatabaseForSourceOrTarget(const std::string &_targetOrSourcePath);
 
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
@@ -196,16 +196,6 @@ public:
      */
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
 
-    /**
-     * @brief Assign set of file paths to stubs to given link unit
-     *
-     * @param linkUnitInfo link unit info (preferably library)
-     * @param stubs set of file paths to stubs
-     */
-    void assignStubFilesToLinkUnit(
-        std::shared_ptr<const BuildDatabase::TargetInfo> linkUnitInfo,
-        CollectionUtils::FileSet stubs);
-
     std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const;
     std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
 
@@ -239,7 +229,6 @@ private:
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
-    CollectionUtils::MapFileTo<CollectionUtils::FileSet> linkUnitToStubFiles;
 
 
     std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;

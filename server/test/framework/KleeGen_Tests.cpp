@@ -15,18 +15,15 @@ namespace {
 
         struct TestSuite {
             std::string name;
-            fs::path buildPath;
             CollectionUtils::FileSet sourcesFilePaths;
         };
 
-        fs::path tmpDirPath = baseSuitePath / buildDirRelativePath;
         TestSuite testSuite;
 
         void SetUp() override {
             clearEnv(CompilationUtils::CompilerName::CLANG);
 
             testSuite = { suiteName,
-                          buildPath,
                           { getTestFilePath("assertion_failures.c"),
                             getTestFilePath("basic_functions.c"),
                             getTestFilePath("complex_structs.c"),
@@ -43,27 +40,6 @@ namespace {
                             getTestFilePath("types.c"),
                             getTestFilePath("inner/inner_basic_functions.c") } };
         }
-
-//        KleeGenerator initKleeGenerator(const TestSuite &suite, std::string &errorMessage) {
-//            types::TypesHandler::SizeContext sizeContext;
-//            types::TypeMaps typeMaps;
-//            types::TypesHandler typesHandler(typeMaps, sizeContext);
-//            fs::path testsDirPath = tmpDirPath / "test";
-//            auto projectContext = GrpcUtils::createProjectContext(suite.name, suitePath, testsDirPath, buildDirRelativePath);
-//            auto settingsContext = GrpcUtils::createSettingsContext(true, true, 15, 0, true, false);
-//
-//            auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
-//                                                           std::move(settingsContext),
-//                                                           srcPaths,
-//                                                           GrpcUtils::UTBOT_AUTO_TARGET_PATH);
-//
-//            auto request = testUtils::createProjectRequest(suite.name, suitePath, buildDirRelativePath, {});
-//
-//            auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-//
-//            KleeGenerator generator(testGen, typesHandler, {});
-//            return generator;
-//        }
     };
 
     TEST_F(KleeGen_Test, BuildByCDb) {

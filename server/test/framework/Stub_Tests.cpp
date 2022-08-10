@@ -10,6 +10,8 @@
 #include "streams/stubs/ServerStubsWriter.h"
 
 #include <fstream>
+#include <stubs/StubGen.h>
+#include <Synchronizer.h>
 
 namespace {
     using testUtils::createFileRequest;
@@ -166,16 +168,6 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
-
-//        auto root = testGen.baseBuildDatabase->getRootForSource(foreign_bar_c);
-//        auto linkUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(root);
-//        auto stubFiles = testGen.baseBuildDatabase->getStubFiles(linkUnitInfo);
-//        auto stubCandidates = { calc_sum_c };
-//        auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
-//            stubCandidates, [&testGen](fs::path const &path) {
-//              return Paths::sourcePathToStubPath(testGen.projectContext, path);
-//            });
-//        EXPECT_EQ(expectedStubFiles, stubFiles);
     }
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {

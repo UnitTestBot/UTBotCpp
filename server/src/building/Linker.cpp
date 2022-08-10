@@ -106,7 +106,6 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
             auto [targetBitcode, stubsSet, _] = result.getOpt().value();
             addToGenerated({ objectFile }, targetBitcode);
             auto&& targetUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(target);
-            testGen.buildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, stubsSet);
             return;
         } else {
             LOG_S(DEBUG) << "Linkage for target " << target.filename() << " failed: " << result.getError()->c_str();
@@ -193,7 +192,6 @@ void Linker::linkForProject() {
                                     });
                             addToGenerated(objectFiles, linkres.bitcodeOutput);
                             auto &&targetUnitInfo = testGen.baseBuildDatabase->getClientLinkUnitInfo(target);
-                            testGen.baseBuildDatabase->assignStubFilesToLinkUnit(targetUnitInfo, linkres.stubsSet);
                             break;
                         } else {
                             std::stringstream ss;
