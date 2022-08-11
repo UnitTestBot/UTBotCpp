@@ -15,6 +15,7 @@ import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.currentClient
+import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
 import java.awt.Dimension
@@ -94,7 +95,9 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 ValidationType.BOOL -> createTrueFalsePopup { returnValue -> proceedWithValueToCompare(returnValue) }
                 else -> createTextFieldPopup(validationType) { returnValue -> proceedWithValueToCompare(returnValue) }
             }
-            popup.showInBestPositionFor(e.dataContext)
+            invokeOnEdt {
+                popup.showInBestPositionFor(e.dataContext)
+            }
         }
         //ask server for return type
         FunctionReturnTypeRequest(
@@ -103,11 +106,13 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         ) { functionReturnType ->
             val validationType = functionReturnType.validationType
             // then ask for comparison operator to use from user
-            chooseComparisonOperator(validationType) { comparisonOperator ->
-                // then ask for return value to compare with from user
-                chooseReturnValue(validationType) { valueToCompare ->
-                    // when we have all needed information, assemble and execute
-                    sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
+            invokeOnEdt {
+                chooseComparisonOperator(validationType) { comparisonOperator ->
+                    // then ask for return value to compare with from user
+                    chooseReturnValue(validationType) { valueToCompare ->
+                        // when we have all needed information, assemble and execute
+                        sendPredicateToServer(validationType, valueToCompare, comparisonOperator)
+                    }
                 }
             }
         }.apply {
