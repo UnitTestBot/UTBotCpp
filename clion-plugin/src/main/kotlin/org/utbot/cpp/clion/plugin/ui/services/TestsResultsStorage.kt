@@ -5,9 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
+import org.utbot.cpp.clion.plugin.client.handlers.SourceCode
 import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import testsgen.Testgen
@@ -31,30 +29,17 @@ class TestsResultsStorage(val project: Project) {
 
                 forceGutterIconsUpdate()
             })
-
-        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
-            override fun after(events: MutableList<out VFileEvent>) {
-                var wasSave = false
-                events.forEach { event ->
-                    if (event.isFromSave) {
-                        wasSave = true
-                        storage.forEach { entry ->
-                            if (entry.value.testFilePath != event.path) {
-                                storage.remove(entry.key)
-                            }
-                        }
-                    }
-                }
-
-                if (wasSave) {
-                    forceGutterIconsUpdate()
-                }
-            }
-        })
-
     }
 
     fun getTestResultByTestName(testName: String): Testgen.TestResultObject? = storage[testName]
+
+    /**
+     * Cleans the results of previous test run if tests were regenerated.
+     */
+    fun clearTestResults(sourceCodes: List<SourceCode>) {
+        val localFilePaths = sourceCodes.map { it.localPath }.toSet()
+        storage.values.removeIf { it.testFilePath.convertFromRemotePathIfNeeded(project) in localFilePaths }
+    }
 
     private fun shouldForceUpdate(): Boolean {
         val currentlyOpenedFilePaths = FileEditorManager.getInstance(project)

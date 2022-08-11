@@ -15,6 +15,7 @@ import java.util.*
 import kotlin.io.path.div
 
 val Project.path get() = this.basePath ?: error("Project path can't be null!")
+val Project.nioPath: Path get() = Paths.get(this.path)
 
 fun relativize(from: String, to: String): String {
     val toPath = Paths.get(to)
@@ -50,6 +51,8 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
         Files.walkFileTree(this, visitor)
     }
 }
+
+fun Path.isSarifReport() = this.fileName.toString().endsWith(".sarif")
 
 fun String.fileNameOrNull(): String? {
     return try {
