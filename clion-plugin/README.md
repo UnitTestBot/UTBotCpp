@@ -1,6 +1,7 @@
 # UTBotCpp-CLion-plugin
 <!-- Plugin description -->
 Plugin to communicate with [UTBotCpp](https://github.com/UnitTestBot/UTBotCpp) server in CLion.
+<!-- Plugin description end -->
 
 ### Installation
 
@@ -12,5 +13,3 @@ Plugin to communicate with [UTBotCpp](https://github.com/UnitTestBot/UTBotCpp) s
 5. Restart CLion
 
 See `CONFIGURATION.md` to configure the plugin before use.
-
-<!-- Plugin description end -->
