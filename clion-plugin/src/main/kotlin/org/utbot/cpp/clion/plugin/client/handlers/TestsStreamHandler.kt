@@ -7,6 +7,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
+import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.createFileWithText
 import org.utbot.cpp.clion.plugin.utils.isSarifReport
 import org.utbot.cpp.clion.plugin.utils.logger
@@ -33,47 +34,58 @@ class TestsStreamHandler(
     override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
 
-        val (testSourceCodes, sarifSourceCodes) = data.testSourcesList
+        val testSourceCodes = data.testSourcesList
             .map { SourceCode(it, project) }
-            .partition { !it.localPath.isSarifReport() }
-        val stubSourceCodes = data.stubs.stubSourcesList.map { SourceCode(it, project) }
+            .filter { !it.localPath.isSarifReport() }
+        handleTestSources(testSourceCodes)
 
+        val stubSourceCodes = data.stubs.stubSourcesList.map { SourceCode(it, project) }
+        handleStubSources(stubSourceCodes)
+
+        val sarifReport =
+            data.testSourcesList.find { it.filePath.convertFromRemotePathIfNeeded(project).isSarifReport() }?.let {
+                SourceCode(it, project)
+            }
+        sarifReport?.let { handleSarifReport(it) }
+
+        // for new generated tests remove previous testResults
         project.service<TestsResultsStorage>().clearTestResults(testSourceCodes)
 
-        //Q: why several sarif source codes? don't we obtain one merged sarif report from server?
-        sarifSourceCodes.forEach {
-            backupPreviousClientSarifReport(it.localPath)
-        }
+        // tell ide to refresh vfs and refresh project tree
+        markDirtyAndRefresh(project.nioPath)
+    }
 
-        // if local scenario: server already created files
+    private fun handleSarifReport(sarif: SourceCode) {
+        backupPreviousClientSarifReport(sarif.localPath)
+        createSourceCodeFiles(listOf(sarif), "sarif report")
+        project.logger.info { "Generated SARIF report file ${sarif.localPath}" }
+    }
+
+    private fun handleTestSources(sources: List<SourceCode>) {
         if (project.settings.isRemoteScenario) {
-            createSourceCodeFiles(testSourceCodes, "test")
-            createSourceCodeFiles(sarifSourceCodes, "sarif report")
-            createSourceCodeFiles(stubSourceCodes, "stub")
+            createSourceCodeFiles(sources, "test")
         }
 
         // prepare list of generated test files for further processing
-        myGeneratedTestFilesLocalFS.addAll(testSourceCodes.map { it.localPath })
+        myGeneratedTestFilesLocalFS.addAll(sources.map { it.localPath })
 
-        // log to user
-        //Q: I do not understand this logic, what is the scenarios here?
-        testSourceCodes.forEach { sourceCode ->
+        sources.forEach { sourceCode ->
             val isTestSourceFile = sourceCode.localPath.endsWith("_test.cpp")
             val testsGenerationResultMessage = if (isTestSourceFile) {
                 "Generated ${sourceCode.regressionMethodsNumber} tests in regression suite" +
                         " and ${sourceCode.errorMethodsNumber} tests in error suite"
             } else {
+                // .h file
                 "Generated test file ${sourceCode.localPath}"
             }
             logger.info(testsGenerationResultMessage)
         }
+    }
 
-        sarifSourceCodes.forEach {
-            project.logger.info { "Generated SARIF report file ${it.localPath}" }
+    private fun handleStubSources(sources: List<SourceCode>) {
+        if (project.settings.isRemoteScenario) {
+            createSourceCodeFiles(sources, "stub")
         }
-
-        // tell ide to refresh vfs and refresh project tree
-        markDirtyAndRefresh(project.nioPath)
     }
 
     private fun createSourceCodeFiles(sourceCodes: List<SourceCode>, fileKind: String) {
