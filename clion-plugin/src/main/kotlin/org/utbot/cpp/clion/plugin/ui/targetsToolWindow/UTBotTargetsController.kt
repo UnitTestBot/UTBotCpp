@@ -47,6 +47,7 @@ class UTBotTargetsController(val project: Project) {
             project,
             getProjectTargetsGrpcRequest(project),
             processTargets = { targetsResponse: Testgen.ProjectTargetsResponse ->
+                System.err.println("Received targets: $targetsResponse")
                 invokeOnEdt {
                     targetsToolWindow.setBusy(false)
 

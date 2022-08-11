@@ -9,10 +9,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import org.utbot.cpp.clion.plugin.actions.FocusAction
+import org.utbot.cpp.clion.plugin.coverage.Coverage
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageSuite
 import org.utbot.cpp.clion.plugin.listeners.UTBotTestResultsReceivedListener
+import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
@@ -45,6 +47,30 @@ class CoverageAndResultsHandler(
             notifyError(response.errorMessage, project)
         }
 
+        data class CoverageCollector(
+            val fullyCovered: MutableSet<Int> = mutableSetOf(),
+            val partiallyCovered: MutableSet<Int> = mutableSetOf(),
+            val notCovered: MutableSet<Int> = mutableSetOf()
+        ) {
+            fun toCoverage() = Coverage(fullyCovered, partiallyCovered, notCovered)
+        }
+
+        val coverage = mutableMapOf<Path, CoverageCollector>()
+        response.coveragesList.forEach { fileCoverageSimplified ->
+            val local = fileCoverageSimplified.filePath.convertFromRemotePathIfNeeded(project).normalize()
+            if (local !in coverage)
+                coverage[local] = CoverageCollector()
+            fileCoverageSimplified.fullCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.fullyCovered?.add(sourceLine.line)
+            }
+            fileCoverageSimplified.partialCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.partiallyCovered?.add(sourceLine.line)
+            }
+            fileCoverageSimplified.noCoverageLinesList.forEach { sourceLine ->
+                coverage[local]?.notCovered?.add(sourceLine.line)
+            }
+        }
+
         // when we received results, test statuses should be updated in the gutter
         project.messageBus.syncPublisher(UTBotTestResultsReceivedListener.TOPIC)
             .testResultsReceived(response.testRunResultsList)
@@ -54,11 +80,12 @@ class CoverageAndResultsHandler(
         val coverageRunner = CoverageRunner.getInstance(UTBotCoverageRunner::class.java)
         val manager = CoverageDataManager.getInstance(project)
         val suite = UTBotCoverageSuite(
+            coverage.mapValues { it.value.toCoverage() },
             engine,
             response.coveragesList,
             coverageRunner = coverageRunner,
             name = "UTBot coverage suite",
-            project = project
+            project = project,
         )
 
         manager.coverageGathered(suite)
@@ -66,8 +93,6 @@ class CoverageAndResultsHandler(
     }
 
     private fun notifyCoverageReceived() {
-        if (sourceFilePath != null) {
-            notifyInfo("Coverage received!", project, FocusAction(sourceFilePath))
-        }
+        notifyInfo("Coverage received!", project, sourceFilePath?.let { FocusAction(it) })
     }
 }

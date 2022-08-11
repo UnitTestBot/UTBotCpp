@@ -8,12 +8,11 @@ import com.intellij.rt.coverage.data.LineCoverage
 import com.intellij.rt.coverage.data.LineData
 import com.intellij.rt.coverage.data.ProjectData
 import com.intellij.util.io.exists
-import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
-import testsgen.Testgen
 import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * This class is used to convert from our representation of coverage to IntelliJ's [ProjectData]
@@ -31,42 +30,38 @@ class UTBotCoverageRunner : CoverageRunner() {
      */
     override fun loadCoverageData(sessionDataFile: File, baseCoverageSuite: CoverageSuite?): ProjectData? {
         log.debug("loadCoverageData was called!")
-        val coveragesList = (baseCoverageSuite as? UTBotCoverageSuite)?.coveragesList
-        coveragesList ?: error("Coverage list is empty in loadCoverageData!")
+        val fileToCoverageInfo: Map<Path, Coverage> =
+            (baseCoverageSuite as? UTBotCoverageSuite)?.coverage ?: return null
         val projectData = ProjectData()
         var isAnyCoverage = false
-        for (simplifiedCovInfo in coveragesList) {
-            val filePathFromServer = simplifiedCovInfo.filePath
-            if (filePathFromServer.isNotEmpty()) {
-                isAnyCoverage = true
-                val localFilePath = filePathFromServer.convertFromRemotePathIfNeeded(baseCoverageSuite.project)
-                if (!localFilePath.exists()) {
-                    log.warn("Skipping $localFilePath in coverage processing as it does not exist!")
-                    continue
-                }
-                val linesCount = getLineCount(localFilePath)
-                val lines = arrayOfNulls<LineData>(linesCount)
-                val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(localFilePath.toString()))
-                fun processRanges(rangesList: List<Testgen.SourceLine?>, status: Byte) {
-                    rangesList.filterNotNull().forEach { sourceLine ->
-                        val numberInFile = sourceLine.line - 1
-                        if (numberInFile >= linesCount) {
-                            log.warn("Skipping $localFilePath:${numberInFile} in coverage processing! Number of lines in file is $linesCount!")
-                            return@forEach
-                        }
-                        val lineData = LineData(sourceLine.line + 1, null)
-                        lineData.hits = status.toInt()
-                        lineData.setStatus(status)
-                        // todo: leave comments what is going on
-                        lines[numberInFile + 1] = lineData
-                        classData.registerMethodSignature(lineData)
+        for ((file, coverage) in fileToCoverageInfo) {
+            isAnyCoverage = true
+            if (!file.exists()) {
+                log.warn("Skipping $file in coverage processing as it does not exist!")
+                continue
+            }
+            val linesCount = getLineCount(file)
+            val lines = arrayOfNulls<LineData>(linesCount)
+            val classData = projectData.getOrCreateClassData(provideQualifiedNameForFile(file.toString()))
+            fun processLinesBatch(batch: Set<Int>, status: Byte) {
+                // assuming: server's coverage lines indexes start from 1
+                batch.forEach { lineIdx ->
+                    System.err.println("Processing idx : $lineIdx")
+                    if (lineIdx > linesCount) {
+                        log.warn("Skipping $file:${lineIdx} in coverage processing! Number of lines in file is $linesCount!")
+                        return@forEach
                     }
+                    val lineData = LineData(lineIdx + 1, null)
+                    lineData.hits = status.toInt()
+                    lineData.setStatus(status)
+                    lines[lineIdx] = lineData
+                    classData.registerMethodSignature(lineData)
                 }
-                processRanges(simplifiedCovInfo.fullCoverageLinesList, LineCoverage.FULL)
-                processRanges(simplifiedCovInfo.partialCoverageLinesList, LineCoverage.PARTIAL)
-                processRanges(simplifiedCovInfo.noCoverageLinesList, LineCoverage.NONE)
                 classData.setLines(lines)
             }
+            processLinesBatch(coverage.fullyCovered, LineCoverage.FULL)
+            processLinesBatch(coverage.partiallyCovered, LineCoverage.PARTIAL)
+            processLinesBatch(coverage.notCovered, LineCoverage.NONE)
         }
         return if (isAnyCoverage) projectData else null
     }

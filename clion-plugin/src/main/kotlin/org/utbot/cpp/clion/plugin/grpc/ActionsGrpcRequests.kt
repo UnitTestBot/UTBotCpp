@@ -21,6 +21,13 @@ fun getFolderGrpcRequest(e: AnActionEvent): Testgen.FolderRequest {
         .build()
 }
 
+fun getRunWithCoverageRequestForAllTests(project: Project): Testgen.CoverageAndResultsRequest =
+    Testgen.CoverageAndResultsRequest.newBuilder()
+        .setCoverage(true)
+        .setSettingsContext(getSettingsContextMessage(project))
+        .setProjectContext(getProjectContextMessage(project))
+        .build()
+
 fun getFileGrpcRequest(e: AnActionEvent): Testgen.FileRequest {
     val project = e.activeProject()
     val filePath = e.getRequiredData(CommonDataKeys.VIRTUAL_FILE).path
@@ -81,7 +88,11 @@ fun getPredicateGrpcRequest(
         .build()
 }
 
-private fun getPredicateGrpcRequest(predicate: String, returnValue: String, type: Util.ValidationType): Util.PredicateInfo =
+private fun getPredicateGrpcRequest(
+    predicate: String,
+    returnValue: String,
+    type: Util.ValidationType
+): Util.PredicateInfo =
     Util.PredicateInfo.newBuilder()
         .setPredicate(predicate)
         .setReturnValue(returnValue)

@@ -8,6 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.rt.coverage.data.ProjectData
 import testsgen.Testgen
 import java.io.File
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -18,6 +19,7 @@ import java.util.concurrent.TimeUnit
  * @param covLists - coverage information returned from server.
  */
 class UTBotCoverageSuite(
+    val coverage: Map<Path, Coverage> = emptyMap(),
     coverageEngine: UTBotCoverageEngine,
     covLists: List<Testgen.FileCoverageSimplified>? = null,
     name: String? = null,
