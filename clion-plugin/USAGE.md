@@ -1,54 +1,57 @@
 
 # How to use plugin
 
-### Check connection status
-You must be connected to server to use plugin. \
-Connection status can be checked in the status bar.
+### Status bar icons
+Before you start working with UnitTestBot, it's worth to pay attention to the IDE's status bar 
+and UTBot-specific controls there:
 
-![](images/plugin_usage/connectionStatus.png)
+<img src="images/plugin_usage/statusbar/status-bar-icons.png" alt="drawing" height="25"/>
 
-### Configure project and generate json files
+#### Connection status
 
-Your project must be configured by server to generate tests.
+Connection status indicates whether the client and the server are 
+established a connection. 
+If the connection is lost, you'll see 
+<img src="images/plugin_usage/statusbar/not-connected.png" alt="drawing" height="25"/>. 
+In this case you need to check if UTBot container is still running.
 
-To send request for project configuration or json files generation,
-click on `connection status` in the status bar and choose a suitable option:
+If you click on the connection status icon, you'll see some actions 
+that you can invoke:
 
-![](images/plugin_usage/generateJson.png)
+<img src="images/plugin_usage/statusbar/status-bar-actions.png" alt="drawing" height="100"/>
 
-Plugin sends request for project configuration when you open 
-the project. Sometimes configuration fails, then after changing
-your project you need to send the request for project configuration.
+#### Verbose mode
 
-### Choose source folders
+You can change the verbose option for generating tests from status bar. 
+If verbose mode is disabled, you'll see:
 
-To generate tests for project, server needs to know the folders source files are located in.
-The source folders are marked with green icons in the project view:
+<img src="images/plugin_usage/statusbar/verbose-off.png" alt="drawing" height="23"/> 
 
-![](images/plugin_usage/source-folders.png)
+If it is enabled: 
 
-You can mark/unmark selected folders from context menu. 
+<img src="images/plugin_usage/statusbar/verbose-on.png" alt="drawing" height="23"/> 
 
-![](images/plugin_usage/mark-unmark-folders.gif)
+### Plugin description
 
-### How to request tests generation
+![](images/plugin_usage/overview.png)
 
-Open a c/cpp file, right click in the text editor and 
-choose suitable option in the context menu:
+Main UI elements of plugin are:
+- Status bar icons, which show connection status and verbose mode option
+- UTBot consoles toolwindow, which allows to see logs from server (GTest log, Server log) and plugin (Client log)
+- UTBot targets toolwindow, which shows targets found by server in current project
+- UTBot Source Directories view which shows source directories with green color
 
-![editor actions](images/plugin_usage/editorActions.png)
+#### Generate tests
+You can trigger tests generation from
+- Context menu in editor: 
 
-For example, to generate tests for the folder, right click on it in the project view
-and choose `Generate for folder`:
+<img src="images/plugin_usage/generate/editor-gen.png" alt="drawing"/> 
 
-![project view actions](images/plugin_usage/projectViewActions.png)
+- Context menu in project view:
 
-### See logs from server and client
+<img src="images/plugin_usage/generate/project-view-gen.png" alt="drawing" height="300"/> 
 
-You can see messages that are sent to the server and server own logging messages. Just click on the `UTBot consoles` tab in the bottom right corner:
+- Search window: pressing `Shift` two times and searching for action
 
-![UTBot consoles tab](images/plugin_usage/consolesTab.png)
+<img src="images/plugin_usage/generate/gen-search.png" alt="drawing" height="300"/> 
 
-add choose the required tab:
-
-![UTBot consoles view](images/plugin_usage/consolesToolWindow.png)
