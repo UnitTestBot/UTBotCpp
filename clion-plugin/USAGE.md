@@ -2,47 +2,49 @@
 # How to use plugin
 
 ### Status bar icons
-Before you start working with UnitTestBot, it's worth to pay attention to the IDE's status bar 
+
+Before you start working with UTBot, it is worth to pay attention to the status bar in IDE
 and UTBot-specific controls there:
 
 <img src="images/plugin_usage/statusbar/status-bar-icons.png" alt="drawing" height="25"/>
 
 #### Connection status
 
-Connection status indicates whether the client and the server are 
-established a connection. 
+Connection status indicates whether the client and the server have established a connection. 
 If the connection is lost, you'll see 
-<img src="images/plugin_usage/statusbar/not-connected.png" alt="drawing" height="25"/>. 
-In this case you need to check if UTBot container is still running.
 
-If you click on the connection status icon, you'll see some actions 
-that you can invoke:
+<img src="images/plugin_usage/statusbar/not-connected.png" alt="drawing" height="25"/>
+
+In such case you need to check if UTBot Docker container is still running.
+
+Clicking on the connection status icon, you see the list of actions can be invoked:
 
 <img src="images/plugin_usage/statusbar/status-bar-actions.png" alt="drawing" height="100"/>
 
 #### Verbose mode
 
-You can change the verbose option for generating tests from status bar. 
-If verbose mode is disabled, you'll see:
+You can change the verbose option from status bar. 
 
-<img src="images/plugin_usage/statusbar/verbose-off.png" alt="drawing" height="23"/> 
-
-If it is enabled: 
+If verbose mode is enabled or disabled, it is represented as follows:
 
 <img src="images/plugin_usage/statusbar/verbose-on.png" alt="drawing" height="23"/> 
 
+<img src="images/plugin_usage/statusbar/verbose-off.png" alt="drawing" height="23"/> 
+
 ### Plugin description
+
+Main UI elements of the plugin are:
+- Status bar icons, they show connection status and verbose mode option
+- `UTBot consoles`, a window to show logs from server (GTest log, Server log) and plugin (Client log)
+- `UTBot targets`, a window to show targets found by server in current project
+- `UTBot Source Directories`, a view to show source directories marked green
 
 ![](images/plugin_usage/overview.png)
 
-Main UI elements of plugin are:
-- Status bar icons, which show connection status and verbose mode option
-- UTBot consoles toolwindow, which allows to see logs from server (GTest log, Server log) and plugin (Client log)
-- UTBot targets toolwindow, which shows targets found by server in current project
-- UTBot Source Directories view which shows source directories with green color
-
 #### Generate tests
-You can trigger tests generation from
+
+You can trigger tests generation from:
+
 - Context menu in editor: 
 
 <img src="images/plugin_usage/generate/editor-gen.png" alt="drawing"/> 
