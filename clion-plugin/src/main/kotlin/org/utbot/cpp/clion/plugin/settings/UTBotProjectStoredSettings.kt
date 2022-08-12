@@ -34,7 +34,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var useStubs: Boolean = false,
         var useDeterministicSearcher: Boolean = false,
         var verbose: Boolean = false,
-        var timeoutPerFunction: Int = 30,
+        var timeoutPerFunction: Int = 0,
         var timeoutPerTest: Int = 0
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
