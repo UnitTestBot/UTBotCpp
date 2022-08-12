@@ -46,7 +46,6 @@ class UTBotCoverageRunner : CoverageRunner() {
             fun processLinesBatch(batch: Set<Int>, status: Byte) {
                 // assuming: server's coverage lines indexes start from 1
                 batch.forEach { lineIdx ->
-                    System.err.println("Processing idx : $lineIdx")
                     if (lineIdx > linesCount) {
                         log.warn("Skipping $file:${lineIdx} in coverage processing! Number of lines in file is $linesCount!")
                         return@forEach

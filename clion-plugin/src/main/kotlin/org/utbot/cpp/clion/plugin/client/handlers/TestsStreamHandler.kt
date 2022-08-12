@@ -50,7 +50,10 @@ class TestsStreamHandler(
 
         // for new generated tests remove previous testResults
         project.service<TestsResultsStorage>().clearTestResults(testSourceCodes)
+    }
 
+    override fun onFinish() {
+        super.onFinish()
         // tell ide to refresh vfs and refresh project tree
         markDirtyAndRefresh(project.nioPath)
     }
