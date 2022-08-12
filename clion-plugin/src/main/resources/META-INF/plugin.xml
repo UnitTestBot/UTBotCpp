@@ -2,7 +2,7 @@
 <idea-plugin>
     <id>org.utbot.cpp.clion.plugin</id>
     <name>UTBotCppClion</name>
-    <vendor>vol0n</vendor>
+    <vendor>utbot.org</vendor>
 
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.clion.ide</depends>
@@ -22,7 +22,7 @@
                              id="org.utbot.cpp.clion.plugin.ui.UTBotConfigurable"
                              displayName="UTBot Settings"
                              nonDefaultProject="true"/>
-        <notificationGroup id="Custom Notification Group" displayType="BALLOON"/>
+        <notificationGroup id="UTBot events" displayType="BALLOON"/>
 
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <coverageRunner implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner"/>
