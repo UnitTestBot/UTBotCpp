@@ -5,6 +5,8 @@
 
 #include "loguru.h"
 
+#include <cstddef>
+
 using namespace types;
 using printer::KleeConstraintsPrinter;
 
@@ -191,15 +193,15 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
 }
 
 std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, const types::Type &type) {
-    std::stringstream ssCex;
     if (!CollectionUtils::containsKey(TypesHandler::preferredConstraints(), type.baseType())) {
         return "";
     }
-    for (int i = 0; i < TypesHandler::preferredConstraints().at(type.baseType()).size(); i++) {
-        ssCex << name;
-        ssCex << TypesHandler::preferredConstraints().at(type.baseType())[i];
-        if (i < (int)TypesHandler::preferredConstraints().at(type.baseType()).size() - 1) {
-            ssCex << " & ";
+    std::stringstream ssCex;
+    const std::vector<std::string> &constraints = TypesHandler::preferredConstraints().at(type.baseType());
+    for (size_t i = 0; i < constraints.size(); i++) {
+        ssCex << name << " " << constraints[i];
+        if (i + 1 < constraints.size()) {
+            ssCex << " && ";
         }
     }
     return ssCex.str();

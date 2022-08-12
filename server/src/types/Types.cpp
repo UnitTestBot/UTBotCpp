@@ -730,23 +730,23 @@ std::unordered_map<types::TypeName, size_t> types::TypesHandler::boolTypesToSize
     return boolTypes;
 }
 
-std::unordered_map<types::TypeName, std::vector<std::string>> types::TypesHandler::preferredConstraints() noexcept {
-    static std::unordered_map<std::string, std::vector<std::string>> constraints = {
-            {"char",               {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"signed char",        {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"unsigned char",      {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"short",              {" >= -10 ", " <= 10"}},
-            {"int",                {" >= -10 ", " <= 10"}},
-            {"long",               {" >= -10 ", " <= 10"}},
-            {"long long",          {" >= -10 ", " <= 10"}},
+const std::unordered_map<types::TypeName, std::vector<std::string>> &types::TypesHandler::preferredConstraints() noexcept {
+    static const std::unordered_map<std::string, std::vector<std::string>> constraints = {
+            {"char",               {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"signed char",        {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"unsigned char",      {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"short",              {">= -10", "<= 10"}},
+            {"int",                {">= -10", "<= 10"}},
+            {"long",               {">= -10", "<= 10"}},
+            {"long long",          {">= -10", "<= 10"}},
             {"unsigned short",     {"<= 10"}},
             {"unsigned int",       {"<= 10"}},
             {"unsigned long",      {"<= 10"}},
             {"unsigned long long", {"<= 10"}},
-            {"float",              {" >= -10 ", " <= 10"}},
-            {"double",             {" >= -10 ", " <= 10"}},
-            {"long double",        {" >= -10 ", " <= 10"}},
-            {"void",               {" <= 10"}},
+            {"float",              {">= -10", "<= 10"}},
+            {"double",             {">= -10", "<= 10"}},
+            {"long double",        {">= -10", "<= 10"}},
+            {"void",               {"<= 10"}},
     };
 
     return constraints;

@@ -12,6 +12,7 @@
 #include <protobuf/util.pb.h>
 #include <tsl/ordered_set.h>
 
+#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -543,7 +544,7 @@ namespace types {
          * 'klee_prefer_cex' function.
          * @return map type -> constraints.
          */
-        static std::unordered_map<TypeName, std::vector<std::string>> preferredConstraints() noexcept;
+        static const std::unordered_map<TypeName, std::vector<std::string>> &preferredConstraints() noexcept;
 
         size_t getPointerSize() const noexcept {
             return sizeContext.pointerSize;
