@@ -74,11 +74,11 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
             tests.code.append("\n");
             ++line_count;
         } else {
-            // anchor for SARIF ala testFilePath,lineThatCallsTestedFunction
+            // anchor for SARIF
             std::string nameAndTestIndex =
                 line.substr(sarif::PREFIX_FOR_JSON_PATH.size());
-            int pos = nameAndTestIndex.find(',');
-            if (pos != -1) {
+            size_t pos = nameAndTestIndex.find(',');
+            if (pos != std::string::npos) {
                 std::string name = nameAndTestIndex.substr(0, pos);
                 int testIndex = -1;
                 try {
@@ -245,7 +245,7 @@ void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDesc
         if (verbose) {
             strComment("Construct lazy instantiated variables");
         }
-        for (const auto paramValue : testCase.paramValues) {
+        for (const auto &paramValue : testCase.paramValues) {
             printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
         }
     }

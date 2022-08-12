@@ -35,7 +35,7 @@ namespace sarif {
             }
             ++p;
         }
-        if (foundStartFragment && p == path.end()) {
+        if (p == path.end()) {
             while (s != src.end()) {
                 relToProject = relToProject / *s;
                 ++s;
@@ -47,7 +47,7 @@ namespace sarif {
     void sarifAddTestsToResults(const utbot::ProjectContext &projectContext,
                                 const Tests &tests,
                                 json &results) {
-        LOG_S(INFO) << "{stack";
+        LOG_SCOPE_FUNCTION(DEBUG);
         for (const auto &it : tests.methods) {
             for (const auto &methodTestCase : it.second.testCases) {
                 json result;
@@ -76,7 +76,8 @@ namespace sarif {
                                     const fs::path &srcPath = fs::path(stack_match[3]);
                                     const fs::path &relPathInProject = getInProjectPath(projectContext.projectPath, srcPath);
                                     const fs::path &fullPathInProject = projectContext.projectPath / relPathInProject;
-                                    if (Paths::isSubPathOf(projectContext.buildDir, fullPathInProject)) {
+                                    if (Paths::isSubPathOf(Paths::getUtbotBuildDir(projectContext), fullPathInProject)) {
+                                        LOG_S(WARNING) << "Full path " << fullPathInProject << " is in build - skip it";
                                         continue;
                                     }
                                     if (!relPathInProject.empty() && fs::exists(fullPathInProject)) {
@@ -119,7 +120,7 @@ namespace sarif {
                                         codeFlowsLocations["locations"].push_back(locationWrapper);
                                     } else {
                                         // the rest is the KLEE calls that are not applicable for navigation
-                                        LOG_S(INFO) << "Skip path in stack frame :" << srcPath;
+                                        LOG_S(DEBUG) << "Skip path in stack frame :" << srcPath;
                                     }
                                 }
                             }
@@ -180,11 +181,9 @@ namespace sarif {
                 }
             }
         }
-        LOG_S(INFO) << "}stack";
     }
 
     std::string sarifPackResults(const json &results) {
-        // POINT 3
         json sarifJson;
         sarifJson["$schema"] = "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json";
         sarifJson["version"] = "2.1.0";

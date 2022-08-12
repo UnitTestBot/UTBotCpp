@@ -268,7 +268,10 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                 auto compilationUnitInfo =
                     testGen.buildDatabase->getClientCompilationUnitInfo(fileName);
                 if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
-                    testMethods.emplace_back(methodName, bitcodePath, fileName);
+                    testMethods.emplace_back(methodName,
+                                             bitcodePath,
+                                             fileName,
+                                             compilationUnitInfo->is32bits());
                 }
             }
         }
@@ -294,7 +297,8 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                         if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
                             tests::TestMethod testMethod{ methodName,
                                                           bitcodeFileName.at(lineInfo->filePath),
-                                                          fileName };
+                                                          fileName,
+                                                          compilationUnitInfo->is32bits()};
                             testMethods.emplace_back(testMethod);
                         }
                         if (!lineInfo->forClass)
@@ -451,8 +455,9 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
             auto command = kleeGenerator->getCompileCommandForKlee(sourcePath, {}, {});
             command->setSourcePath(stubPath);
             command->setOutput(bitcodeFile);
+            auto commandWithChangingDirectory = utbot::CompileCommand(command.value(), true);
             makefilePrinter.declareTarget(bitcodeFile, { stubPath },
-                                          { command.value().toStringWithChangingDirectory() });
+                                          { commandWithChangingDirectory.toStringWithChangingDirectory() });
             return bitcodeFile;
         });
     makefilePrinter.declareVariable(STUB_BITCODE_FILES_NAME,

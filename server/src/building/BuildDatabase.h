@@ -71,6 +71,8 @@ public:
         // User object file
         [[nodiscard]] fs::path getOutputFile() const;
 
+        [[nodiscard]] bool is32bits() const;
+
         void setOutputFile(const fs::path &file);
 
         void addFile(fs::path file) override;

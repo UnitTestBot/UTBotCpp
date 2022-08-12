@@ -161,15 +161,22 @@ namespace Paths {
         return errFiles;
     }
 
-    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                      const fs::path &srcFilePath, const std::string &methodName) {
+    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                   const fs::path &filePath) {
         fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
-        fs::path relative = (fs::relative(addOrigExtensionAsSuffixAndAddNew(srcFilePath, ""),
-                                          projectContext.projectPath));
-        if (!methodName.empty()) {
-            return kleeOutDir / relative / ("klee_out_" + methodName);
-        }
-        return kleeOutDir / relative / ("klee_out_" + srcFilePath.filename().stem().string());
+        fs::path relative = fs::relative(addOrigExtensionAsSuffixAndAddNew(filePath, ""), projectContext.projectPath);
+        return kleeOutDir / relative;
+    }
+
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
+                                      const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath,
+                                      const std::string &methodNameOrEmptyForFolder) {
+        auto kleeOutDirForFile = kleeOutDirForFilePath(projectContext, projectTmpPath, srcFilePath);
+        std::string suffix = methodNameOrEmptyForFolder.empty()
+                             ? addOrigExtensionAsSuffixAndAddNew(srcFilePath, "").filename().string()
+                             : methodNameOrEmptyForFolder;
+        return kleeOutDirForFile / ("klee_out_" + suffix);
     }
 
     //endregion
@@ -199,7 +206,7 @@ namespace Paths {
     }
 
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.buildDir / "utbot";
+        return projectContext.buildDir() / "utbot";
     }
     fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext) {
         return getArtifactsRootDir(projectContext) / "gtest-results.json";
@@ -251,7 +258,7 @@ namespace Paths {
             newFilename = fs::relative(filePath, projectContext.projectPath);
             newFilename = addExtension(newFilename, ".o");
         } else {
-            newFilename = fs::relative(filePath, projectContext.buildDir);
+            newFilename = fs::relative(filePath, projectContext.buildDir());
         }
         return getRecompiledDir(projectContext) / newFilename;
     }
@@ -404,7 +411,7 @@ namespace Paths {
         return removeSuffix(srcPath, STUB_SUFFIX).stem() == headerPath.stem();
     }
     fs::path getUtbotBuildDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.buildDir / CompilationUtils::UTBOT_BUILD_DIR_NAME;
+        return projectContext.buildDir() / CompilationUtils::UTBOT_BUILD_DIR_NAME;
     }
 
     //endregion

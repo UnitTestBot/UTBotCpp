@@ -230,27 +230,27 @@
 			{
 				"command": "unittestbot.generateFileTests",
 				"key": "ctrl+t",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.generateProjectLineTests",
 				"key": "ctrl+alt+l",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.generatePredicateTests",
 				"key": "ctrl+alt+p",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.generateAssertionFailTests",
 				"key": "ctrl+alt+f",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.generateFunctionTests",
 				"key": "ctrl+alt+m",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.generateClassTests",
@@ -270,27 +270,27 @@
 			{
 				"command": "unittestbot.menucommand.generateFileTests",
 				"key": "ctrl+t",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.menucommand.generateProjectLineTests",
 				"key": "ctrl+alt+l",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.menucommand.generatePredicateTests",
 				"key": "ctrl+alt+p",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.menucommand.generateAssertionFailTests",
 				"key": "ctrl+alt+f",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.menucommand.generateFunctionTests",
 				"key": "ctrl+alt+m",
-				"when": "config.unittestbot.advanced.enableDeveloperMode == true && (editorLangId == c || editorLangId == cpp)"
+				"when": "config.unittestbot.advanced.enableDeveloperMode == true && editorLangId =~ /(c|cpp)/"
 			},
 			{
 				"command": "unittestbot.menucommand.generateClassTests",
@@ -392,7 +392,7 @@
 			"unittestbot.utbot.editor.generate": [
 				{
 					"command": "unittestbot.menucommand.generateFileTests",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@1"
 				},
 				{
@@ -402,29 +402,29 @@
 				},
 				{
 					"command": "unittestbot.menucommand.generateFunctionTests",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@3"
 				},
 				{
 					"command": "unittestbot.menucommand.generateProjectLineTests",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@4"
 				},
 				{
 					"command": "unittestbot.menucommand.generateAssertionFailTests",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@5"
 				},
 				{
 					"command": "unittestbot.menucommand.generatePredicateTests",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@6"
 				}
 			],
 			"explorer/context": [
 				{
 					"command": "unittestbot.generateFileTests",
-					"when": "resourceLangId == c || resourceLangId == cpp",
+					"when": "resourceLangId =~ /(c|cpp)/",
 					"group": "UTBot@1"
 				},
 				{
@@ -443,7 +443,7 @@
 			"editor/context": [
 				{
 					"submenu": "unittestbot.utbot.editor.generate",
-					"when": "editorLangId == c || editorLangId == cpp",
+					"when": "editorLangId =~ /(c|cpp)/",
 					"group": "UTBot@1"
 				},
 				{
@@ -580,9 +580,5 @@
 		"randomstring": "1.2.2",
 		"source-map-support": "0.5.21",
 		"typescript": "3.9.4"
-	},
-	"extensionPack": [
-		"Natizyskunk.sftp",
-		"MS-SarifVSCode.sarif-viewer"
-	] 
+	}
 }

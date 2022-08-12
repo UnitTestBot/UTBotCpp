@@ -239,8 +239,13 @@ namespace Paths {
 
     std::vector<fs::path> getErrorDescriptors(fs::path const &path);
 
-    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                      const fs::path &srcFilePath, const std::string &methodName = "");
+    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
+                                   const fs::path &filePath);
+
+    fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
+                                      const fs::path &projectTmpPath,
+                                      const fs::path &srcFilePath,
+                                      const std::string &methodNameOrEmptyForFolder);
 
     //endregion
 
@@ -408,6 +413,21 @@ namespace Paths {
 
     static inline fs::path getStubsRelativeDirPath(const fs::path &relativeTestDirPath) {
         return "stubs" / relativeTestDirPath;
+    }
+
+    //endregion
+
+    //region utbot-report
+
+    inline fs::path getUTBotReportDir(const utbot::ProjectContext &projectContext) {
+        return projectContext.projectPath / "utbot-report";
+    }
+
+    inline fs::path getGenerationStatsCSVPath(const utbot::ProjectContext &projectContext) {
+        return getUTBotReportDir(projectContext) / "generation-stats.csv";
+    }
+    inline fs::path getExecutionStatsCSVPath(const utbot::ProjectContext &projectContext) {
+        return getUTBotReportDir(projectContext) / "execution-stats.csv";
     }
 
     //endregion

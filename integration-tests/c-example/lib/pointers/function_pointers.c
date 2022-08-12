@@ -91,16 +91,16 @@ op_func_arr get_chain(char c[]) {
     for (int i = 0; i < 10; i++) {
         switch(c[i]) {
             case '+':
-                chain[i] = *f_add;
+                chain[i] = f_add;
                 break;
             case '-':
-                chain[i] = *f_sub;
+                chain[i] = f_sub;
                 break;
             case '*':
-                chain[i] = *f_mul;
+                chain[i] = f_mul;
                 break;
             default:
-                chain[i] = *f_add;
+                chain[i] = f_add;
                 break;
         }
     }

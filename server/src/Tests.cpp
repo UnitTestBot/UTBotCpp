@@ -1137,13 +1137,16 @@ UnionValueView::UnionValueView(
       entryValue(PrinterUtils::convertBytesToUnion(typeName, rawDataView->getEntryValue(nullptr))) {
 }
 
-TestMethod::TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename)
-    : methodName(std::move(methodName)), bitcodeFilePath(std::move(bitcodeFile)),
-      sourceFilePath(std::move(sourceFilename)) {
-}
+TestMethod::TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename, bool is32)
+    : methodName(std::move(methodName))
+    , bitcodeFilePath(std::move(bitcodeFile))
+    , sourceFilePath(std::move(sourceFilename))
+    , is32bits(is32)
+{}
 
 bool TestMethod::operator==(const TestMethod &rhs) const {
-    return std::tie(methodName, bitcodeFilePath, sourceFilePath) == std::tie(rhs.methodName, rhs.bitcodeFilePath, rhs.sourceFilePath);
+    return std::tie(    methodName,     bitcodeFilePath,     sourceFilePath, is32bits)
+        == std::tie(rhs.methodName, rhs.bitcodeFilePath, rhs.sourceFilePath, rhs.is32bits);
 }
 bool TestMethod::operator!=(const TestMethod &rhs) const {
     return !(rhs == *this);
