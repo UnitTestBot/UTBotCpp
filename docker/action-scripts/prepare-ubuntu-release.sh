@@ -14,6 +14,7 @@ cp -a docker/release_distribution_scripts/. $UTBOT_DISTR_FOLDER/
 echo $VERSION > $ARTIFACT_DIR/version.txt
 
 mv vscode-plugin/*.vsix $ARTIFACT_DIR/utbot_plugin.vsix
+mv clion-plugin/build/distributions/*.zip $ARTIFACT_DIR/clion_plugin.zip
 mv docker/unpack_and_run_utbot.sh $ARTIFACT_DIR/unpack_and_run_utbot.sh
 
 cd $ARTIFACT_DIR
