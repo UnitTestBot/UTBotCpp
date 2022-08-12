@@ -321,13 +321,13 @@ namespace tests {
         struct MethodParam {
             types::Type type;
             std::string name;
-            std::optional<uint64_t> alignment;
+            std::optional<size_t> alignment;
 
             bool hasIncompleteType = false;
 
             MethodParam(types::Type type,
                         std::string name,
-                        std::optional<uint64_t> alignment,
+                        std::optional<size_t> alignment,
                         bool hasIncompleteType = false)
                 : type(std::move(type)), name(std::move(name)), alignment(std::move(alignment)),
                   hasIncompleteType(hasIncompleteType) {
@@ -356,14 +356,14 @@ namespace tests {
 
         struct TestCaseParamValue {
             std::string name;
-            std::optional<uint64_t> alignment;
+            std::optional<size_t> alignment;
             std::shared_ptr<AbstractValueView> view;
             std::vector<MethodParam> lazyParams;
             std::vector<TestCaseParamValue> lazyValues;
             TestCaseParamValue() = default;
 
             TestCaseParamValue(const std::string &_name,
-                               const std::optional<uint64_t> &_alignment,
+                               const std::optional<size_t> &_alignment,
                                const std::shared_ptr<AbstractValueView> &_view)
                 : name(_name),
                   alignment(_alignment),

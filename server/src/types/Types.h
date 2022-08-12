@@ -259,9 +259,9 @@ namespace types {
     struct Field {
         types::Type type;
         std::string name;
-        unsigned int size;
+        size_t size;
         // reassigned in structFields
-        unsigned int offset = 0;
+        size_t offset = 0;
         enum AccessSpecifier {
             AS_pubic,
             AS_protected,
@@ -275,8 +275,8 @@ namespace types {
         fs::path filePath;
         std::string name;
         std::string definition;
-        uint64_t size;
-        uint64_t alignment;
+        size_t size;
+        size_t alignment;
     };
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
@@ -333,8 +333,8 @@ namespace types {
     class TypesHandler {
     public:
         struct SizeContext {
-            uint64_t pointerSize = 8;
-            uint64_t maximumAlignment = 16;
+            size_t pointerSize = 8;
+            size_t maximumAlignment = 16;
         };
 
         explicit TypesHandler(TypeMaps &types, SizeContext sizeContext)
@@ -550,7 +550,7 @@ namespace types {
             return sizeContext.pointerSize;
         }
 
-        uint64_t getMaximumAlignment() const noexcept {
+        size_t getMaximumAlignment() const noexcept {
             return sizeContext.maximumAlignment;
         }
 

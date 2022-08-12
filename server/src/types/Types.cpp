@@ -621,9 +621,9 @@ std::string types::TypesHandler::removeConstPrefix(const TypeName &type) {
     std::vector<std::string> tmp = StringUtils::split(type);
     if (tmp[0] == CONST_QUALIFIER) {
         std::string res;
-        for (int i = 1; i < (int) tmp.size(); i++) {
+        for (size_t i = 1; i < tmp.size(); i++) {
             res += tmp[i];
-            if (i < (int) tmp.size() - 1) {
+            if (i + 1 < tmp.size()) {
                 res.push_back(' ');
             }
         }
@@ -698,7 +698,7 @@ testsgen::ValidationType types::TypesHandler::getIntegerValidationType(const Typ
     } else if (size == 8) {
         return (isUnsigned) ? testsgen::UINT64_T : testsgen::INT64_T;
     } else {
-        ABORT_F("Unknown integer size: %d", (int)size);
+        ABORT_F("Unknown integer size: %zu", size);
     }
 }
 

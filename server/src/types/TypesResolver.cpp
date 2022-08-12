@@ -236,8 +236,9 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
        << "\tFile path: " << enumInfo.filePath.string();
     LOG_S(DEBUG) << ss.str();
 }
-void TypesResolver::updateMaximumAlignment(uint64_t alignment) const {
-    uint64_t &maximumAlignment = *(this->parent->maximumAlignment);
+
+void TypesResolver::updateMaximumAlignment(size_t alignment) const {
+    size_t &maximumAlignment = *(this->parent->maximumAlignment);
     maximumAlignment = std::max(maximumAlignment, alignment);
 }
 
