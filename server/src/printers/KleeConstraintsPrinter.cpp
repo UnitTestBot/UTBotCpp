@@ -201,7 +201,7 @@ std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, cons
     for (size_t i = 0; i < constraints.size(); i++) {
         ssCex << name << " " << constraints[i];
         if (i + 1 < constraints.size()) {
-            ssCex << " && ";
+            ssCex << " & ";
         }
     }
     return ssCex.str();
