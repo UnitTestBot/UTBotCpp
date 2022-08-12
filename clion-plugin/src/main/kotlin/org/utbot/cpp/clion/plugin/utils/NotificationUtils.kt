@@ -25,7 +25,7 @@ private fun notify(
     action: AnAction? = null,
 ) {
     val notification = NotificationGroupManager.getInstance()
-        .getNotificationGroup("Custom Notification Group")
+        .getNotificationGroup("UTBot events")
         .createNotification(content, type)
 
     notification.notify(project)

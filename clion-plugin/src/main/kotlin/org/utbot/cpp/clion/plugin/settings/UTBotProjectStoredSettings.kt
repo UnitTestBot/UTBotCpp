@@ -31,11 +31,11 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var sourceDirs: Set<String> = setOf(),
         var cmakeOptions: String = DEFAULT_CMAKE_OPTIONS.joinToString(" "),
         var generateForStaticFunctions: Boolean = true,
-        var useStubs: Boolean = true,
-        var useDeterministicSearcher: Boolean = true,
+        var useStubs: Boolean = false,
+        var useDeterministicSearcher: Boolean = false,
         var verbose: Boolean = false,
-        var timeoutPerFunction: Int = 0,
-        var timeoutPerTest: Int = 30
+        var timeoutPerFunction: Int = 30,
+        var timeoutPerTest: Int = 0
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
             buildDirRelativePath = model.projectSettings.buildDirRelativePath

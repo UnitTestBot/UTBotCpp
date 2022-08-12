@@ -8,13 +8,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.JBIntSpinner
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.LabelPosition
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.Row
-import com.intellij.ui.dsl.builder.bindIntText
 import com.intellij.ui.dsl.builder.bindIntValue
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
@@ -34,7 +34,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val panel by lazy { createMainPanel() }
 
     private val settings: UTBotProjectStoredSettings = myProject.service()
-    private lateinit var portTextField: JBTextField
+    private lateinit var portComponent: JBIntSpinner
     private lateinit var serverNameTextField: JBTextField
 
 
@@ -69,9 +69,11 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     private fun Panel.createConnectionSettings() {
         row(UTBot.message("settings.project.port")) {
-            intTextField().bindIntText(projectIndependentSettings::port).applyToComponent {
-                portTextField = this
-                maximumSize = TEXT_FIELD_MAX_SIZE
+            spinner(
+                0..65535,
+                1
+            ).bindIntValue(projectIndependentSettings::port).applyToComponent {
+                portComponent = this
             }
         }.rowComment(UTBot.message("deployment.utbotPort.description"))
 
@@ -87,11 +89,9 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     }
 
     private fun Panel.createPathsSettings() {
-        createPathChooser(
-            settings::buildDirRelativePath,
-            UTBot.message("settings.project.buildDir"),
-            UTBot.message("settings.project.buildDir.browse.title")
-        ).rowComment(UTBot.message("paths.buildDirectory.description"))
+        row(UTBot.message("settings.project.buildDir")) {
+            textField().bindText(settings::buildDirRelativePath).columns(COLUMNS_LARGE)
+        }.rowComment(UTBot.message("paths.buildDirectory.description"))
 
         row(UTBot.message("settings.project.target")) {
             textField().bindText(
@@ -191,7 +191,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     override fun apply() {
         val wereConnectionSettingsModified =
-            portTextField.text != projectIndependentSettings.port.toString() || serverNameTextField.text != projectIndependentSettings.serverName
+            portComponent.number != projectIndependentSettings.port || serverNameTextField.text != projectIndependentSettings.serverName
         panel.apply()
         myProject.settings.fireUTBotSettingsChanged()
         if (wereConnectionSettingsModified)
