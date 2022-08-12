@@ -38,8 +38,10 @@ abstract class StreamHandlerWithProgress<T>(
     private fun updateProgress(data: T) {
         invokeOnEdt {
             data.getProgress().apply {
-                indicator.fraction = percent
-                indicator.text = "$message..."
+                if (message.isNotEmpty()) {
+                    indicator.text = "$message..."
+                }
+                indicator.fraction = percent / 100
             }
         }
     }

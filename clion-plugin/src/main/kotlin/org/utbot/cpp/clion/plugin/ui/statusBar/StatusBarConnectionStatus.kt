@@ -105,8 +105,6 @@ object StatusBarActionsPopup {
         actionGroup.addSeparator()
         actionGroup.add(ConfigureProjectAction())
         actionGroup.addSeparator()
-        actionGroup.add(AskServerToGenerateJsonForProjectConfiguration())
-        actionGroup.addSeparator()
         actionGroup.addAction(ReconfigureProjectAction())
 
         return actionGroup
