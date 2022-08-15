@@ -367,7 +367,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     }
 
     std::optional<std::string> entryValue;
-    if(curStruct.hasUnnamedFields) {
+    if(curStruct.hasAnonymousStructOrUnion) {
         auto bytesType = types::Type::createSimpleTypeFromName("utbot_byte");
         const std::shared_ptr<AbstractValueView> rawDataView = arrayView(byteArray, bytesType, curStruct.size, offset, usage);
         entryValue = PrinterUtils::convertBytesToUnion(curStruct.name, rawDataView->getEntryValue(nullptr));

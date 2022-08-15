@@ -281,17 +281,14 @@ namespace types {
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
 
-    struct StructInfo: TypeInfo {
-        std::vector<Field> fields{};
-
-        FPointerMap functionFields{};
-        bool hasUnnamedFields;
-        bool isCLike;
-    };
-
     struct UnionInfo: TypeInfo {
         std::vector<Field> fields{};
-        bool hasUnnamedFields;
+        bool hasAnonymousStructOrUnion;
+    };
+
+    struct StructInfo: UnionInfo {
+        FPointerMap functionFields{};
+        bool isCLike;
     };
 
     struct EnumInfo: TypeInfo {
@@ -640,10 +637,10 @@ namespace types {
                                    IsSupportedTypeArgumentsHash>
             isSupportedTypeHash{};
 
-        static std::unordered_map<TypeName, size_t> integerTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> floatingPointTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> characterTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> boolTypesToSizes() noexcept;
+        static const std::unordered_map<TypeName, size_t> &integerTypesToSizes() noexcept;
+        static const std::unordered_map<TypeName, size_t> &floatingPointTypesToSizes() noexcept;
+        static const std::unordered_map<TypeName, size_t> &characterTypesToSizes() noexcept;
+        static const std::unordered_map<TypeName, size_t> &boolTypesToSizes() noexcept;
 
         template<typename T>
         bool typeIsInMap(uint64_t id, const std::unordered_map<uint64_t, T>& someMap) const {

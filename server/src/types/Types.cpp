@@ -312,21 +312,13 @@ bool types::Type::isConstQualifiedValue() const {
 }
 
 bool types::Type::isTypeContainsPointer() const {
-    for (const auto &kind : pointerArrayKinds()) {
-        if (kind->getKind() == AbstractType::OBJECT_POINTER) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(pointerArrayKinds().cbegin(), pointerArrayKinds().cend(),
+                       [](auto const &kind){ return kind->getKind() == AbstractType::OBJECT_POINTER; });
 }
 
 bool types::Type::isTypeContainsFunctionPointer() const {
-    for (const auto &kind : mKinds) {
-        if (kind->getKind() == AbstractType::FUNCTION_POINTER) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(pointerArrayKinds().cbegin(), pointerArrayKinds().cend(),
+                       [](auto const &kind){ return kind->getKind() == AbstractType::FUNCTION_POINTER; });
 }
 
 int types::Type::indexOfFirstPointerInTypeKinds() const {
@@ -665,9 +657,9 @@ std::string types::TypesHandler::removeArrayBrackets(TypeName type) {
     return type;
 }
 
-std::unordered_map<std::string, size_t> types::TypesHandler::integerTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> integerTypes = {
-            {"utbot_byte",         sizeof(char)}, //we use different name to not trigger char processing
+const std::unordered_map<std::string, size_t> &types::TypesHandler::integerTypesToSizes() noexcept {
+    static const std::unordered_map<std::string, size_t> integerTypes = {
+            {"utbot_byte",         sizeof(char)}, // we use different name to not trigger char processing
             {"short",              sizeof(short)},
             {"int",                sizeof(int)},
             {"long",               sizeof(long)},
@@ -676,7 +668,7 @@ std::unordered_map<std::string, size_t> types::TypesHandler::integerTypesToSizes
             {"unsigned int",       sizeof(unsigned int)},
             {"unsigned long",      sizeof(unsigned long)},
             {"unsigned long long", sizeof(unsigned long long)},
-            {"unsigned char",          sizeof(unsigned char)} // we do not want to treat an unsigned char as character literal
+            {"unsigned char",      sizeof(unsigned char)} // we do not want to treat an unsigned char as character literal
     };
     return integerTypes;
 }
@@ -702,8 +694,8 @@ testsgen::ValidationType types::TypesHandler::getIntegerValidationType(const Typ
     }
 }
 
-std::unordered_map<std::string, size_t> types::TypesHandler::floatingPointTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> floatingPointTypes = {
+const std::unordered_map<std::string, size_t> &types::TypesHandler::floatingPointTypesToSizes() noexcept {
+    static const std::unordered_map<std::string, size_t> floatingPointTypes = {
             {"float",       sizeof(float)},
             {"double",      sizeof(double)},
             {"long double", sizeof(long double)}
@@ -712,8 +704,8 @@ std::unordered_map<std::string, size_t> types::TypesHandler::floatingPointTypesT
     return floatingPointTypes;
 }
 
-std::unordered_map<types::TypeName, size_t> types::TypesHandler::characterTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> characterTypes = {
+const std::unordered_map<types::TypeName, size_t> &types::TypesHandler::characterTypesToSizes() noexcept {
+    static const std::unordered_map<std::string, size_t> characterTypes = {
             {"char",          sizeof(char)},
             {"signed char",   sizeof(signed char)},
     };
@@ -721,8 +713,8 @@ std::unordered_map<types::TypeName, size_t> types::TypesHandler::characterTypesT
     return characterTypes;
 }
 
-std::unordered_map<types::TypeName, size_t> types::TypesHandler::boolTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> boolTypes = {
+const std::unordered_map<types::TypeName, size_t> &types::TypesHandler::boolTypesToSizes() noexcept {
+    static const std::unordered_map<std::string, size_t> boolTypes = {
             {"bool",  sizeof(bool)},
             {"_Bool", sizeof(bool)}
     };
@@ -900,7 +892,7 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
               }
               if (isStruct(type)) {
                   auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
+                  return !structInfo.hasAnonymousStructOrUnion && unsupportedFields(structInfo.fields);
               }
               return false;
             } },
@@ -956,7 +948,7 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
               };
               if (isStruct(type)) {
                   auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
+                  return !structInfo.hasAnonymousStructOrUnion && unsupportedFields(structInfo.fields);
               }
 
               if (isUnion(type)) {

@@ -66,7 +66,7 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
     fullname.insert(std::make_pair(id, currentStructName));
 
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
-        if (const clang::RecordDecl *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
+        if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
             clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
             uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
             if (!fullname[parentID].empty()) {
@@ -93,9 +93,9 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
-    structInfo.hasUnnamedFields = false;
+    structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
-        const clang::CXXRecordDecl *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        const auto *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
         structInfo.isCLike = cppD != nullptr && cppD->isCLike();
     }
     else {
@@ -142,7 +142,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
-        structInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
+        structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
             switch (F->getAccess()) {
                 case clang::AccessSpecifier::AS_private :
@@ -267,7 +267,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     ss << "Union: " << unionInfo.name << "\n"
        << "\tFile path: " << unionInfo.filePath.string() << "";
     std::vector<types::Field> fields;
-    unionInfo.hasUnnamedFields = false;
+    unionInfo.hasAnonymousStructOrUnion = false;
     for (const clang::FieldDecl *F : D->fields()) {
         if (F->isUnnamedBitfield()) {
             continue;
@@ -281,7 +281,7 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
-        unionInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
+        unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         fields.push_back(field);
     }
     unionInfo.fields = fields;
