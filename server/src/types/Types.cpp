@@ -149,11 +149,9 @@ bool types::Type::maybeReturnArray() const {
 
 size_t types::Type::countReturnPointers(bool decrementIfArray) const {
     size_t returnPointer = 0;
-    for (size_t i = 0; i < this->pointerArrayKinds().size(); ++i) {
-        returnPointer +=
-            this->pointerArrayKinds()[i]->getKind() == AbstractType::OBJECT_POINTER
-            ? 1
-            : 0;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    for (size_t i = 0; i < pointerArrayKinds.size(); ++i) {
+        returnPointer += pointerArrayKinds[i]->getKind() == AbstractType::OBJECT_POINTER;
     }
     if (decrementIfArray && maybeReturnArray()) {
         returnPointer--;
@@ -282,9 +280,10 @@ const std::string &types::Type::getStdinParamName() {
 }
 
 bool types::Type::isPointerToPointer() const {
-    return pointerArrayKinds().size() > 1 &&
-           pointerArrayKinds()[0]->getKind() == AbstractType::OBJECT_POINTER &&
-           pointerArrayKinds()[1]->getKind() == AbstractType::OBJECT_POINTER;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return pointerArrayKinds.size() > 1 &&
+           pointerArrayKinds[0]->getKind() == AbstractType::OBJECT_POINTER &&
+           pointerArrayKinds[1]->getKind() == AbstractType::OBJECT_POINTER;
 }
 
 
@@ -293,9 +292,10 @@ bool types::Type::isTwoDimensionalPointer() const {
 }
 
 bool types::Type::isPointerToArray() const {
-    return pointerArrayKinds().size() > 1 &&
-           pointerArrayKinds()[0]->getKind() == AbstractType::OBJECT_POINTER &&
-           pointerArrayKinds()[1]->getKind() == AbstractType::ARRAY;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return pointerArrayKinds.size() > 1 &&
+           pointerArrayKinds[0]->getKind() == AbstractType::OBJECT_POINTER &&
+           pointerArrayKinds[1]->getKind() == AbstractType::ARRAY;
 }
 
 bool types::Type::isConstQualifiedValue() const {
@@ -315,12 +315,13 @@ bool types::Type::isConstQualifiedValue() const {
 }
 
 bool types::Type::isTypeContainsPointer() const {
-    return std::any_of(pointerArrayKinds().cbegin(), pointerArrayKinds().cend(),
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return std::any_of(pointerArrayKinds.cbegin(), pointerArrayKinds.cend(),
                        [](auto const &kind){ return kind->getKind() == AbstractType::OBJECT_POINTER; });
 }
 
 bool types::Type::isTypeContainsFunctionPointer() const {
-    return std::any_of(pointerArrayKinds().cbegin(), pointerArrayKinds().cend(),
+    return std::any_of(mKinds.cbegin(), mKinds.cend(),
                        [](auto const &kind){ return kind->getKind() == AbstractType::FUNCTION_POINTER; });
 }
 

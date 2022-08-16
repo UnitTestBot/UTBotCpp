@@ -322,13 +322,14 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 innerUnion = typesHandler.getUnionInfo(field.type);
                 subViews.push_back(unionView(byteArray, innerUnion, fieldOffset, usage));
                 break;
-            case TypeKind::ARRAY:
-                if (field.type.pointerArrayKinds().size() > 1) {
+            case TypeKind::ARRAY: {
+                const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = field.type.pointerArrayKinds();
+                if (pointerArrayKinds.size() > 1) {
                     size_t size = 1;
                     bool onlyArrays = true;
-                    for (size_t i = 0; i < field.type.pointerArrayKinds().size(); i++) {
-                        if (field.type.pointerArrayKinds()[i]->getKind() == AbstractType::ARRAY) {
-                            size *= field.type.pointerArrayKinds()[i]->getSize();
+                    for (size_t i = 0; i < pointerArrayKinds.size(); i++) {
+                        if (pointerArrayKinds[i]->getKind() == AbstractType::ARRAY) {
+                            size *= pointerArrayKinds[i]->getSize();
                         } else {
                             onlyArrays = false;
                             break;
@@ -347,6 +348,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                     auto view = arrayView(byteArray, field.type.baseTypeObj(), fieldLen, fieldOffset, usage);
                     subViews.push_back(view);
                 }
+            }
                 break;
             case TypeKind::OBJECT_POINTER:
                 res = readBytesAsValueForType(byteArray, PointerWidthType, fieldOffset,
@@ -1070,13 +1072,14 @@ KTestObjectParser::collectUnionSubViews(const std::vector<char> &byteArray,
                                         types::PointerUsage usage) {
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
     for (const auto &field : info.fields) {
-        size_t len = typesHandler.typeSize(field.type);
+        size_t fieldLen = typesHandler.typeSize(field.type);
         types::EnumInfo innerEnum;
         types::UnionInfo innerUnion;
         types::StructInfo innerStruct;
         switch (typesHandler.getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offset, len));
+            subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offset,
+                                             std::min(field.size, fieldLen)));
             break;
         case TypeKind::STRUCT:
             innerStruct = typesHandler.getStructInfo(field.type);
@@ -1084,14 +1087,14 @@ KTestObjectParser::collectUnionSubViews(const std::vector<char> &byteArray,
             break;
         case TypeKind::ENUM:
             innerEnum = typesHandler.getEnumInfo(field.type);
-            subViews.push_back(enumView(byteArray, innerEnum, offset, len));
+            subViews.push_back(enumView(byteArray, innerEnum, offset, fieldLen));
             break;
         case TypeKind::UNION:
             innerUnion = typesHandler.getUnionInfo(field.type);
             subViews.push_back(unionView(byteArray, innerUnion, offset, usage));
             break;
         case TypeKind::ARRAY:
-            subViews.push_back(arrayView(byteArray, field.type.baseTypeObj(), len, offset, usage));
+            subViews.push_back(arrayView(byteArray, field.type.baseTypeObj(), fieldLen, offset, usage));
             break;
         case TypeKind::OBJECT_POINTER:
             subViews.push_back(std::make_shared<JustValueView>(PrinterUtils::C_NULL));
