@@ -185,7 +185,7 @@ void BuildDatabase::initObjects(const nlohmann::json &compileCommandsJson) {
                 //create targetInfo
                 targetInfo = targetInfos[outputFile] = std::make_shared<TargetInfo>();
                 targetInfo->commands.emplace_back(
-                        std::initializer_list<std::string>{targetObjectInfo->command.getCompiler(),
+                        std::initializer_list<std::string>{targetObjectInfo->command.getBuildTool(),
                                                            "-o", outputFile, tmpObjectFileName},
                         directory);
                 targetInfo->addFile(tmpObjectFileName);

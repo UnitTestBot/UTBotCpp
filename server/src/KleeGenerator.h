@@ -35,7 +35,7 @@ class KleeGenerator {
 public:
     /**
      * @brief Also creates tmp directories for build files.
-     * @param _testGen contains projectContext, settingsContext, BuildDatabase.
+     * @param _testGen contains context for current request.
      * @param typesHandler provides additional information about types.
      * @param filePathsSubstitution Mapping from source file path to modified file. Required for
      * line test generation requests.
@@ -118,9 +118,7 @@ public:
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false);
 
-    [[nodiscard]] std::shared_ptr<BuildDatabase> getBuildDatabase() const;
-
-    [[nodiscard]] std::shared_ptr<BuildDatabase> getBaseBuildDatabase() const;
+    [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 
     void handleFailedFunctions(tests::TestsMap &testsMap);
 

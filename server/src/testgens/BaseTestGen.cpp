@@ -58,3 +58,11 @@ void BaseTestGen::updateTargetSources(fs::path _targetPath) {
         test.isFilePresentedInCommands = CollectionUtils::contains(targetSources, test.sourceFilePath);
     }
 }
+
+std::shared_ptr<const BuildDatabase> BaseTestGen::getBuildDatabase(bool forStub) const {
+    return forStub ? baseBuildDatabase : buildDatabase;
+}
+
+std::shared_ptr<BuildDatabase> BaseTestGen::getBuildDatabase(bool forStub) {
+    return forStub ? baseBuildDatabase : buildDatabase;
+}

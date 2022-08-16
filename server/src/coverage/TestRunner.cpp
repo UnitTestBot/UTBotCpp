@@ -1,3 +1,4 @@
+#include "printers/DefaultMakefilePrinter.h"
 #include "TestRunner.h"
 #include "GTestLogger.h"
 #include "Paths.h"
@@ -39,8 +40,10 @@ TestRunner::TestRunner(
 
 std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
                                                        const fs::path &testFilePath) {
-    auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile, "run", "--gtest_list_tests", {"GTEST_FILTER=*"});
-    auto [out, status, _] = cmdGetAllTests.run(projectContext.buildDir(), false);
+    auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                         printer::DefaultMakefilePrinter::TARGET_RUN,
+                                                         "--gtest_list_tests", {"GTEST_FILTER=*"});
+    auto[out, status, _] = cmdGetAllTests.run(projectContext.buildDir(), false);
     if (status != 0) {
         auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.buildDir(), true);
         progressWriter->writeProgress(StringUtils::stringFormat("command %s failed.\n"
@@ -170,7 +173,8 @@ bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs
     ExecUtils::throwIfCancelled();
     fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
     if (fs::exists(makefile)) {
-        auto command = MakefileUtils::MakefileCommand(projectContext, makefile, "build", "", {});
+        auto command = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                      printer::DefaultMakefilePrinter::TARGET_BUILD, "", {});
         LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
         auto[out, status, logFilePath] = command.run(projectContext.buildDir(), true);
         if (status != 0) {

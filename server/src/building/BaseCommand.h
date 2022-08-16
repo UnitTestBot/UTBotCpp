@@ -23,14 +23,14 @@ namespace utbot {
         using iterator = decltype(commandLine)::iterator;
         using const_iterator = decltype(commandLine)::const_iterator;
 
-        iterator compiler;
+        iterator buildTool;
         iterator output;
 
         std::optional<iterator> optimizationLevel;
 
         void initOptimizationLevel();
 
-        void initCompiler();
+        void initBuildTool();
 
         void initOutput();
 
@@ -101,9 +101,9 @@ namespace utbot {
 
         void setOptimizationLevel(const std::string &flag);
 
-        [[nodiscard]] fs::path getCompiler() const;
+        [[nodiscard]] fs::path getBuildTool() const;
 
-        void setCompiler(fs::path compiler);
+        void setBuildTool(fs::path buildTool);
     };
 }
 

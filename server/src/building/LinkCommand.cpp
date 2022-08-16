@@ -11,7 +11,7 @@
 
 namespace utbot {
     LinkCommand::LinkCommand(LinkCommand const &other) : BaseCommand(other) {
-        compiler = commandLine.begin();
+        buildTool = commandLine.begin();
         output = std::next(commandLine.begin(), std::distance<const_iterator>(other.commandLine.begin(), other.output));
     }
 
@@ -38,7 +38,7 @@ namespace utbot {
 
     LinkCommand::LinkCommand(std::list<std::string> arguments, fs::path directory, bool shouldChangeDirectory)
             : BaseCommand(std::move(arguments), std::move(directory), shouldChangeDirectory) {
-        compiler = commandLine.begin();
+        buildTool = commandLine.begin();
         {
             auto it = findOutput();
             if (it != commandLine.end()) {
@@ -74,12 +74,12 @@ namespace utbot {
         std::swap(a.environmentVariables, b.environmentVariables);
         std::swap(a.optimizationLevel, b.optimizationLevel);
 
-        std::swap(a.compiler, b.compiler);
+        std::swap(a.buildTool, b.buildTool);
         std::swap(a.output, b.output);
     }
 
     bool LinkCommand::isArchiveCommand() const {
-        return StringUtils::contains(getCompiler().filename().c_str(), "ar");
+        return StringUtils::contains(getBuildTool().filename().c_str(), "ar");
     }
 
     bool LinkCommand::isSharedLibraryCommand() const {

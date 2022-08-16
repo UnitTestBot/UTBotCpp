@@ -23,8 +23,6 @@ public:
     fs::path serverBuildDir;
 
     fs::path compileCommandsJsonPath;
-    std::shared_ptr<BuildDatabase> baseBuildDatabase;
-    std::shared_ptr<BuildDatabase> buildDatabase;
 
     CollectionUtils::FileSet sourcePaths, testingMethodsSourcePaths;
     tests::TestsMap tests;
@@ -43,7 +41,15 @@ public:
     void setTargetPath(fs::path _targetPath);
 
     virtual ~BaseTestGen() = default;
+
+    std::shared_ptr<const BuildDatabase> getBuildDatabase(bool forStub) const;
+
+    std::shared_ptr<BuildDatabase> getBuildDatabase(bool forStub);
+
 protected:
+    std::shared_ptr<BuildDatabase> baseBuildDatabase;
+    std::shared_ptr<BuildDatabase> buildDatabase;
+
     BaseTestGen(const testsgen::ProjectContext &projectContext,
                 const testsgen::SettingsContext &settingsContext,
                 ProgressWriter *progressWriter,

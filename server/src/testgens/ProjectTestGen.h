@@ -10,7 +10,7 @@ public:
     ProjectTestGen(const testsgen::ProjectRequest &request,
                    ProgressWriter *progressWriter,
                    bool testMode,
-                   bool autoSrcPaths = true);
+                   bool autoDetect = true);
 
     ~ProjectTestGen() override = default;
 

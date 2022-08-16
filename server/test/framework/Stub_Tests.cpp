@@ -8,10 +8,10 @@
 #include "coverage/CoverageAndResultsGenerator.h"
 #include "streams/coverage/ServerCoverageAndResultsWriter.h"
 #include "streams/stubs/ServerStubsWriter.h"
+#include "stubs/StubGen.h"
+#include "Synchronizer.h"
 
 #include <fstream>
-#include <stubs/StubGen.h>
-#include <Synchronizer.h>
 
 namespace {
     using testUtils::createFileRequest;

@@ -132,7 +132,6 @@ TEST_F(TargetsTest, Valid_Target_Test_get_20) {
             projectName, suitePath, buildDirRelativePath, srcPaths, "get_20", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
-//    fs::path get_20 = getTargetPathByName(*testGen.buildDatabase, "get_20");
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();
@@ -173,8 +172,6 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10_2) {
             projectName, suitePath, buildDirRelativePath, srcPaths, "get_10_2", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
-//    fs::path get_10_2 = getTargetPathByName(*testGen.buildDatabase, "get_10_2");
-//    testGen.setTargetPath(get_10_2);
 
     Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
     ASSERT_TRUE(status.ok()) << status.error_message();

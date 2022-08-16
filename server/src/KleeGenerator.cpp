@@ -16,6 +16,9 @@
 
 using namespace tests;
 
+static const std::string GENERATION_COMPILE_MAKEFILE = "GenerationCompileMakefile.mk";
+static const std::string GENERATION_KLEE_MAKEFILE = "GenerationKleeMakefile.mk";
+
 KleeGenerator::KleeGenerator(BaseTestGen &_testGen, types::TypesHandler &typesHandler,
                              PathSubstitution filePathsSubstitution)
         : testGen(_testGen), typesHandler(typesHandler),
@@ -44,11 +47,12 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
                                       { compileCommandWithChangingDirectory.toStringWithChangingDirectory() });
     }
 
-    makefilePrinter.declareTarget("all", outfilePaths, {});
-    fs::path makefile = testGen.serverBuildDir / "GenerationCompileMakefile.mk";
+    makefilePrinter.declareTarget(printer::DefaultMakefilePrinter::TARGET_ALL, outfilePaths, {});
+    const fs::path makefile = testGen.serverBuildDir / GENERATION_COMPILE_MAKEFILE;
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto command = MakefileUtils::MakefileCommand(testGen.projectContext, makefile, "all");
+    auto command = MakefileUtils::MakefileCommand(testGen.projectContext, makefile,
+                                                  printer::DefaultMakefilePrinter::TARGET_ALL);
     ExecUtils::ExecutionResult res = command.run();
     if (res.status != 0) {
         LOG_S(ERROR) << StringUtils::stringFormat("Make for \"%s\" failed.\nCommand: \"%s\"\n%s\n",
@@ -71,7 +75,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::FileSet &filesToBuild,
                           const CollectionUtils::FileSet &stubSources) {
     CollectionUtils::MapFileTo<fs::path> filesMap;
     for (fs::path const &file : filesToBuild) {
-        filesMap[file] = testGen.buildDatabase->getBitcodeFile(file);
+        filesMap[file] = testGen.getBuildDatabase(false)->getBitcodeFile(file);
     }
     return buildByCDb(filesMap, stubSources);
 }
@@ -120,12 +124,11 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
                                         const std::vector<std::string> &flags,
                                         bool forStub) const {
 
-    auto compilationUnitInfo = forStub ? testGen.baseBuildDatabase->getClientCompilationUnitInfo(hintPath)
-                                       : testGen.buildDatabase->getClientCompilationUnitInfo(hintPath);
+    auto compilationUnitInfo = testGen.getBuildDatabase(forStub)->getClientCompilationUnitInfo(hintPath);
     auto command = compilationUnitInfo->command;
     auto srcFilePath = compilationUnitInfo->getSourcePath();
-    std::string newCompilerPath = getUTBotClangCompilerPath(command.getCompiler());
-    command.setCompiler(newCompilerPath);
+    std::string newCompilerPath = getUTBotClangCompilerPath(command.getBuildTool());
+    command.setBuildTool(newCompilerPath);
 
     srcFilePath = pathSubstitution.substituteLineFlag(srcFilePath);
     if (CollectionUtils::contains(stubSources, srcFilePath)) {
@@ -133,8 +136,7 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
     }
     command.setSourcePath(srcFilePath);
 
-    auto outFilePath = forStub ? testGen.baseBuildDatabase->getBitcodeFile(compilationUnitInfo->getOutputFile())
-                               : testGen.buildDatabase->getBitcodeFile(compilationUnitInfo->getOutputFile());
+    auto outFilePath = testGen.getBuildDatabase(forStub)->getBitcodeFile(compilationUnitInfo->getOutputFile());
     fs::create_directories(outFilePath.parent_path());
     command.setOutput(outFilePath);
     command.setOptimizationLevel("-O0");
@@ -150,7 +152,7 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
                                          "-D" + PrinterUtils::KLEE_MODE + "=1",
                                          SanitizerUtils::CLANG_SANITIZER_CHECKS_FLAG };
     if (Paths::isCXXFile(srcFilePath)) {
-        command.addFlagToBegin(StringUtils::stringFormat("-I%s", Paths::getAccessPrivateLibPath()));
+        command.addFlagToBegin(CompilationUtils::getIncludePath(Paths::getAccessPrivateLibPath()));
     }
     command.addFlagsToBegin(flags);
     command.addFlagsToBegin(extraFlags);
@@ -182,7 +184,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
                                              const fs::path &buildDirPath,
                                              const std::vector<std::string> &flags) {
     LOG_SCOPE_FUNCTION(DEBUG);
-    auto bitcodeFilePath = testGen.buildDatabase->getBitcodeFile(sourceFilePath);
+    auto bitcodeFilePath = testGen.getBuildDatabase(false)->getBitcodeFile(sourceFilePath);
     auto optionalCommand = getCompileCommandForKlee(hintPath, {}, flags, false);
     if (!optionalCommand.has_value()) {
         std::string message = StringUtils::stringFormat(
@@ -197,12 +199,15 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
 
     printer::DefaultMakefilePrinter makefilePrinter;
     auto commandWithChangingDirectory = utbot::CompileCommand(command, true);
-    makefilePrinter.declareTarget("build", {commandWithChangingDirectory.getSourcePath()}, {commandWithChangingDirectory.toStringWithChangingDirectory()});
-    fs::path makefile = testGen.serverBuildDir / "BCForKLEE.mk";
+    makefilePrinter.declareTarget(printer::DefaultMakefilePrinter::TARGET_BUILD,
+                                  {commandWithChangingDirectory.getSourcePath()},
+                                  {commandWithChangingDirectory.toStringWithChangingDirectory()});
+    fs::path makefile = testGen.serverBuildDir / GENERATION_KLEE_MAKEFILE;
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
 
-    auto makefileCommand = MakefileUtils::MakefileCommand(testGen.projectContext, makefile, "build");
-    auto [out, status, _] = makefileCommand.run();
+    auto makefileCommand = MakefileUtils::MakefileCommand(testGen.projectContext, makefile,
+                                                          printer::DefaultMakefilePrinter::TARGET_BUILD);
+    auto[out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"
                      << "Command: \"" << commandWithChangingDirectory.toString() << "\"\n"
@@ -239,7 +244,7 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                                                const std::shared_ptr<LineInfo> &lineInfo) {
     std::vector<fs::path> outFiles;
     LOG_S(DEBUG) << "Building generated klee files...";
-    printer::KleePrinter kleePrinter(&typesHandler, testGen.buildDatabase,  utbot::Language::UNKNOWN);
+    printer::KleePrinter kleePrinter(&typesHandler, testGen.getBuildDatabase(false),  utbot::Language::UNKNOWN);
     ExecUtils::doWorkWithProgress(
         testsMap, testGen.progressWriter, "Building generated klee files",
         [&](auto const &it) {
@@ -249,13 +254,13 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
             }
             kleePrinter.srcLanguage = Paths::getSourceLanguage(filename);
             std::vector<std::string> includeFlags = {
-                    StringUtils::stringFormat("-I%s", Paths::getFlagsDir(testGen.projectContext))};
+                    CompilationUtils::getIncludePath(Paths::getFlagsDir(testGen.projectContext))};
             auto buildDirPath =
-                testGen.buildDatabase->getClientCompilationUnitInfo(filename)->getDirectory();
+                testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(filename)->getDirectory();
 
             fs::path kleeFilePath = writeKleeFile(kleePrinter, tests, lineInfo);
             auto kleeFilesInfo =
-                testGen.buildDatabase->getClientCompilationUnitInfo(tests.sourceFilePath)->kleeFilesInfo;
+                testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(tests.sourceFilePath)->kleeFilesInfo;
             auto kleeBitcodeFile = defaultBuild(filename, kleeFilePath, buildDirPath, includeFlags);
             if (kleeBitcodeFile.isSuccess()) {
                 outFiles.emplace_back(kleeBitcodeFile.getOpt().value());
@@ -351,12 +356,8 @@ void KleeGenerator::parseKTestsToFinalCode(
     LOG_S(DEBUG) << "Generated code for " << tests.methods.size() << " tests";
 }
 
-std::shared_ptr<BuildDatabase> KleeGenerator::getBuildDatabase() const {
-    return testGen.buildDatabase;
-}
-
-std::shared_ptr<BuildDatabase> KleeGenerator::getBaseBuildDatabase() const {
-    return testGen.baseBuildDatabase;
+fs::path KleeGenerator::getBitcodeFile(const fs::path &sourcePath) const {
+    return testGen.getBuildDatabase(false)->getBitcodeFile(sourcePath);
 }
 
 void KleeGenerator::handleFailedFunctions(tests::TestsMap &testsMap) {

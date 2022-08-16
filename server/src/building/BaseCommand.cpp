@@ -20,20 +20,20 @@ namespace utbot {
     BaseCommand::BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
         : commandLine(std::move(commandLine)), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
-        initCompiler();
+        initBuildTool();
         initOutput();
     }
     BaseCommand::BaseCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
         : commandLine(commandLine.begin(), commandLine.end()), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
-        initCompiler();
+        initBuildTool();
         initOutput();
     }
 
     BaseCommand::BaseCommand(BaseCommand const &other)
             : directory(other.directory), commandLine(other.commandLine),
               environmentVariables(other.environmentVariables), shouldChangeDirectory(other.shouldChangeDirectory),
-              compiler(other.compiler),
+              buildTool(other.buildTool),
               output(other.output) {
         if (other.optimizationLevel.has_value()) {
             optimizationLevel =
@@ -47,7 +47,7 @@ namespace utbot {
         : directory(std::move(other.directory)), commandLine(std::move(other.commandLine)),
           environmentVariables(std::move(other.environmentVariables)),
           optimizationLevel(other.optimizationLevel),
-          compiler(other.compiler),
+          buildTool(other.buildTool),
           output(other.output),
           shouldChangeDirectory(other.shouldChangeDirectory) {
     }
@@ -59,9 +59,9 @@ namespace utbot {
         }
     }
 
-    void BaseCommand::initCompiler() {
+    void BaseCommand::initBuildTool() {
         auto it = commandLine.begin();
-        compiler = it;
+        buildTool = it;
     }
 
     void BaseCommand::initOutput() {
@@ -151,12 +151,12 @@ namespace utbot {
         }
     }
 
-    fs::path BaseCommand::getCompiler() const {
-        return *compiler;
+    fs::path BaseCommand::getBuildTool() const {
+        return *buildTool;
     }
 
-    void BaseCommand::setCompiler(fs::path compiler) {
-        *(this->compiler) = std::move(compiler);
+    void BaseCommand::setBuildTool(fs::path buildTool) {
+        *(this->buildTool) = std::move(buildTool);
     }
 
     fs::path BaseCommand::getOutput() const {

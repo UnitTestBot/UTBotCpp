@@ -12,7 +12,7 @@
 
 namespace utbot {
     CompileCommand::CompileCommand(CompileCommand const &other) : BaseCommand(other) {
-        compiler = commandLine.begin();
+        buildTool = commandLine.begin();
         sourcePath =
             std::next(commandLine.begin(),
                       std::distance<const_iterator>(other.commandLine.begin(), other.sourcePath));
@@ -51,7 +51,7 @@ namespace utbot {
                                    fs::path directory,
                                    fs::path sourcePath)
         : BaseCommand(std::move(arguments), std::move(directory)) {
-        compiler = commandLine.begin();
+        buildTool = commandLine.begin();
         {
             auto it = std::find_if(commandLine.begin(), commandLine.end(), [&sourcePath](std::string const &arg) {
                 return fs::path(arg).filename() == sourcePath.filename();
@@ -78,7 +78,7 @@ namespace utbot {
         std::swap(a.optimizationLevel, b.optimizationLevel);
 
         std::swap(a.sourcePath, b.sourcePath);
-        std::swap(a.compiler, b.compiler);
+        std::swap(a.buildTool, b.buildTool);
         std::swap(a.output, b.output);
     }
 

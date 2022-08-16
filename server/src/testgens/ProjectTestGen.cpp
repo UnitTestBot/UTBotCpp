@@ -8,7 +8,7 @@
 ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
                                ProgressWriter *progressWriter,
                                bool testMode,
-                               bool autoSrcPaths)
+                               bool autoDetect)
         : BaseTestGen(request.projectcontext(),
                       request.settingscontext(),
                       progressWriter,
@@ -18,7 +18,7 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
             projectContext.projectPath, projectContext.buildDirRelativePath);
     baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
     buildDatabase = baseBuildDatabase->createBuildDatabaseForSourceOrTarget(request.targetpath());
-    if (autoSrcPaths) {
+    if (autoDetect) {
         autoDetectSourcePathsIfNotEmpty();
     } else {
         sourcePaths = buildDatabase->compilationDatabase->getAllFiles();

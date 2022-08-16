@@ -185,8 +185,8 @@ namespace printer {
         gtestCompilationArguments.setSourcePath(getRelativePath(gtestAllSourceFile));
         gtestCompilationArguments.setOutput(gtestAllObjectFile);
         gtestCompilationArguments.addFlagsToBegin(
-            { stringFormat("-I%s", getRelativePath(gtestLib) / "googletest" / "include"),
-              stringFormat("-I%s", getRelativePath(gtestLib) / "googletest") });
+            { CompilationUtils::getIncludePath(getRelativePath(gtestLib) / "googletest" / "include"),
+              CompilationUtils::getIncludePath(getRelativePath(gtestLib) / "googletest") });
 
         declareTarget(gtestAllObjectFile, { gtestCompilationArguments.getSourcePath() },
                       { gtestCompilationArguments.toStringWithChangingDirectory() });
@@ -206,8 +206,8 @@ namespace printer {
 
         auto gtestCompilationArguments = defaultCompileCommand;
         gtestCompilationArguments.addFlagsToBegin(
-                {stringFormat("-I%s", getRelativePath(gtestLib / "googletest" / "include")),
-                stringFormat("-I%s", getRelativePath(gtestLib / "googletest"))});
+                {CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest" / "include")),
+                 CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest"))});
         gtestCompilationArguments.setSourcePath(getRelativePath(gtestMainSourceFile));
         gtestCompilationArguments.setOutput(gtestMainObjectFile);
         declareTarget(gtestMainObjectFile, { gtestCompilationArguments.getSourcePath() },
@@ -226,10 +226,10 @@ namespace printer {
         const BuildDatabase::ObjectFileInfo &compilationUnitInfo) {
         auto compileCommand = compilationUnitInfo.command;
         fs::path compiler = CompilationUtils::getBundledCompilerPath(
-                CompilationUtils::getCompilerName(compileCommand.getCompiler()));
+                CompilationUtils::getCompilerName(compileCommand.getBuildTool()));
         fs::path cxxCompiler = CompilationUtils::toCppCompiler(compiler);
         auto compilerName = CompilationUtils::getCompilerName(compiler);
-        compileCommand.setCompiler(getRelativePathForLinker(compiler));
+        compileCommand.setBuildTool(getRelativePathForLinker(compiler));
         compileCommand.setSourcePath(getRelativePath(sourcePath));
         compileCommand.setOutput(getRelativePath(target));
 
@@ -270,7 +270,7 @@ namespace printer {
     BuildResult NativeMakefilePrinter::addObjectFile(const fs::path &objectFile,
                                                      const std::string &suffixForParentOfStubs) {
 
-        auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(objectFile);
+        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(objectFile);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
 
         fs::path pathToCompile;
@@ -299,17 +299,17 @@ namespace printer {
     }
 
     void NativeMakefilePrinter::addTestTarget(const fs::path &sourcePath) {
-        auto compilationUnitInfo = testGen.buildDatabase->getClientCompilationUnitInfo(sourcePath);
+        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sourcePath);
         auto testCompilationCommand = compilationUnitInfo->command;
-        testCompilationCommand.setCompiler(getRelativePathForLinker(primaryCxxCompiler));
+        testCompilationCommand.setBuildTool(getRelativePathForLinker(primaryCxxCompiler));
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
         testCompilationCommand.removeCompilerFlagsAndOptions(
             UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE);
         testCompilationCommand.removeIncludeFlags();
         const fs::path gtestLib = Paths::getGtestLibPath();
-        testCompilationCommand.addFlagToBegin(stringFormat("-I%s", getRelativePath(gtestLib / "googletest" / "include")));
+        testCompilationCommand.addFlagToBegin(CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest" / "include")));
         if (Paths::isCXXFile(sourcePath)) {
-            testCompilationCommand.addFlagToBegin(stringFormat("-I%s", getRelativePath(Paths::getAccessPrivateLibPath())));
+            testCompilationCommand.addFlagToBegin(CompilationUtils::getIncludePath(getRelativePath(Paths::getAccessPrivateLibPath())));
         }
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
@@ -332,7 +332,7 @@ namespace printer {
 
         artifacts.push_back(testCompilationCommand.getOutput());
 
-        auto rootLinkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(rootPath);
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         std::vector<std::string> filesToLink{ "$(GTEST_MAIN)", "$(GTEST_ALL)", testCompilationCommand.getOutput(),
@@ -353,7 +353,7 @@ namespace printer {
                           { dynamicLinkCommand.toStringWithChangingDirectory() });
         } else {
             utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands.front();
-            dynamicLinkCommand.setCompiler(cxxLinker);
+            dynamicLinkCommand.setBuildTool(cxxLinker);
             dynamicLinkCommand.setOutput(testExecutablePath);
             dynamicLinkCommand.erase_if([&](std::string const &argument) {
                 return CollectionUtils::contains(rootLinkUnitInfo->files, argument) ||
@@ -386,7 +386,7 @@ namespace printer {
                             sharedOutput.value().parent_path())));
             dynamicLinkCommand.addFlagToBegin("$(LDFLAGS)");
 
-            dynamicLinkCommand.setCompiler(getRelativePathForLinker(cxxLinker));
+            dynamicLinkCommand.setBuildTool(getRelativePathForLinker(cxxLinker));
             dynamicLinkCommand.setOutput(
                     getRelativePath(testExecutablePath));
 
@@ -426,7 +426,7 @@ namespace printer {
 
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
-        auto rootLinkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(rootPath);
 
         fs::path coverageInfoBinary = sharedOutput.value();
         if (!Paths::isLibraryFile(coverageInfoBinary)) {
@@ -448,8 +448,8 @@ namespace printer {
         testRunCommand.addEnvironmentVariable(SanitizerUtils::ASAN_OPTIONS_NAME,
                                               SanitizerUtils::ASAN_OPTIONS_VALUE);
 
-        declareTarget("build", { getRelativePath(testExecutablePath) }, {});
-        declareTarget("run", { "build" },
+        declareTarget(TARGET_BUILD, { getRelativePath(testExecutablePath) }, {});
+        declareTarget(TARGET_RUN, { TARGET_BUILD },
                       { testRunCommand.toStringWithChangingDirectory() });
 
         close();
@@ -468,7 +468,7 @@ namespace printer {
             return buildResults[unitFile] = buildResult;
         }
 
-        auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(unitFile);
+        auto linkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(unitFile);
         BuildResult::Type unitType = BuildResult::Type::NONE;
         CollectionUtils::MapFileTo<fs::path> fileMapping;
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
@@ -513,13 +513,13 @@ namespace printer {
                 }
                 if (!linkCommand.isArchiveCommand()) {
                     if (isExecutable && !transformExeToLib) {
-                        linkCommand.setCompiler(Paths::getLd());
+                        linkCommand.setBuildTool(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
                             transformCompilerFlagsToLinkerFlags(argument);
                         }
                     } else {
-                        linkCommand.setCompiler(CompilationUtils::getBundledCompilerPath(
-                                CompilationUtils::getCompilerName(linkCommand.getCompiler())));
+                        linkCommand.setBuildTool(CompilationUtils::getBundledCompilerPath(
+                                CompilationUtils::getCompilerName(linkCommand.getBuildTool())));
                     }
                     std::vector <std::string> libraryDirectoriesFlags;
                     for (std::string &argument : linkCommand.getCommandLine()) {
@@ -554,7 +554,7 @@ namespace printer {
                     }
                 }
 
-                linkCommand.setCompiler(getRelativePathForLinker(linkCommand.getCompiler()));
+                linkCommand.setBuildTool(getRelativePathForLinker(linkCommand.getBuildTool()));
 
                 for (std::string &argument : linkCommand.getCommandLine()) {
                     tryChangeToRelativePath(argument);
@@ -616,7 +616,7 @@ namespace printer {
                 fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stub);
                 fs::path stubBuildFilePath =
                     Paths::getStubBuildFilePath(testGen.projectContext, sourcePath);
-                auto compilationUnitInfo = testGen.baseBuildDatabase->getClientCompilationUnitInfo(sourcePath);
+                auto compilationUnitInfo = testGen.getBuildDatabase(true)->getClientCompilationUnitInfo(sourcePath);
                 fs::path target = Paths::getRecompiledFile(testGen.projectContext, stub);
                 addCompileTarget(stub, target, *compilationUnitInfo);
                 return target;
@@ -654,8 +654,7 @@ namespace printer {
         }
         // if in -I flag
         if (argument.length() >= 3 && StringUtils::startsWith(argument, "-I")) {
-            argument = "-I" +
-                    getRelativePath(argument.substr(2)).string();
+            argument = CompilationUtils::getIncludePath(getRelativePath(argument.substr(2)).string());
         }
     }
 }

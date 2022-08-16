@@ -4,6 +4,7 @@
 #include "loguru.h"
 
 #include <llvm/Support/Signals.h>
+#include "printers/DefaultMakefilePrinter.h"
 
 //Usage: ./UTBot_UnitTests [--verbosity trace|debug|info|warning|error]
 int main(int argc, char **argv) {
@@ -51,7 +52,9 @@ int main(int argc, char **argv) {
 
         for (auto const &subproject : { "executable", "static_library", "shared_library", "timeout" }) {
             for (auto const &compiler : { clang, gcc }) {
-                testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("run") / subproject, compiler);
+                testUtils::tryExecGetBuildCommands(
+                        testUtils::getRelativeTestSuitePath(printer::DefaultMakefilePrinter::TARGET_RUN) / subproject,
+                        compiler);
             }
         }
 
