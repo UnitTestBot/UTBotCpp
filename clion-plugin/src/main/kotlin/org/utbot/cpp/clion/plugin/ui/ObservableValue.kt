@@ -5,9 +5,10 @@ import kotlin.properties.Delegates
 // allows attaching multiple listeners for value change
 class ObservableValue<T>(initialValue: T) {
     private val changeListeners: MutableList<(T) -> Unit> = mutableListOf()
-    var value: T by Delegates.observable(initialValue) { _, _, newVal ->
-        changeListeners.forEach {
-            it(newVal)
+    var value: T by Delegates.observable(initialValue) { _, oldVal, newVal ->
+        changeListeners.forEach {callback ->
+            if (oldVal != newVal)
+                callback(newVal)
         }
     }
 
