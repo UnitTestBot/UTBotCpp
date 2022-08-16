@@ -75,6 +75,9 @@ public:
         [[nodiscard]] bool is32bits() const;
 
         void setOutputFile(const fs::path &file);
+
+        static bool conflictPriorityMore(const std::shared_ptr<ObjectFileInfo> &left,
+                                         const std::shared_ptr<ObjectFileInfo> &right);
     };
 
     /*
@@ -95,18 +98,11 @@ public:
     };
 
 public:
-    BuildDatabase(fs::path _buildCommandsJsonPath,
-                  fs::path _serverBuildDir,
-                  utbot::ProjectContext _projectContext);
-
-    static std::shared_ptr<BuildDatabase> create(const utbot::ProjectContext &projectContext);
-    std::shared_ptr<BuildDatabase> createBuildDatabaseForSourceOrTarget(const std::string &_targetOrSourcePath);
-
     const fs::path &getCompileCommandsJson();
     const fs::path &getLinkCommandsJson();
 
     /**
-     * @brief Returns all object files files that are contained in a library or executable
+     * @brief Returns all object files that are contained in a library or executable
      *
      * Recursively iterates over all libraries inside current library or executable. Returns all
      * found object files
@@ -197,55 +193,44 @@ public:
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
 
     std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const;
-    std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
+    virtual std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const = 0;
 
-    std::vector<fs::path>
-    targetListForFile(const fs::path &sourceFilePath, const fs::path &objectFile) const;
-
-    std::vector<std::shared_ptr<TargetInfo>>
-    getTargetsForSourceFile(fs::path const &sourceFilePath) const;
+    virtual std::vector<fs::path>
+    getTargetPathsForSourceFile(const fs::path &sourceFilePath) const;
+    virtual std::vector<fs::path>
+    getTargetPathsForObjectFile(const fs::path &objectFile) const;
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
 
     CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
-    bool hasAutoTarget() const;
+    virtual bool hasAutoTarget() const = 0;
 
     fs::path getTargetPath() const;
 
     std::shared_ptr<CompilationDatabase> compilationDatabase;
-private:
-    BuildDatabase(BuildDatabase& baseBuildDatabase,
-                  const std::string &_target);
+protected:
+    BuildDatabase() ;
 
     const fs::path serverBuildDir;
     const utbot::ProjectContext projectContext;
     const fs::path buildCommandsJsonPath;
     const fs::path linkCommandsJsonPath;
     const fs::path compileCommandsJsonPath;
-    fs::path target;
-    bool isAutoTarget;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
 
-
     std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
 
-    static bool conflictPriorityMore(const std::shared_ptr<ObjectFileInfo> &left,
-                                     const std::shared_ptr<ObjectFileInfo> &right);
-
-    void filterInstalledFiles();
-    void addLocalSharedLibraries();
-    void fillTargetInfoParents();
     static fs::path getCorrespondingBitcodeFile(const fs::path &filepath);
-    void initObjects(const nlohmann::json &compileCommandsJson);
-    void initInfo(const nlohmann::json &linkCommandsJson);
     void createClangCompileCommandsJson();
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
     fs::path newDirForFile(fs::path const& file) const;
     fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
+
+    std::vector<std::shared_ptr<TargetInfo>> getTargetsForSourceFile(fs::path const &sourceFilePath) const;
 
     using sharedLibrariesMap = std::unordered_map<std::string, CollectionUtils::MapFileTo<fs::path>>;
 

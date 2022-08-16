@@ -675,9 +675,9 @@ Status Server::TestsGenServiceImpl::GetFileTargets(ServerContext *context,
         utbot::ProjectContext projectContext{ request->projectcontext() };
         auto buildDatabase = BuildDatabase::create(projectContext);
         fs::path path = request->path();
-        auto targets = buildDatabase->getTargetsForSourceFile(path);
+        auto targetPaths = buildDatabase->getTargetPathsForSourceFile(path);
         FileTargetsWriter targetsWriter{ response };
-        targetsWriter.writeResponse(targets, projectContext);
+        targetsWriter.writeResponse(targetPaths, projectContext);
     } catch (CompilationDatabaseException const& e) {
         return failedToLoadCDbStatus(e);
     }

@@ -96,7 +96,7 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
     if (!testGen.getBuildDatabase(false)->isFirstObjectFileForSource(objectFile)) {
         return;
     }
-    std::vector <fs::path> targets = testGen.getBuildDatabase(false)->targetListForFile(sourceFilePath, objectFile);
+    std::vector <fs::path> targets = testGen.getBuildDatabase(false)->getTargetPathsForObjectFile(objectFile);
     LOG_S(DEBUG) << "Linking bitcode for file " << sourceFilePath.filename();
     for (size_t i = 0; i < targets.size(); i++) {
         const auto& target = targets[i];
@@ -174,7 +174,8 @@ void Linker::linkForProject() {
                                    << sourceFile;
                     return;
                 }
-                std::vector <fs::path> targets = testGen.getBuildDatabase(false)->targetListForFile(sourceFile, objectFile);
+                std::vector <fs::path> targets = testGen.getBuildDatabase(false)->getTargetPathsForObjectFile(
+                        objectFile);
                 bool success = false;
                 for (const auto &target : targets) {
                     if (!CollectionUtils::contains(triedTargets, target)) {

@@ -44,10 +44,10 @@ namespace GenerationUtils {
             if (status.error_message() == FileNotPresentedInArtifactException::MESSAGE ||
                 status.error_message() == FileNotPresentedInCommandsException::MESSAGE) {
                 fs::path path = status.error_details();
-                auto targetsForSourceFile = testGen->getBuildDatabase(false)->getTargetsForSourceFile(path);
+                auto targetPaths = testGen->getBuildDatabase(true)->getTargetPathsForSourceFile(path);
                 LOG_S(WARNING) << "List of possible targets for current file:\n";
-                for (auto const& target: targetsForSourceFile) {
-                    LOG_S(WARNING) << target->getOutput() << "\n";
+                for (auto const& target: targetPaths) {
+                    LOG_S(WARNING) << target << "\n";
                 }
                 LOG_S(WARNING) << "\n";
             }

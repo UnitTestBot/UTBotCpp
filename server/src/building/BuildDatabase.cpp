@@ -31,225 +31,22 @@ static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
     return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
 }
 
-BuildDatabase::BuildDatabase(fs::path _buildCommandsJsonPath,
-                             fs::path _serverBuildDir,
-                             utbot::ProjectContext _projectContext) :
-        serverBuildDir(std::move(_serverBuildDir)),
-        projectContext(std::move(_projectContext)),
-        buildCommandsJsonPath(std::move(_buildCommandsJsonPath)),
-        linkCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "link_commands.json")),
-        compileCommandsJsonPath(fs::canonical(buildCommandsJsonPath / "compile_commands.json")),
-        isAutoTarget(true)  {
-    if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
-        throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
-    }
-
-    auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
-    auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
-
-    initObjects(compileCommandsJson);
-    initInfo(linkCommandsJson);
-    filterInstalledFiles();
-    addLocalSharedLibraries();
-    fillTargetInfoParents();
-    createClangCompileCommandsJson();
-    target = GrpcUtils::UTBOT_AUTO_TARGET_PATH;
-}
-
-BuildDatabase::BuildDatabase(BuildDatabase &baseBuildDatabase,
-                             const std::string &_target) :
-        serverBuildDir(baseBuildDatabase.serverBuildDir),
-        projectContext(baseBuildDatabase.projectContext),
-        buildCommandsJsonPath(baseBuildDatabase.buildCommandsJsonPath),
-        linkCommandsJsonPath(baseBuildDatabase.linkCommandsJsonPath),
-        compileCommandsJsonPath(baseBuildDatabase.compileCommandsJsonPath),
-        target(_target),
-        isAutoTarget(_target == GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
-    {
-        auto objectFilesList = baseBuildDatabase.getArchiveObjectFiles(target);
-        for (const auto &objectFilePath: objectFilesList) {
-            auto objectFileInfo = baseBuildDatabase.getClientCompilationObjectInfo(objectFilePath);
-            sourceFileInfos[objectFileInfo->getSourcePath()].push_back(objectFileInfo);
-            LOG_IF_S(DEBUG, sourceFileInfos[objectFileInfo->getSourcePath()].size() > 1)
-            << "Multiple compile commands for file \"" << objectFileInfo->getSourcePath() << "\" in target \""
-            << target.string() << "\"";
-            objectFileInfos[objectFileInfo->getOutputFile()] = objectFileInfo;
-            objectFileTargets[objectFileInfo->getOutputFile()] =
-                    baseBuildDatabase.objectFileTargets[objectFileInfo->getOutputFile()];
-        }
-    }
-
-    {
-        auto targetFilesList = baseBuildDatabase.getArchiveTargetFiles(target);
-        for (const auto &objectFilePath: targetFilesList) {
-            targetInfos[objectFilePath] = baseBuildDatabase.targetInfos[objectFilePath];
-        }
-    }
-
-    compileCommands_temp = baseBuildDatabase.compileCommands_temp;
-    createClangCompileCommandsJson();
-}
-
-std::shared_ptr<BuildDatabase> BuildDatabase::createBuildDatabaseForSourceOrTarget(const std::string &_targetOrSourcePath) {
-    fs::path _target;
-    if (Paths::isSourceFile(_targetOrSourcePath)) {
-        _target = getRootForSource(_targetOrSourcePath);
-    } else if (_targetOrSourcePath == GrpcUtils::UTBOT_AUTO_TARGET_PATH || _targetOrSourcePath.empty()) {
-        _target = getRootForFirstSource();
-    } else {
-        auto new_target = GenerationUtils::findTarget(getAllTargets(), _targetOrSourcePath);
-        if (new_target.has_value()) {
-            _target = new_target.value();
-        } else {
-            throw CompilationDatabaseException("Can't find target: " + _targetOrSourcePath);
-        }
-    }
-    return std::make_shared<BuildDatabase>(std::move(BuildDatabase(*this, _target)));
-}
-
-std::shared_ptr<BuildDatabase> BuildDatabase::create(const utbot::ProjectContext &projectContext) {
-    fs::path compileCommandsJsonPath =
-            CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
-                    projectContext.projectPath, projectContext.buildDirRelativePath);
-    fs::path serverBuildDir = Paths::getUtbotBuildDir(projectContext);
-    std::shared_ptr<BuildDatabase> buildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
-    return buildDatabase;
-}
-
 fs::path BuildDatabase::createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo) {
     if (Paths::isSourceFile(objectInfo->getSourcePath())) {
         auto outputFile = objectInfo->getOutputFile();
         auto tmpObjectFileName =
-            Paths::createTemporaryObjectFile(outputFile, objectInfo->getSourcePath());
+                Paths::createTemporaryObjectFile(outputFile, objectInfo->getSourcePath());
         objectInfo->setOutputFile(tmpObjectFileName);
         // redirect existing compilation command to temporary file
         LOG_IF_S(ERROR, CollectionUtils::containsKey(objectFileInfos, tmpObjectFileName))
-            << "Temporary object file name generated by UTBot is already present in the "
-               "project: "
-            << tmpObjectFileName;
+        << "Temporary object file name generated by UTBot is already present in the "
+           "project: "
+        << tmpObjectFileName;
         objectInfo->linkUnit = outputFile;
         objectFileInfos[tmpObjectFileName] = objectInfo;
         return tmpObjectFileName;
     } else {
         return objectInfo->getSourcePath();
-    }
-}
-
-void BuildDatabase::initObjects(const nlohmann::json &compileCommandsJson) {
-    for (const nlohmann::json &compileCommand: compileCommandsJson) {
-        auto objectInfo = std::make_shared<ObjectFileInfo>();
-
-        fs::path directory = compileCommand.at("directory").get<std::string>();
-        fs::path jsonFile = compileCommand.at("file").get<std::string>();
-        fs::path sourceFile = Paths::getCCJsonFileFullPath(jsonFile, directory);
-
-        std::vector<std::string> jsonArguments;
-        if (compileCommand.contains("command")) {
-            std::string command = compileCommand.at("command");
-            jsonArguments = StringUtils::splitByWhitespaces(command);
-        } else {
-            jsonArguments = std::vector<std::string>(compileCommand.at("arguments"));
-        }
-        std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
-                       [&directory](const std::string &argument) {
-                           return tryConvertOptionToPath(argument, directory);
-                       });
-        objectInfo->command = utbot::CompileCommand(jsonArguments, directory, sourceFile);
-        objectInfo->command.removeWerror();
-        fs::path outputFile = objectInfo->getOutputFile();
-        fs::path kleeFilePathTemplate =
-            Paths::createNewDirForFile(sourceFile, projectContext.buildDir(), serverBuildDir);
-        fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
-        objectInfo->kleeFilesInfo = std::make_shared<KleeFilesInfo>(kleeFile);
-
-        if (CollectionUtils::containsKey(objectFileInfos, outputFile) ||
-            CollectionUtils::containsKey(targetInfos, outputFile)) {
-            /*
-             * If the condition above is true, that means that the output file
-             * is built from multiple sources. Hence, it is not an object file,
-             * but an executable, and it should be treated as a target.
-             * This is a hack. This inconsistency is produced by Bear
-             * when it treats a Makefile command like
-             * gcc -o output a.c b.c c.c
-             * This code is creating artificial compile and link commands, similar
-             * to commands Bear generates from CMake command like
-             * add_executable(output a.c b.c c.c)
-             */
-            auto targetInfo = targetInfos[outputFile];
-            if (targetInfo == nullptr) {
-                LOG_S(DEBUG) << outputFile << " is treated as a target instead of an object file";
-                auto targetObjectInfo = objectFileInfos[outputFile];
-                auto tmpObjectFileName = createExplicitObjectFileCompilationCommand(targetObjectInfo);
-                objectFileInfos.erase(outputFile);
-
-                //create targetInfo
-                targetInfo = targetInfos[outputFile] = std::make_shared<TargetInfo>();
-                targetInfo->commands.emplace_back(
-                        std::initializer_list<std::string>{targetObjectInfo->command.getBuildTool(),
-                                                           "-o", outputFile, tmpObjectFileName},
-                        directory);
-                targetInfo->addFile(tmpObjectFileName);
-            }
-            //redirect new compilation command to temporary file
-            auto tmpObjectFileName = createExplicitObjectFileCompilationCommand(objectInfo);
-
-            //add new dependency to an implicit target
-            targetInfo->commands[0].addFlagToEnd(tmpObjectFileName);
-            targetInfo->addFile(tmpObjectFileName);
-        } else {
-            objectFileInfos[outputFile] = objectInfo;
-        }
-        compileCommands_temp.emplace_back(compileCommand, objectInfo);
-        const fs::path &sourcePath = objectInfo->getSourcePath();
-        sourceFileInfos[sourcePath].emplace_back(objectInfo);
-    }
-    for (auto &[sourceFile, objectInfos]: sourceFileInfos) {
-        std::sort(objectInfos.begin(), objectInfos.end(), conflictPriorityMore);
-    }
-}
-
-void BuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
-    for (nlohmann::json const &linkCommand : linkCommandsJson) {
-        fs::path directory = linkCommand.at("directory").get<std::string>();
-        std::vector<std::string> jsonArguments;
-        if (linkCommand.contains("command")) {
-            std::string command = linkCommand.at("command");
-            jsonArguments = StringUtils::splitByWhitespaces(command);
-        } else {
-            jsonArguments = std::vector<std::string>(linkCommand.at("arguments"));
-        }
-        if (StringUtils::endsWith(jsonArguments[0], "ranlib") ||
-            StringUtils::endsWith(jsonArguments[0], "cmake")) {
-            continue;
-        }
-        std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
-                       [&directory](const std::string &argument) {
-                         return tryConvertOptionToPath(argument, directory);
-                       });
-
-        mergeLibraryOptions(jsonArguments);
-
-        utbot::LinkCommand command(jsonArguments, directory);
-        fs::path const &output = command.getOutput();
-        auto targetInfo = targetInfos[output];
-        if (targetInfo == nullptr) {
-            targetInfo = targetInfos[output] = std::make_shared<TargetInfo>();
-        } else {
-            LOG_S(WARNING) << "Multiple commands for one file: " << output.string();
-        }
-        for (nlohmann::json const &jsonFile: linkCommand.at("files")) {
-            auto filename = jsonFile.get<std::string>();
-            fs::path currentFile = Paths::getCCJsonFileFullPath(filename, command.getDirectory());
-            targetInfo->addFile(currentFile);
-            if (Paths::isObjectFile(currentFile)) {
-                if (!CollectionUtils::containsKey(objectFileInfos, currentFile)) {
-                    throw CompilationDatabaseException("compile_commands.json doesn't contain a command for object file "
-                                                       + currentFile.string());
-                }
-                objectFileInfos[currentFile]->linkUnit = output;
-            }
-        }
-        targetInfo->commands.emplace_back(command);
     }
 }
 
@@ -259,7 +56,7 @@ void BuildDatabase::createClangCompileCommandsJson() {
         const fs::path &sourcePath = objectInfo->getSourcePath();
         if (CollectionUtils::contains(fileCompileCommands, sourcePath)) {
             LOG_S(WARNING) << "Multiple compile commands for file \"" << sourcePath
-                            << "\" use command for \"" << objectInfo->getOutputFile() << "\"";
+                           << "\" use command for \"" << objectInfo->getOutputFile() << "\"";
         } else if (CollectionUtils::contains(objectFileInfos, objectInfo->getOutputFile())) {
             fileCompileCommands[sourcePath] = {compileCommand, objectInfo};
         }
@@ -290,7 +87,7 @@ namespace {
     CollectionUtils::OrderedFileSet collectLibraryDirs(const utbot::BaseCommand &command) {
         using namespace DynamicLibraryUtils;
         CollectionUtils::OrderedFileSet libraryDirs;
-        for (std::string const &argument : command.getCommandLine()) {
+        for (std::string const &argument: command.getCommandLine()) {
             auto optionalLibraryPath = getLibraryAbsolutePath(argument, command.getDirectory());
             if (optionalLibraryPath.has_value()) {
                 libraryDirs.insert(optionalLibraryPath.value());
@@ -298,7 +95,7 @@ namespace {
             if (StringUtils::startsWith(argument, libraryDirOptionWl)) {
                 auto commaSeparated = StringUtils::split(argument, ',');
                 bool isRpathNext = false;
-                for (auto part : commaSeparated) {
+                for (auto part: commaSeparated) {
                     if (part == rpathFlag) {
                         isRpathNext = true;
                         continue;
@@ -318,7 +115,7 @@ namespace {
 
         CollectionUtils::MapFileTo<std::string> libraryNames;
 
-        for (const auto &argument : command.getCommandLine()) {
+        for (const auto &argument: command.getCommandLine()) {
             if (Paths::isSharedLibraryFile(argument) && argument != command.getOutput() &&
                 !StringUtils::startsWith(argument, libraryDirOptionWl)) {
                 libraryNames.emplace(argument, argument);
@@ -345,9 +142,9 @@ void BuildDatabase::addLibrariesForCommand(utbot::BaseCommand &command,
     auto libraryDirs = collectLibraryDirs(command);
     auto libraryNames = collectLibraryNames(command);
     std::unordered_map<std::string, fs::path> argumentToFile;
-    for (auto const &[libraryName, argument] : libraryNames) {
+    for (auto const &[libraryName, argument]: libraryNames) {
         fs::path name = libraryName;
-        for (auto const &libraryDir : libraryDirs) {
+        for (auto const &libraryDir: libraryDirs) {
             if (CollectionUtils::containsKey(sharedLibraryFiles, name)) {
                 if (CollectionUtils::containsKey(sharedLibraryFiles.at(name), libraryDir)) {
                     name = sharedLibraryFiles.at(name).at(libraryDir);
@@ -364,69 +161,10 @@ void BuildDatabase::addLibrariesForCommand(utbot::BaseCommand &command,
             }
         }
     }
-    for (auto &argument : command.getCommandLine()) {
+    for (auto &argument: command.getCommandLine()) {
         if (CollectionUtils::containsKey(argumentToFile, argument)) {
             argument = argumentToFile[argument];
         }
-    }
-}
-
-void BuildDatabase::filterInstalledFiles() {
-    for (auto &it : targetInfos) {
-        auto &linkFile = it.first;
-        auto &targetInfo = it.second;
-        CollectionUtils::OrderedFileSet fileset;
-        targetInfo->installedFiles =
-            CollectionUtils::filterOut(targetInfo->files, [this](fs::path const &file) {
-                return CollectionUtils::containsKey(targetInfos, file) ||
-                       CollectionUtils::containsKey(objectFileInfos, file);
-            });
-        if (!targetInfo->installedFiles.empty()) {
-            LOG_S(DEBUG) << "Target " << linkFile << " depends on " << targetInfo->installedFiles.size() << " installed files";
-        }
-        CollectionUtils::erase_if(targetInfo->files, [&targetInfo](fs::path const &file) {
-            return CollectionUtils::contains(targetInfo->installedFiles, file);
-        });
-    }
-}
-
-void BuildDatabase::addLocalSharedLibraries() {
-    sharedLibrariesMap sharedLibraryFiles;
-    for (const auto &[linkFile, linkUnit] : targetInfos) {
-        if (Paths::isSharedLibraryFile(linkFile)) {
-            auto withoutVersion = CompilationUtils::removeSharedLibraryVersion(linkFile);
-            sharedLibraryFiles[withoutVersion.filename()][linkFile.parent_path()] = linkFile;
-        }
-    }
-    for (auto &[linkFile, targetInfo] : targetInfos) {
-        for (auto &command : targetInfo->commands) {
-            addLibrariesForCommand(command, *targetInfo, sharedLibraryFiles);
-        }
-    }
-    for (auto &[objectFile, objectInfo] : objectFileInfos) {
-        addLibrariesForCommand(objectInfo->command, *objectInfo, sharedLibraryFiles, true);
-    }
-}
-
-void BuildDatabase::fillTargetInfoParents() {
-    CollectionUtils::MapFileTo<std::vector<fs::path>> parentTargets;
-    for (const auto &[linkFile, linkUnit] : targetInfos) {
-        for (const fs::path &dependencyFile : linkUnit->files) {
-            if (Paths::isLibraryFile(dependencyFile)) {
-                parentTargets[dependencyFile].emplace_back(linkFile);
-            }
-            if (Paths::isObjectFile(dependencyFile)) {
-                objectFileTargets[dependencyFile].emplace_back(linkFile);
-            }
-        }
-    }
-    for (auto &[library, parents] : parentTargets) {
-        if (!CollectionUtils::containsKey(targetInfos, library)) {
-            throw CompilationDatabaseException(
-                "link_commands.json doesn't contain a command for building library: " +
-                library.string() + "\nReferenced from command for: " + (parents.empty() ? "none" : parents[0].string()));
-        }
-        targetInfos[library]->parentLinkUnits = std::move(parents);
     }
 }
 
@@ -441,7 +179,7 @@ const fs::path &BuildDatabase::getLinkCommandsJson() {
 std::vector<std::shared_ptr<BuildDatabase::ObjectFileInfo>>
 BuildDatabase::getAllCompileCommands() const {
     std::vector<std::shared_ptr<ObjectFileInfo>> result;
-    for (auto &[file, compilationUnit] : objectFileInfos) {
+    for (auto &[file, compilationUnit]: objectFileInfos) {
         result.emplace_back(compilationUnit);
     }
     return result;
@@ -462,11 +200,11 @@ CollectionUtils::FileSet BuildDatabase::getArchiveObjectFiles(const fs::path &ar
     }
     if (!CollectionUtils::containsKey(targetInfos, archive)) {
         throw CompilationDatabaseException(
-            "Couldn't find current archive file linkage information for " + archive.string());
+                "Couldn't find current archive file linkage information for " + archive.string());
     }
     std::shared_ptr<TargetInfo> targetInfo = targetInfos.at(archive);
     CollectionUtils::FileSet result;
-    for (const auto &file : targetInfo->files) {
+    for (const auto &file: targetInfo->files) {
         if (Paths::isLibraryFile(file)) {
             auto archiveObjectFiles = getArchiveObjectFiles(file);
             CollectionUtils::extend(result, archiveObjectFiles);
@@ -488,7 +226,7 @@ CollectionUtils::FileSet BuildDatabase::getArchiveTargetFiles(const fs::path &ar
     }
     if (!CollectionUtils::containsKey(targetInfos, archive)) {
         throw CompilationDatabaseException(
-            "Couldn't find current archive file linkage information for " + archive.string());
+                "Couldn't find current archive file linkage information for " + archive.string());
     }
     std::shared_ptr<TargetInfo> targetInfo = targetInfos.at(archive);
     CollectionUtils::FileSet result = {archive};
@@ -502,22 +240,25 @@ CollectionUtils::FileSet BuildDatabase::getArchiveTargetFiles(const fs::path &ar
     return result;
 }
 
-fs::path BuildDatabase::getRootForSource(const fs::path& path) const {
+fs::path BuildDatabase::getRootForSource(const fs::path &path) const {
     fs::path normalizedPath = Paths::normalizedTrimmed(path);
     if (Paths::isSourceFile(normalizedPath)) {
         if (!CollectionUtils::containsKey(sourceFileInfos, normalizedPath)) {
-            throw CompilationDatabaseException("No executable or library found for current source file in link_commands.json: " + path.string());
+            throw CompilationDatabaseException(
+                    "No executable or library found for current source file in link_commands.json: " + path.string());
         }
         auto const &sourceFileInfo = sourceFileInfos.at(normalizedPath);
 
         auto linkUnit = sourceFileInfo[0]->linkUnit;
         if (linkUnit.empty()) {
-            throw CompilationDatabaseException("No executable or library found for current source file in link_commands.json: " + path.string());
+            throw CompilationDatabaseException(
+                    "No executable or library found for current source file in link_commands.json: " + path.string());
         }
         return getRootForSource(linkUnit);
     } else {
         if (!CollectionUtils::containsKey(targetInfos, normalizedPath)) {
-            throw CompilationDatabaseException("No executable or library found for current library in link_commands.json: " + path.string());
+            throw CompilationDatabaseException(
+                    "No executable or library found for current library in link_commands.json: " + path.string());
         }
         auto linkUnit = targetInfos.at(normalizedPath);
         if (!linkUnit->parentLinkUnits.empty()) {
@@ -527,7 +268,6 @@ fs::path BuildDatabase::getRootForSource(const fs::path& path) const {
         }
     }
 }
-
 
 fs::path BuildDatabase::getRootForFirstSource() const {
     return getRootForSource(sourceFileInfos.begin()->first);
@@ -558,14 +298,16 @@ fs::path BuildDatabase::getBitcodeFile(const fs::path &filepath) const {
 }
 
 
-std::shared_ptr<BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilationObjectInfo(const fs::path &filepath) const {
+std::shared_ptr<BuildDatabase::ObjectFileInfo>
+BuildDatabase::getClientCompilationObjectInfo(const fs::path &filepath) const {
     if (!CollectionUtils::contains(objectFileInfos, filepath)) {
         throw CompilationDatabaseException("Object file not found in compilation_commands.json: " + filepath.string());
     }
     return objectFileInfos.at(filepath);
 }
 
-std::shared_ptr<BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilationSourceInfo(const fs::path &filepath) const {
+std::shared_ptr<BuildDatabase::ObjectFileInfo>
+BuildDatabase::getClientCompilationSourceInfo(const fs::path &filepath) const {
     if (!CollectionUtils::contains(sourceFileInfos, filepath)) {
         throw CompilationDatabaseException("Source file not found in compilation_commands.json: " + filepath.string());
     }
@@ -573,7 +315,8 @@ std::shared_ptr<BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilati
     return sourceFileInfos.at(filepath)[0];
 }
 
-std::shared_ptr<const BuildDatabase::ObjectFileInfo> BuildDatabase::getClientCompilationUnitInfo(const fs::path &filepath) const {
+std::shared_ptr<const BuildDatabase::ObjectFileInfo>
+BuildDatabase::getClientCompilationUnitInfo(const fs::path &filepath) const {
     if (Paths::isSourceFile(filepath)) {
         return getClientCompilationSourceInfo(filepath);
     }
@@ -595,7 +338,7 @@ std::shared_ptr<const BuildDatabase::TargetInfo> BuildDatabase::getClientLinkUni
                                        filepath.string());
 }
 
-bool BuildDatabase::conflictPriorityMore(
+bool BuildDatabase::ObjectFileInfo::conflictPriorityMore(
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &left,
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &right) {
     if (StringUtils::contains(left->getOutputFile().string(), "64")) {
@@ -640,11 +383,11 @@ fs::path BuildDatabase::KleeFilesInfo::getKleeBitcodeFile() {
     return getKleeBitcodeFile("");
 }
 
-fs::path BuildDatabase::KleeFilesInfo::getKleeFile(const std::string& methodName) {
+fs::path BuildDatabase::KleeFilesInfo::getKleeFile(const std::string &methodName) {
     return kleeFile;
 }
 
-fs::path BuildDatabase::KleeFilesInfo::getKleeBitcodeFile(const std::string& methodName) {
+fs::path BuildDatabase::KleeFilesInfo::getKleeBitcodeFile(const std::string &methodName) {
     return getCorrespondingBitcodeFile(getKleeFile());
 }
 
@@ -706,9 +449,9 @@ BuildDatabase::getTargetsForSourceFile(const fs::path &sourceFilePath) const {
         }
         auto linkUnitInfo = getClientLinkUnitInfo(unitFile);
         bool result = CollectionUtils::anyTrue(CollectionUtils::transform(
-            linkUnitInfo->files, [&containsSourceFilePath](fs::path const &subFile) {
-                return containsSourceFilePath(subFile);
-            }));
+                linkUnitInfo->files, [&containsSourceFilePath](fs::path const &subFile) {
+                    return containsSourceFilePath(subFile);
+                }));
         return cache[unitFile] = result;
     };
 
@@ -719,28 +462,23 @@ BuildDatabase::getTargetsForSourceFile(const fs::path &sourceFilePath) const {
             });
 }
 
-std::vector<fs::path> BuildDatabase::targetListForFile(const fs::path &sourceFilePath,
-                                                       const fs::path &objectFile) const {
-    if (!hasAutoTarget()) {
-        return { target };
-    }
+std::vector<fs::path> BuildDatabase::getTargetPathsForSourceFile(const fs::path &sourceFilePath) const {
     auto result = CollectionUtils::transformTo<std::vector<fs::path>>(
             getTargetsForSourceFile(sourceFilePath),
             [&](const std::shared_ptr<const BuildDatabase::TargetInfo> &targetInfo) {
                 return targetInfo->getOutput();
             });
+    return result;
+}
+
+std::vector<fs::path> BuildDatabase::getTargetPathsForObjectFile(const fs::path &objectFile) const {
     std::vector<fs::path> parents;
     if (CollectionUtils::containsKey(objectFileTargets, objectFile)) {
         parents = objectFileTargets.at(objectFile);
     } else {
         LOG_S(WARNING) << "No link unit parents were found for an object file: " << objectFile;
     }
-    result.insert(
-            result.end(),
-            std::make_move_iterator(parents.begin()),
-            std::make_move_iterator(parents.end())
-    );
-    return result;
+    return parents;
 }
 
 std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() const {
@@ -754,7 +492,7 @@ std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() co
         }
         auto linkUnitInfo = getClientLinkUnitInfo(unitFile);
         int result = 0;
-        for (const fs::path &subFile : linkUnitInfo->files) {
+        for (const fs::path &subFile: linkUnitInfo->files) {
             result += numberOfSources(subFile);
         }
         return cache[unitFile] = result;
@@ -762,8 +500,8 @@ std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() co
 
     auto rootTargets = getRootTargets();
     auto it = std::max_element(rootTargets.begin(), rootTargets.end(),
-                               [&](const std::shared_ptr<BuildDatabase::TargetInfo>& a,
-                                   const std::shared_ptr<BuildDatabase::TargetInfo>& b) {
+                               [&](const std::shared_ptr<BuildDatabase::TargetInfo> &a,
+                                   const std::shared_ptr<BuildDatabase::TargetInfo> &b) {
                                    return numberOfSources(a->getOutput()) <
                                           numberOfSources(b->getOutput());
                                });
