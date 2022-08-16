@@ -8,6 +8,9 @@
 #include "utils/PrinterUtils.h"
 
 #include "loguru.h"
+
+#include <climits>
+
 /*
  * class Type
  */
@@ -591,7 +594,7 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
     }
 
     if (isObjectPointerType(type)) {
-        return getPointerSize();
+        return getPointerSize() * CHAR_BIT;
     }
 
     if (isEnum(type)) {
@@ -603,7 +606,7 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
     }
 
     if (isPointerToFunction(type)) {
-        return sizeof(char *);
+        return sizeof(char *) * CHAR_BIT;
     }
 
     throw UnImplementedException("Type is unknown for: " + type.typeName());
@@ -659,16 +662,16 @@ std::string types::TypesHandler::removeArrayBrackets(TypeName type) {
 
 const std::unordered_map<std::string, size_t> &types::TypesHandler::integerTypesToSizes() noexcept {
     static const std::unordered_map<std::string, size_t> integerTypes = {
-            {"utbot_byte",         sizeof(char)}, // we use different name to not trigger char processing
-            {"short",              sizeof(short)},
-            {"int",                sizeof(int)},
-            {"long",               sizeof(long)},
-            {"long long",          sizeof(long long)},
-            {"unsigned short",     sizeof(unsigned short)},
-            {"unsigned int",       sizeof(unsigned int)},
-            {"unsigned long",      sizeof(unsigned long)},
-            {"unsigned long long", sizeof(unsigned long long)},
-            {"unsigned char",      sizeof(unsigned char)} // we do not want to treat an unsigned char as character literal
+            {"utbot_byte",         sizeof(char) * CHAR_BIT}, // we use different name to not trigger char processing
+            {"short",              sizeof(short) * CHAR_BIT},
+            {"int",                sizeof(int) * CHAR_BIT},
+            {"long",               sizeof(long) * CHAR_BIT},
+            {"long long",          sizeof(long long) * CHAR_BIT},
+            {"unsigned short",     sizeof(unsigned short) * CHAR_BIT},
+            {"unsigned int",       sizeof(unsigned int) * CHAR_BIT},
+            {"unsigned long",      sizeof(unsigned long) * CHAR_BIT},
+            {"unsigned long long", sizeof(unsigned long long) * CHAR_BIT},
+            {"unsigned char",      sizeof(unsigned char) * CHAR_BIT} // we do not want to treat an unsigned char as character literal
     };
     return integerTypes;
 }
@@ -696,9 +699,9 @@ testsgen::ValidationType types::TypesHandler::getIntegerValidationType(const Typ
 
 const std::unordered_map<std::string, size_t> &types::TypesHandler::floatingPointTypesToSizes() noexcept {
     static const std::unordered_map<std::string, size_t> floatingPointTypes = {
-            {"float",       sizeof(float)},
-            {"double",      sizeof(double)},
-            {"long double", sizeof(long double)}
+            {"float",       sizeof(float) * CHAR_BIT},
+            {"double",      sizeof(double) * CHAR_BIT},
+            {"long double", sizeof(long double) * CHAR_BIT}
     };
 
     return floatingPointTypes;
@@ -706,8 +709,8 @@ const std::unordered_map<std::string, size_t> &types::TypesHandler::floatingPoin
 
 const std::unordered_map<types::TypeName, size_t> &types::TypesHandler::characterTypesToSizes() noexcept {
     static const std::unordered_map<std::string, size_t> characterTypes = {
-            {"char",          sizeof(char)},
-            {"signed char",   sizeof(signed char)},
+            {"char",          sizeof(char) * CHAR_BIT},
+            {"signed char",   sizeof(signed char) * CHAR_BIT},
     };
 
     return characterTypes;
@@ -715,8 +718,8 @@ const std::unordered_map<types::TypeName, size_t> &types::TypesHandler::characte
 
 const std::unordered_map<types::TypeName, size_t> &types::TypesHandler::boolTypesToSizes() noexcept {
     static const std::unordered_map<std::string, size_t> boolTypes = {
-            {"bool",  sizeof(bool)},
-            {"_Bool", sizeof(bool)}
+            {"bool",  sizeof(bool) * CHAR_BIT},
+            {"_Bool", sizeof(bool) * CHAR_BIT}
     };
 
     return boolTypes;

@@ -13,9 +13,13 @@
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 
+#include <cassert>
+#include <climits>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -661,7 +665,7 @@ namespace tests {
         std::shared_ptr<ArrayValueView> arrayView(const std::vector<char> &byteArray,
                                                   const types::Type &type,
                                                   size_t arraySize,
-                                                  unsigned int offset,
+                                                  size_t offset,
                                                   types::PointerUsage usage);
 
         static std::shared_ptr<StringValueView> stringLiteralView(const std::vector<char> &byteArray,
@@ -676,17 +680,17 @@ namespace tests {
 
         std::shared_ptr<UnionValueView> unionView(const std::vector<char> &byteArray,
                                                   types::UnionInfo &unionInfo,
-                                                  unsigned int offset,
+                                                  size_t offset,
                                                   types::PointerUsage usage);
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     types::StructInfo &curStruct,
-                                                    unsigned int offset,
+                                                    size_t offset,
                                                     types::PointerUsage usage);
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     types::StructInfo &curStruct,
-                                                    unsigned int offset,
+                                                    size_t offset,
                                                     types::PointerUsage usage,
                                                     const std::optional<const Tests::MethodDescription> &testingMethod,
                                                     const std::string &name,
@@ -708,7 +712,7 @@ namespace tests {
         constexpr static const char *const KLEE_PATH_FLAG = "kleePathFlag";
 
         const std::string PointerWidthType = "unsigned long long";
-        const size_t PointerWidthSize = 8;
+        const size_t PointerWidthSize = 8 * CHAR_BIT; //tdm_todo remove hardcoded constant
 
         constexpr static const char *const KLEE_PATH_FLAG_SYMBOLIC = "kleePathFlagSymbolic";
         static std::vector<RawKleeParam>::const_iterator
@@ -722,7 +726,7 @@ namespace tests {
                             const std::stringstream &traceStream);
         std::vector<std::shared_ptr<AbstractValueView>> collectUnionSubViews(const std::vector<char> &byteArray,
                                                                              const types::UnionInfo &info,
-                                                                             unsigned int offset,
+                                                                             size_t offset,
                                                                              types::PointerUsage usage);
         void processGlobalParamPreValue(Tests::TestCaseDescription &testCaseDescription,
                                         const Tests::MethodParam &globalParam,
@@ -792,6 +796,18 @@ namespace tests {
         ss << value;
         return ss.str();
     }
+
+    template <typename T>
+    void sext(T* bytes, size_t len, size_t signPos) {
+        int bit = (bytes[signPos / CHAR_BIT] >> (signPos % CHAR_BIT)) & 1;
+        if (bit) {
+            T mask = static_cast<T>((1 << CHAR_BIT) - 1);
+            bytes[signPos / CHAR_BIT] |= mask ^ ((1 << (signPos % CHAR_BIT)) - 1);
+            for (size_t i = signPos / CHAR_BIT + 1; i < len; ++i) {
+                bytes[i] = mask;
+            }
+        }
+    }
     /**
      * This function is used for converting sequence of bytes to specific type.
      * Returns string representation of a value recorded in byteArray.
@@ -803,11 +819,42 @@ namespace tests {
      */
     template <typename T>
     std::string readBytesAsValue(const std::vector<char> &byteArray, size_t offset, size_t len) {
-        char bytes[len];
-        for (int j = 0; j < len; j++) {
-            bytes[j] = byteArray[offset + j];
+        char bytes[sizeof(T)] = {};
+        if (offset % CHAR_BIT != 0 || len % CHAR_BIT != 0) {
+            // tdm_todo unnamed bitfield // if (len == 0)
+            // WARNING: assuming little endian and two's complement
+            size_t lo = offset % CHAR_BIT;
+            size_t hi = CHAR_BIT - lo;
+            size_t stop = (offset + len + CHAR_BIT - 1) / CHAR_BIT;
+            for (size_t i = offset / CHAR_BIT, j = 0; i < stop; ++i, ++j) {
+                std::cout << "i = " << i << ", j = " << j << ", byte = " << (unsigned)byteArray[i] << std::endl;
+                auto byte = static_cast<unsigned char>(byteArray[i]);
+                if (i + 1 == stop) {
+                    size_t top = (offset + len) % CHAR_BIT;
+                    if (top == 0) {
+                        top = CHAR_BIT;
+                    }
+                    byte &= ((1 << top) - 1);
+                }
+                unsigned char low = byte & ((1 << lo) - 1);
+                unsigned char high = byte >> lo;
+                if (j > 0) {
+                    bytes[j - 1] |= low << hi;
+                }
+                if (j < sizeof(T)) {
+                    bytes[j] = high;
+                }
+                std::cout << "low = " << (unsigned)low << ", high = " << (unsigned)high << std::endl;
+            }
+            if constexpr(std::is_signed_v<T>) {
+                sext(bytes, sizeof(T), len - 1);
+            }
+        } else {
+            for (size_t j = 0; j < len / CHAR_BIT; j++) {
+                bytes[j] = byteArray[offset / CHAR_BIT + j];
+            }
         }
-        T *pTypeValue = (T *)bytes;
+        T *pTypeValue = (T *) bytes;
         T pValue = *pTypeValue;
         return primitiveValueToString<T>(pValue);
     }
@@ -822,7 +869,7 @@ namespace tests {
      */
     std::string readBytesAsValueForType(const std::vector<char> &byteArray,
                                         const std::string &typeName,
-                                        unsigned int offset,
-                                        unsigned int len);
+                                        size_t offset,
+                                        size_t len);
 }
 #endif // UNITTESTBOT_TESTS_H

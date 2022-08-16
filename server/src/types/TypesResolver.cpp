@@ -33,7 +33,7 @@ bool isCandidateToReplace(uint64_t id,
 }
 
 static size_t getRecordSize(const clang::RecordDecl *D) {
-    return D->getASTContext().getTypeSize(D->getASTContext().getRecordType(D)) / 8;
+    return D->getASTContext().getTypeSize(D->getASTContext().getRecordType(D));
 }
 
 static size_t getDeclAlignment(const clang::TagDecl *T) {
@@ -112,9 +112,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
     for (const clang::FieldDecl *F : D->fields()) {
-        if (F->isUnnamedBitfield()) {
-            continue;
-        }
+        structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
@@ -137,12 +135,11 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
                     F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
                     field.name, sourceManager, field.type.isArrayOfPointersToFunction());
         }
-        field.size = context.getTypeSize(F->getType()) / 8;
-        field.offset = context.getFieldOffset(F) / 8;
+        field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
+        field.offset = context.getFieldOffset(F);
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
-        structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
             switch (F->getAccess()) {
                 case clang::AccessSpecifier::AS_private :
@@ -269,19 +266,16 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     std::vector<types::Field> fields;
     unionInfo.hasAnonymousStructOrUnion = false;
     for (const clang::FieldDecl *F : D->fields()) {
-        if (F->isUnnamedBitfield()) {
-            continue;
-        }
+        unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
-        std::string fieldName = F->getNameAsString();
-        field.name = fieldName;
+        field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         // TODO: add flag in logger that prevents line ending
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
-        unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
+        field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
         fields.push_back(field);
     }
     unionInfo.fields = fields;

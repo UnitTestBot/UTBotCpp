@@ -259,9 +259,9 @@ namespace types {
     struct Field {
         types::Type type;
         std::string name;
-        size_t size;
+        size_t size; // size in bits
         // reassigned in structFields
-        size_t offset = 0;
+        size_t offset = 0; // offset in bits
         enum AccessSpecifier {
             AS_pubic,
             AS_protected,
@@ -275,8 +275,8 @@ namespace types {
         fs::path filePath;
         std::string name;
         std::string definition;
-        size_t size;
-        size_t alignment;
+        size_t size; // size in bits
+        size_t alignment; // alignment in **bytes**
     };
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
@@ -340,7 +340,7 @@ namespace types {
         /**
          * This functions calculates size of a given type. For structs in it calculates sum of sizes of its fields,
          * ignoring alignment.
-         * @return size of given type.
+         * @return size of given type in bits.
          */
         size_t typeSize(const types::Type &type) const;
 
