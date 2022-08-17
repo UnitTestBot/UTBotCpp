@@ -1036,9 +1036,9 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
             return unionView(rawData, unionInfo, 0, usage);
         case TypeKind::ARRAY:
             if (paramType.kinds().size() > 2) {
-                return multiArrayView(rawData, paramType, rawData.size(), 0, usage);
+                return multiArrayView(rawData, paramType, rawData.size() * CHAR_BIT, 0, usage);
             } else {
-                return arrayView(rawData, paramType.baseTypeObj(), rawData.size(), 0, usage);
+                return arrayView(rawData, paramType.baseTypeObj(), rawData.size() * CHAR_BIT, 0, usage);
             }
         case TypeKind::UNKNOWN:
             throw UnImplementedException("No such type");

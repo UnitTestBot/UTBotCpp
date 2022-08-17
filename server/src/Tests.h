@@ -846,13 +846,13 @@ namespace tests {
                 }
                 std::cout << "low = " << (unsigned)low << ", high = " << (unsigned)high << std::endl;
             }
-            if constexpr(std::is_signed_v<T>) {
-                sext(bytes, sizeof(T), len - 1);
-            }
         } else {
             for (size_t j = 0; j < len / CHAR_BIT; j++) {
                 bytes[j] = byteArray[offset / CHAR_BIT + j];
             }
+        }
+        if constexpr(std::is_signed_v<T>) {
+            sext(bytes, sizeof(T), len - 1);
         }
         T *pTypeValue = (T *) bytes;
         T pValue = *pTypeValue;
