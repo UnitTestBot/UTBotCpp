@@ -1,18 +1,20 @@
 #include "BaseTestGen.h"
 
+#include "exceptions/CompilationDatabaseException.h"
 #include "FileTestGen.h"
 #include "FolderTestGen.h"
 #include "LineTestGen.h"
 #include "utils/ExecUtils.h"
 #include "utils/ServerUtils.h"
 #include "utils/TypeUtils.h"
+#include "loguru.h"
 
 BaseTestGen::BaseTestGen(const testsgen::ProjectContext &projectContext,
                          const testsgen::SettingsContext &settingsContext,
                          ProgressWriter *progressWriter,
                          bool testMode)
-    : projectContext(projectContext),
-      settingsContext(settingsContext), progressWriter(progressWriter) {
+        : projectContext(projectContext),
+          settingsContext(settingsContext), progressWriter(progressWriter) {
     serverBuildDir = Paths::getUtbotBuildDir(this->projectContext);
 }
 
@@ -29,40 +31,65 @@ bool BaseTestGen::isBatched() const {
 
 void BaseTestGen::setInitializedTestsMap() {
     tests.clear();
-    for (const fs::path & sourcePath : testingMethodsSourcePaths) {
+    for (const fs::path &sourcePath: testingMethodsSourcePaths) {
         tests::Tests testsSuite;
         testsSuite.sourceFilePath = sourcePath;
         testsSuite.sourceFileNameNoExt = testsSuite.sourceFilePath.stem().string();
         testsSuite.relativeFileDir =
-            Paths::getRelativeDirPath(projectContext, testsSuite.sourceFilePath);
+                Paths::getRelativeDirPath(projectContext, testsSuite.sourceFilePath);
         testsSuite.testFilename = Paths::sourcePathToTestName(testsSuite.sourceFilePath);
         testsSuite.testHeaderFilePath =
-            Paths::getGeneratedHeaderPath(projectContext, testsSuite.sourceFilePath);
+                Paths::getGeneratedHeaderPath(projectContext, testsSuite.sourceFilePath);
         testsSuite.testSourceFilePath =
-            Paths::sourcePathToTestPath(projectContext, testsSuite.sourceFilePath);
+                Paths::sourcePathToTestPath(projectContext, testsSuite.sourceFilePath);
         tests[testsSuite.sourceFilePath] = testsSuite;
     }
 }
 
 void BaseTestGen::setTargetPath(fs::path _targetPath) {
-    if (buildDatabase->hasAutoTarget() && buildDatabase->getTargetPath() != _targetPath) {
-        buildDatabase = std::move(baseBuildDatabase->createBuildDatabaseForSourceOrTarget(_targetPath));
+    if (targetBuildDatabase->hasAutoTarget() && targetBuildDatabase->getTargetPath() != _targetPath) {
+        targetBuildDatabase = std::move(
+                TargetBuildDatabase::createForSourceOrTarget(projectBuildDatabase.get(), _targetPath));
         updateTargetSources(_targetPath);
     }
 }
 
 void BaseTestGen::updateTargetSources(fs::path _targetPath) {
-    targetSources = buildDatabase->getSourceFilesForTarget(_targetPath);
+    targetSources = targetBuildDatabase->getSourceFilesForTarget(_targetPath);
     for (auto it = tests.begin(); it != tests.end(); it++) {
         tests::Tests &test = it.value();
         test.isFilePresentedInCommands = CollectionUtils::contains(targetSources, test.sourceFilePath);
     }
 }
 
-std::shared_ptr<const BuildDatabase> BaseTestGen::getBuildDatabase(bool forStub) const {
-    return forStub ? baseBuildDatabase : buildDatabase;
+std::shared_ptr<const ProjectBuildDatabase> BaseTestGen::getProjectBuildDatabase() const {
+    return projectBuildDatabase;
 }
 
-std::shared_ptr<BuildDatabase> BaseTestGen::getBuildDatabase(bool forStub) {
-    return forStub ? baseBuildDatabase : buildDatabase;
+std::shared_ptr<const TargetBuildDatabase> BaseTestGen::getTargetBuildDatabase() const {
+    return targetBuildDatabase;
+}
+
+std::shared_ptr<ProjectBuildDatabase> BaseTestGen::getProjectBuildDatabase() {
+    return projectBuildDatabase;
+}
+
+std::shared_ptr<TargetBuildDatabase> BaseTestGen::getTargetBuildDatabase() {
+    return targetBuildDatabase;
+}
+
+std::shared_ptr<const BuildDatabase::ObjectFileInfo>
+BaseTestGen::getClientCompilationUnitInfo(const fs::path &path, bool fullProject) const {
+    std::shared_ptr<const BuildDatabase::ObjectFileInfo> objectFileInfo;
+    try {
+        objectFileInfo = targetBuildDatabase->getClientCompilationUnitInfo(path);
+    } catch (CompilationDatabaseException &e) {
+        if (fullProject) {
+            objectFileInfo = projectBuildDatabase->getClientCompilationUnitInfo(path);
+            LOG_S(WARNING) << "Can't find in target: " << path;
+        } else {
+            throw CompilationDatabaseException(e.what());
+        }
+    }
+    return objectFileInfo;
 }

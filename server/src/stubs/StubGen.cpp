@@ -18,7 +18,7 @@ CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
         return {};
     }
     fs::path testedFilePath = *testGen.testingMethodsSourcePaths.begin();
-    auto stubSources = StubSourcesFinder(testGen.getBuildDatabase(true)).excludeFind(testedFilePath, target);
+    auto stubSources = StubSourcesFinder(testGen.getProjectBuildDatabase()).excludeFind(testedFilePath, target);
     return { stubSources.begin(), stubSources.end() };
 }
 

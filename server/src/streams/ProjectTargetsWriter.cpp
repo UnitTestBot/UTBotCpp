@@ -6,11 +6,11 @@ ProjectTargetsWriter::ProjectTargetsWriter(testsgen::ProjectTargetsResponse *res
 
 void ProjectTargetsWriter::writeResponse(
     const utbot::ProjectContext &projectContext,
-    const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets) {
+    const std::vector<fs::path> &targetPaths) {
     if (!hasStream()) {
         return;
     }
-    writeTargets(targets, projectContext);
+    writeTargets(targetPaths, projectContext);
     auto utbotAutoTarget = std::make_unique<testsgen::ProjectTarget>(GrpcUtils::createAutoTarget());
     writer->set_allocated_prioritytarget(utbotAutoTarget.release());
 }

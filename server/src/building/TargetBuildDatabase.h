@@ -4,32 +4,23 @@
 #include "BuildDatabase.h"
 
 
-class TargetBuildDatabase : BuildDatabase {
+class TargetBuildDatabase : public BuildDatabase {
 private:
-    TargetBuildDatabase(BuildDatabase &baseBuildDatabase, const std::string &_target);
-
-    void filterInstalledFiles();
-
-    void addLocalSharedLibraries();
-
-    void fillTargetInfoParents();
-
-    void initObjects(const nlohmann::json &compileCommandsJson);
-
-    void initInfo(const nlohmann::json &linkCommandsJson);
+    TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const fs::path &_target);
 
     fs::path target;
     bool isAutoTarget;
 public:
-    std::shared_ptr<TargetBuildDatabase> createForSourceOrTarget(std::shared_ptr<BuildDatabase> baseBuildDatabase,
-                                                                 std::string &_targetOrSourcePath);
+    static std::shared_ptr<TargetBuildDatabase> createForSourceOrTarget(BuildDatabase *baseBuildDatabase,
+                                                                        const std::string &_targetOrSourcePath);
 
     bool hasAutoTarget() const override;
+
+    fs::path getTargetPath() const override;
 
     std::vector<fs::path> getTargetPathsForSourceFile(const fs::path &sourceFilePath) const override;
 
     std::vector<fs::path> getTargetPathsForObjectFile(const fs::path &objectFile) const override;
 };
-
 
 #endif //UTBOTCPP_TARGETBUILDDATABASE_H

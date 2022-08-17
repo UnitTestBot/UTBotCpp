@@ -16,16 +16,16 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     fs::create_directories(projectContext.testDirPath);
     compileCommandsJsonPath = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
             projectContext.projectPath, projectContext.buildDirRelativePath);
-    baseBuildDatabase = std::make_shared<BuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
-    buildDatabase = baseBuildDatabase->createBuildDatabaseForSourceOrTarget(request.targetpath());
+    projectBuildDatabase = std::make_shared<ProjectBuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
+    targetBuildDatabase = TargetBuildDatabase::createForSourceOrTarget(projectBuildDatabase.get(), request.targetpath());
     if (autoDetect) {
         autoDetectSourcePathsIfNotEmpty();
     } else {
-        sourcePaths = buildDatabase->compilationDatabase->getAllFiles();
+        sourcePaths = targetBuildDatabase->compilationDatabase->getAllFiles();
     }
     testingMethodsSourcePaths = sourcePaths;
     setInitializedTestsMap();
-    updateTargetSources(buildDatabase->getTargetPath());
+    updateTargetSources(targetBuildDatabase->getTargetPath());
 }
 
 std::string ProjectTestGen::toString() {
@@ -36,7 +36,7 @@ std::string ProjectTestGen::toString() {
 }
 
 void ProjectTestGen::setTargetForSource(const fs::path &sourcePath) {
-    fs::path root = buildDatabase->getRootForSource(sourcePath);
+    fs::path root = targetBuildDatabase->getRootForSource(sourcePath);
     setTargetPath(root);
 }
 
@@ -53,7 +53,7 @@ void ProjectTestGen::autoDetectSourcePathsIfNotEmpty() {
     // requestSourcePaths are from settings.json
     auto requestSourcePaths = getRequestSourcePaths();
     // sourcePathsCandidates are from compile_commands.json
-    auto sourcePathsCandidates = buildDatabase->compilationDatabase->getAllFiles();
+    auto sourcePathsCandidates = targetBuildDatabase->compilationDatabase->getAllFiles();
     if (!requestSourcePaths.empty()) {
         sourcePaths =
                 Paths::filterPathsByDirNames(sourcePathsCandidates, requestSourcePaths, Paths::isSourceFile);

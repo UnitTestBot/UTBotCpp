@@ -153,7 +153,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     auto options = Fetcher::Options::Value::FUNCTION | Fetcher::Options::Value::INCLUDE | Fetcher::Options::Value::TYPE;
 
     auto stubFetcher =
-        Fetcher(options, testGen->getBuildDatabase(true)->compilationDatabase, sourceFilesMap, &testGen->types,
+        Fetcher(options, testGen->getProjectBuildDatabase()->compilationDatabase, sourceFilesMap, &testGen->types,
                 &sizeContext->pointerSize, &sizeContext->maximumAlignment,
                 testGen->compileCommandsJsonPath, false);
 
@@ -165,7 +165,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     auto stubsCdb = createStubsCompilationDatabase(stubFiles, ccJsonStubDirPath);
 
     auto sourceToHeaderRewriter =
-    SourceToHeaderRewriter(testGen->projectContext, testGen->getBuildDatabase(true)->compilationDatabase,
+    SourceToHeaderRewriter(testGen->projectContext, testGen->getProjectBuildDatabase()->compilationDatabase,
                            stubFetcher.getStructsToDeclare(), testGen->serverBuildDir);
 
     for (const StubOperator &outdatedStub : outdatedStubs) {
@@ -211,7 +211,7 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
         sourceFilesNeedToRegenerateWrappers, testGen->progressWriter,
         "Generating wrappers", [this](fs::path const &sourceFilePath) {
             SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
-                                                          testGen->getBuildDatabase(true)->compilationDatabase, nullptr,
+                                                          testGen->getProjectBuildDatabase()->compilationDatabase, nullptr,
                                                           testGen->serverBuildDir);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
             printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFilePath)).print(testGen->projectContext, sourceFilePath, wrapper);
@@ -219,11 +219,11 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
 }
 
 const CollectionUtils::FileSet &Synchronizer::getSourceFiles() const {
-    return testGen->getBuildDatabase(false)->compilationDatabase->getAllFiles();
+    return testGen->getTargetBuildDatabase()->compilationDatabase->getAllFiles();
 }
 
 StubSet Synchronizer::getStubsFiles() const {
-    return getStubSetFromSources(testGen->getBuildDatabase(true)->compilationDatabase->getAllFiles());
+    return getStubSetFromSources(testGen->getProjectBuildDatabase()->compilationDatabase->getAllFiles());
 }
 
 void Synchronizer::prepareDirectory(const fs::path &stubDirectory) {

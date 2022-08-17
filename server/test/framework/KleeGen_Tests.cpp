@@ -48,7 +48,7 @@ namespace {
         types::TypesHandler typesHandler(typeMaps, sizeContext);
         auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelativePath, {});
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        KleeGenerator generator(testGen, typesHandler, {});
+        KleeGenerator generator(&testGen, typesHandler, {});
 
         CollectionUtils::FileSet sources(testSuite.sourcesFilePaths.begin(), testSuite.sourcesFilePaths.end());
         sources.erase(getTestFilePath("snippet.c"));
@@ -65,7 +65,7 @@ namespace {
         types::TypesHandler typesHandler(typeMaps, sizeContext);
         auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelativePath, {});
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        KleeGenerator generator(testGen, typesHandler, {});
+        KleeGenerator generator(&testGen, typesHandler, {});
 
         fs::path sourceFilePath = *testSuite.sourcesFilePaths.begin();
         auto actualFilePath = generator.defaultBuild(sourceFilePath);

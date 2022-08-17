@@ -50,7 +50,7 @@ void GenerationUtils::generateCoverageAndResultsAndWriteStatus(
 
 std::optional<fs::path> GenerationUtils::findTarget(const BaseTestGen &baseTestGen,
                                                     const std::string &name) {
-    return findTarget(baseTestGen.getBuildDatabase(false)->getAllTargets(), name);
+    return findTarget(baseTestGen.getTargetBuildDatabase()->getAllTargets(), name);
 }
 
 std::optional<fs::path>

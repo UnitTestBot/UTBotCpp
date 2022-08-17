@@ -16,19 +16,27 @@
 #include <functional>
 #include <queue>
 #include <unordered_map>
+#include <utility>
 
-static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
-                                          const fs::path &dirPath) {
-    if (StringUtils::startsWith(possibleFilePath, "-")) {
-        return possibleFilePath;
-    }
-    fs::path fullFilePath;
-    try {
-        fullFilePath = Paths::getCCJsonFileFullPath(possibleFilePath, dirPath);
-    } catch (...) {
-        return possibleFilePath;
-    }
-    return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
+BuildDatabase::BuildDatabase(
+        fs::path serverBuildDir,
+        fs::path buildCommandsJsonPath,
+        fs::path linkCommandsJsonPath,
+        fs::path compileCommandsJsonPath,
+        utbot::ProjectContext projectContext
+) : serverBuildDir(std::move(serverBuildDir)),
+    buildCommandsJsonPath(std::move(buildCommandsJsonPath)),
+    linkCommandsJsonPath(std::move(linkCommandsJsonPath)),
+    compileCommandsJsonPath(std::move(compileCommandsJsonPath)),
+    projectContext(std::move(projectContext)) {
+}
+
+BuildDatabase::BuildDatabase(BuildDatabase *baseBuildDatabase) :
+        serverBuildDir(baseBuildDatabase->serverBuildDir),
+        projectContext(baseBuildDatabase->projectContext),
+        buildCommandsJsonPath(baseBuildDatabase->buildCommandsJsonPath),
+        linkCommandsJsonPath(baseBuildDatabase->linkCommandsJsonPath),
+        compileCommandsJsonPath(baseBuildDatabase->compileCommandsJsonPath) {
 }
 
 fs::path BuildDatabase::createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo) {
@@ -435,10 +443,18 @@ std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> BuildDatabase::getAllTar
     return CollectionUtils::getValues(targetInfos);
 }
 
+std::vector<fs::path> BuildDatabase::getAllTargetPaths() const {
+    return CollectionUtils::transformTo<std::vector<fs::path>>(CollectionUtils::getValues(targetInfos),
+                                                               [](const std::shared_ptr<TargetInfo> &targetInfo) {
+                                                                   return targetInfo->getOutput();
+                                                               });
+}
+
 std::vector<std::shared_ptr<BuildDatabase::TargetInfo>>
 BuildDatabase::getTargetsForSourceFile(const fs::path &sourceFilePath) const {
     CollectionUtils::MapFileTo<bool> cache;
-    std::function<bool(fs::path const &)> containsSourceFilePath = [&](fs::path const &unitFile) {
+    std::function<
+            bool(fs::path const &)> containsSourceFilePath = [&](fs::path const &unitFile) {
         if (CollectionUtils::containsKey(cache, unitFile)) {
             return cache[unitFile];
         }
@@ -483,7 +499,8 @@ std::vector<fs::path> BuildDatabase::getTargetPathsForObjectFile(const fs::path 
 
 std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() const {
     CollectionUtils::MapFileTo<int> cache;
-    std::function<int(fs::path const &)> numberOfSources = [&](fs::path const &unitFile) {
+    std::function<
+            int(fs::path const &)> numberOfSources = [&](fs::path const &unitFile) {
         if (CollectionUtils::containsKey(cache, unitFile)) {
             return cache[unitFile];
         }
@@ -515,7 +532,7 @@ fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
 }
 
 CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &_target) {
-    LOG_IF_S(WARNING, !hasAutoTarget() && target != _target.c_str()) << "Try get sources for different target";
+    LOG_IF_S(WARNING, !hasAutoTarget() && getTargetPath() != _target.c_str()) << "Try get sources for different target";
     return CollectionUtils::transformTo<CollectionUtils::FileSet>(
             getArchiveObjectFiles(_target),
             [this](fs::path const &objectPath) {
@@ -523,10 +540,10 @@ CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &
             });
 }
 
-bool BuildDatabase::hasAutoTarget() const {
-    return isAutoTarget;
+std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getTargetInfo(const fs::path &_target) {
+    return targetInfos[_target];
 }
 
-fs::path BuildDatabase::getTargetPath() const {
-    return target;
+std::vector<std::pair<nlohmann::json, std::shared_ptr<BuildDatabase::ObjectFileInfo>>> BuildDatabase::getCompileCommands_temp() {
+    return compileCommands_temp;
 }

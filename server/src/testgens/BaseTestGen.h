@@ -4,7 +4,8 @@
 #include "ProjectContext.h"
 #include "SettingsContext.h"
 #include "Tests.h"
-#include "building/BuildDatabase.h"
+#include "building/ProjectBuildDatabase.h"
+#include "building/TargetBuildDatabase.h"
 #include "printers/TestsPrinter.h"
 #include "streams/tests/TestsWriter.h"
 #include "stubs/Stubs.h"
@@ -42,13 +43,20 @@ public:
 
     virtual ~BaseTestGen() = default;
 
-    std::shared_ptr<const BuildDatabase> getBuildDatabase(bool forStub) const;
+    std::shared_ptr<const ProjectBuildDatabase> getProjectBuildDatabase() const;
 
-    std::shared_ptr<BuildDatabase> getBuildDatabase(bool forStub);
+    std::shared_ptr<const TargetBuildDatabase> getTargetBuildDatabase() const;
+
+    std::shared_ptr<ProjectBuildDatabase> getProjectBuildDatabase();
+
+    std::shared_ptr<TargetBuildDatabase> getTargetBuildDatabase();
+
+    std::shared_ptr<const BuildDatabase::ObjectFileInfo>
+    getClientCompilationUnitInfo(const fs::path &path, bool fullProject = false) const;
 
 protected:
-    std::shared_ptr<BuildDatabase> baseBuildDatabase;
-    std::shared_ptr<BuildDatabase> buildDatabase;
+    std::shared_ptr<ProjectBuildDatabase> projectBuildDatabase;
+    std::shared_ptr<TargetBuildDatabase> targetBuildDatabase;
 
     BaseTestGen(const testsgen::ProjectContext &projectContext,
                 const testsgen::SettingsContext &settingsContext,
@@ -57,7 +65,7 @@ protected:
 
     void setInitializedTestsMap();
 
-    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
+    virtual void setTargetForSource(fs::path const &sourcePath) = 0;
 
     void updateTargetSources(fs::path _targetPath);
 };

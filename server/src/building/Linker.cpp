@@ -56,15 +56,15 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
                            const fs::path &objectFile) {
     testGen.setTargetPath(target);
 
-    auto siblings = testGen.getBuildDatabase(false)->getArchiveObjectFiles(target);
+    auto siblings = testGen.getTargetBuildDatabase()->getArchiveObjectFiles(target);
     auto stubSources = stubGen.getStubSources(target);
 
     CollectionUtils::MapFileTo<fs::path> filesToLink;
     for (const auto &sibling : siblings) {
         auto siblingCompilationUnitInfo =
-            testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sibling);
+            testGen.getClientCompilationUnitInfo(sibling);
         fs::path siblingObjectFile = siblingCompilationUnitInfo->getOutputFile();
-        fs::path bitcodeFile = testGen.getBuildDatabase(false)->getBitcodeForSource(
+        fs::path bitcodeFile = testGen.getTargetBuildDatabase()->getBitcodeForSource(
             siblingCompilationUnitInfo->getSourcePath());
         if (CollectionUtils::contains(stubSources,
                                       siblingCompilationUnitInfo->getSourcePath())) {
@@ -75,7 +75,7 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
     }
     kleeGenerator->buildByCDb(filesToLink, stubSources);
 
-    auto linkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(sourceFilePath);
+    auto linkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(sourceFilePath);
     std::optional<fs::path> moduleOutput = linkUnitInfo->getOutput();
     std::string suffixForParentOfStubs =
         StringUtils::stringFormat("___%s", Paths::mangle(moduleOutput.value().filename()));
@@ -87,16 +87,16 @@ Result<Linker::LinkResult> Linker::linkForTarget(const fs::path &target, const f
 void Linker::linkForOneFile(const fs::path &sourceFilePath) {
     ExecUtils::throwIfCancelled();
 
-    auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sourceFilePath);
+    auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(sourceFilePath);
     fs::path objectFile = compilationUnitInfo->getOutputFile();
 
     if (CollectionUtils::contains(testedFiles, sourceFilePath)) {
         return;
     }
-    if (!testGen.getBuildDatabase(false)->isFirstObjectFileForSource(objectFile)) {
+    if (!testGen.getTargetBuildDatabase()->isFirstObjectFileForSource(objectFile)) {
         return;
     }
-    std::vector <fs::path> targets = testGen.getBuildDatabase(false)->getTargetPathsForObjectFile(objectFile);
+    std::vector <fs::path> targets = testGen.getTargetBuildDatabase()->getTargetPathsForObjectFile(objectFile);
     LOG_S(DEBUG) << "Linking bitcode for file " << sourceFilePath.filename();
     for (size_t i = 0; i < targets.size(); i++) {
         const auto& target = targets[i];
@@ -105,14 +105,14 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
         if (result.isSuccess()) {
             auto [targetBitcode, stubsSet, _] = result.getOpt().value();
             addToGenerated({ objectFile }, targetBitcode);
-            auto&& targetUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(target);
+            auto&& targetUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(target);
             return;
         } else {
             LOG_S(DEBUG) << "Linkage for target " << target.filename() << " failed: " << result.getError()->c_str();
             if (i + 1 == targets.size()) {
                 addToGenerated({ objectFile }, {});
                 fs::path possibleBitcodeFileName =
-                    testGen.getBuildDatabase(false)->getBitcodeFile(testGen.getBuildDatabase(false)->getTargetPath());
+                    testGen.getTargetBuildDatabase()->getBitcodeFile(testGen.getTargetBuildDatabase()->getTargetPath());
                 brokenLinkFiles.insert(possibleBitcodeFileName);
             }
         }
@@ -120,20 +120,20 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
 }
 
 Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
-    auto requestTarget = testGen.getBuildDatabase(false)->getTargetPath();
-    LOG_IF_S(WARNING, !testGen.getBuildDatabase(false)->hasAutoTarget() && requestTarget != target)
+    auto requestTarget = testGen.getTargetBuildDatabase()->getTargetPath();
+    LOG_IF_S(WARNING, !testGen.getTargetBuildDatabase()->hasAutoTarget() && requestTarget != target)
         << "Try link target that not specified by user";
     testGen.setTargetPath(target);
 
-    auto targetUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(target);
-    auto siblings = testGen.getBuildDatabase(false)->getArchiveObjectFiles(target);
+    auto targetUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(target);
+    auto siblings = testGen.getTargetBuildDatabase()->getArchiveObjectFiles(target);
 
     auto stubSources = stubGen.getStubSources(target);
 
     CollectionUtils::MapFileTo<fs::path> filesToLink;
     CollectionUtils::FileSet siblingObjectsToBuild;
     for (const fs::path &objectFile : siblings) {
-        auto objectInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(objectFile);
+        auto objectInfo = testGen.getClientCompilationUnitInfo(objectFile);
         bool insideFolder = true;
         if (auto folderTestGen = dynamic_cast<FolderTestGen *>(&testGen)) {
             fs::path folderGen = folderTestGen->folderPath;
@@ -145,7 +145,7 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
             fs::path bitcodeFile = objectInfo->kleeFilesInfo->getKleeBitcodeFile();
             filesToLink.emplace(objectFile, bitcodeFile);
         } else {
-            fs::path bitcodeFile = testGen.getBuildDatabase(false)->getBitcodeForSource(objectInfo->getSourcePath());
+            fs::path bitcodeFile = testGen.getTargetBuildDatabase()->getBitcodeForSource(objectInfo->getSourcePath());
             siblingObjectsToBuild.insert(objectInfo->getOutputFile());
             filesToLink.emplace(objectFile, bitcodeFile);
         }
@@ -164,17 +164,17 @@ void Linker::linkForProject() {
         testGen.tests, testGen.progressWriter, "Compiling and linking source files",
         [&](auto const &it) {
             fs::path const &sourceFile = it.first;
-            auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sourceFile);
+            auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(sourceFile);
             fs::path objectFile = compilationUnitInfo->getOutputFile();
             if (!CollectionUtils::contains(testedFiles, sourceFile)) {
-                auto objectInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sourceFile);
+                auto objectInfo = testGen.getClientCompilationUnitInfo(sourceFile);
                 if (objectInfo->linkUnit.empty()) {
                     LOG_S(WARNING) << "No executable or library found for current source file in "
                                       "link_commands.json: "
                                    << sourceFile;
                     return;
                 }
-                std::vector <fs::path> targets = testGen.getBuildDatabase(false)->getTargetPathsForObjectFile(
+                std::vector <fs::path> targets = testGen.getTargetBuildDatabase()->getTargetPathsForObjectFile(
                         objectFile);
                 bool success = false;
                 for (const auto &target : targets) {
@@ -187,7 +187,7 @@ void Linker::linkForProject() {
                             auto linkres = result.getOpt().value();
                             auto objectFiles = CollectionUtils::transformTo<CollectionUtils::FileSet>(
                                     linkres.presentedFiles, [&](const fs::path &sourceFile) {
-                                        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(
+                                        auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(
                                                 sourceFile);
                                         return compilationUnitInfo->getOutputFile();
                                     });
@@ -209,9 +209,9 @@ void Linker::linkForProject() {
 
 void Linker::addToGenerated(const CollectionUtils::FileSet &objectFiles, const fs::path &output) {
     for (const auto &objectFile : objectFiles) {
-        auto objectInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(objectFile);
+        auto objectInfo = testGen.getClientCompilationUnitInfo(objectFile);
         const fs::path &sourcePath = objectInfo->getSourcePath();
-        if (testGen.getBuildDatabase(false)->isFirstObjectFileForSource(objectFile) &&
+        if (testGen.getTargetBuildDatabase()->isFirstObjectFileForSource(objectFile) &&
             !CollectionUtils::contains(testedFiles, sourcePath)) {
             testedFiles.insert(sourcePath);
             bitcodeFileName[sourcePath] = output;
@@ -256,7 +256,7 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
             isAnyOneLinked = true;
             for (const auto &[methodName, _] : tests.methods) {
                 auto compilationUnitInfo =
-                    testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(fileName);
+                    testGen.getClientCompilationUnitInfo(fileName);
                 if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
                     testMethods.emplace_back(methodName,
                                              bitcodePath,
@@ -283,7 +283,7 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                          method.classObj.has_value() &&
                          method.classObj->type.typeName() == lineInfo->scopeName)) {
                         auto compilationUnitInfo =
-                            testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(fileName);
+                            testGen.getClientCompilationUnitInfo(fileName);
                         if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
                             tests::TestMethod testMethod{ methodName,
                                                           bitcodeFileName.at(lineInfo->filePath),
@@ -397,7 +397,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     testMakefilesPrinter.addLinkTargetRecursively(target, suffixForParentOfStubs);
 
     for (auto const &[objectFile, _] : bitcodeFiles) {
-        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(objectFile);
+        auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(objectFile);
         auto sourcePath = compilationUnitInfo->getSourcePath();
         if (CollectionUtils::containsKey(testGen.tests, sourcePath)) {
             testMakefilesPrinter.GetMakefiles(sourcePath).write();
@@ -434,7 +434,7 @@ Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
         methodDescription.name = symbol;
         return methodDescription;
     });
-    auto rootLinkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(root);
+    auto rootLinkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(root);
     auto stubsSet = StubGen(testGen).findStubFilesBySignatures(signatures);
     printer::DefaultMakefilePrinter makefilePrinter;
     auto bitcodeStubFiles = CollectionUtils::transformTo<std::vector<fs::path>>(
@@ -732,7 +732,7 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
                                  const std::optional<fs::path> &testedFilePath,
                                  bool shouldChangeDirectory) {
     if (Paths::isObjectFile(fileToBuild)) {
-        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(fileToBuild);
+        auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(fileToBuild);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
         BuildResult::Type type = CollectionUtils::contains(stubSources, sourcePath)
                                      ? BuildResult::Type::ALL_STUBS
@@ -745,7 +745,7 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
         }
         return { bitcode, type };
     } else {
-        auto linkUnit = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(fileToBuild);
+        auto linkUnit = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(fileToBuild);
         CollectionUtils::MapFileTo<fs::path> dependencies; // object file -> bitcode
         BuildResult::Type unitType = BuildResult::Type::NONE;
         for (auto const &subfile : linkUnit->files) {
@@ -761,7 +761,7 @@ Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
         }
         auto bitcodeDependencies = CollectionUtils::getValues(dependencies);
         fs::path prefixPath = getPrefixPath(bitcodeDependencies, testGen.serverBuildDir);
-        auto output = testGen.getBuildDatabase(false)->getBitcodeFile(fileToBuild);
+        auto output = testGen.getTargetBuildDatabase()->getBitcodeFile(fileToBuild);
         output = LinkerUtils::applySuffix(output, unitType, suffixForParentOfStubs);
         if (Paths::isLibraryFile(fileToBuild)) {
             auto archiveActions = getArchiveCommands(prefixPath, dependencies, *linkUnit, output, shouldChangeDirectory);

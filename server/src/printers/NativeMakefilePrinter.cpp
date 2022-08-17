@@ -270,7 +270,7 @@ namespace printer {
     BuildResult NativeMakefilePrinter::addObjectFile(const fs::path &objectFile,
                                                      const std::string &suffixForParentOfStubs) {
 
-        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(objectFile);
+        auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(objectFile);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
 
         fs::path pathToCompile;
@@ -299,7 +299,7 @@ namespace printer {
     }
 
     void NativeMakefilePrinter::addTestTarget(const fs::path &sourcePath) {
-        auto compilationUnitInfo = testGen.getBuildDatabase(false)->getClientCompilationUnitInfo(sourcePath);
+        auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(sourcePath);
         auto testCompilationCommand = compilationUnitInfo->command;
         testCompilationCommand.setBuildTool(getRelativePathForLinker(primaryCxxCompiler));
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
@@ -332,7 +332,7 @@ namespace printer {
 
         artifacts.push_back(testCompilationCommand.getOutput());
 
-        auto rootLinkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(rootPath);
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         std::vector<std::string> filesToLink{ "$(GTEST_MAIN)", "$(GTEST_ALL)", testCompilationCommand.getOutput(),
@@ -426,7 +426,7 @@ namespace printer {
 
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
-        auto rootLinkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(rootPath);
 
         fs::path coverageInfoBinary = sharedOutput.value();
         if (!Paths::isLibraryFile(coverageInfoBinary)) {
@@ -468,7 +468,7 @@ namespace printer {
             return buildResults[unitFile] = buildResult;
         }
 
-        auto linkUnitInfo = testGen.getBuildDatabase(false)->getClientLinkUnitInfo(unitFile);
+        auto linkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(unitFile);
         BuildResult::Type unitType = BuildResult::Type::NONE;
         CollectionUtils::MapFileTo<fs::path> fileMapping;
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
@@ -616,7 +616,7 @@ namespace printer {
                 fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stub);
                 fs::path stubBuildFilePath =
                     Paths::getStubBuildFilePath(testGen.projectContext, sourcePath);
-                auto compilationUnitInfo = testGen.getBuildDatabase(true)->getClientCompilationUnitInfo(sourcePath);
+                auto compilationUnitInfo = testGen.getClientCompilationUnitInfo(sourcePath, true);
                 fs::path target = Paths::getRecompiledFile(testGen.projectContext, stub);
                 addCompileTarget(stub, target, *compilationUnitInfo);
                 return target;

@@ -76,7 +76,7 @@ namespace {
             fs::path serverBuildDir = buildPath / "temp";
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
-            fs::path root = testGen.getBuildDatabase(false)->getTargetPath();
+            fs::path root = testGen.getTargetBuildDatabase()->getTargetPath();
             printer::TestMakefilesPrinter testMakefilePrinter(testGen, root, compilerPath, &stubsSources);
             testMakefilePrinter.addLinkTargetRecursively(root, "");
 

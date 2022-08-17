@@ -43,7 +43,7 @@ public:
      * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
      * reasons.
      */
-    KleeGenerator(BaseTestGen &_testGen, types::TypesHandler &typesHandler,
+    KleeGenerator(BaseTestGen *_testGen, types::TypesHandler &typesHandler,
                   PathSubstitution filePathsSubstitution);
 
     struct BuildFileInfo {
@@ -144,17 +144,17 @@ public:
                               const CollectionUtils::FileSet &stubSources) const;
 
 private:
-    BaseTestGen &testGen;
+    BaseTestGen *testGen;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
 
     CollectionUtils::MapFileTo<std::vector<std::string>> failedFunctions;
 
     fs::path writeKleeFile(
-        printer::KleePrinter &kleePrinter,
-        Tests const &tests,
-        const std::shared_ptr<LineInfo> &lineInfo,
-        const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
+            printer::KleePrinter &kleePrinter,
+            Tests const &tests,
+            const std::shared_ptr<LineInfo> &lineInfo,
+            const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
             [](tests::Tests::MethodDescription const &) { return true; });
 };
 

@@ -22,12 +22,17 @@ public:
         explicit KleeFilesInfo(fs::path kleeFile);
 
         void setCorrectMethods(std::unordered_set<std::string> correctMethods);
+
         void setAllAreCorrect(bool allAreCorrect);
 
         bool isCorrectMethod(const std::string &method);
+
         fs::path getKleeFile();
+
         fs::path getKleeBitcodeFile();
+
         fs::path getKleeFile(const std::string &methodName);
+
         fs::path getKleeBitcodeFile(const std::string &methodName);
 
     private:
@@ -67,8 +72,10 @@ public:
 
         // Directory from where to execute the command
         [[nodiscard]] fs::path const &getDirectory() const;
+
         // User source file
         [[nodiscard]] fs::path getSourcePath() const;
+
         // User object file
         [[nodiscard]] fs::path getOutputFile() const;
 
@@ -99,6 +106,7 @@ public:
 
 public:
     const fs::path &getCompileCommandsJson();
+
     const fs::path &getLinkCommandsJson();
 
     /**
@@ -158,6 +166,7 @@ public:
      * @throws CompilationDatabaseException if files are wrong
      */
     [[nodiscard]] std::shared_ptr<const TargetInfo> getClientLinkUnitInfo(const fs::path &filepath) const;
+
     [[nodiscard]] fs::path getObjectFile(const fs::path &sourceFile) const;
 
     /**
@@ -168,8 +177,11 @@ public:
      * @throws CompilationDatabaseException if file is wrong
      */
     [[nodiscard]] fs::path getRootForSource(const fs::path &path) const;
+
     [[nodiscard]] fs::path getRootForFirstSource() const;
+
     [[nodiscard]] fs::path getBitcodeForSource(const fs::path &sourceFile) const;
+
     [[nodiscard]] fs::path getBitcodeFile(const fs::path &filepath) const;
 
     /**
@@ -193,41 +205,62 @@ public:
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
 
     std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const;
-    virtual std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const = 0;
 
-    virtual std::vector<fs::path>
-    getTargetPathsForSourceFile(const fs::path &sourceFilePath) const;
-    virtual std::vector<fs::path>
-    getTargetPathsForObjectFile(const fs::path &objectFile) const;
+    std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
+
+    std::vector<fs::path> getAllTargetPaths() const;
+
+    virtual std::vector<fs::path> getTargetPathsForSourceFile(const fs::path &sourceFilePath) const;
+
+    virtual std::vector<fs::path> getTargetPathsForObjectFile(const fs::path &objectFile) const;
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
 
     CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
+    std::shared_ptr<TargetInfo> getTargetInfo(const fs::path &_target);
+
+    //TODO change
+    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> getCompileCommands_temp();
+
     virtual bool hasAutoTarget() const = 0;
 
-    fs::path getTargetPath() const;
+    virtual fs::path getTargetPath() const = 0;
 
     std::shared_ptr<CompilationDatabase> compilationDatabase;
-protected:
-    BuildDatabase() ;
 
+protected:
     const fs::path serverBuildDir;
-    const utbot::ProjectContext projectContext;
     const fs::path buildCommandsJsonPath;
     const fs::path linkCommandsJsonPath;
     const fs::path compileCommandsJsonPath;
+    const utbot::ProjectContext projectContext;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
 
+    //TODO change
     std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
 
+    BuildDatabase(
+            fs::path serverBuildDir,
+            fs::path buildCommandsJsonPath,
+            fs::path linkCommandsJsonPath,
+            fs::path compileCommandsJsonPath,
+            utbot::ProjectContext projectContext
+    );
+
+    BuildDatabase(BuildDatabase *baseBuildDatabase);
+
     static fs::path getCorrespondingBitcodeFile(const fs::path &filepath);
+
     void createClangCompileCommandsJson();
+
     void mergeLibraryOptions(std::vector<std::string> &jsonArguments) const;
-    fs::path newDirForFile(fs::path const& file) const;
+
+    fs::path newDirForFile(fs::path const &file) const;
+
     fs::path createExplicitObjectFileCompilationCommand(const std::shared_ptr<ObjectFileInfo> &objectInfo);
 
     std::vector<std::shared_ptr<TargetInfo>> getTargetsForSourceFile(fs::path const &sourceFilePath) const;

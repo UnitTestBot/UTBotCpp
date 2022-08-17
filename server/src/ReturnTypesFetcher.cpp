@@ -10,7 +10,7 @@ void ReturnTypesFetcher::fetch(ProgressWriter *const progressWriter,
         testsMap[filePath];
     }
     Fetcher(Fetcher::Options::Value::RETURN_TYPE_NAMES_ONLY,
-                 testGen->getBuildDatabase(false)->compilationDatabase, testsMap, nullptr, nullptr, nullptr,
+                 testGen->getTargetBuildDatabase()->compilationDatabase, testsMap, nullptr, nullptr, nullptr,
                  testGen->compileCommandsJsonPath, false)
         .fetchWithProgress(progressWriter, "Fetching return types for functions", true);
     for (auto const &[sourceFilePath, test] : testsMap) {
