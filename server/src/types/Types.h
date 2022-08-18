@@ -259,9 +259,10 @@ namespace types {
     struct Field {
         types::Type type;
         std::string name;
-        size_t size; // size in bits
-        // reassigned in structFields
-        size_t offset = 0; // offset in bits
+        /// size in @b bits
+        size_t size;
+        /// offset in @b bits, reassigned in structFields
+        size_t offset = 0;
         enum AccessSpecifier {
             AS_pubic,
             AS_protected,
@@ -275,8 +276,10 @@ namespace types {
         fs::path filePath;
         std::string name;
         std::string definition;
-        size_t size; // size in bits
-        size_t alignment; // alignment in **bytes**
+        /// size in @b bits
+        size_t size;
+        /// alignment in @b bytes
+        size_t alignment;
     };
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
@@ -330,8 +333,8 @@ namespace types {
     class TypesHandler {
     public:
         struct SizeContext {
-            size_t pointerSize = 8;
-            size_t maximumAlignment = 16;
+            size_t pointerSize = 8; /// pointerSize in @b bytes
+            size_t maximumAlignment = 16; /// maximumAlignment in @b bytes
         };
 
         explicit TypesHandler(TypeMaps &types, SizeContext sizeContext)
@@ -340,7 +343,7 @@ namespace types {
         /**
          * This functions calculates size of a given type. For structs in it calculates sum of sizes of its fields,
          * ignoring alignment.
-         * @return size of given type in bits.
+         * @return size of given type in @b bits.
          */
         size_t typeSize(const types::Type &type) const;
 
@@ -636,11 +639,6 @@ namespace types {
                                    types::TypeSupport,
                                    IsSupportedTypeArgumentsHash>
             isSupportedTypeHash{};
-
-        static const std::unordered_map<TypeName, size_t> &integerTypesToSizes() noexcept;
-        static const std::unordered_map<TypeName, size_t> &floatingPointTypesToSizes() noexcept;
-        static const std::unordered_map<TypeName, size_t> &characterTypesToSizes() noexcept;
-        static const std::unordered_map<TypeName, size_t> &boolTypesToSizes() noexcept;
 
         template<typename T>
         bool typeIsInMap(uint64_t id, const std::unordered_map<uint64_t, T>& someMap) const {
