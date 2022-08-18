@@ -534,7 +534,6 @@ fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
 }
 
 CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &_target) {
-    LOG_IF_S(WARNING, !hasAutoTarget() && getTargetPath() != _target.c_str()) << "Try get sources for different target";
     return CollectionUtils::transformTo<CollectionUtils::FileSet>(
             getArchiveObjectFiles(_target),
             [this](fs::path const &objectPath) {

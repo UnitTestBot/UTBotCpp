@@ -212,11 +212,11 @@ public:
      */
     std::vector<std::shared_ptr<ObjectFileInfo>> getAllCompileCommands() const;
 
-    std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const;
+    virtual std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const;
 
-    std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
+    virtual std::vector<std::shared_ptr<TargetInfo>> getAllTargets() const;
 
-    std::vector<fs::path> getAllTargetPaths() const;
+    virtual std::vector<fs::path> getAllTargetPaths() const;
 
     virtual std::vector<fs::path> getTargetPathsForSourceFile(const fs::path &sourceFilePath) const;
 
@@ -227,10 +227,6 @@ public:
     CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
 
     std::shared_ptr<TargetInfo> getTargetInfo(const fs::path &_target);
-
-    virtual bool hasAutoTarget() const = 0;
-
-    virtual fs::path getTargetPath() const = 0;
 
     std::shared_ptr<CompilationDatabase> compilationDatabase;
 

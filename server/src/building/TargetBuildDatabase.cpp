@@ -51,6 +51,13 @@ std::shared_ptr<TargetBuildDatabase> TargetBuildDatabase::createForSourceOrTarge
     return std::make_shared<TargetBuildDatabase>(std::move(TargetBuildDatabase(baseBuildDatabase, _target)));
 }
 
+std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> TargetBuildDatabase::getRootTargets() const {
+    if (!hasAutoTarget()) {
+        return {targetInfos.at(target)};
+    }
+    return BuildDatabase::getRootTargets();
+}
+
 std::vector<fs::path> TargetBuildDatabase::getTargetPathsForSourceFile(const fs::path &sourceFilePath) const {
     if (!hasAutoTarget()) {
         return {target};

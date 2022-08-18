@@ -20,10 +20,6 @@ public:
                          utbot::ProjectContext _projectContext);
 
     static std::shared_ptr<ProjectBuildDatabase> create(const utbot::ProjectContext &projectContext);
-
-    bool hasAutoTarget() const override;
-
-    fs::path getTargetPath() const override;
 };
 
 

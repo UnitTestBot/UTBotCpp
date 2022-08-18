@@ -233,12 +233,3 @@ void ProjectBuildDatabase::fillTargetInfoParents() {
         targetInfos[library]->parentLinkUnits = std::move(parents);
     }
 }
-
-
-bool ProjectBuildDatabase::hasAutoTarget() const {
-    return true;
-}
-
-fs::path ProjectBuildDatabase::getTargetPath() const {
-    throw CompilationDatabaseException("Incorrect method for project build database");
-}

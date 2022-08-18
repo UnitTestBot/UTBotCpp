@@ -14,9 +14,11 @@ public:
     static std::shared_ptr<TargetBuildDatabase> createForSourceOrTarget(BuildDatabase *baseBuildDatabase,
                                                                         const std::string &_targetOrSourcePath);
 
-    bool hasAutoTarget() const override;
+    bool hasAutoTarget() const;
 
-    fs::path getTargetPath() const override;
+    fs::path getTargetPath() const;
+
+    std::vector<std::shared_ptr<TargetInfo>> getRootTargets() const override;
 
     std::vector<fs::path> getTargetPathsForSourceFile(const fs::path &sourceFilePath) const override;
 
