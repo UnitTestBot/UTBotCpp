@@ -305,16 +305,6 @@ namespace {
         EXPECT_EQ(tests::readBytesAsValue<unsigned int>(bytes, offset, len), "131071");
     }
 
-    TEST(ReadBytesAsValueTestDeathTest, InvalidLen) {
-        size_t const LEN = 4;
-        std::vector<char> bytes(LEN);
-        bytes[3] = 1;
-        bytes[2] = bytes[1] = bytes[0] = -1;
-        size_t offset = 0;
-        size_t len = CHAR_BIT * 2;
-        EXPECT_DEATH(tests::readBytesAsValue<char>(bytes, offset, len), "");
-    }
-
     template<typename T>
     void readBytesAsValueTestTemplate(T val) {
         srand(42);
