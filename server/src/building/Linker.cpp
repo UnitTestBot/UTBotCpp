@@ -410,32 +410,12 @@ static const std::string STUB_BITCODE_FILES_NAME = "STUB_BITCODE_FILES";
 static const std::string STUB_BITCODE_FILES = "$(STUB_BITCODE_FILES)";
 
 Result<CollectionUtils::FileSet> Linker::generateStubsMakefile(
-    const fs::path &root, const fs::path &outputFile, const fs::path &stubsMakefile) const {
-    ShellExecTask::ExecutionParameters nmCommand(
-        Paths::getLLVMnm(),
-        { "--print-file-name", "--undefined-only", "--just-symbol-name", outputFile });
-    auto [out, status, _] = ShellExecTask::runShellCommandTask(nmCommand, testGen.serverBuildDir);
-    if (status != 0) {
-        std::string errorMessage =
-            StringUtils::stringFormat("llvm-nm on %s failed: %s", outputFile, out);
-        LOG_S(ERROR) << errorMessage;
-        return errorMessage;
+        const fs::path &root, const fs::path &outputFile, const fs::path &stubsMakefile) const {
+    auto result = StubGen(testGen).getStubSetForObject(outputFile);
+    if (!result.isSuccess()) {
+        return result;
     }
-    auto symbols =
-        CollectionUtils::transform(StringUtils::split(out, '\n'), [](std::string const &line) {
-            return StringUtils::splitByWhitespaces(line).back();
-        });
-    CollectionUtils::erase_if(symbols, [](std::string const &symbol) {
-        return StringUtils::startsWith(symbol, "__ubsan") ||
-               StringUtils::startsWith(symbol, "klee_");
-    });
-    auto signatures = CollectionUtils::transform(symbols, [](std::string const &symbol) {
-        Tests::MethodDescription methodDescription;
-        methodDescription.name = symbol;
-        return methodDescription;
-    });
-    auto rootLinkUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(root);
-    auto stubsSet = StubGen(testGen).findStubFilesBySignatures(signatures);
+    auto stubsSet = result.getOpt().value();
     printer::DefaultMakefilePrinter makefilePrinter;
     auto bitcodeStubFiles = CollectionUtils::transformTo<std::vector<fs::path>>(
         Synchronizer::dropHeaders(stubsSet), [this, &makefilePrinter](const fs::path &stubPath) {

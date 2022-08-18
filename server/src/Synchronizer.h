@@ -21,7 +21,6 @@ private:
 
 class Synchronizer {
     BaseTestGen *const testGen;
-    StubGen const *const stubGen;
     types::TypesHandler::SizeContext *sizeContext;
 
     [[nodiscard]] CollectionUtils::FileSet getOutdatedSourcePaths() const;
@@ -53,7 +52,7 @@ public:
 
     static CollectionUtils::FileSet dropHeaders(const CollectionUtils::FileSet &files);
 
-    Synchronizer(BaseTestGen *testGen, StubGen const *stubGen, types::TypesHandler::SizeContext *sizeContext);
+    Synchronizer(BaseTestGen *testGen, types::TypesHandler::SizeContext *sizeContext);
 
     void synchronize(const types::TypesHandler &typesHandler);
 

@@ -8,7 +8,8 @@
 #include "clang-utils/SourceToHeaderRewriter.h"
 #include "printers/CCJsonPrinter.h"
 #include "streams/stubs/StubsWriter.h"
-
+#include "loguru.h"
+#include "environment/EnvironmentPaths.h"
 
 StubGen::StubGen(BaseTestGen &testGen) : testGen(testGen) {
 }
@@ -98,4 +99,31 @@ bool StubGen::cmpMethodsDecl(const Tests::MethodDescription &decl1,
         }
     }
     return true;
+}
+
+Result<CollectionUtils::FileSet> StubGen::getStubSetForObject(const fs::path &objectFilePath) {
+    ShellExecTask::ExecutionParameters nmCommand(
+            Paths::getLLVMnm(),
+            { "--print-file-name", "--undefined-only", "--just-symbol-name", objectFilePath });
+    auto [out, status, _] = ShellExecTask::runShellCommandTask(nmCommand, testGen.serverBuildDir);
+    if (status != 0) {
+        std::string errorMessage =
+                StringUtils::stringFormat("llvm-nm on %s failed: %s", objectFilePath, out);
+        LOG_S(ERROR) << errorMessage;
+        return errorMessage;
+    }
+    auto symbols =
+            CollectionUtils::transform(StringUtils::split(out, '\n'), [](std::string const &line) {
+                return StringUtils::splitByWhitespaces(line).back();
+            });
+    CollectionUtils::erase_if(symbols, [](std::string const &symbol) {
+        return StringUtils::startsWith(symbol, "__ubsan") ||
+               StringUtils::startsWith(symbol, "klee_");
+    });
+    auto signatures = CollectionUtils::transform(symbols, [](std::string const &symbol) {
+        Tests::MethodDescription methodDescription;
+        methodDescription.name = symbol;
+        return methodDescription;
+    });
+    return findStubFilesBySignatures(signatures);
 }

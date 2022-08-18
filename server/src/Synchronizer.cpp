@@ -40,9 +40,8 @@ bool StubOperator::isHeader() const {
 }
 
 Synchronizer::Synchronizer(BaseTestGen *testGen,
-                           StubGen const *stubGen,
                            types::TypesHandler::SizeContext *sizeContext)
-    : testGen(testGen), stubGen(stubGen), sizeContext(sizeContext) {
+    : testGen(testGen), sizeContext(sizeContext) {
 }
 
 bool Synchronizer::isProbablyOutdated(const fs::path &srcFilePath) const {

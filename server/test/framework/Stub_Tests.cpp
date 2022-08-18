@@ -168,6 +168,16 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
+
+        const fs::path objectFile = testGen.getClientCompilationUnitInfo(foreign_bar_c)->getOutputFile();
+        auto result = StubGen(testGen).getStubSetForObject(objectFile);
+        ASSERT_TRUE(result.isSuccess());
+        auto stubCandidates = {calc_sum_c};
+        auto expectedStubFiles = CollectionUtils::transformTo<CollectionUtils::FileSet>(
+                stubCandidates, [&testGen](fs::path const &path) {
+                    return Paths::sourcePathToStubPath(testGen.projectContext, path);
+                });
+        EXPECT_EQ(expectedStubFiles, result.getOpt().value());
     }
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {

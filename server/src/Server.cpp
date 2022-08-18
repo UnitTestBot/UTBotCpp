@@ -210,7 +210,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         testGen.progressWriter->writeProgress("Generating stub files", 0.0);
         StubGen stubGen(testGen);
 
-        Synchronizer synchronizer(&testGen, &stubGen, &sizeContext);
+        Synchronizer synchronizer(&testGen, &sizeContext);
         synchronizer.synchronize(typesHandler);
 
         std::shared_ptr<LineInfo> lineInfo = nullptr;
@@ -547,7 +547,6 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
                                                                StubsWriter *stubsWriter) {
     types::TypesHandler::SizeContext sizeContext;
     types::TypesHandler typesHandler{testGen->types, sizeContext};
-    StubGen stubGen(*testGen);
 
     static std::string logMessage = "Traversing sources AST tree and fetching declarations.";
     LOG_S(DEBUG) << logMessage;
@@ -557,7 +556,7 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
                     testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
-    Synchronizer synchronizer(testGen, &stubGen, &sizeContext);
+    Synchronizer synchronizer(testGen, &sizeContext);
     synchronizer.synchronize(typesHandler);
     stubsWriter->writeResponse(testGen->synchronizedStubs, testGen->projectContext.testDirPath);
     return Status::OK;
