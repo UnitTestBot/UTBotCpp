@@ -12,6 +12,7 @@ import org.utbot.cpp.clion.plugin.ui.wizard.steps.BuildOptionsStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.ConnectionStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.IntroStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.FinalStep
+import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
@@ -39,6 +40,8 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
         with(project.settings) {
             fireUTBotSettingsChanged()
         }
+
+        project.getCurrentClient().configureProject()
 
         super.doOKAction()
     }

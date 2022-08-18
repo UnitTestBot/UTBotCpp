@@ -87,7 +87,7 @@ class Client(
         }
     }
 
-    private fun configureProject() {
+    fun configureProject() {
         CheckProjectConfigurationRequest(
             getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
             project,

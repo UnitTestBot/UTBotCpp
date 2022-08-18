@@ -78,10 +78,8 @@ class ConnectionStep(
         useConnectionDefaults.addOnChangeListener { newValue ->
             if (newValue) {
                 beforeCheckingBoxConnectionInfo = ConnectionInfo()
-                println("remembered before check info: ${beforeCheckingBoxConnectionInfo?.remotePath ?: ""}")
                 defaultConnectionInfo.apply()
             } else {
-                println("Apply before check info: ${beforeCheckingBoxConnectionInfo?.remotePath ?: "empty"}")
                 beforeCheckingBoxConnectionInfo?.apply()
             }
         }
@@ -108,7 +106,6 @@ class ConnectionStep(
                     .bindSelected(getter = { useConnectionDefaults.value }, setter = { newValue ->
                         useConnectionDefaults.value = newValue
                     }).selected.addListener { newValue ->
-                        println("New value was set to checkbox: $newValue")
                         useConnectionDefaults.value = newValue
                     }
             }
