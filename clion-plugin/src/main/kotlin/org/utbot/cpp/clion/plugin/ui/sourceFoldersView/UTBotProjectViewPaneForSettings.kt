@@ -7,6 +7,7 @@ import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
@@ -36,6 +37,7 @@ open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewP
 
     fun apply() {
         settings.sourceDirs = sourceDirs.value
+        myProject.messageBus.syncPublisher(SourceFoldersListener.TOPIC).sourceFoldersChanged(settings.sourceDirs)
     }
 
     fun reset() {
