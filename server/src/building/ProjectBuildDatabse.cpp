@@ -118,7 +118,6 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         } else {
             objectFileInfos[outputFile] = objectInfo;
         }
-        compileCommands_temp.emplace_back(compileCommand, objectInfo);
         const fs::path &sourcePath = objectInfo->getSourcePath();
         sourceFileInfos[sourcePath].emplace_back(objectInfo);
     }

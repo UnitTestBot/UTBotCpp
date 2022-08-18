@@ -59,20 +59,17 @@ fs::path BuildDatabase::createExplicitObjectFileCompilationCommand(const std::sh
 }
 
 void BuildDatabase::createClangCompileCommandsJson() {
-    CollectionUtils::MapFileTo<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> fileCompileCommands;
-    for (const auto &[compileCommand, objectInfo]: compileCommands_temp) {
-        const fs::path &sourcePath = objectInfo->getSourcePath();
-        if (CollectionUtils::contains(fileCompileCommands, sourcePath)) {
-            LOG_S(WARNING) << "Multiple compile commands for file \"" << sourcePath
-                           << "\" use command for \"" << objectInfo->getOutputFile() << "\"";
-        } else if (CollectionUtils::contains(objectFileInfos, objectInfo->getOutputFile())) {
-            fileCompileCommands[sourcePath] = {compileCommand, objectInfo};
-        }
+    CollectionUtils::MapFileTo<nlohmann::json> fileCompileCommands;
+    for (const auto &[sourcePath, objectInfos]: sourceFileInfos) {
+        const std::shared_ptr<ObjectFileInfo> &objectInfo = objectInfos.front();
+        fileCompileCommands[sourcePath] = {{"directory", objectInfo->command.getDirectory()},
+                                           {"command",   objectInfo->command.toString()},
+                                           {"file",      objectInfo->command.getSourcePath()}};
     }
 
     nlohmann::json compileCommandsSingleFilesJson;
     for (const auto &compileCommand: fileCompileCommands) {
-        compileCommandsSingleFilesJson.push_back(compileCommand.second.first);
+        compileCommandsSingleFilesJson.push_back(compileCommand.second);
     }
 
     fs::path clangCompileCommandsJsonPath = CompilationUtils::getClangCompileCommandsJsonPath(buildCommandsJsonPath);
@@ -334,6 +331,11 @@ BuildDatabase::getClientCompilationUnitInfo(const fs::path &filepath) const {
     throw CompilationDatabaseException("File is not a compilation unit or an object file: " + filepath.string());
 }
 
+
+[[nodiscard]] bool BuildDatabase::hasUnitInfo(const fs::path &filepath) const {
+    return CollectionUtils::contains(sourceFileInfos, filepath) || CollectionUtils::contains(objectFileInfos, filepath);
+}
+
 std::shared_ptr<const BuildDatabase::TargetInfo> BuildDatabase::getClientLinkUnitInfo(const fs::path &filepath) const {
     if (Paths::isSourceFile(filepath)) {
         auto compilationInfo = getClientCompilationUnitInfo(filepath);
@@ -542,8 +544,4 @@ CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &
 
 std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getTargetInfo(const fs::path &_target) {
     return targetInfos[_target];
-}
-
-std::vector<std::pair<nlohmann::json, std::shared_ptr<BuildDatabase::ObjectFileInfo>>> BuildDatabase::getCompileCommands_temp() {
-    return compileCommands_temp;
 }

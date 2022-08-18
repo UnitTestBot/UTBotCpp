@@ -159,6 +159,14 @@ public:
     [[nodiscard]] std::shared_ptr<const ObjectFileInfo> getClientCompilationUnitInfo(const fs::path &filepath) const;
 
     /**
+     * @brief Returns true if BuildDatabase contains information for current source file or object file
+     *
+     * @param filepath Path to source file or object file
+     * @return true if contains current source file or object file
+     */
+    [[nodiscard]] bool hasUnitInfo(const fs::path &filepath) const;
+
+    /**
      * @brief Returns link command information for current executable or library
      *
      * @param filepath Path to executable or library
@@ -220,9 +228,6 @@ public:
 
     std::shared_ptr<TargetInfo> getTargetInfo(const fs::path &_target);
 
-    //TODO change
-    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> getCompileCommands_temp();
-
     virtual bool hasAutoTarget() const = 0;
 
     virtual fs::path getTargetPath() const = 0;
@@ -239,9 +244,6 @@ protected:
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
-
-    //TODO change
-    std::vector<std::pair<nlohmann::json, std::shared_ptr<ObjectFileInfo>>> compileCommands_temp;
 
     BuildDatabase(
             fs::path serverBuildDir,

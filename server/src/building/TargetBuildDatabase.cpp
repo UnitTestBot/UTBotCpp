@@ -30,7 +30,6 @@ TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase,
         }
     }
 
-    compileCommands_temp = baseBuildDatabase->getCompileCommands_temp();
     createClangCompileCommandsJson();
 }
 
