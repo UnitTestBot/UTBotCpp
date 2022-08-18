@@ -1,10 +1,10 @@
 #include "TestUtils.h"
 #include "utils/CLIUtils.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 
 #include <llvm/Support/Signals.h>
-#include "printers/DefaultMakefilePrinter.h"
 
 //Usage: ./UTBot_UnitTests [--verbosity trace|debug|info|warning|error]
 int main(int argc, char **argv) {

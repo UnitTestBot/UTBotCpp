@@ -212,7 +212,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
-                                                         const std::string &target,
+                                                         const std::string &targetOrSourcePath,
                                                          bool useStubs,
                                                          bool verbose,
                                                          int kleeTimeout) {
@@ -224,7 +224,7 @@ namespace testUtils {
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
-                                               target);
+                                               targetOrSourcePath);
     }
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
@@ -232,12 +232,12 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
-                                                   const std::string &target,
+                                                   const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, target, useStubs, verbose, kleeTimeout);
+                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
@@ -247,12 +247,12 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   const std::string &target,
+                                                   const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, target, useStubs, verbose, kleeTimeout);
+                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
@@ -263,12 +263,12 @@ namespace testUtils {
                                                      const std::vector<fs::path> &srcPaths,
                                                      const fs::path &filePath,
                                                      int line,
-                                                     const std::string &target,
+                                                     const std::string &targetOrSourcePath,
                                                      bool useStubs,
                                                      bool verbose,
                                                      int kleeTimeout) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, target, useStubs, verbose, kleeTimeout);
+                                             srcPaths, filePath, line, targetOrSourcePath, useStubs, verbose, kleeTimeout);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 

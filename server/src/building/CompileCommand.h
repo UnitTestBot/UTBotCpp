@@ -16,6 +16,8 @@ namespace utbot {
     private:
         iterator sourcePath;
 
+        void initOutput();
+
     public:
         CompileCommand() = default;
 

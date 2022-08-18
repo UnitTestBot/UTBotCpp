@@ -57,16 +57,7 @@ namespace utbot {
             this->sourcePath = it;
             *this->sourcePath = sourcePath;
         }
-        {
-            auto it = findOutput();
-            if (it != commandLine.end()) {
-                this->output = it;
-                *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
-            } else {
-                auto path = Paths::getCCJsonFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
-                this->output = std::next(addFlagsToBegin({ "-o", path }));
-            }
-        }
+        initOutput();
     }
 
     void swap(CompileCommand &a, CompileCommand &b) noexcept {
@@ -107,9 +98,22 @@ namespace utbot {
             return StringUtils::startsWith(arg, "-I");
         });
     }
+
     void CompileCommand::removeWerror() {
         CollectionUtils::erase_if(commandLine, [](const std::string &arg) {
             return StringUtils::startsWith(arg, "-Werror");
         });
+    }
+
+    void CompileCommand::initOutput() {
+        auto it = findOutput();
+        if (it != commandLine.end()) {
+            this->output = it;
+            *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
+        } else {
+            auto path = Paths::getCCJsonFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
+            this->output = std::next(addFlagsToBegin({"-o", path}));
+        }
+
     }
 }
