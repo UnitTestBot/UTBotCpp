@@ -12,13 +12,13 @@
 #include "utils/CollectionUtils.h"
 #include "utils/MakefileUtils.h"
 #include "utils/Void.h"
+#include "stubs/StubGen.h"
 
 #include <functional>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#include <stubs/StubGen.h>
 
 class Linker {
 public:

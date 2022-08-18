@@ -9,6 +9,8 @@
 
 namespace utbot {
     class LinkCommand : public BaseCommand {
+    private:
+        void initOutput();
 
     public:
         LinkCommand() = default;

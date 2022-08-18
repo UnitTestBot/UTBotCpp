@@ -19,9 +19,9 @@ using namespace tests;
 static const std::string GENERATION_COMPILE_MAKEFILE = "GenerationCompileMakefile.mk";
 static const std::string GENERATION_KLEE_MAKEFILE = "GenerationKleeMakefile.mk";
 
-KleeGenerator::KleeGenerator(BaseTestGen *_testGen, types::TypesHandler &typesHandler,
+KleeGenerator::KleeGenerator(BaseTestGen *testGen, types::TypesHandler &typesHandler,
                              PathSubstitution filePathsSubstitution)
-        : testGen(_testGen), typesHandler(typesHandler),
+        : testGen(testGen), typesHandler(typesHandler),
           pathSubstitution(std::move(filePathsSubstitution)) {
     try {
         fs::create_directories(this->testGen->serverBuildDir);

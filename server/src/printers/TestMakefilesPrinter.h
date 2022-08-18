@@ -19,18 +19,18 @@ namespace printer {
         void write() const;
     };
 
-    class TestMakefilesPrinter: public RelativeMakefilePrinter {
+    class TestMakefilesPrinter : public RelativeMakefilePrinter {
     private:
         utbot::ProjectContext projectContext;
         printer::NativeMakefilePrinter sharedMakefilePrinter;
         printer::NativeMakefilePrinter objMakefilePrinter;
 
     public:
-        TestMakefilesPrinter(const BaseTestGen &testGen,
+        TestMakefilesPrinter(const BaseTestGen *testGen,
                              CollectionUtils::FileSet const *stubSources);
 
         TestMakefilesPrinter(
-                const BaseTestGen &testGen,
+                const BaseTestGen *testGen,
                 fs::path const &rootPath,
                 fs::path primaryCompiler,
                 CollectionUtils::FileSet const *stubSources);

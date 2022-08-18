@@ -14,6 +14,9 @@
 
 namespace utbot {
     class BaseCommand {
+    private:
+        void initOutput();
+
     protected:
         bool shouldChangeDirectory = false;
         fs::path directory;
@@ -23,16 +26,11 @@ namespace utbot {
         using iterator = decltype(commandLine)::iterator;
         using const_iterator = decltype(commandLine)::const_iterator;
 
-        iterator buildTool;
         iterator output;
 
         std::optional<iterator> optimizationLevel;
 
         void initOptimizationLevel();
-
-        void initBuildTool();
-
-        void initOutput();
 
         [[nodiscard]] iterator findOutput();
 

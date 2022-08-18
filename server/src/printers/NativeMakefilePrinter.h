@@ -15,7 +15,7 @@ namespace printer {
     class NativeMakefilePrinter : public RelativeMakefilePrinter {
         friend class TestMakefilesPrinter;
     private:
-        const BaseTestGen& testGen;
+        const BaseTestGen* testGen;
         fs::path rootPath;
 
         fs::path primaryCompiler;
@@ -66,7 +66,7 @@ namespace printer {
                                              bool transformExeToLib);
 
     public:
-        NativeMakefilePrinter(const BaseTestGen& testGen,
+        NativeMakefilePrinter(const BaseTestGen* testGen,
                               fs::path const &rootPath,
                               fs::path primaryCompiler,
                               CollectionUtils::FileSet const *stubSources,

@@ -345,7 +345,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     FileSystemUtils::writeToFile(stubsMakefile, "");
 
     printer::DefaultMakefilePrinter bitcodeLinkMakefilePrinter;
-    printer::TestMakefilesPrinter testMakefilesPrinter{ testGen, &stubSources };
+    printer::TestMakefilesPrinter testMakefilesPrinter(&testGen, &stubSources);
     bitcodeLinkMakefilePrinter.declareInclude(stubsMakefile);
     auto[targetBitcode, _] = addLinkTargetRecursively(target, bitcodeLinkMakefilePrinter, stubSources, bitcodeFiles,
                                                       suffixForParentOfStubs, false, testedFilePath, true);

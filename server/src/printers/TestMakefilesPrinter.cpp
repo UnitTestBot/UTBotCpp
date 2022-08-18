@@ -30,25 +30,25 @@ namespace printer {
             sharedMakefileContent(std::move(sharedMakefileStr)), objMakefileContent(std::move(objMakefileStr)) {
     }
 
-    TestMakefilesPrinter::TestMakefilesPrinter(const BaseTestGen &testGen,
+    TestMakefilesPrinter::TestMakefilesPrinter(const BaseTestGen *testGen,
                                                CollectionUtils::FileSet const *stubSources) :
             TestMakefilesPrinter(
                     testGen,
-                    testGen.getTargetBuildDatabase()->getTargetPath(),
+                    testGen->getTargetBuildDatabase()->getTargetPath(),
                     CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
-                            testGen.getTargetBuildDatabase()->compilationDatabase->getBuildCompilerPath())),
+                            testGen->getTargetBuildDatabase()->compilationDatabase->getBuildCompilerPath())),
                     stubSources) {
     }
 
     TestMakefilesPrinter::TestMakefilesPrinter(
-            const BaseTestGen &testGen,
+            const BaseTestGen *testGen,
             fs::path const &rootPath,
             fs::path primaryCompiler,
             CollectionUtils::FileSet const *stubSources) :
-            RelativeMakefilePrinter(Paths::getUtbotBuildDir(testGen.projectContext),
-                                    Paths::getRelativeUtbotBuildDir(testGen.projectContext),
-                                    testGen.projectContext.projectPath),
-            projectContext(testGen.projectContext),
+            RelativeMakefilePrinter(Paths::getUtbotBuildDir(testGen->projectContext),
+                                    Paths::getRelativeUtbotBuildDir(testGen->projectContext),
+                                    testGen->projectContext.projectPath),
+            projectContext(testGen->projectContext),
             sharedMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable),
             objMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable) {
     }

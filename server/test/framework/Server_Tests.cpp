@@ -77,7 +77,7 @@ namespace {
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
             fs::path root = testGen.getTargetBuildDatabase()->getTargetPath();
-            printer::TestMakefilesPrinter testMakefilePrinter(testGen, root, compilerPath, &stubsSources);
+            printer::TestMakefilesPrinter testMakefilePrinter(&testGen, root, compilerPath, &stubsSources);
             testMakefilePrinter.addLinkTargetRecursively(root, "");
 
             testMakefilePrinter.GetMakefiles(sourceFile).write();

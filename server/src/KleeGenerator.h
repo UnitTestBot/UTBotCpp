@@ -35,7 +35,7 @@ class KleeGenerator {
 public:
     /**
      * @brief Also creates tmp directories for build files.
-     * @param _testGen contains context for current request.
+     * @param testGen contains request and build information .
      * @param typesHandler provides additional information about types.
      * @param filePathsSubstitution Mapping from source file path to modified file. Required for
      * line test generation requests.
@@ -43,7 +43,7 @@ public:
      * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
      * reasons.
      */
-    KleeGenerator(BaseTestGen *_testGen, types::TypesHandler &typesHandler,
+    KleeGenerator(BaseTestGen *testGen, types::TypesHandler &typesHandler,
                   PathSubstitution filePathsSubstitution);
 
     struct BuildFileInfo {
