@@ -13,6 +13,7 @@ import org.utbot.cpp.clion.plugin.ui.wizard.steps.ConnectionStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.IntroStep
 import org.utbot.cpp.clion.plugin.ui.wizard.steps.FinalStep
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
+import java.awt.event.KeyEvent
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
@@ -44,6 +45,15 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
         project.getCurrentClient().configureProject()
 
         super.doOKAction()
+    }
+
+    override fun updateButtons(lastStep: Boolean, canGoNext: Boolean, firstStep: Boolean) {
+        // set `ok` button's text on last step to `Finish` instead of `Create`
+        super.updateButtons(lastStep, canGoNext, firstStep)
+        if (lastStep) {
+            nextButton.text = "Finish"
+            nextButton.mnemonic = KeyEvent.getExtendedKeyCodeForChar('F'.code)
+        }
     }
 
     override fun proceedToNextStep() {
