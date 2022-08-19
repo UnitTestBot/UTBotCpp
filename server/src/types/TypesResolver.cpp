@@ -112,6 +112,9 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();
@@ -266,6 +269,9 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     std::vector<types::Field> fields;
     unionInfo.hasAnonymousStructOrUnion = false;
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();
