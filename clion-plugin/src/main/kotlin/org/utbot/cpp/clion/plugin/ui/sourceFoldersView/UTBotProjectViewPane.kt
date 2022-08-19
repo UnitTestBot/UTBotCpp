@@ -5,12 +5,14 @@ import com.intellij.ide.impl.ProjectPaneSelectInTarget
 import com.intellij.ide.projectView.impl.AbstractProjectTreeStructure
 import com.intellij.ide.projectView.impl.ProjectViewPane
 import com.intellij.ide.projectView.impl.ProjectViewTree
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiFileSystemItem
 import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.client.ClientManager
 
 open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun enableDnD() = Unit
@@ -19,8 +21,9 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun getPresentableSubIdName(subId: String): String = "UTBotSourceDirectoriesPane"
 
     init {
-        // when sourceDirs are updated in model, update view
-        project.messageBus.connect().subscribe(SourceFoldersListener.TOPIC, SourceFoldersListener {
+        // this connection is needed during project lifetime, so pass project service ClientManager as parent disposable
+        project.messageBus.connect(project.service<ClientManager>()).subscribe(SourceFoldersListener.TOPIC, SourceFoldersListener {
+            // when sourceDirs are updated in model, update view
             // it will eventually call node.update, see UTBotNode
             updateFromRoot(true)
         })

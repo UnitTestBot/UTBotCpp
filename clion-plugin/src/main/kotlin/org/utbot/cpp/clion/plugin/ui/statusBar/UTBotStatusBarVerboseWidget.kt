@@ -1,8 +1,10 @@
 package org.utbot.cpp.clion.plugin.ui.statusBar
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.wm.StatusBar
 import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.util.Consumer
+import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.settings.settings
 import java.awt.Component
@@ -16,9 +18,11 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
         statusBar?.updateWidget(ID())
-        statusbar.project?.messageBus?.connect()?.subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
-            statusbar.updateWidget(ID())
-        })
+        statusbar.project?.let { project ->
+            project.messageBus.connect(project.service<ClientManager>()).subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
+                statusbar.updateWidget(ID())
+            })
+        }
     }
 
     override fun dispose() {}

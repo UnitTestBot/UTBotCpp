@@ -4,6 +4,7 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -16,6 +17,7 @@ import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfi
 import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
+import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import java.awt.Component
@@ -49,14 +51,17 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
 
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
-        statusbar.project?.messageBus?.connect()?.subscribe(
-            UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
-            object : UTBotEventsListener {
-                override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                    myConnectionStatusText = newStatus.description
-                    statusBar?.updateWidget(ID())
-                }
-            })
+        statusbar.project?.let { project ->
+            // use project level service as disposable
+            project.messageBus.connect(project.service<ClientManager>()).subscribe(
+                UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
+                object : UTBotEventsListener {
+                    override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
+                        myConnectionStatusText = newStatus.description
+                        statusBar?.updateWidget(ID())
+                    }
+                })
+        }
     }
 
     override fun dispose() {}

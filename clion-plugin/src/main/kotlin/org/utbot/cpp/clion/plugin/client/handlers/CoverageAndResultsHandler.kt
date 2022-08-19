@@ -72,8 +72,11 @@ class CoverageAndResultsHandler(
         }
 
         // when we received results, test statuses should be updated in the gutter
-        project.messageBus.syncPublisher(UTBotTestResultsReceivedListener.TOPIC)
-            .testResultsReceived(response.testRunResultsList)
+        project.messageBus.let { bus ->
+            if (!bus.isDisposed)
+                bus.syncPublisher(UTBotTestResultsReceivedListener.TOPIC)
+                    .testResultsReceived(response.testRunResultsList)
+        }
 
         val engine = CoverageEngine.EP_NAME.findExtension(UTBotCoverageEngine::class.java)
             ?: error("UTBotEngine instance is not found!")

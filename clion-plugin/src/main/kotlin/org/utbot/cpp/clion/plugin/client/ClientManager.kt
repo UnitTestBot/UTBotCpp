@@ -1,7 +1,6 @@
 package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.client.channels.GTestLogChannelImpl
@@ -23,7 +22,7 @@ class ClientManager(val project: Project): Disposable {
     }
 
     private fun subscribeToEvents() {
-        with(ApplicationManager.getApplication().messageBus.connect()) {
+        with(project.messageBus.connect(this)) {
             subscribe(ConnectionSettingsListener.TOPIC, object : ConnectionSettingsListener {
                 override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
                     if (newPort != client.port || newServerName != client.serverName) {

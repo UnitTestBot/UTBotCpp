@@ -98,7 +98,7 @@ abstract class BaseGenerationTestCase {
     /**
      * Waits until all requests initiated during tests are finished
      */
-    fun waitForRequestsToFinish() = runBlocking {
+    fun waitForRequestsToFinish() {
         // requests to server are asynchronous, need to wait for server to respond
         client.waitForServerRequestsToFinish(ifNotFinished = { unfinishedCoroutines: List<Job> ->
             // some requests may be executed only on EDT, so we wk
