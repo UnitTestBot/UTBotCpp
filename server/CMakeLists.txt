@@ -17,7 +17,7 @@ if (NOT DEFINED RUN_INFO)
 endif ()
 
 project(UTBotCpp DESCRIPTION "Tool that generates unit test by C/C++ source code, trying to reach all branches and maximize code coverage"
-        HOMEPAGE_URL "https://unittestbot.org" VERSION ${VERSION})
+        HOMEPAGE_URL "https://www.utbot.org/" VERSION ${VERSION})
 set(PROJECT_ORG "UnitTestBot")
 
 message("Project: ${PROJECT_NAME}")
