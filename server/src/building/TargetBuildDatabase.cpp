@@ -4,11 +4,23 @@
 #include "utils/GrpcUtils.h"
 #include "utils/GenerationUtils.h"
 
-TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase,
-                                         const fs::path &_target) :
-        BuildDatabase(baseBuildDatabase),
-        target(_target),
-        isAutoTarget(_target == GrpcUtils::UTBOT_AUTO_TARGET_PATH) {
+TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const std::string &targetOrSourcePath) :
+        BuildDatabase(baseBuildDatabase) {
+    if (Paths::isSourceFile(targetOrSourcePath)) {
+        target = baseBuildDatabase->getRootForSource(targetOrSourcePath);
+    } else if (targetOrSourcePath == GrpcUtils::UTBOT_AUTO_TARGET_PATH || targetOrSourcePath.empty()) {
+        target = baseBuildDatabase->getRootForFirstSource();
+    } else {
+        auto new_target = GenerationUtils::findTarget(baseBuildDatabase->getAllTargets(), targetOrSourcePath);
+        if (new_target.has_value()) {
+            target = new_target.value();
+        } else {
+            throw CompilationDatabaseException("Can't find target: " + targetOrSourcePath);
+        }
+    }
+
+    isAutoTarget = target == GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+
     {
         auto objectFilesList = baseBuildDatabase->getArchiveObjectFiles(target);
         for (const auto &objectFilePath: objectFilesList) {
@@ -31,24 +43,6 @@ TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase,
     }
 
     createClangCompileCommandsJson();
-}
-
-std::shared_ptr<TargetBuildDatabase> TargetBuildDatabase::createForSourceOrTarget(BuildDatabase *baseBuildDatabase,
-                                                                                  const std::string &_targetOrSourcePath) {
-    fs::path _target;
-    if (Paths::isSourceFile(_targetOrSourcePath)) {
-        _target = baseBuildDatabase->getRootForSource(_targetOrSourcePath);
-    } else if (_targetOrSourcePath == GrpcUtils::UTBOT_AUTO_TARGET_PATH || _targetOrSourcePath.empty()) {
-        _target = baseBuildDatabase->getRootForFirstSource();
-    } else {
-        auto new_target = GenerationUtils::findTarget(baseBuildDatabase->getAllTargets(), _targetOrSourcePath);
-        if (new_target.has_value()) {
-            _target = new_target.value();
-        } else {
-            throw CompilationDatabaseException("Can't find target: " + _targetOrSourcePath);
-        }
-    }
-    return std::make_shared<TargetBuildDatabase>(std::move(TargetBuildDatabase(baseBuildDatabase, _target)));
 }
 
 std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> TargetBuildDatabase::getRootTargets() const {

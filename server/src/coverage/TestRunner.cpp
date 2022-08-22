@@ -1,5 +1,6 @@
-#include "printers/DefaultMakefilePrinter.h"
 #include "TestRunner.h"
+
+#include "printers/DefaultMakefilePrinter.h"
 #include "GTestLogger.h"
 #include "Paths.h"
 #include "TimeExecStatistics.h"

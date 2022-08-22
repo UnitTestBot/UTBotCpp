@@ -13,12 +13,12 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 #include "json.hpp"
 
 #include <utility>
-#include "printers/DefaultMakefilePrinter.h"
 
 using Coverage::CoverageMap;
 using Coverage::FileCoverage;

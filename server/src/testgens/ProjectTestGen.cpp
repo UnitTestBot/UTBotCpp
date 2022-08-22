@@ -17,7 +17,7 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
     compileCommandsJsonPath = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
             projectContext.projectPath, projectContext.buildDirRelativePath);
     projectBuildDatabase = std::make_shared<ProjectBuildDatabase>(compileCommandsJsonPath, serverBuildDir, projectContext);
-    targetBuildDatabase = TargetBuildDatabase::createForSourceOrTarget(projectBuildDatabase.get(), request.targetpath());
+    targetBuildDatabase = std::make_shared<TargetBuildDatabase>(projectBuildDatabase.get(), request.targetpath());
     if (autoDetect) {
         autoDetectSourcePathsIfNotEmpty();
     } else {

@@ -116,7 +116,7 @@ namespace printer {
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(
-        const BaseTestGen* testGen,
+        const BaseTestGen *testGen,
         fs::path const &rootPath,
         fs::path primaryCompiler,
         CollectionUtils::FileSet const *stubSources,

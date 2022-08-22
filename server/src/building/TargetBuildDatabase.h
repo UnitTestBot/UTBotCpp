@@ -6,13 +6,11 @@
 
 class TargetBuildDatabase : public BuildDatabase {
 private:
-    TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const fs::path &_target);
-
     fs::path target;
     bool isAutoTarget;
+
 public:
-    static std::shared_ptr<TargetBuildDatabase> createForSourceOrTarget(BuildDatabase *baseBuildDatabase,
-                                                                        const std::string &_targetOrSourcePath);
+    TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const std::string &targetOrSourcePath);
 
     bool hasAutoTarget() const;
 

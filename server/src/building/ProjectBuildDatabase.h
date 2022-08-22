@@ -16,10 +16,10 @@ private:
     void fillTargetInfoParents();
 
 public:
-    ProjectBuildDatabase(fs::path _buildCommandsJsonPath, fs::path _serverBuildDir,
-                         utbot::ProjectContext _projectContext);
+    ProjectBuildDatabase(fs::path buildCommandsJsonPath, fs::path serverBuildDir,
+                         utbot::ProjectContext projectContext);
 
-    static std::shared_ptr<ProjectBuildDatabase> create(const utbot::ProjectContext &projectContext);
+    ProjectBuildDatabase(utbot::ProjectContext projectContext);
 };
 
 

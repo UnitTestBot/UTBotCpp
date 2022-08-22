@@ -43,14 +43,10 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
     createClangCompileCommandsJson();
 }
 
-std::shared_ptr<ProjectBuildDatabase> ProjectBuildDatabase::create(const utbot::ProjectContext &projectContext) {
-    fs::path compileCommandsJsonPath =
-            CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
-                    projectContext.projectPath, projectContext.buildDirRelativePath);
-    fs::path serverBuildDir = Paths::getUtbotBuildDir(projectContext);
-    std::shared_ptr<ProjectBuildDatabase> buildDatabase = std::make_shared<ProjectBuildDatabase>(
-            std::move(ProjectBuildDatabase(compileCommandsJsonPath, serverBuildDir, projectContext)));
-    return buildDatabase;
+ProjectBuildDatabase::ProjectBuildDatabase(utbot::ProjectContext projectContext) : ProjectBuildDatabase(
+        CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext.projectPath,
+                                                                        projectContext.buildDirRelativePath),
+        Paths::getUtbotBuildDir(projectContext), std::move(projectContext)) {
 }
 
 
