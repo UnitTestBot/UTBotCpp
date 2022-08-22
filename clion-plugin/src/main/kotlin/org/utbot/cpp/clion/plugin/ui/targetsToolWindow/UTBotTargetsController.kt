@@ -1,9 +1,10 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
+import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -16,7 +17,7 @@ import org.utbot.cpp.clion.plugin.utils.logger
 import testsgen.Testgen
 
 @Service
-class UTBotTargetsController(val project: Project): Disposable {
+class UTBotTargetsController(val project: Project) {
     private val settings: UTBotAllProjectSettings
         get() = project.settings
 
@@ -100,7 +101,7 @@ class UTBotTargetsController(val project: Project): Disposable {
 
     private fun connectToEvents() {
         // this connection is needed during project lifetime so we pass this service as parent disposable
-        project.messageBus.connect(this).subscribe(
+        project.messageBus.connect(project.service<ClientManager>()).subscribe(
             // when we reconnected to server, the targets should be updated, so we request them from server
             UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
             object : UTBotEventsListener {
@@ -112,6 +113,4 @@ class UTBotTargetsController(val project: Project): Disposable {
             }
         )
     }
-
-    override fun dispose() {}
 }
