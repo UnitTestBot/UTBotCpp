@@ -25,7 +25,7 @@ jobs:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     env:
       ARTIFACT_DIR: utbot-artifact
     container:
