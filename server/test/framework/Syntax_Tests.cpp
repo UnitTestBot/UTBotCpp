@@ -105,7 +105,8 @@ namespace {
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
                                "\n    [.]x = .+[,]"
-                               "\n    [.]a = .+[}]");
+                               "\n    [.]a = .+"
+                               "\n[}]");
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
@@ -170,10 +171,13 @@ namespace {
                                "\n        [.]c = ['].+['][,]"
                                "\n        [.]ininner = [{]"
                                "\n            [.]u = .+U[,]"
-                               "\n            [.]l = .+LL[}][,]"
-                               "\n        [.]s = .+[}][,]"
+                               "\n            [.]l = .+LL"
+                               "\n        [}][,]"
+                               "\n        [.]s = .+"
+                               "\n    [}][,]"
                                "\n    [.]x = .+[,]"
-                               "\n    [.]y = .+LL[}]");
+                               "\n    [.]y = .+LL"
+                               "\n[}]");
 
         checkTestCasePredicates(
                 testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
@@ -207,15 +211,15 @@ namespace {
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0 &&
-                                testCase.paramValues[0].view->getEntryValue(nullptr) == "from_bytes<IntBytesUnion>({0, 0, 0, 0})";
+                                testCase.paramValues[0].view->getEntryValue(nullptr) == "{{'\\0', '\\0', '\\0', '\\0'}}";
                         },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1 &&
-                                testCase.paramValues[0].view->getEntryValue(nullptr) != "from_bytes<IntBytesUnion>({0, 0, 0, 0})";
+                                testCase.paramValues[0].view->getEntryValue(nullptr) != "{{'\\0', '\\0', '\\0', '\\0'}}";
                          },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1 &&
-                                testCase.paramValues[0].view->getEntryValue(nullptr) != "from_bytes<IntBytesUnion>({0, 0, 0, 0})";
+                                testCase.paramValues[0].view->getEntryValue(nullptr) != "{{'\\0', '\\0', '\\0', '\\0'}}";
                          }
                         }),
                 "get_sign_union");
@@ -231,16 +235,17 @@ namespace {
                 testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
+                            std::cout << testCase.paramValues[0].view->getEntryValue(nullptr) << std::endl;
                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("from_bytes<ShortBytesUnion>({0, ") == 0;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == 0;
                         },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("from_bytes<ShortBytesUnion>({0, ") == std::string::npos;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == std::string::npos;
                          },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("from_bytes<ShortBytesUnion>({0, 0}") == 0;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == 0;
                          }
                         }),
                 "extract_bit");
@@ -256,16 +261,16 @@ namespace {
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0
-                               && testCase.returnValue.view->getEntryValue(nullptr) == "from_bytes<MainUnion>({48, 0, 0, 0, 0, 0, 0, 0})";
+                               && testCase.returnValue.view->getEntryValue(nullptr) == "{{{48LL}}}";
                         },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 1
-                               && testCase.returnValue.view->getEntryValue(nullptr) == "from_bytes<MainUnion>({1, 0, 0, 0, 0, 0, 0, 0})";
+                               && testCase.returnValue.view->getEntryValue(nullptr) == "{{{1LL}}}";
                          },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) != 0
                                && stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) != 1
-                                && testCase.returnValue.view->getEntryValue(nullptr) == "from_bytes<MainUnion>({2, 0, 0, 0, 0, 0, 0, 0})";
+                                && testCase.returnValue.view->getEntryValue(nullptr) == "{{{2LL}}}";
                          },
                         }),
                 "union_as_return_type");
@@ -283,7 +288,7 @@ namespace {
                             size_t it = 0;
                             int cnt = 0;
                             auto const &str = testCase.paramValues[0];
-                            const char *substr = "}),";
+                            const char *substr = "'}},";
                             while ((it = str.view->getEntryValue(nullptr).find(substr, it)) != std::string::npos) {
                                 cnt++;
                                 it++;
@@ -1707,17 +1712,11 @@ namespace {
                 std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) != 0 &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                            "{from_bytes<StructWithUnion::InnerUnion>({17, 0, 0, 0}), "
-                                                            "{from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>({48,")
-                                    && StringUtils::endsWith(testCase.returnValue.view->getEntryValue(nullptr), "})}, -108}");
+                                   testCase.returnValue.view->getEntryValue(nullptr) == "{{17}, {{-1414812880}}, -108}";
                         },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0 &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                            "{from_bytes<StructWithUnion::InnerUnion>({97,")
-                                    && StringUtils::endsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                             "}), {from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>({101, 0, 0, 0})}, 155}");
+                                    testCase.returnValue.view->getEntryValue(nullptr) == "{{-1414812831}, {{101}}, 155}";
                          }
                         })
         );
@@ -1734,22 +1733,19 @@ namespace {
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) +
                                    stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) < 0 &&
-                                   StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                           "{from_bytes<StructWithUnionInUnion::Union1>({98,");
+                                   testCase.returnValue.view->getEntryValue(nullptr) == "{{{-2.530171e-98}}}";
                         },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) +
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) >= 0 &&
                                     stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) +
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) <= 16 &&
-                                    testCase.returnValue.view->getEntryValue(nullptr) ==
-                                            "{from_bytes<StructWithUnionInUnion::Union1>({-113, -62, -11, 40, 92, -113, -10, 63})}";
+                                    testCase.returnValue.view->getEntryValue(nullptr) == "{{{1.410000e+00}}}";
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) +
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) > 16 &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                            "{from_bytes<StructWithUnionInUnion::Union1>({-5, -1, -1, -1,");
+                                    testCase.returnValue.view->getEntryValue(nullptr) == "{{{-2.530171e-98}}}";
                          }
                         })
         );
@@ -1766,22 +1762,17 @@ namespace {
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
                                    stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                   StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                           "{from_bytes<StructWithStructInUnion::DeepUnion>({-103, 0, 0, 0, 0, 0, 0, 0,");
+                            testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\x99', -2.530171e-98}}}";
                         },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                            "{from_bytes<StructWithStructInUnion::DeepUnion>({107,") &&
-                                    StringUtils::endsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                          "-102, 8, 27, -98, 94, 41, -16, 63})}");
+                                    testCase.returnValue.view->getEntryValue(nullptr) == "{{{'k', 1.010100e+00}}}";
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                            "{from_bytes<StructWithStructInUnion::DeepUnion>({0, 0, 0, 0, 0, 0, 0, 0,");
+                             testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\0', -2.530171e-98}}}";
                          }
                         })
         );
@@ -2075,9 +2066,11 @@ namespace {
     }
 
     TEST_F(Syntax_Test, UnnamedTypeUnionField) {
-        auto [_, status] = createTestForFunction(types_3_c, 15);
+        auto [testGen, status] = createTestForFunction(types_3_c, 15);
 
-        ASSERT_TRUE(status.error_code() == grpc::FAILED_PRECONDITION) << status.error_message();
+        // bug #317 fixed
+        ASSERT_TRUE(status.ok());
+        testUtils::checkMinNumberOfTests(testGen.tests.at(types_3_c).methods.begin().value().testCases, 2);
     }
 
     TEST_F(Syntax_Test, UnnamedTypeStructField) {
@@ -2404,7 +2397,8 @@ namespace {
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
                                "\n    /[*][.]x = [*]/.+[,]"
-                               "\n    /[*][.]y = [*]/.+[}]");
+                               "\n    /[*][.]y = [*]/.+"
+                               "\n[}]");
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 5);
 
@@ -2670,15 +2664,15 @@ namespace {
             std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
-                      return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr), "from_bytes<uni::inner1::U>") &&
+                      return testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr) == "{17}" &&
                              stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) == 5;
                     },
                      [] (const tests::Tests::MethodTestCase& testCase) {
-                       return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr), "from_bytes<uni::inner1::U>") &&
+                       return testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr) == "{101}" &&
                               stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) == -1;
                      },
                      [] (const tests::Tests::MethodTestCase& testCase) {
-                       return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr), "from_bytes<uni::inner1::U>") &&
+                       return testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr) == "{-1414812822}" &&
                               stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) == 10;
                      }
                 })
@@ -2695,16 +2689,10 @@ namespace {
             std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
-                      return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr), "from_bytes<StructWithUnion::InnerUnion>") &&
-                             StringUtils::startsWith(testCase.returnValue.view->getSubViews()[1]->getSubViews()[0]->getEntryValue(nullptr),
-                                                       "from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>") &&
-                               stoi(testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr)) == -108;
+                      return testCase.returnValue.view->getEntryValue(nullptr) == "{{17}, {{-1414812880}}, -108}";
                     },
                     [] (const tests::Tests::MethodTestCase& testCase) {
-                      return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr), "from_bytes<StructWithUnion::InnerUnion>") &&
-                             StringUtils::startsWith(testCase.returnValue.view->getSubViews()[1]->getSubViews()[0]->getEntryValue(nullptr),
-                                                     "from_bytes<StructWithUnion::InnerStructWithUnion::Inner2Union>") &&
-                             stoi(testCase.returnValue.view->getSubViews()[2]->getEntryValue(nullptr)) == 155;
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "{{-1414812831}, {{101}}, 155}";
                     }
                 })
         );
@@ -2720,8 +2708,10 @@ namespace {
             std::vector<TestCasePredicate>(
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
-                      return StringUtils::startsWith(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr), "from_bytes<A1::B1>") &&
-                             StringUtils::startsWith(testCase.returnValue.view->getSubViews()[1]->getEntryValue(nullptr), "from_bytes<A1::C1>");
+                      return testCase.returnValue.view->getEntryValue(nullptr) == "{{{5}}, {6}}";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                      return testCase.returnValue.view->getEntryValue(nullptr) == "{{{10}}, {9}}";
                     }
                 })
         );

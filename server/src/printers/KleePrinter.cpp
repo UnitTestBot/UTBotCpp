@@ -464,9 +464,6 @@ void KleePrinter::genKleePathSymbolicIfNeeded(
         auto filepath = typesHandler->getEnumInfo(baseType).filePath;
         headers.insert(typesHandler->getEnumInfo(baseType).filePath);
     }
-    if (typesHandler->isUnion(baseType)) {
-        headers.insert(typesHandler->getUnionInfo(baseType).filePath);
-    }
 }
 
 KleePrinter::Stream KleePrinter::strKleeMakeSymbolic(const std::string &varName, bool needAmpersand) {

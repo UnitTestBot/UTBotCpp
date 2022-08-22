@@ -32,13 +32,13 @@ namespace printer {
 
     std::string printer::Printer::RB(bool needSC) {
         tabsDepth--;
-        return TAB_N() + "}" + (needSC ? ";" : "") + "\n";
+        return LINE_INDENT() + "}" + (needSC ? ";" : "") + "\n";
     }
 
     Printer::Stream &printer::Printer::strInclude(const std::string &header, bool isAngled) {
         char begin = isAngled ? '<' : '\"';
         char end = isAngled ? '>' : '\"';
-        ss << TAB_N() << "#include " << begin << header << end << NL;
+        ss << LINE_INDENT() << "#include " << begin << header << end << NL;
         return ss;
     }
 
@@ -52,17 +52,17 @@ namespace printer {
     }
 
     Printer::Stream &printer::Printer::strIncludeSystem(const std::string &header) {
-        ss << TAB_N() << "#include <" << header << ">" << NL;
+        ss << LINE_INDENT() << "#include <" << header << ">" << NL;
         return ss;
     }
 
     Printer::Stream &printer::Printer::strForBound(const std::string &it, size_t n) {
-        ss << TAB_N() << "for (int " << it << " = 0; " << it << " < " << n << "; " << it << " ++)";
+        ss << LINE_INDENT() << "for (int " << it << " = 0; " << it << " < " << n << "; " << it << " ++)";
         return ss;
     }
 
     Printer::Stream &printer::Printer::strIfBound(const std::string &condition) {
-        ss << TAB_N() << "if (" << condition << ")";
+        ss << LINE_INDENT() << "if (" << condition << ")";
         return ss;
     }
 
@@ -88,7 +88,7 @@ namespace printer {
                                                      std::optional<uint64_t> alignment,
                                                      bool complete,
                                                      size_t additionalPointersCount) {
-        ss << TAB_N();
+        ss << LINE_INDENT();
         printAlignmentIfExists(alignment);
         auto additionalPointers = StringUtils::repeat("*", additionalPointersCount);
         if (needDecorate()) {
@@ -114,7 +114,7 @@ namespace printer {
     }
 
     Printer::Stream &printer::Printer::strDeclareAbsError(const std::string &name) {
-        ss << TAB_N() << "static const float " << name << " = 1e-6;" << NL;
+        ss << LINE_INDENT() << "static const float " << name << " = 1e-6;" << NL;
         return ss;
     }
 
@@ -132,7 +132,7 @@ namespace printer {
             arrayName = NameDecorator::decorate(arrayName);
         }
 
-        ss << TAB_N();
+        ss << LINE_INDENT();
         printAlignmentIfExists(alignment);
         ss << baseType << " " << arrayName;
         std::vector<size_t> sizes = type.arraysSizes(usage);
@@ -158,15 +158,15 @@ namespace printer {
 
     Printer::Stream &Printer::strAssignVar(std::string_view name, std::string_view value) {
         if (needDecorate()) {
-            ss << TAB_N() << NameDecorator::decorate(name) << " = " << value << SCNL;
+            ss << LINE_INDENT() << NameDecorator::decorate(name) << " = " << value << SCNL;
         } else {
-            ss << TAB_N() << name << " = " << value << SCNL;
+            ss << LINE_INDENT() << name << " = " << value << SCNL;
         }
         return ss;
     }
 
     Printer::Stream &Printer::strTabIf(bool needTabs) {
-        ss << (needTabs ? TAB_N() : "");
+        ss << (needTabs ? LINE_INDENT() : "");
         return ss;
     }
 
@@ -179,7 +179,7 @@ namespace printer {
         const std::vector<std::string> &modifiers,
         const tests::Tests::MethodDescription::FPointerMap &fullDeclSubstitutions,
         bool isVariadic) {
-        ss << TAB_N();
+        ss << LINE_INDENT();
         for (const auto &modifier : modifiers) {
             ss << modifier << " ";
         }
@@ -236,7 +236,7 @@ namespace printer {
     Printer::strFunctionDeclWithParamString(const tests::Tests::MethodDescription &method,
                                             const std::string &end,
                                             const std::vector<std::string> &modifiers) {
-        ss << TAB_N();
+        ss << LINE_INDENT();
         for (const auto &modifier : modifiers) {
             ss << modifier << " ";
         }
@@ -289,12 +289,12 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strComment(const std::string &comment) {
-        ss << TAB_N() << "// " << comment << NL;
+        ss << LINE_INDENT() << "// " << comment << NL;
         return ss;
     }
 
     Printer::Stream &Printer::commentBlockSeparator() {
-        ss << TAB_N() << "//////////////////////////////////////////// " << NL;
+        ss << LINE_INDENT() << "//////////////////////////////////////////// " << NL;
         return ss;
     }
 
@@ -354,7 +354,7 @@ namespace printer {
 
 
     Printer::Stream &Printer::writeCodeLine(std::string_view str) {
-        ss << TAB_N() << str << SCNL;
+        ss << LINE_INDENT() << str << SCNL;
         return ss;
     }
 
@@ -376,7 +376,7 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strReturn(std::string_view value) {
-        ss << TAB_N();
+        ss << LINE_INDENT();
         if (value.empty()) {
             ss << "return";
         } else {
@@ -387,10 +387,10 @@ namespace printer {
     }
 
     std::stringstream& Printer::checkOverflowStubArray(const std::string &cntCall) {
-        ss << TAB_N() << "if (" << cntCall << " == " <<
+        ss << LINE_INDENT() << "if (" << cntCall << " == " <<
            types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << NL;
         tabsDepth++;
-        ss << TAB_N() << cntCall << "--;" << NL;
+        ss << LINE_INDENT() << cntCall << "--;" << NL;
         ss << RB();
         return ss;
     }
@@ -435,9 +435,9 @@ namespace printer {
         strDeclareVar("static int", firstTimeCallVar, "1");
         const std::string cntCall = "cntCall";
         strDeclareVar("static int", cntCall, "0");
-        ss << TAB_N() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
+        ss << LINE_INDENT() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
         tabsDepth++;
-        ss << TAB_N() << "if (" << firstTimeCallVar << " == 1)" << LB();
+        ss << LINE_INDENT() << "if (" << firstTimeCallVar << " == 1)" << LB();
         strAssignVar(firstTimeCallVar, "0");
         strKleeMakeSymbolic(stubSymbolicVarName, !method.returnType.isArray(),
                             stubSymbolicVarName);
@@ -450,7 +450,7 @@ namespace printer {
         ss << preferWriter.ss.str();
         ss << RB();
         tabsDepth--;
-        ss << TAB_N() << "#endif" << NL;
+        ss << LINE_INDENT() << "#endif" << NL;
 
         checkOverflowStubArray(cntCall);
 
@@ -480,7 +480,7 @@ namespace printer {
         tabsDepth++;
         strAssignVar(arrayName + "[i]", stubFunctionName);
         tabsDepth--;
-        ss << TAB_N() << "}" << NL;
+        ss << LINE_INDENT() << "}" << NL;
         return ss;
     }
 
@@ -488,11 +488,11 @@ namespace printer {
                                                           const std::string &name) {
         auto paramTypes =
             CollectionUtils::transform(method.params, [](const auto &param) { return param.type; });
-        ss << TAB_N() << "typedef ";
+        ss << LINE_INDENT() << "typedef ";
         strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(*%s)", name), paramTypes,
                         std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         if (method.isArray) {
-            ss << TAB_N() << "typedef ";
+            ss << LINE_INDENT() << "typedef ";
             strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(**%s)", name + "_arr"), paramTypes,
                             std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         }
@@ -621,23 +621,23 @@ namespace printer {
     }
 
     void Printer::genStubForStructFunctionPointer(const std::string &structName,
-                                                  const std::string &fieldName,
+                                                  const types::Field &field,
                                                   const std::string &stubName) {
-        std::string name = PrinterUtils::getFieldAccess(structName, fieldName);
+        std::string name = PrinterUtils::getFieldAccess(structName, field);
         strAssignVar(name, stubName);
     }
 
     void Printer::genStubForStructFunctionPointerArray(const std::string &structName,
-                                                       const std::string &fieldName,
+                                                       const types::Field &field,
                                                        const std::string &stubName) {
         size_t size =
             types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
-        std::string name = structName + "." + fieldName + "[i]";
+        std::string name = structName + "." + field.name + "[i]";
         strAssignVar(name, stubName);
         tabsDepth--;
-        ss << TAB_N() << "}" << NL;
+        ss << LINE_INDENT() << "}" << NL;
     }
 
     void Printer::writeStubsForStructureFields(const Tests &tests) {

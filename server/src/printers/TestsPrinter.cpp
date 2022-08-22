@@ -228,7 +228,7 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
 
     ss << NL;
     if (testCase.isError()) {
-        ss << TAB_N()
+        ss << LINE_INDENT()
            << "FAIL() << \"Unreachable point. "
               "Function was supposed to fail, but actually completed successfully.\""
            << SCNL;
@@ -345,7 +345,7 @@ void TestsPrinter::redirectStdin(const Tests::MethodDescription &methodDescripti
         .visit(types::Type::intType(), utbotRedirectStdinStatus, &view, std::nullopt);
     strFunctionCall("utbot_redirect_stdin", { types::Type::getStdinParamName(), utbotRedirectStdinStatus });
     strIfBound("utbot_redirect_stdin_status != 0") << LB();
-    ss << TAB_N() << "FAIL() << \"Unable to redirect stdin.\"" << SCNL;
+    ss << LINE_INDENT() << "FAIL() << \"Unable to redirect stdin.\"" << SCNL;
     ss << RB();
 }
 
@@ -478,7 +478,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
         auto type = Printer::getConstQualifier(expectedType) + expectedType.usedType();
         strDeclareVar(type, PrinterUtils::ACTUAL, methodCall, std::nullopt, true, returnPointersCount);
     } else {
-        ss << TAB_N() << methodCall << SCNL;
+        ss << LINE_INDENT() << methodCall << SCNL;
     }
 }
 
@@ -705,17 +705,33 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     std::stringstream structuredValuesWithPrefixes;
     structuredValuesWithPrefixes << "{" << NL;
     ++printer->tabsDepth;
+
+    int longestFieldIndexForUnionInit = view->getLongestFieldIndexForUnionInit();
+    bool firstField = true;
     int i = 0;
     for (const auto &sview : subViews) {
-        if (i != 0) {
-            structuredValuesWithPrefixes << "," << NL;
+         if (i != 0) {
+            if (longestFieldIndexForUnionInit < 0)
+                structuredValuesWithPrefixes << "," << NL;
+            else
+                structuredValuesWithPrefixes << NL;
         }
-        structuredValuesWithPrefixes << printer->TAB_N() << view->getFieldPrefix(i)
-                                     << sview->getEntryValue(printer);
+        if (longestFieldIndexForUnionInit < 0 || longestFieldIndexForUnionInit == i) {
+            structuredValuesWithPrefixes << printer->LINE_INDENT() << view->getFieldPrefix(i)
+                                         << sview->getEntryValue(printer);
+        }
+        else {
+            ++printer->commentDepth;
+            structuredValuesWithPrefixes << printer->LINE_INDENT()
+                                         << view->getFieldPrefix(i)
+                                         << sview->getEntryValue(printer);
+            --printer->commentDepth;
+        }
         ++i;
     }
+
     --printer->tabsDepth;
-    structuredValuesWithPrefixes << "}";
+    structuredValuesWithPrefixes << NL << printer->LINE_INDENT() << "}";
 
     return structuredValuesWithPrefixes.str();
 }

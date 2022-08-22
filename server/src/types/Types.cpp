@@ -474,17 +474,6 @@ bool types::TypesHandler::isEnum(uint64_t id) const {
 }
 
 /*
- * Union types
- */
-bool types::TypesHandler::isUnion(const types::Type &type) const {
-    return type.isSimple() && isUnion(type.getId());
-}
-
-bool types::TypesHandler::isUnion(uint64_t id) const {
-    return typeIsInMap(id, typeMaps.unions);
-}
-
-/*
  * Void type
  */
 bool types::TypesHandler::isVoid(const Type &type) {
@@ -539,17 +528,6 @@ types::EnumInfo types::TypesHandler::getEnumInfo(uint64_t id) const {
 }
 
 /*
- * Get union information
- */
-types::UnionInfo types::TypesHandler::getUnionInfo(const types::Type &type) const {
-    return getUnionInfo(type.getId());
-}
-
-types::UnionInfo types::TypesHandler::getUnionInfo(uint64_t id) const {
-    return typeFromMap<UnionInfo>(id, typeMaps.unions);
-}
-
-/*
  * Check if type is a pointer
  */
 bool types::TypesHandler::isObjectPointerType(const Type &type) {
@@ -592,6 +570,10 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
         return getStructInfo(type).size;
     }
 
+    if (isEnum(type)) {
+        return getEnumInfo(type).size;
+    }
+
     if (isArrayType(type)) {
         size_t elementsNum = type.kinds().front()->getSize();
         size_t elementSize = typeSize(type.baseTypeObj());
@@ -600,14 +582,6 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
 
     if (isObjectPointerType(type)) {
         return getPointerSize();
-    }
-
-    if (isEnum(type)) {
-        return getEnumInfo(type).size;
-    }
-
-    if (isUnion(type)) {
-        return getUnionInfo(type).size;
     }
 
     if (isPointerToFunction(type)) {
@@ -766,15 +740,11 @@ types::TypeKind types::TypesHandler::getTypeKind(const Type &type) const {
     }
 
     if (isStruct(type)) {
-        return TypeKind::STRUCT;
+        return TypeKind::STRUCT_LIKE;
     }
 
     if (isEnum(type)) {
         return TypeKind::ENUM;
-    }
-
-    if (isUnion(type)) {
-        return TypeKind::UNION;
     }
 
     if (isPointerToFunction(type)) {
@@ -865,12 +835,6 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
             }
         },
         {
-            "Type is unnamed union",
-            [&](const Type &type, TypeUsage usage) {
-              return isUnion(type) && type.isUnnamed();
-            }
-        },
-        {
             "Type has flexible array member",
             [&](const Type &type, TypeUsage usage) {
               if (isStruct(type)) {
@@ -894,14 +858,10 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
                 });
               };
 
-              if (isUnion(type)) {
-                  auto unionInfo = getUnionInfo(type);
-                  return unsupportedFields(unionInfo.fields);
-              }
-              if (isStruct(type)) {
-                  auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
-              }
+//              if (isStruct(type)) {
+//                  auto structInfo = getStructInfo(type);
+//                  return false;//unsupportedFields(structInfo.fields);
+//              }
               return false;
             } },
         {
@@ -954,15 +914,10 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
                   return false;
                 });
               };
-              if (isStruct(type)) {
-                  auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
-              }
-
-              if (isUnion(type)) {
-                  auto unionInfo = getUnionInfo(type);
-                  return unsupportedFields(unionInfo.fields);
-              }
+//              if (isStruct(type)) {
+//                  auto structInfo = getStructInfo(type);
+//                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
+//              }
               return false;
             }
         },
@@ -1017,8 +972,8 @@ types::Type types::TypesHandler::getReturnTypeToCheck(const types::Type &returnT
     return returnType;
 }
 
-std::string types::EnumInfo::getEntryName(const std::string &value, utbot::Language language) {
-    auto const& entry = valuesToEntries[value];
+std::string types::EnumInfo::getEntryName(const std::string &value, utbot::Language language) const {
+    const EnumEntry &entry = valuesToEntries.at(value);
     if (language == utbot::Language::CXX && access.has_value()) {
         return access.value() + "::" + entry.name;
     }
