@@ -344,7 +344,7 @@ namespace {
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
-                               "\n    [.]a = [(]int[*][)] .+"
+                               "\n    [.]a = .+" // NULL or (int *) ...
                                "\n    // [.]b = .+LL"
                                "\n[}]");
 
