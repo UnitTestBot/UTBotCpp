@@ -101,16 +101,16 @@ namespace {
 
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
-                                .methods.begin().value().testCases.begin();
+                                .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
-                               "\n    [.]x = .+[,]"
+                               "\n    [.]x = .+,"
                                "\n    [.]a = .+"
                                "\n[}]");
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-                testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0
@@ -164,23 +164,23 @@ namespace {
 
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
-                .methods.begin().value().testCases.begin();
+                .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].returnValue.view->getEntryValue(&testsPrinter),
                                "[{]"
                                "\n    [.]inner = [{]"
-                               "\n        [.]c = ['].+['][,]"
+                               "\n        [.]c = '.+',"
                                "\n        [.]ininner = [{]"
-                               "\n            [.]u = .+U[,]"
+                               "\n            [.]u = .+U,"
                                "\n            [.]l = .+LL"
-                               "\n        [}][,]"
+                               "\n        [}],"
                                "\n        [.]s = .+"
                                "\n    [}][,]"
-                               "\n    [.]x = .+[,]"
+                               "\n    [.]x = .+,"
                                "\n    [.]y = .+LL"
                                "\n[}]");
 
         checkTestCasePredicates(
-                testGen.tests.at(simple_structs_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[] (const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0
@@ -205,9 +205,16 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]bytes = [{]'.+', '.+', '.+', '.+'[}]"
+                               "\n    // [.]number = .+"
+                               "\n[}]");
 
         checkTestCasePredicates(
-                testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0 &&
@@ -230,9 +237,17 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]bytes = [{]'.+', '.+'[}]"
+                               "\n    // [.]number = .+"
+                               "\n[}]");
+
 
         checkTestCasePredicates(
-                testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             std::cout << testCase.paramValues[0].view->getEntryValue(nullptr) << std::endl;
@@ -256,8 +271,24 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
+        testUtils::checkRegexp(tests[0].returnValue.view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]inner = [{]"
+                               "\n        // [.]c = '.+'"
+                               "\n        [.]ininner = [{]"
+                               "\n            // [.]u = .+U"
+                               "\n            [.]l = .+LL"    // <- folds to {{{[0-9]+LL}}}
+                               "\n        [}]"
+                               "\n        // [.]s = .+"
+                               "\n    }"
+                               "\n    // [.]x = .+"
+                               "\n    // [.]y = .+LL"
+                               "\n[}]");
+
         checkTestCasePredicates(
-                testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0
@@ -281,8 +312,16 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]([{]"
+                               "\n    [.]bytes = [{]'.+', '.+', '.+', '.+'[}]"
+                               "\n    // [.]number = .+"
+                               "\n[}](, )?)+[}]");
+
         checkTestCasePredicates(
-                testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
+                tests,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             size_t it = 0;
@@ -301,9 +340,18 @@ namespace {
     TEST_F(Syntax_Test, Union_With_Pointer_Test) {
         auto [testGen, status] = createTestForFunction(simple_unions_c, 112);
 
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
+        testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
+                               "[{]"
+                               "\n    [.]a = [(]int[*][)] .+"
+                               "\n    // [.]b = .+LL"
+                               "\n[}]");
+
+
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-            testGen.tests.at(simple_unions_c).methods.begin().value().testCases,
+            tests,
             std::vector<TestCasePredicate>({ [](const tests::Tests::MethodTestCase &testCase) {
                 return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
             } }),
@@ -2393,17 +2441,17 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         printer::TestsPrinter testsPrinter(nullptr, utbot::Language::CXX);
         const auto &tests = testGen.tests.at(simple_class_cpp)
-                                .methods.begin().value().testCases.begin();
+                                .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
-                               "\n    /[*][.]x = [*]/.+[,]"
+                               "\n    /[*][.]x = [*]/.+,"
                                "\n    /[*][.]y = [*]/.+"
                                "\n[}]");
 
         testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 5);
 
         checkTestCasePredicates(
-              testGen.tests.at(simple_class_cpp).methods.begin().value().testCases,
+              tests,
               std::vector<TestCasePredicate>(
                       {[] (const tests::Tests::MethodTestCase& testCase) {
                         return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&

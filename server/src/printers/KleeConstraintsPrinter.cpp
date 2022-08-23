@@ -138,26 +138,16 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
             genConstraintsForPointerOrArray(newState);
             break;
         case TypeKind::OBJECT_POINTER:
-            if (isStruct) {
-                if (types::TypesHandler::isArrayOfPointersToFunction(field.type)) {
-                    genStubForStructFunctionPointerArray(state.curElement, field,
-                                                         stubFunctionName);
-                }
-            }
-            else {
-                strFunctionCall(
-                    PrinterUtils::KLEE_ASSUME,
-                    { newState.curElement + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL });
+            if (types::TypesHandler::isArrayOfPointersToFunction(field.type)) {
+                genStubForStructFunctionPointerArray(state.curElement, field,
+                                                     stubFunctionName);
             }
             break;
         case TypeKind::FUNCTION_POINTER:
-            if (isStruct) {
-                genStubForStructFunctionPointer(state.curElement,
-                                                field,
-                                                stubFunctionName);
-                break;
-            }
-            // passthrough for union
+            genStubForStructFunctionPointer(state.curElement,
+                                            field,
+                                            stubFunctionName);
+            break;
         case TypeKind::UNKNOWN:
             throw UnImplementedException(errorMessage);
         default:
