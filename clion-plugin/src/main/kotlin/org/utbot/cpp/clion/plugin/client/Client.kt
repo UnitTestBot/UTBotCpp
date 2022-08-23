@@ -24,6 +24,7 @@ import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import testsgen.Testgen
 
 /**
@@ -72,6 +73,7 @@ class Client(
         if (isDisposed) {
             // if client is disposed, then connection settings were changed, and requests issued to this client
             // are no longer relevant, so we don't execute them
+            notifyWarning("Reconnecting to server! Request won't be executed! Please try again, later.")
             return
         }
         executeRequestImpl(request)
