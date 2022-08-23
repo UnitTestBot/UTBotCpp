@@ -786,6 +786,11 @@ namespace tests {
                                                               const std::string &name,
                                                               std::string res,
                                                               const types::Type &paramType) const;
+
+        void
+        getTestParamView(const Tests::MethodDescription &methodDescription, const std::vector<RawKleeParam> &rawKleeParams,
+                         const RawKleeParam &emptyKleeParam, Tests::TestCaseDescription &testCaseDescription,
+                         const Tests::MethodParam& methodParam, std::shared_ptr<AbstractValueView> &testParamView);
     };
     /**
      * @brief This function is used for converting primitive value of a specific type

@@ -79,7 +79,12 @@ void KleeConstraintsPrinter::genConstraintsForUnion(const ConstraintsState &stat
         ConstraintsState newState = { state.paramName, access, field.type, false, state.depth + 1 };
         switch (typesHandler->getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            return genConstraintsForPrimitive(newState);
+            if (!field.name.empty()) {
+                genConstraintsForPrimitive(newState);
+            } else {
+                ss << TAB_N() << "// No constraints for unnamed bit fields" << NL;
+            }
+            break;
         case TypeKind::STRUCT:
             return genConstraintsForStruct(newState);
         case TypeKind::ARRAY:
@@ -160,7 +165,11 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
         std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
         switch (kind) {
         case TypeKind::PRIMITIVE:
-            genConstraintsForPrimitive(newState);
+            if (!field.name.empty()) {
+                genConstraintsForPrimitive(newState);
+            } else {
+                ss << TAB_N() << "// No constraints for unnamed bit fields" << NL;
+            }
             break;
         case TypeKind::STRUCT:
             genConstraintsForStruct(newState);

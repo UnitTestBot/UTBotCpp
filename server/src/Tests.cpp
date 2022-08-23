@@ -826,35 +826,16 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
     if (methodDescription.isClassMethod()) {
         auto methodParam = methodDescription.classObj.value();
         std::shared_ptr<AbstractValueView> testParamView;
-        auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
-        if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
-            testParamView = testParameterView(
-                    emptyKleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
-                    testCaseDescription.lazyReferences, methodDescription);
-        } else {
-            const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
-            testParamView = testParameterView(kleeParam, {paramType, methodParam.name }, PointerUsage::PARAMETER,
-                                              testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences,
-                                              methodDescription);
-        }
+        getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription, methodParam,
+                         testParamView);
         testCaseDescription.classPreValues = { methodParam.name, methodParam.alignment, testParamView };
         processClassPostValue(testCaseDescription, methodParam, rawKleeParams);
     }
 
     for (auto &methodParam : methodDescription.params) {
         std::shared_ptr<AbstractValueView> testParamView;
-        auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
-        if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
-            testParamView = testParameterView(
-                emptyKleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
-                testCaseDescription.lazyReferences, methodDescription);
-        } else {
-            const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
-
-            testParamView = testParameterView(kleeParam, {paramType, methodParam.name }, PointerUsage::PARAMETER,
-                                              testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences,
-                                              methodDescription);
-        }
+        getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription, methodParam,
+                         testParamView);
         testCaseDescription.funcParamValues.emplace_back(methodParam.name, methodParam.alignment,
                                                          testParamView);
 
@@ -904,6 +885,25 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
         testCaseDescription.functionReturnNotNullValue = {KleeUtils::NOT_NULL_VARIABLE_NAME, false, functionReturnNotNullView};
     }
     return testCaseDescription;
+}
+
+void KTestObjectParser::getTestParamView(const Tests::MethodDescription &methodDescription,
+                                         const std::vector<RawKleeParam> &rawKleeParams,
+                                         const KTestObjectParser::RawKleeParam &emptyKleeParam,
+                                         Tests::TestCaseDescription &testCaseDescription,
+                                         const Tests::MethodParam& methodParam,
+                                         std::shared_ptr<AbstractValueView> &testParamView) {
+    auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
+    if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
+        testParamView = testParameterView(
+                emptyKleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
+                testCaseDescription.lazyReferences, methodDescription);
+    } else {
+        const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
+        testParamView = testParameterView(kleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER,
+                                          testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences,
+                                          methodDescription);
+    }
 }
 
 void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseDescription &testCaseDescription,

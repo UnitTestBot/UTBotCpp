@@ -72,15 +72,15 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
 }
 
 fs::path KleePrinter::writeTmpKleeFile(
-    const Tests &tests,
-    const std::string &buildDir,
-    const PathSubstitution &pathSubstitution,
-    const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const std::string &testedMethod,
-    const std::optional<std::string> &testedClass,
-    bool onlyForOneFunction,
-    bool onlyForOneClass,
-    const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter) {
+        const Tests &tests,
+        const std::string &buildDir,
+        const PathSubstitution &pathSubstitution,
+        const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+        const std::string &testedMethod,
+        const std::optional<std::string> &testedClass,
+        bool onlyForOneFunction,
+        bool onlyForOneClass,
+        const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter) {
 
     resetStream();
     writeCopyrightHeader();
@@ -401,7 +401,7 @@ void KleePrinter::makeBracketsForStrPredicate(const std::optional<PredInfo> &inf
 
 
 void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo) {
-    // If return type is a pointer, we compare values that are stored at this pointers,
+    // If return type is a pointer, we compare values that are stored at these pointers,
     // not the pointers themselves
     Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
                           ? Type::minimalScalarType()
@@ -424,10 +424,10 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
 }
 
 void KleePrinter::genParamsKleeAssumes(
-    const Tests::MethodDescription &testMethod,
-    const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const std::string &testedMethod,
-    bool onlyForOneEntity) {
+        const Tests::MethodDescription &testMethod,
+        const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+        const std::string &testedMethod,
+        bool onlyForOneEntity) {
     visitor::KleeAssumeReturnValueVisitor(typesHandler, this).visit(testMethod, predicateInfo);
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
         std::string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR, PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
