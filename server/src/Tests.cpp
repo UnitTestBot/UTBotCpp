@@ -298,6 +298,9 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     size_t structOffset = offsetInBits;
 
     for (const auto &field: curStruct.fields) {
+        if (field.name.empty() && typesHandler.getTypeKind(field.type) == TypeKind::PRIMITIVE) { //tdm_todo вынести в функцию isUnnamedBitfield
+            continue;
+        }
         fields.push_back(field.name);
         size_t fieldLen = typesHandler.typeSize(field.type);
         size_t fieldOffset = structOffset + field.offset;
@@ -308,7 +311,6 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
 
         switch (typesHandler.getTypeKind(field.type)) {
             case TypeKind::PRIMITIVE:
-                // tdm_todo unnamed bitfield
                 subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), fieldOffset,
                                                  std::min(field.size, fieldLen)));
                 break;
@@ -1083,8 +1085,10 @@ KTestObjectParser::collectUnionSubViews(const std::vector<char> &byteArray,
         types::StructInfo innerStruct;
         switch (typesHandler.getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offsetInBits,
-                                             std::min(field.size, fieldLen)));
+            if (!field.name.empty()) {
+                subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offsetInBits,
+                                                 std::min(field.size, fieldLen)));
+            }
             break;
         case TypeKind::STRUCT:
             innerStruct = typesHandler.getStructInfo(field.type);
