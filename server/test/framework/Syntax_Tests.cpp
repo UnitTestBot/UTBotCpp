@@ -1980,7 +1980,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, sort_list) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 104, 300);
+        auto [testGen, status] = createTestForFunction(linked_list_c, 104, 600);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -2002,7 +2002,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, sort_list_with_cmp) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 135, 300);
+        auto [testGen, status] = createTestForFunction(linked_list_c, 135, 600);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
