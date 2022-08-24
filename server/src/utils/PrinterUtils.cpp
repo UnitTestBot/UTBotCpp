@@ -55,21 +55,18 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("%s_%s", declName, mangledPath);
     }
 
-    std::string getFieldAccess (std::string const& objectName, types::Field const &field) {
+    std::string getFieldAccess(const std::string &objectName, const types::Field &field) {
         if (field.name.empty()) {
             return objectName;
         }
+        const std::string &fieldName = field.name;
         if (field.accessSpecifier == types::Field::AS_pubic) {
-            return getFieldAccess(objectName, field.name);
+            if (fieldName.empty()) {
+                return objectName;
+            }
+            return objectName + "." + fieldName;
         }
-        return StringUtils::stringFormat("access_private::%s(%s)", field.name, objectName);
-    }
-
-    std::string getFieldAccess(std::string const& objectName, std::string const& fieldName) {
-        if (fieldName.empty()) {
-            return objectName;
-        }
-        return objectName + "." + fieldName;
+        return StringUtils::stringFormat("access_private::%s(%s)", fieldName, objectName);
     }
 
     std::string fillVarName(std::string const &access, std::string const &varName) {

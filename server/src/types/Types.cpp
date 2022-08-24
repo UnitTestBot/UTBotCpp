@@ -452,13 +452,13 @@ bool types::TypesHandler::isCppStringType(const Type &type) {
 }
 
 /*
- * Struct types
+ * Struct types (structs and unions)
  */
-bool types::TypesHandler::isStruct(const Type &type) const {
-    return type.isSimple() && isStruct(type.getId());
+bool types::TypesHandler::isStructLike(const Type &type) const {
+    return type.isSimple() && isStructLike(type.getId());
 }
 
-bool types::TypesHandler::isStruct(uint64_t id) const {
+bool types::TypesHandler::isStructLike(uint64_t id) const {
     return typeIsInMap(id, typeMaps.structs);
 }
 
@@ -471,17 +471,6 @@ bool types::TypesHandler::isEnum(const types::Type &type) const {
 
 bool types::TypesHandler::isEnum(uint64_t id) const {
     return typeIsInMap(id, typeMaps.enums);
-}
-
-/*
- * Union types
- */
-bool types::TypesHandler::isUnion(const types::Type &type) const {
-    return type.isSimple() && isUnion(type.getId());
-}
-
-bool types::TypesHandler::isUnion(uint64_t id) const {
-    return typeIsInMap(id, typeMaps.unions);
 }
 
 /*
@@ -539,17 +528,6 @@ types::EnumInfo types::TypesHandler::getEnumInfo(uint64_t id) const {
 }
 
 /*
- * Get union information
- */
-types::UnionInfo types::TypesHandler::getUnionInfo(const types::Type &type) const {
-    return getUnionInfo(type.getId());
-}
-
-types::UnionInfo types::TypesHandler::getUnionInfo(uint64_t id) const {
-    return typeFromMap<UnionInfo>(id, typeMaps.unions);
-}
-
-/*
  * Check if type is a pointer
  */
 bool types::TypesHandler::isObjectPointerType(const Type &type) {
@@ -588,8 +566,12 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
         return characterTypesToSizes().at(type.baseType());
     }
 
-    if (isStruct(type)) {
+    if (isStructLike(type)) {
         return getStructInfo(type).size;
+    }
+
+    if (isEnum(type)) {
+        return getEnumInfo(type).size;
     }
 
     if (isArrayType(type)) {
@@ -600,14 +582,6 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
 
     if (isObjectPointerType(type)) {
         return getPointerSize();
-    }
-
-    if (isEnum(type)) {
-        return getEnumInfo(type).size;
-    }
-
-    if (isUnion(type)) {
-        return getUnionInfo(type).size;
     }
 
     if (isPointerToFunction(type)) {
@@ -765,16 +739,12 @@ types::TypeKind types::TypesHandler::getTypeKind(const Type &type) const {
         return TypeKind::ARRAY;
     }
 
-    if (isStruct(type)) {
-        return TypeKind::STRUCT;
+    if (isStructLike(type)) {
+        return TypeKind::STRUCT_LIKE;
     }
 
     if (isEnum(type)) {
         return TypeKind::ENUM;
-    }
-
-    if (isUnion(type)) {
-        return TypeKind::UNION;
     }
 
     if (isPointerToFunction(type)) {
@@ -865,42 +835,14 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
             }
         },
         {
-            "Type is unnamed union",
-            [&](const Type &type, TypeUsage usage) {
-              return isUnion(type) && type.isUnnamed();
-            }
-        },
-        {
             "Type has flexible array member",
             [&](const Type &type, TypeUsage usage) {
-              if (isStruct(type)) {
+              if (isStructLike(type)) {
                   auto structInfo = getStructInfo(type);
                   if (structInfo.fields.empty()) {
                       return false;
                   }
                   return isIncompleteArrayType(structInfo.fields.back().type);
-              }
-              return false;
-            } },
-        {
-            "Type has anonymous member",
-            [&](const Type &type, TypeUsage usage) {
-              auto unsupportedFields = [&](const std::vector<types::Field> &fields) {
-                return std::any_of(fields.begin(), fields.end(), [&](const types::Field &field) {
-                  if (field.name.empty()) {
-                      return isUnion(field.type);
-                  }
-                  return false;
-                });
-              };
-
-              if (isUnion(type)) {
-                  auto unionInfo = getUnionInfo(type);
-                  return unsupportedFields(unionInfo.fields);
-              }
-              if (isStruct(type)) {
-                  auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
               }
               return false;
             } },
@@ -954,14 +896,9 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
                   return false;
                 });
               };
-              if (isStruct(type)) {
+              if (isStructLike(type)) {
                   auto structInfo = getStructInfo(type);
-                  return !structInfo.hasUnnamedFields && unsupportedFields(structInfo.fields);
-              }
-
-              if (isUnion(type)) {
-                  auto unionInfo = getUnionInfo(type);
-                  return unsupportedFields(unionInfo.fields);
+                  return unsupportedFields(structInfo.fields);
               }
               return false;
             }
@@ -1017,8 +954,8 @@ types::Type types::TypesHandler::getReturnTypeToCheck(const types::Type &returnT
     return returnType;
 }
 
-std::string types::EnumInfo::getEntryName(const std::string &value, utbot::Language language) {
-    auto const& entry = valuesToEntries[value];
+std::string types::EnumInfo::getEntryName(const std::string &value, utbot::Language language) const {
+    const EnumEntry &entry = valuesToEntries.at(value);
     if (language == utbot::Language::CXX && access.has_value()) {
         return access.value() + "::" + entry.name;
     }

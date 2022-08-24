@@ -420,8 +420,9 @@ Status Server::TestsGenServiceImpl::provideLoggingCallbacks(
          * 1. Using gRPC async API
          * 2. Issuing a request from UTBot to a specific client on every log entry.
          */
+        using namespace std::chrono_literals;
         while (holdLockFlag[callbackName].exchange(true, std::memory_order_acquire)) {
-            std::this_thread::yield();
+            std::this_thread::sleep_for(100ms);
         }
         loguru::remove_callback(callbackName.c_str());
         if (openFiles) {

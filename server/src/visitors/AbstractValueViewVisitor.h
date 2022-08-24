@@ -56,12 +56,6 @@ namespace visitor {
                                  const std::string &access,
                                  int depth);
 
-        virtual void visitUnion(const types::Type &type,
-                                const std::string &name,
-                                const tests::AbstractValueView *view,
-                                const std::string &access,
-                                int depth);
-
         virtual void visitEnum(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,

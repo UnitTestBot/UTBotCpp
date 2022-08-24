@@ -23,6 +23,10 @@ public:
 
     void resolveUnion(const clang::RecordDecl *D, const std::string &name);
 
+    void resolveStructEx(const clang::RecordDecl *D,
+                         const std::string &name,
+                         types::SubType subType);
+
     void resolve(const clang::QualType &type);
 
 private:

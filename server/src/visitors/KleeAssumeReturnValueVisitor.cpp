@@ -78,17 +78,6 @@ namespace visitor {
         }
     }
 
-    void KleeAssumeReturnValueVisitor::visitUnion(const types::Type &type,
-                                                  const std::string &name,
-                                                  const tests::AbstractValueView *view,
-                                                  const std::string &access,
-                                                  int depth) {
-        if (depth == 0) {
-            kleeAssumeWithNullCheck("", false);
-        }
-        AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
-    }
-
     void KleeAssumeReturnValueVisitor::visitPointer(const types::Type &type,
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,
@@ -154,7 +143,7 @@ namespace visitor {
    }
    void KleeAssumeReturnValueVisitor::checkNotNullBefore() {
        if (additionalPointersCount > 0) {
-           printer->ss << printer->TAB_N() << "if (" << KleeUtils::TEMP_VARIABLE_NAME
+           printer->ss << printer->LINE_INDENT() << "if (" << KleeUtils::TEMP_VARIABLE_NAME
                        << " != " << PrinterUtils::C_NULL << ")" << printer->LB();
        }
    }
