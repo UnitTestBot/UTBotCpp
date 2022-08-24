@@ -120,8 +120,8 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
 
-    structInfo.longestFieldIndexForUnionInit = -1;
-    int i = 0;
+    structInfo.longestFieldIndexForUnionInit = SIZE_MAX;
+    size_t i = 0;
     uint64_t maxFieldSize = 0;
     for (const clang::FieldDecl *F : D->fields()) {
         if (F->isUnnamedBitfield()) {

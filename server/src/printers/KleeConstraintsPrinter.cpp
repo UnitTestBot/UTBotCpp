@@ -93,7 +93,7 @@ void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const Constrai
     ConstraintsState newState = { state.paramName, element, baseType };
     if (assignPointersToNull) {
         genConstraintsForPointerInStruct(newState);
-    } else if (typesHandler->isStruct(baseType)) {
+    } else if (typesHandler->isStructLike(baseType)) {
         genConstraintsForStruct(newState);
     } else if (typesHandler->isEnum(baseType)) {
         genConstraintsForEnum(newState);

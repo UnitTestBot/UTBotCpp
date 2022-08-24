@@ -287,7 +287,7 @@ namespace types {
 
     struct StructInfo: TypeInfo {
         std::vector<Field> fields{};
-        int longestFieldIndexForUnionInit;
+        size_t longestFieldIndexForUnionInit;
         FPointerMap functionFields{};
         bool hasUnnamedFields;
         bool isCLike;
@@ -438,7 +438,7 @@ namespace types {
          * Returns true if given type is a struct, otherwise false.
          * @return whether given type is a struct
          */
-        bool isStruct(const Type&) const;
+        bool isStructLike(const Type&) const;
 
 
         /**
@@ -446,13 +446,6 @@ namespace types {
          * @return whether given type is an enum
          */
         bool isEnum(const Type&) const;
-
-
-        /**
-         * Returns true if given type is a union, otherwise false.
-         * @return whether given type is a union
-         */
-        bool isUnion(const Type&) const;
 
 
         /**
@@ -516,7 +509,7 @@ namespace types {
 
         /**
          * Returns StructInfo by given struct name.
-         * For safe usage, please use isStruct(..) before calling getStructInfo(..).
+         * For safe usage, please use isStructLike(..) before calling getStructInfo(..).
          * @return StructInfo for given struct.
          */
         StructInfo getStructInfo(const Type&) const;
@@ -528,7 +521,7 @@ namespace types {
          */
         EnumInfo getEnumInfo(const Type&) const;
 
-        bool isStruct(uint64_t id) const;
+        bool isStructLike(uint64_t id) const;
         bool isEnum(uint64_t id) const;
 
         [[nodiscard]] StructInfo getStructInfo(uint64_t id) const;

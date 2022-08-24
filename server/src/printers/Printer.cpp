@@ -605,7 +605,7 @@ namespace printer {
 
     void Printer::addAccessor(const types::TypesHandler *typesHandler, const types::Type &type,
                               std::unordered_set<uint64_t> &checkedOnPrivate) {
-        if (!checkedOnPrivate.count(type.getId()) && typesHandler->isStruct(type)) {
+        if (!checkedOnPrivate.count(type.getId()) && typesHandler->isStructLike(type)) {
             checkedOnPrivate.insert(type.getId());
             for (const auto& field : typesHandler->getStructInfo(type).fields) {
                 if (field.accessSpecifier != types::Field::AS_pubic) {

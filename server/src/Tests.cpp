@@ -255,11 +255,9 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                                                                const MapAddressName &fromAddressToName,
                                                                std::vector<InitReference> &initReferences) {
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
-    std::vector<std::string> fields;
     unsigned int curPos = offset;
 
     for (const auto &field: curStruct.fields) {
-        fields.push_back(field.name);
         size_t len = typesHandler.typeSize(field.type);
         unsigned int offsetField = field.offset;
         std::string res;
@@ -330,7 +328,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
         const std::shared_ptr<AbstractValueView> rawDataView = arrayView(byteArray, bytesType, curStruct.size, offset, usage);
         entryValue = PrinterUtils::convertBytesToUnion(curStruct.name, rawDataView->getEntryValue(nullptr));
     }
-    return std::make_shared<StructValueView>(curStruct.isCLike, fields, curStruct.longestFieldIndexForUnionInit, subViews, entryValue);
+    return std::make_shared<StructValueView>(curStruct, subViews, entryValue);
 }
 
 std::string KTestObjectParser::primitiveCharView(const types::Type &type, std::string value) {
@@ -1036,19 +1034,6 @@ Tests::MethodDescriptionHash::operator()(const Tests::MethodDescription &methodD
     }
     return std::hash<std::string>()(signatureHash);
 }
-
-//UnionValueView::UnionValueView(
-//    bool _isCLike,
-//    std::vector<std::string> _fields,
-//    std::vector<std::shared_ptr<AbstractValueView>> subViews,
-//    std::optional<std::string> entryValue)
-//    : StructValueView(_isCLike,
-//                    _fields,
-//                    subViews,
-//                    entryValue) {
-////    : AbstractValueView(std::move(subViews)),
-////      entryValue(PrinterUtils::convertBytesToUnion(typeName, rawDataView->getEntryValue(nullptr))) {
-//}
 
 TestMethod::TestMethod(std::string methodName, fs::path bitcodeFile, fs::path sourceFilename, bool is32)
     : methodName(std::move(methodName))

@@ -456,7 +456,7 @@ void KleePrinter::genKleePathSymbolicIfNeeded(
 [[maybe_unused]] void KleePrinter::addHeaderIncludeIfNecessary(std::unordered_set<std::string> &headers,
                                                                const types::Type &type) {
     const types::Type baseType = type.baseTypeObj();
-    if (typesHandler->isStruct(baseType)) {
+    if (typesHandler->isStructLike(baseType)) {
         auto filepath = typesHandler->getStructInfo(baseType).filePath;
         headers.insert(typesHandler->getStructInfo(baseType).filePath);
     }

@@ -706,27 +706,30 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     structuredValuesWithPrefixes << "{" << NL;
     ++printer->tabsDepth;
 
-    int longestFieldIndexForUnionInit = view->getLongestFieldIndexForUnionInit();
+    const types::StructInfo &structInfo = view->getStructInfo();
+    const size_t longestFieldIndexForUnionInit = structInfo.longestFieldIndexForUnionInit;
+    const bool isStruct = structInfo.subType == types::SubType::Struct;
+
     bool firstField = true;
-    int i = 0;
+    size_t i = 0;
     for (const auto &sview : subViews) {
-         if (i != 0) {
-            if (longestFieldIndexForUnionInit < 0)
-                structuredValuesWithPrefixes << "," << NL;
-            else
-                structuredValuesWithPrefixes << NL;
+        if (i != 0) {
+            if (isStruct)
+                structuredValuesWithPrefixes << ",";
+            structuredValuesWithPrefixes << NL;
         }
-        if (longestFieldIndexForUnionInit < 0 || longestFieldIndexForUnionInit == i) {
-            structuredValuesWithPrefixes << printer->LINE_INDENT() << view->getFieldPrefix(i)
-                                         << sview->getEntryValue(printer);
-        }
-        else {
+
+        bool printInComment = !(isStruct || longestFieldIndexForUnionInit == i);
+        if (printInComment) {
             ++printer->commentDepth;
-            structuredValuesWithPrefixes << printer->LINE_INDENT()
-                                         << view->getFieldPrefix(i)
-                                         << sview->getEntryValue(printer);
+        }
+        structuredValuesWithPrefixes << printer->LINE_INDENT()
+                                     << view->getFieldPrefix(i)
+                                     << sview->getEntryValue(printer);
+        if (printInComment) {
             --printer->commentDepth;
         }
+
         ++i;
     }
 

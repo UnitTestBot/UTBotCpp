@@ -31,7 +31,7 @@ namespace visitor {
             } else {
                 return visitPointer(type, name, view, access, depth);
             }
-        } else if (typesHandler->isStruct(type)) {
+        } else if (typesHandler->isStructLike(type)) {
             return visitStruct(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
             return visitEnum(type, name, view, access, depth);

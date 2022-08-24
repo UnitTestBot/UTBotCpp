@@ -218,15 +218,11 @@ namespace tests {
      * Representation of struct value. It's value is stored as a string. Subviews of StructValueView are its fields.
      */
     struct StructValueView : AbstractValueView {
-        explicit StructValueView(bool _isCLike,
-                                 std::vector<std::string> _fields,
-                                 int _longestFieldIndexForUnionInit,
+        explicit StructValueView(const types::StructInfo &_structInfo,
                                  std::vector<std::shared_ptr<AbstractValueView>> _subViews,
                                  std::optional<std::string> _entryValue)
             : AbstractValueView(std::move(_subViews)), entryValue(std::move(_entryValue)),
-              longestFieldIndexForUnionInit(_longestFieldIndexForUnionInit),
-              isCLike(_isCLike),
-              fields(std::move(_fields)){
+              structInfo(_structInfo){
         }
 
         [[nodiscard]] const std::vector<std::shared_ptr<AbstractValueView>> &getSubViews() const override {
@@ -243,9 +239,9 @@ namespace tests {
             }
 
             std::vector<std::string> entries;
-            int i = 0;
+            size_t i = 0;
             for (const auto &subView : subViews) {
-                if (longestFieldIndexForUnionInit < 0 || longestFieldIndexForUnionInit == i) {
+                if (structInfo.subType == types::SubType::Struct || structInfo.longestFieldIndexForUnionInit == i) {
                     entries.push_back(subView->getEntryValue(nullptr));
                 }
                 ++i;
@@ -264,8 +260,8 @@ namespace tests {
         }
 
         [[nodiscard]] std::string getFieldPrefix(int i) const {
-            std::string prefix = "." + fields[i] + " = ";
-            if (isCLike) {
+            std::string prefix = "." + structInfo.fields[i].name + " = ";
+            if (structInfo.isCLike) {
                 return prefix;
             }
             // it is not C Struct-initialization, but C++ List-initialization.
@@ -275,14 +271,12 @@ namespace tests {
             return  "/*" + prefix + "*/";
         }
 
-        int getLongestFieldIndexForUnionInit() const {
-            return longestFieldIndexForUnionInit;
+        const types::StructInfo &getStructInfo() const {
+            return structInfo;
         }
 
     private:
-        bool isCLike;
-        int longestFieldIndexForUnionInit;
-        std::vector<std::string> fields;
+        const types::StructInfo structInfo;
         std::optional<std::string> entryValue;
     };
 
