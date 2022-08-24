@@ -843,13 +843,11 @@ namespace tests {
     std::string readBytesAsValue(const std::vector<char> &byteArray, size_t offset, size_t len) {
         char bytes[sizeof(T)] = {};
         if (offset % CHAR_BIT != 0 || len % CHAR_BIT != 0) {
-            // tdm_todo unnamed bitfield // if (len == 0)
             // WARNING: assuming little endian and two's complement
             size_t lo = offset % CHAR_BIT;
             size_t hi = CHAR_BIT - lo;
             size_t stop = (offset + len + CHAR_BIT - 1) / CHAR_BIT;
             for (size_t i = offset / CHAR_BIT, j = 0; i < stop; ++i, ++j) {
-//                std::cout << "i = " << i << ", j = " << j << ", byte = " << (unsigned)byteArray[i] << std::endl;
                 auto byte = static_cast<unsigned char>(byteArray[i]);
                 if (i + 1 == stop) {
                     size_t top = (offset + len) % CHAR_BIT;
@@ -866,7 +864,6 @@ namespace tests {
                 if (j < sizeof(T)) {
                     bytes[j] = high;
                 }
-//                std::cout << "low = " << (unsigned)low << ", high = " << (unsigned)high << std::endl;
             }
         } else {
             for (size_t j = 0; j < len / CHAR_BIT; j++) {

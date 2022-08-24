@@ -298,7 +298,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     size_t structOffset = offsetInBits;
 
     for (const auto &field: curStruct.fields) {
-        if (field.name.empty() && typesHandler.getTypeKind(field.type) == TypeKind::PRIMITIVE) { //tdm_todo вынести в функцию isUnnamedBitfield
+        if (field.isUnnamedBitfield()) {
             continue;
         }
         fields.push_back(field.name);
@@ -307,7 +307,6 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
         types::EnumInfo innerEnum;
         types::UnionInfo innerUnion;
         types::StructInfo innerStruct;
-        std::string res;
 
         switch (typesHandler.getTypeKind(field.type)) {
             case TypeKind::PRIMITIVE:
@@ -355,11 +354,12 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 }
             }
                 break;
-            case TypeKind::OBJECT_POINTER:
-                res = readBytesAsValueForType(byteArray, PointerWidthType, fieldOffset,
+            case TypeKind::OBJECT_POINTER: {
+                std::string res = readBytesAsValueForType(byteArray, PointerWidthType, fieldOffset,
                                               PointerWidthSizeInBits);
                 subViews.push_back(getLazyPointerView(fromAddressToName, initReferences,
                                                       PrinterUtils::getFieldAccess(name, field.name), res, field.type));
+            }
                 break;
             case TypeKind::FUNCTION_POINTER:
                 subViews.push_back(functionPointerView(curStruct.name, field.name));
@@ -1079,16 +1079,17 @@ KTestObjectParser::collectUnionSubViews(const std::vector<char> &byteArray,
                                         types::PointerUsage usage) {
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
     for (const auto &field : info.fields) {
+        if (field.isUnnamedBitfield()) {
+            continue;
+        }
         size_t fieldLen = typesHandler.typeSize(field.type);
         types::EnumInfo innerEnum;
         types::UnionInfo innerUnion;
         types::StructInfo innerStruct;
         switch (typesHandler.getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            if (!field.name.empty()) {
-                subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offsetInBits,
-                                                 std::min(field.size, fieldLen)));
-            }
+            subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(), offsetInBits,
+                                             std::min(field.size, fieldLen)));
             break;
         case TypeKind::STRUCT:
             innerStruct = typesHandler.getStructInfo(field.type);

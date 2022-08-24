@@ -6,6 +6,7 @@ on:
       - '[1-9][0-9][0-9][0-9].[1]?[0-9].[0-9]+'
     branches:
       - main
+      - belous-dp/bitfields
 
 jobs:
   matrix-prep:

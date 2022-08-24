@@ -45,7 +45,7 @@ namespace visitor {
         for (auto &field : structInfo.fields) {
             if (!types::TypesHandler::isPointerToFunction(field.type) &&
                 !types::TypesHandler::isArrayOfPointersToFunction(field.type) &&
-                !(types::TypesHandler::isPrimitiveType(field.type) && name.empty())) {
+                !field.isUnnamedBitfield()) {
                 visitAny(field.type, name, nullptr, access, depth + 1);
             }
         }

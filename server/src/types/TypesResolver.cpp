@@ -95,7 +95,7 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
-        const auto *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        const auto *cppD =  llvm::dyn_cast<const clang::CXXRecordDecl>(D);
         structInfo.isCLike = cppD != nullptr && cppD->isCLike();
     }
     else {
@@ -112,9 +112,6 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
     for (const clang::FieldDecl *F : D->fields()) {
-        if (F->isUnnamedBitfield()) {
-            continue;
-        }
         structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();
@@ -166,7 +163,6 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     structInfo.fields = fields;
     structInfo.size = getRecordSize(D);
     structInfo.alignment = getDeclAlignment(D);
-
     addInfo(id, parent->projectTypes->structs, structInfo);
     ss << "\nName: " << structInfo.name << ", id: " << id << " , size: " << structInfo.size << "\n";
 
@@ -269,9 +265,6 @@ void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &
     std::vector<types::Field> fields;
     unionInfo.hasAnonymousStructOrUnion = false;
     for (const clang::FieldDecl *F : D->fields()) {
-        if (F->isUnnamedBitfield()) {
-            continue;
-        }
         unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();

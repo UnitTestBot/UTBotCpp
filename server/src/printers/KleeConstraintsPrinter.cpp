@@ -52,8 +52,12 @@ void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &
     if (!cons.empty()) {
         strFunctionCall(PrinterUtils::KLEE_PREFER_CEX, { state.paramName, cons });
     } else {
-        ss << TAB_N() << "// No constraints for " << state.curElement << NL;
+        noConstraints(state.curElement);
     }
+}
+
+void KleeConstraintsPrinter::noConstraints(const std::string &cause) {
+    ss << TAB_N() << "// No constraints for " << cause << NL;
 }
 
 void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state) {
@@ -73,17 +77,15 @@ void KleeConstraintsPrinter::genConstraintsForUnion(const ConstraintsState &stat
     UnionInfo curUnion = typesHandler->getUnionInfo(state.curType);
 
     for (const auto &field : curUnion.fields) {
-        std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
-                                   "' in union '" + curUnion.name + "'.";
+        if (field.isUnnamedBitfield()) {
+            noConstraints("unnamed bit fields");
+            continue;
+        }
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
         ConstraintsState newState = { state.paramName, access, field.type, false, state.depth + 1 };
         switch (typesHandler->getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            if (!field.name.empty()) {
-                genConstraintsForPrimitive(newState);
-            } else {
-                ss << TAB_N() << "// No constraints for unnamed bit fields" << NL;
-            }
+            genConstraintsForPrimitive(newState);
             break;
         case TypeKind::STRUCT:
             return genConstraintsForStruct(newState);
@@ -95,9 +97,12 @@ void KleeConstraintsPrinter::genConstraintsForUnion(const ConstraintsState &stat
             return genConstraintsForUnion(newState);
         case TypeKind::OBJECT_POINTER:
             return genConstraintsForPointerInUnion(newState);
-        case TypeKind::UNKNOWN:
+        case TypeKind::UNKNOWN: {
+            std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
+                                       "' in union '" + curUnion.name + "'.";
             LOG_S(ERROR) << errorMessage;
             throw UnImplementedException(errorMessage);
+        }
         default:
             std::string message = "Missing case for this TypeKind in switch";
             LOG_S(ERROR) << message;
@@ -157,19 +162,16 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
     StructInfo curStruct = typesHandler->getStructInfo(state.curType);
 
     for (const auto &field : curStruct.fields) {
-        std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
-                                   "' in struct '" + curStruct.name + "'.";
+        if (field.isUnnamedBitfield()) {
+            noConstraints("unnamed bit fields");
+            continue;
+        }
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
         ConstraintsState newState = { state.paramName, access, field.type, state.endString, state.depth + 1 };
-        TypeKind kind = typesHandler->getTypeKind(field.type);
         std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
-        switch (kind) {
+        switch (typesHandler->getTypeKind(field.type)) {
         case TypeKind::PRIMITIVE:
-            if (!field.name.empty()) {
-                genConstraintsForPrimitive(newState);
-            } else {
-                ss << TAB_N() << "// No constraints for unnamed bit fields" << NL;
-            }
+            genConstraintsForPrimitive(newState);
             break;
         case TypeKind::STRUCT:
             genConstraintsForStruct(newState);
@@ -191,8 +193,11 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
         case TypeKind::FUNCTION_POINTER:
             genStubForStructFunctionPointer(state.curElement, field.name, stubFunctionName);
             break;
-        case TypeKind::UNKNOWN:
+        case TypeKind::UNKNOWN: {
+            std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
+                                       "' in struct '" + curStruct.name + "'.";
             throw UnImplementedException(errorMessage);
+        }
         default:
             std::string message = "Missing case for this TypeKind in switch";
             LOG_S(ERROR) << message;

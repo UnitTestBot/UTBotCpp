@@ -95,7 +95,7 @@ namespace visitor {
         auto subViews = view ? &view->getSubViews() : nullptr;
         for (int i = 0; i < structInfo.fields.size(); i++) {
             auto const &field = structInfo.fields[i];
-            if (field.name.empty() && types::TypesHandler::isPrimitiveType(field.type)) { // unnamed bit field
+            if (field.isUnnamedBitfield()) {
                 continue;
             }
             auto newName = PrinterUtils::getFieldAccess(name, field);
@@ -116,7 +116,7 @@ namespace visitor {
         inUnion = true;
         for (int i = 0; i < unionInfo.fields.size(); i++) {
             auto const &field = unionInfo.fields[i];
-            if (field.name.empty() && types::TypesHandler::isPrimitiveType(field.type)) { // unnamed bit field
+            if (field.isUnnamedBitfield()) {
                 continue;
             }
             auto newName = PrinterUtils::getFieldAccess(name, field.name);

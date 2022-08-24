@@ -309,21 +309,13 @@ namespace {
     void readBytesAsValueTestTemplate(T val) {
         srand(42);
         for (size_t tcount = 0; tcount < 5; ++tcount) {
-//            std::cout << "\ttest #" << tcount << ", val = " << val;
             auto add = static_cast<size_t>(rand() % 10);
             auto start = static_cast<size_t>(rand() % add);
-//            std::cout << "additional bytes: " << add << ", start position: " << start << std::endl;
             size_t const len = sizeof(T);
             std::vector<char> bytes(len + add);
             for (size_t i = 1; i <= len; ++i) {
-                bytes[start + i - 1] = (val & ((1LL << (CHAR_BIT * i)) - 1)) >> (CHAR_BIT * (i - 1));
-//            std::cout << (unsigned)bytes[start + i - 1] << " ";
+                bytes[start + i - 1] = (val >> (CHAR_BIT * (i - 1))) & ((1 << CHAR_BIT) - 1);
             }
-//        std::cout << std::endl;
-//        for (char c : bytes) {
-//            std::cout << (unsigned)c << " ";
-//        }
-//        std::cout << std::endl;
             EXPECT_EQ(tests::readBytesAsValue<T>(bytes, start * CHAR_BIT, len * CHAR_BIT), std::to_string(val));
         }
     }
