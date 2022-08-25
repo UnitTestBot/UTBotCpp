@@ -71,9 +71,8 @@ std::string RelativeMakefilePrinter::getProjectStructureRelativeTo(fs::path path
     printer.declareVariable("export PROJECT_DIR",
                     StringUtils::stringFormat("%s/%s", "$(MAKEFILE_DIR)", "$(PROJECT_DIR_RELATIVE_TO_MAKEFILE)"));
     printer.declareVariable("export BUILD_RELATIVE", buildDirectoryRelative);
-    printer.declareVariable("export BUILD_DIR", StringUtils::stringFormat("%s/%s",
-                                                           getRelativePath(projectPath),
-                                                           getRelativePath(buildDirectoryRelative)));
+    printer.declareVariable("export BUILD_DIR", StringUtils::stringFormat("%s/$BUILD_RELATIVE",
+                                                           getRelativePath(projectPath)));
     return printer.ss.str();
 }
 

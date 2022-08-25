@@ -17,6 +17,9 @@ public:
 
   Point_2d operator+=(const Point_2d& rhs);
 
+
+  unsigned&& on_one_line(Point_2d&& point);
+
   friend Point_2d operator+(const Point_2d& lhs, const Point_2d& rhs);
   friend void set_to_zero(Point_2d& point);
   friend void set_abs_by_ref(Point_2d& point);
