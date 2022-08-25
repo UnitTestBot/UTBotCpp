@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.settings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
@@ -52,6 +53,13 @@ class UTBotAllProjectSettings(val project: Project) {
         project.messageBus.let { bus ->
             if(!bus.isDisposed)
                 bus.syncPublisher(UTBotSettingsChangedListener.TOPIC).settingsChanged(this)
+        }
+    }
+
+    fun fireUTBotEnabledStateChanged() {
+        project.messageBus.let {
+            if (!it.isDisposed)
+                project.messageBus.syncPublisher(PluginActivationListener.TOPIC).enabledChanged(project.settings.storedSettings.isPluginEnabled)
         }
     }
 

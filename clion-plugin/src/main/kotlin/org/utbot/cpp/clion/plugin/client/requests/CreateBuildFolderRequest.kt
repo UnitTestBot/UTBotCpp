@@ -4,22 +4,22 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.client.Client
+import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.client.handlers.CreateBuildDirHandler
 import org.utbot.cpp.clion.plugin.utils.activeProject
-import org.utbot.cpp.clion.plugin.utils.getCurrentClient
+import org.utbot.cpp.clion.plugin.utils.client
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class CreateBuildDirRequest(
-    val client: Client,
+    val client: ManagedClient,
     request: Testgen.ProjectConfigRequest,
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request, client.project) {
     override val logMessage: String = "Sending request to check project configuration."
 
     constructor(e: AnActionEvent) : this(
-        e.project?.getCurrentClient() ?: error("project is null for event: $e"),
+        e.project?.client ?: error("project is null for event: $e"),
         getProjectConfigGrpcRequest(e.activeProject(), Testgen.ConfigMode.CREATE_BUILD_DIR)
     )
 

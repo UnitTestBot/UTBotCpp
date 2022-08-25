@@ -15,7 +15,7 @@
         <codeInsight.lineMarkerProvider language="ObjectiveC"
                                         implementationClass="org.utbot.cpp.clion.plugin.ui.testsResults.UTBotTestRunLineMarkerProvider"/>
         <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings"/>
-        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.client.ClientManager"/>
+        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.client.ManagedClient"/>
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <postStartupActivity implementation="org.utbot.cpp.clion.plugin.UTBotStartupActivity"/>
         <projectConfigurable parentId="tools" instance="org.utbot.cpp.clion.plugin.settings.UTBotConfigurable"
@@ -27,7 +27,6 @@
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <coverageRunner implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner"/>
 
-<!--        <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.VerboseModeWidgetFactory"/>-->
         <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.ConnectionStatusBarWidgetFactory"/>
         <toolWindow id="UTBot"
                     secondary="false"
@@ -187,6 +186,11 @@
         <action id="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
                 class="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
                 text="UTBot: Run All Tests and Show Coverage"/>
+        <action id="org.utbot.cpp.clion.plugin.actions.TogglePluginAction"
+                class="org.utbot.cpp.clion.plugin.actions.TogglePluginAction"
+                text="UTBot: Turn On/Off Plugin">
+            <override-text place="GoToAction" text="UTBot: Enable Plugin"/>
+        </action>
 
         <action id="org.utbot.cpp.clion.plugin.actions.ReconnectAction"
                 class="org.utbot.cpp.clion.plugin.actions.ReconnectAction" text="Reconnect to Server"

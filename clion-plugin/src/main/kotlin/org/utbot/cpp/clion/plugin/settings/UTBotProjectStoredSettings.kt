@@ -35,7 +35,8 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var useDeterministicSearcher: Boolean = false,
         var verbose: Boolean = false,
         var timeoutPerFunction: Int = 0,
-        var timeoutPerTest: Int = 0
+        var timeoutPerTest: Int = 0,
+        var isPluginEnabled: Boolean = true
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
             buildDirRelativePath = model.projectSettings.buildDirRelativePath

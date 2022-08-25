@@ -1,13 +1,12 @@
 package org.utbot.cpp.clion.plugin.actions
 
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiManager
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import java.nio.file.Path
 
-class FocusAction(val path: Path) : AnAction("Show") {
+class FocusAction(val path: Path) : UTBotBaseAction("Show") {
 
     override fun actionPerformed(e: AnActionEvent) {
         val virtualFile = LocalFileSystem.getInstance().findFileByNioFile(path)
@@ -24,7 +23,7 @@ class FocusAction(val path: Path) : AnAction("Show") {
         }
     }
 
-    override fun update(e: AnActionEvent) {
+    override fun updateIfEnabled(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = LocalFileSystem.getInstance().findFileByNioFile(path) != null
     }
 }
