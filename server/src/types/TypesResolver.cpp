@@ -20,7 +20,7 @@ static bool canBeReplaced(const std::string &nameInMap, const std::string &name)
     return nameInMap.empty() && !name.empty();
 }
 
-template <class Info>
+template<class Info>
 bool isCandidateToReplace(uint64_t id,
                           std::unordered_map<uint64_t, Info> &someMap,
                           std::string const &name) {

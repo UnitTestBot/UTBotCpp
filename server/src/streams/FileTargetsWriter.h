@@ -11,7 +11,7 @@ public:
         : TargetsWriter(response) {
     }
 
-    void writeResponse(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets,
+    void writeResponse(const std::vector<fs::path> &targetPaths,
                        const utbot::ProjectContext& projectContext);
 };
 

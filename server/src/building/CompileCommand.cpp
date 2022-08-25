@@ -12,7 +12,6 @@
 
 namespace utbot {
     CompileCommand::CompileCommand(CompileCommand const &other) : BaseCommand(other) {
-        compiler = commandLine.begin();
         sourcePath =
             std::next(commandLine.begin(),
                       std::distance<const_iterator>(other.commandLine.begin(), other.sourcePath));
@@ -21,9 +20,7 @@ namespace utbot {
     }
 
     CompileCommand::CompileCommand(CompileCommand &&other) noexcept : BaseCommand(std::move(other)),
-                                                                      sourcePath(other.sourcePath),
-                                                                      compiler(other.compiler),
-                                                                      output(other.output) {
+                                                                      sourcePath(other.sourcePath) {
     }
 
     CompileCommand &CompileCommand::operator=(const CompileCommand &other) {
@@ -53,7 +50,6 @@ namespace utbot {
                                    fs::path directory,
                                    fs::path sourcePath)
         : BaseCommand(std::move(arguments), std::move(directory)) {
-        compiler = commandLine.begin();
         {
             auto it = std::find_if(commandLine.begin(), commandLine.end(), [&sourcePath](std::string const &arg) {
                 return fs::path(arg).filename() == sourcePath.filename();
@@ -61,16 +57,7 @@ namespace utbot {
             this->sourcePath = it;
             *this->sourcePath = sourcePath;
         }
-        {
-            auto it = findOutput();
-            if (it != commandLine.end()) {
-                this->output = it;
-                *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
-            } else {
-                auto path = Paths::getCCJsonFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
-                this->output = std::next(addFlagsToBegin({ "-o", path }));
-            }
-        }
+        initOutput();
     }
 
     void swap(CompileCommand &a, CompileCommand &b) noexcept {
@@ -80,7 +67,6 @@ namespace utbot {
         std::swap(a.optimizationLevel, b.optimizationLevel);
 
         std::swap(a.sourcePath, b.sourcePath);
-        std::swap(a.compiler, b.compiler);
         std::swap(a.output, b.output);
     }
 
@@ -92,24 +78,8 @@ namespace utbot {
         *(this->sourcePath) = std::move(sourcePath);
     }
 
-    fs::path CompileCommand::getCompiler() const {
-        return *compiler;
-    }
-
-    void CompileCommand::setCompiler(fs::path compiler) {
-        *(this->compiler) = std::move(compiler);
-    }
-
-    fs::path CompileCommand::getOutput() const {
-        return *output;
-    }
-
     bool CompileCommand::isArchiveCommand() const {
         return false;
-    }
-
-    void CompileCommand::setOutput(fs::path output) {
-        *(this->output) = std::move(output);
     }
 
     void CompileCommand::removeCompilerFlagsAndOptions(
@@ -128,9 +98,22 @@ namespace utbot {
             return StringUtils::startsWith(arg, "-I");
         });
     }
+
     void CompileCommand::removeWerror() {
         CollectionUtils::erase_if(commandLine, [](const std::string &arg) {
             return StringUtils::startsWith(arg, "-Werror");
         });
+    }
+
+    void CompileCommand::initOutput() {
+        auto it = findOutput();
+        if (it != commandLine.end()) {
+            this->output = it;
+            *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
+        } else {
+            auto path = Paths::getCCJsonFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
+            this->output = std::next(addFlagsToBegin({"-o", path}));
+        }
+
     }
 }

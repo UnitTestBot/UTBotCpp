@@ -1,5 +1,6 @@
 #include "TestUtils.h"
 #include "utils/CLIUtils.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 
@@ -51,7 +52,9 @@ int main(int argc, char **argv) {
 
         for (auto const &subproject : { "executable", "static_library", "shared_library", "timeout" }) {
             for (auto const &compiler : { clang, gcc }) {
-                testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("run") / subproject, compiler);
+                testUtils::tryExecGetBuildCommands(
+                        testUtils::getRelativeTestSuitePath(printer::DefaultMakefilePrinter::TARGET_RUN) / subproject,
+                        compiler);
             }
         }
 

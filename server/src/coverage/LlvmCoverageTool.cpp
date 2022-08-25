@@ -14,6 +14,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 
@@ -36,13 +37,15 @@ LlvmCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch
         std::vector<std::string> profileEnv;
         if (withCoverage) {
             auto profrawFilePath = Paths::getProfrawFilePath(projectContext, testName);
-            profileEnv = { StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath) };
+            profileEnv = {StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath)};
         }
-        auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath, "build",
+        auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath,
+                                                           printer::DefaultMakefilePrinter::TARGET_BUILD,
                                                            gtestFlags, profileEnv);
-        auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath, "run",
+        auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath,
+                                                         printer::DefaultMakefilePrinter::TARGET_RUN,
                                                          gtestFlags, profileEnv);
-        return BuildRunCommand{ testToLaunch, buildCommand, runCommand };
+        return BuildRunCommand{testToLaunch, buildCommand, runCommand};
     });
 }
 

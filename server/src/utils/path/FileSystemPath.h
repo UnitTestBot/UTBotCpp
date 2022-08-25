@@ -13,17 +13,13 @@ namespace fs {
 
     class path {
     public:
-        path(const std::filesystem::path& p) : path_(normalizedTrimmed(p)) {
-        }
+        path(const std::filesystem::path &p) : path_(normalizedTrimmed(p)) {}
 
         path() {}
 
-        path(const std::string& s) : path_(normalizedTrimmed(s)) {
-        }
+        path(const std::string &s) : path_(normalizedTrimmed(s)) {}
 
-        path(const char *s) : path_(normalizedTrimmed(s)) {
-
-        }
+        path(const char *s) : path_(normalizedTrimmed(s)) {}
 
         path root_path() const {
             return path(path_.root_path());

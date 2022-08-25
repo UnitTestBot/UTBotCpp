@@ -13,7 +13,7 @@ public:
     explicit ProjectTargetsWriter(testsgen::ProjectTargetsResponse *response);
 
     void writeResponse(const utbot::ProjectContext &projectContext,
-                       const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets);
+                       const std::vector<fs::path> &targetPaths);
 };
 
 

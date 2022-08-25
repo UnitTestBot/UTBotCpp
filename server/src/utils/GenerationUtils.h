@@ -24,6 +24,10 @@ using grpc::Status;
 using grpc::StatusCode;
 
 namespace GenerationUtils {
+
+    std::optional<fs::path>
+    findTarget(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &allTargets, const std::string &name);
+
     std::optional<fs::path> findTarget(const BaseTestGen &baseTestGen, const std::string &name);
 
     template <typename TestGenT, typename RequestT>
@@ -34,24 +38,16 @@ namespace GenerationUtils {
         ServerUtils::setThreadOptions(ctx, true);
         auto testsWriter = std::make_unique<CLITestsWriter>();
         auto testGen = std::make_unique<TestGenT>(request, testsWriter.get(), true);
-        if constexpr (std::is_base_of_v<ProjectTestGen, TestGenT>) {
-            auto targetPath = findTarget(*testGen, testGen->getRequest()->targetpath());
-            if (!targetPath.has_value()) {
-                auto status = grpc::Status(grpc::INVALID_ARGUMENT, "Couldn't find appropriate target");
-                return std::make_pair(std::move(testGen), status);
-            }
-            testGen->setTargetPath(targetPath.value());
-        }
         Status status =
             Server::TestsGenServiceImpl::ProcessBaseTestRequest(*testGen, testsWriter.get());
         if (status.error_code() == grpc::FAILED_PRECONDITION) {
             if (status.error_message() == FileNotPresentedInArtifactException::MESSAGE ||
                 status.error_message() == FileNotPresentedInCommandsException::MESSAGE) {
                 fs::path path = status.error_details();
-                auto targetsForSourceFile = testGen->buildDatabase->getTargetsForSourceFile(path);
+                auto targetPaths = testGen->getProjectBuildDatabase()->getTargetPathsForSourceFile(path);
                 LOG_S(WARNING) << "List of possible targets for current file:\n";
-                for (auto const& target: targetsForSourceFile) {
-                    LOG_S(WARNING) << target->getOutput() << "\n";
+                for (auto const& target: targetPaths) {
+                    LOG_S(WARNING) << target << "\n";
                 }
                 LOG_S(WARNING) << "\n";
             }

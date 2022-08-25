@@ -30,27 +30,27 @@ namespace printer {
             sharedMakefileContent(std::move(sharedMakefileStr)), objMakefileContent(std::move(objMakefileStr)) {
     }
 
-    TestMakefilesPrinter::TestMakefilesPrinter(const BaseTestGen &testGen,
+    TestMakefilesPrinter::TestMakefilesPrinter(const BaseTestGen *testGen,
                                                CollectionUtils::FileSet const *stubSources) :
             TestMakefilesPrinter(
-                    testGen.projectContext,
-                    testGen.buildDatabase,
-                    testGen.getTargetPath(),
+                    testGen,
+                    testGen->getTargetBuildDatabase()->getTargetPath(),
                     CompilationUtils::getBundledCompilerPath(CompilationUtils::getCompilerName(
-                            testGen.compilationDatabase->getBuildCompilerPath())),
+                            testGen->getTargetBuildDatabase()->compilationDatabase->getBuildCompilerPath())),
                     stubSources) {
     }
 
     TestMakefilesPrinter::TestMakefilesPrinter(
-            utbot::ProjectContext projectContext,
-            std::shared_ptr<BuildDatabase> buildDatabase,
+            const BaseTestGen *testGen,
             fs::path const &rootPath,
             fs::path primaryCompiler,
             CollectionUtils::FileSet const *stubSources) :
-            RelativeMakefilePrinter(Paths::getUtbotBuildDir(projectContext), Paths::getRelativeUtbotBuildDir(projectContext), projectContext.projectPath),
-        projectContext(projectContext),
-        sharedMakefilePrinter(projectContext, buildDatabase, rootPath, primaryCompiler, stubSources, pathToShellVariable),
-        objMakefilePrinter(projectContext, buildDatabase, rootPath, primaryCompiler, stubSources, pathToShellVariable) {
+            RelativeMakefilePrinter(Paths::getUtbotBuildDir(testGen->projectContext),
+                                    Paths::getRelativeUtbotBuildDir(testGen->projectContext),
+                                    testGen->projectContext.projectPath),
+            projectContext(testGen->projectContext),
+            sharedMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable),
+            objMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable) {
     }
 
     void
@@ -89,24 +89,24 @@ namespace printer {
                         MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "bin", true),
                         " ")
         });
-        generalMakefilePrinter.declareTarget("build", {FORCE}, {
+        generalMakefilePrinter.declareTarget(TARGET_BUILD, {FORCE}, {
                 StringUtils::stringFormat("%s || %s",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePathRelative, "build", true), " "),
+                                                  sharedMakefilePathRelative, TARGET_BUILD, true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePathRelative, "build", true), " "))
+                                                  objMakefilePathRelative, TARGET_BUILD, true), " "))
         });
 
-        generalMakefilePrinter.declareTarget("run", {FORCE}, {
+        generalMakefilePrinter.declareTarget(TARGET_RUN, {FORCE}, {
                 StringUtils::stringFormat("%s && { %s; exit $$?; } || { %s && { %s; exit $$?; } }",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePathRelative, "build", true), " "),
+                                                  sharedMakefilePathRelative, TARGET_BUILD, true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  sharedMakefilePathRelative, "run", true), " "),
+                                                  sharedMakefilePathRelative, TARGET_RUN, true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePathRelative, "build", true), " "),
+                                                  objMakefilePathRelative, TARGET_BUILD, true), " "),
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(
-                                                  objMakefilePathRelative, "run", true), " "))
+                                                  objMakefilePathRelative, TARGET_RUN, true), " "))
         });
         generalMakefilePrinter.declareTarget("clean", {FORCE}, {
                 StringUtils::joinWith(

@@ -116,10 +116,6 @@ public:
                 MEASURE_FUNCTION_EXECUTION_TIME
 
                 TestGenT testGen{ request, testsWriter.get(), testMode };
-                if constexpr (std::is_base_of_v<ProjectTestGen, TestGenT>) {
-                    fs::path targetPath = testGen.getRequest()->targetpath();
-                    testGen.setTargetPath(targetPath);
-                }
                 TimeExecStatistics::clearStatistic();
                 Status status = ProcessBaseTestRequest(testGen, testsWriter.get());
                 TimeExecStatistics::printStatistic();

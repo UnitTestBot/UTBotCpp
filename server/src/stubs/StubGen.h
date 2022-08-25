@@ -21,6 +21,7 @@ public:
     static tests::Tests mergeSourceFileIntoStub(const tests::Tests &methodDescription,
                                                 const tests::Tests &srcFile);
 
+    Result<CollectionUtils::FileSet> getStubSetForObject(const fs::path &objectFilePath);
 private:
     BaseTestGen &testGen;
 

@@ -17,7 +17,7 @@
 
 bool IRParser::parseModule(const fs::path &rootBitcode, tests::TestsMap &tests) {
     try {
-        LOG_S(MAX) << "Parse module: " << rootBitcode.c_str();
+        LOG_S(DEBUG) << "Parse module: " << rootBitcode.c_str();
         llvm::LLVMContext context;
         auto module = getModule(rootBitcode, context);
         if (module) {

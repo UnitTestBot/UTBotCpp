@@ -9,6 +9,10 @@
 namespace printer {
 class DefaultMakefilePrinter : public Printer {
 public:
+    static const std::string TARGET_ALL;
+    static const std::string TARGET_BUILD;
+    static const std::string TARGET_RUN;
+
     DefaultMakefilePrinter();
 
     ~DefaultMakefilePrinter() override = default;

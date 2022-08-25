@@ -13,13 +13,13 @@ public:
 protected:
     using MessageWriter<Response>::writer;
 
-    void writeTargets(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &targets,
+    void writeTargets(const std::vector<fs::path> &targetPaths,
                       const utbot::ProjectContext &projectContext) {
         auto projectTarget = writer->add_targets();
         *projectTarget = GrpcUtils::createAutoTarget();
-        for (auto const &target : targets) {
+        for (auto const &target : targetPaths) {
             projectTarget = writer->add_targets();
-            GrpcUtils::initProjectTarget(*projectTarget, projectContext, target->getOutput());
+            GrpcUtils::initProjectTarget(*projectTarget, projectContext, target);
         }
     }
 };
