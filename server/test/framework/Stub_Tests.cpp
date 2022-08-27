@@ -8,6 +8,8 @@
 #include "coverage/CoverageAndResultsGenerator.h"
 #include "streams/coverage/ServerCoverageAndResultsWriter.h"
 #include "streams/stubs/ServerStubsWriter.h"
+#include "stubs/StubGen.h"
+#include "Synchronizer.h"
 
 #include <fstream>
 
@@ -111,9 +113,10 @@ namespace {
 
     TEST_F(Stub_Test, Project_Stubs_Test) {
         auto stubsWriter = std::make_unique<ServerStubsWriter>(nullptr, false);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, true);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen = std::make_unique<ProjectTestGen>(*request, writer.get(), TESTMODE);
-        std::vector<fs::path> stubSources = { calc_sum_c, calc_mult_c, literals_foo_c };
+        std::vector<fs::path> stubSources = {calc_sum_c, calc_mult_c, literals_foo_c};
         Status status =
             Server::TestsGenServiceImpl::ProcessProjectStubsRequest(testGen.get(), stubsWriter.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -122,7 +125,7 @@ namespace {
 
     TEST_F(Stub_Test, Implicit_Stubs_Test) {
         auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         literals_foo_c, true);
+                                         literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
 
@@ -135,7 +138,7 @@ namespace {
     TEST_F(Stub_Test, Pregenerated_Stubs_Test) {
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             literals_foo_c, true);
+                                             literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -146,7 +149,7 @@ namespace {
 
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                              srcPaths, literals_foo_c, true);
+                                              srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -159,33 +162,28 @@ namespace {
 
     TEST_F(Stub_Test, Multimodule_Lib_Heuristic_Test) {
         auto request = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
-                                                       { foreign, calc, suitePath, literals }, true);
+                                                       {foreign, calc, suitePath, literals},
+                                                       foreign_bar_c, true);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(foreign_bar_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
 
-        auto root = testGen.buildDatabase->getRootForSource(foreign_bar_c);
-        auto linkUnitInfo = testGen.buildDatabase->getClientLinkUnitInfo(root);
-        auto stubFiles = testGen.buildDatabase->getStubFiles(linkUnitInfo);
-        utbot::ProjectContext projectContext{ projectName, suitePath, getTestDirectory(),
-                                              buildDirRelativePath };
-        auto stubCandidates = { calc_sum_c };
-        auto expectedStubFiles = CollectionUtils::transformTo<decltype(stubFiles)>(
-            stubCandidates, [&projectContext](fs::path const &path) {
-              return Paths::sourcePathToStubPath(projectContext, path);
-            });
-        EXPECT_EQ(expectedStubFiles, stubFiles);
+        const fs::path objectFile = testGen.getClientCompilationUnitInfo(foreign_bar_c)->getOutputFile();
+        auto result = StubGen(testGen).getStubSetForObject(objectFile);
+        ASSERT_TRUE(result.isSuccess());
+        auto stubCandidates = {calc_sum_c};
+        auto expectedStubFiles = CollectionUtils::transformTo<CollectionUtils::FileSet>(
+                stubCandidates, [&testGen](fs::path const &path) {
+                    return Paths::sourcePathToStubPath(testGen.projectContext, path);
+                });
+        EXPECT_EQ(expectedStubFiles, result.getOpt().value());
     }
-
-
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                       srcPaths, literals_foo_c, true);
+                                                    srcPaths, literals_foo_c, literals_foo_c, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(literals_foo_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 5);
@@ -218,7 +216,7 @@ namespace {
 
     TEST_F(Stub_Test, Run_Tests_For_Unused_Function) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                   srcPaths, calc_sum_c, true);
+                                                   srcPaths, calc_sum_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(calc_sum_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -239,7 +237,7 @@ namespace {
 
     TEST_F(Stub_Test, File_Tests_Without_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                       srcPaths, literals_foo_c, false);
+                                                    srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
 
@@ -270,7 +268,7 @@ namespace {
     }
 
     TEST_F(Stub_Test, DISABLED_Sync_Stub_When_Source_Changed_Test) {
-        auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, true);
+        auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -279,11 +277,11 @@ namespace {
         modifySources(sourcesToModify);
         std::string stubCode = modifyStubFile(sum_stub_c);
 
-        auto request2 = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, true);
+        auto request2 = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen2 = FileTestGen(*request2, writer.get(), TESTMODE);
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             literals_foo_c, true);
+                                             literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 
@@ -292,7 +290,7 @@ namespace {
         }
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                              srcPaths, literals_foo_c, true);
+                                             srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
             testGen.setTargetForSource(literals_foo_c);
 

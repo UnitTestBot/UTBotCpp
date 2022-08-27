@@ -2,10 +2,10 @@
 #define UNITTESTBOT_BASETESTGEN_H
 
 #include "ProjectContext.h"
-#include "ProjectTarget.h"
 #include "SettingsContext.h"
 #include "Tests.h"
-#include "building/BuildDatabase.h"
+#include "building/ProjectBuildDatabase.h"
+#include "building/TargetBuildDatabase.h"
 #include "printers/TestsPrinter.h"
 #include "streams/tests/TestsWriter.h"
 #include "stubs/Stubs.h"
@@ -24,8 +24,6 @@ public:
     fs::path serverBuildDir;
 
     fs::path compileCommandsJsonPath;
-    std::shared_ptr<CompilationDatabase> compilationDatabase;
-    std::shared_ptr<BuildDatabase> buildDatabase;
 
     CollectionUtils::FileSet sourcePaths, testingMethodsSourcePaths;
     tests::TestsMap tests;
@@ -33,7 +31,6 @@ public:
     std::vector<Stubs> synchronizedStubs;
     types::TypeMaps types;
 
-    std::optional<fs::path> targetPath;
     CollectionUtils::FileSet targetSources;
 
     virtual std::string toString() = 0;
@@ -42,12 +39,25 @@ public:
 
     bool isBatched() const;
 
-    bool hasAutoTarget() const;
-    fs::path const &getTargetPath() const;
     void setTargetPath(fs::path _targetPath);
 
     virtual ~BaseTestGen() = default;
+
+    std::shared_ptr<const ProjectBuildDatabase> getProjectBuildDatabase() const;
+
+    std::shared_ptr<const TargetBuildDatabase> getTargetBuildDatabase() const;
+
+    std::shared_ptr<ProjectBuildDatabase> getProjectBuildDatabase();
+
+    std::shared_ptr<TargetBuildDatabase> getTargetBuildDatabase();
+
+    std::shared_ptr<const BuildDatabase::ObjectFileInfo>
+    getClientCompilationUnitInfo(const fs::path &path, bool fullProject = false) const;
+
 protected:
+    std::shared_ptr<ProjectBuildDatabase> projectBuildDatabase;
+    std::shared_ptr<TargetBuildDatabase> targetBuildDatabase;
+
     BaseTestGen(const testsgen::ProjectContext &projectContext,
                 const testsgen::SettingsContext &settingsContext,
                 ProgressWriter *progressWriter,
@@ -55,9 +65,9 @@ protected:
 
     void setInitializedTestsMap();
 
-    virtual void setTargetForSource(fs::path const& sourcePath) = 0;
+    virtual void setTargetForSource(fs::path const &sourcePath) = 0;
 
-    void updateTargetSources();
+    void updateTargetSources(fs::path _targetPath);
 };
 
 

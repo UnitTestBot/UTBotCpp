@@ -31,6 +31,7 @@ namespace printer {
 
         std::stringstream ss;
         int tabsDepth = 0;
+        int commentDepth = 0;
         utbot::Language srcLanguage = utbot::Language::UNKNOWN;
 
         Printer() = default;
@@ -49,8 +50,11 @@ namespace printer {
 
         std::string RB(bool needSC = false);
 
-        inline std::string TAB_N() const {
-            return StringUtils::repeat(TAB, tabsDepth);
+        inline std::string LINE_INDENT() const {
+            std::string tabs = StringUtils::repeat(TAB, tabsDepth);
+            return commentDepth <= 0
+               ? tabs
+               : tabs + "// ";
         }
 
         // all functions which return std::stringstream start with `str` prefix.
@@ -217,11 +221,11 @@ namespace printer {
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
 
         void genStubForStructFunctionPointer(const std::string &structName,
-                                             const std::string &fieldName,
+                                             const types::Field &ieldName,
                                              const std::string &stubName);
 
         void genStubForStructFunctionPointerArray(const std::string &structName,
-                                                  const std::string &fieldName,
+                                                  const types::Field &fieldName,
                                                   const std::string &stubName);
 
         static std::string getConstQualifier(const types::Type& type);
