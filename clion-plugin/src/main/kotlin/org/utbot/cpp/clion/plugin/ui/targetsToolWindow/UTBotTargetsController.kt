@@ -1,10 +1,8 @@
 package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
-import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectTargetsGrpcRequest
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
@@ -14,6 +12,7 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import testsgen.Testgen
 
 @Service
@@ -101,7 +100,7 @@ class UTBotTargetsController(val project: Project) {
 
     private fun connectToEvents() {
         // this connection is needed during project lifetime so we pass this service as parent disposable
-        project.messageBus.connect(project.service<ClientManager>()).subscribe(
+        project.messageBus.connect(project.projectLifetimeDisposable).subscribe(
             // when we reconnected to server, the targets should be updated, so we request them from server
             UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
             object : UTBotEventsListener {

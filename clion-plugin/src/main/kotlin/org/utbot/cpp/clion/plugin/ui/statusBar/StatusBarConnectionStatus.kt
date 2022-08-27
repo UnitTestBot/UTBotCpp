@@ -4,7 +4,6 @@ import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.ui.popup.ListPopup
@@ -13,13 +12,12 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.Consumer
-import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
 import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
-import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
@@ -53,7 +51,7 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
         this.statusBar = statusbar
         statusbar.project?.let { project ->
             // use project level service as disposable
-            project.messageBus.connect(project.service<ClientManager>()).subscribe(
+            project.messageBus.connect(project.projectLifetimeDisposable).subscribe(
                 UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
                 object : UTBotEventsListener {
                     override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {

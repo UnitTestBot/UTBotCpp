@@ -3,12 +3,14 @@ package org.utbot.cpp.clion.plugin.client
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.Disposer
 import org.utbot.cpp.clion.plugin.client.channels.GTestLogChannelImpl
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.channels.ServerLogChannelImpl
 import kotlin.random.Random
 import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 
 @Service
 class ClientManager(val project: Project): Disposable {
@@ -18,11 +20,12 @@ class ClientManager(val project: Project): Disposable {
         private set
 
     init {
+        Disposer.register(this, project.projectLifetimeDisposable)
         subscribeToEvents()
     }
 
     private fun subscribeToEvents() {
-        with(project.messageBus.connect(this)) {
+        with(project.messageBus.connect(project.projectLifetimeDisposable)) {
             subscribe(ConnectionSettingsListener.TOPIC, object : ConnectionSettingsListener {
                 override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
                     if (newPort != client.port || newServerName != client.serverName) {

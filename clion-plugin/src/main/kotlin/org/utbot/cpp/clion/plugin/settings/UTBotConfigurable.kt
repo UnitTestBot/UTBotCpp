@@ -20,10 +20,10 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import kotlin.reflect.KMutableProperty0
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.client.ClientManager
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Dimension
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
@@ -38,7 +38,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
 
     init {
-        myProject.messageBus.connect(myProject.service<ClientManager>())
+        myProject.messageBus.connect(myProject.projectLifetimeDisposable)
             .subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
                 reset()
             })
