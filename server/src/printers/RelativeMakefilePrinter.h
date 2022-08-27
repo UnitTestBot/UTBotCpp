@@ -1,5 +1,6 @@
 #ifndef UNITTESTBOT_RELATIVEMAKEFILEPRINTER_H
 #define UNITTESTBOT_RELATIVEMAKEFILEPRINTER_H
+
 #include "printers/DefaultMakefilePrinter.h"
 
 namespace printer {

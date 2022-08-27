@@ -50,32 +50,39 @@ void GenerationUtils::generateCoverageAndResultsAndWriteStatus(
 
 std::optional<fs::path> GenerationUtils::findTarget(const BaseTestGen &baseTestGen,
                                                     const std::string &name) {
+    return findTarget(baseTestGen.getTargetBuildDatabase()->getAllTargets(), name);
+}
+
+std::optional<fs::path>
+GenerationUtils::findTarget(const std::vector<std::shared_ptr<BuildDatabase::TargetInfo>> &allTargets,
+                            const std::string &name) {
     if (name.empty()) {
         LOG_S(INFO) << "Target was not chosen. Using UTBot: Auto target instead.";
         return GrpcUtils::UTBOT_AUTO_TARGET_PATH;
     }
-    auto allTargets = baseTestGen.buildDatabase->getAllTargets();
     auto candidates = CollectionUtils::filterOut(allTargets, [&name](auto const &target) {
         fs::path output = target->getOutput();
-        return !(output == name || output.stem() == name || output.stem() == "lib" + name);
+        return !(output == name || output.stem() == name || output.stem() == "lib" + name || output.filename() == name);
     });
     if (candidates.empty()) {
-        LOG_S(WARNING) << "Couldn't find appropriate target. List of available targets:\n";
+        std::stringstream ss;
+        ss << "Couldn't find \"" << name << "\" target. List of available targets:\n";
         for (const auto &target : allTargets) {
-            LOG_S(WARNING) << target->getOutput() << "\n";
+            ss << target->getOutput() << "\n";
         }
-        LOG_S(WARNING) << "\n";
+        LOG_S(WARNING) << ss.str();
         return std::nullopt;
     } else if (candidates.size() == 1) {
         return candidates[0]->getOutput();
     } else {
-        LOG_S(WARNING) << "There are multiple candidates for given target. "
+        std::stringstream ss;
+        ss << "There are multiple candidates for given target. "
                           "Please, specify full path of your preferred target. "
                           "List of candidates:\n";
         for (const auto &candidate : candidates) {
-            LOG_S(WARNING) << candidate->getOutput() << "\n";
+            ss << candidate->getOutput() << "\n";
         }
-        LOG_S(WARNING) << "\n";
+        LOG_S(WARNING) << ss.str();
         return std::nullopt;
     }
 }

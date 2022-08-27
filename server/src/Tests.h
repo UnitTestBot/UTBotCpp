@@ -118,7 +118,6 @@ namespace tests {
             return this->subViews;
         };
 
-
     protected:
         explicit AbstractValueView(std::vector<std::shared_ptr<AbstractValueView>> subViews) : subViews(std::move(subViews)) {}
 
@@ -219,13 +218,11 @@ namespace tests {
      * Representation of struct value. It's value is stored as a string. Subviews of StructValueView are its fields.
      */
     struct StructValueView : AbstractValueView {
-        explicit StructValueView(bool _isCLike,
-                                 std::vector<std::string> _fields,
-                                 std::vector<std::shared_ptr<AbstractValueView>> subViews,
-                                 std::optional<std::string> entryValue)
-            : AbstractValueView(std::move(subViews)), entryValue(std::move(entryValue)),
-              isCLike(_isCLike),
-              fields(std::move(_fields)){
+        explicit StructValueView(const types::StructInfo &_structInfo,
+                                 std::vector<std::shared_ptr<AbstractValueView>> _subViews,
+                                 std::optional<std::string> _entryValue)
+            : AbstractValueView(std::move(_subViews)), entryValue(std::move(_entryValue)),
+              structInfo(_structInfo){
         }
 
         [[nodiscard]] const std::vector<std::shared_ptr<AbstractValueView>> &getSubViews() const override {
@@ -242,8 +239,12 @@ namespace tests {
             }
 
             std::vector<std::string> entries;
+            size_t i = 0;
             for (const auto &subView : subViews) {
-                entries.push_back(subView->getEntryValue(nullptr));
+                if (structInfo.subType == types::SubType::Struct || structInfo.longestFieldIndexForUnionInit == i) {
+                    entries.push_back(subView->getEntryValue(nullptr));
+                }
+                ++i;
             }
 
             return "{" + StringUtils::joinWith(entries, ", ") + "}";
@@ -259,8 +260,8 @@ namespace tests {
         }
 
         [[nodiscard]] std::string getFieldPrefix(int i) const {
-            std::string prefix = "." + fields[i] + " = ";
-            if (isCLike) {
+            std::string prefix = "." + structInfo.fields[i].name + " = ";
+            if (structInfo.isCLike) {
                 return prefix;
             }
             // it is not C Struct-initialization, but C++ List-initialization.
@@ -270,32 +271,13 @@ namespace tests {
             return  "/*" + prefix + "*/";
         }
 
+        const types::StructInfo &getStructInfo() const {
+            return structInfo;
+        }
+
     private:
-        bool isCLike;
-        std::vector<std::string> fields;
+        const types::StructInfo structInfo;
         std::optional<std::string> entryValue;
-    };
-
-    /**
-    * Representation of union.
-    */
-    struct UnionValueView : AbstractValueView {
-    public:
-        explicit UnionValueView(const std::string &typeName,
-                                const std::shared_ptr<AbstractValueView> &rawDataView,
-                                std::vector<std::shared_ptr<AbstractValueView>,
-                                std::allocator<std::shared_ptr<AbstractValueView>>> subViews);
-
-        [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
-            return entryValue;
-        }
-
-        bool containsFPSpecialValue() override {
-            return false;
-        }
-
-    private:
-        std::string entryValue;
     };
 
     struct InitReference {
@@ -674,18 +656,13 @@ namespace tests {
         std::shared_ptr<FunctionPointerView> functionPointerView(const std::string &structName,
                                                                  const std::string &fieldName);
 
-        std::shared_ptr<UnionValueView> unionView(const std::vector<char> &byteArray,
-                                                  types::UnionInfo &unionInfo,
-                                                  unsigned int offset,
-                                                  types::PointerUsage usage);
-
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
-                                                    types::StructInfo &curStruct,
+                                                    const types::StructInfo &curStruct,
                                                     unsigned int offset,
                                                     types::PointerUsage usage);
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
-                                                    types::StructInfo &curStruct,
+                                                    const types::StructInfo &curStruct,
                                                     unsigned int offset,
                                                     types::PointerUsage usage,
                                                     const std::optional<const Tests::MethodDescription> &testingMethod,
@@ -693,14 +670,15 @@ namespace tests {
                                                     const MapAddressName &fromAddressToName,
                                                     std::vector<InitReference> &initReferences);
 
+        static std::shared_ptr<EnumValueView> enumView(const std::vector<char> &byteArray,
+                                                       const types::EnumInfo &enumInfo,
+                                                       size_t offset,
+                                                       size_t len);
+
         std::shared_ptr<PrimitiveValueView> primitiveView(const std::vector<char> &byteArray,
                                                           const types::Type &type,
                                                           size_t offset,
                                                           size_t len);
-        static std::shared_ptr<EnumValueView> enumView(const std::vector<char> &byteArray,
-                                                       types::EnumInfo &enumInfo,
-                                                       size_t offset,
-                                                       size_t len);
 
         std::string primitiveCharView(const types::Type &type, std::string value);
         static std::string primitiveBoolView(const std::string &value);
@@ -720,10 +698,6 @@ namespace tests {
                             const Tests::MethodDescription &methodDescription,
                             const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
                             const std::stringstream &traceStream);
-        std::vector<std::shared_ptr<AbstractValueView>> collectUnionSubViews(const std::vector<char> &byteArray,
-                                                                             const types::UnionInfo &info,
-                                                                             unsigned int offset,
-                                                                             types::PointerUsage usage);
         void processGlobalParamPreValue(Tests::TestCaseDescription &testCaseDescription,
                                         const Tests::MethodParam &globalParam,
                                         std::vector<RawKleeParam> &rawKleeParams);

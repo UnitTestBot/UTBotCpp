@@ -31,14 +31,12 @@ namespace visitor {
             } else {
                 return visitPointer(type, name, view, access, depth);
             }
-        } else if (typesHandler->isStruct(type)) {
+        } else if (typesHandler->isStructLike(type)) {
             return visitStruct(type, name, view, access, depth);
-        } else if (typesHandler->isUnion(type)) {
-            return visitUnion(type, name, view, access, depth);
-        } else if (types::TypesHandler::isPointerToFunction(type)) {
-            return visitPointerToFunction(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
             return visitEnum(type, name, view, access, depth);
+        } else if (types::TypesHandler::isPointerToFunction(type)) {
+            return visitPointerToFunction(type, name, view, access, depth);
         } else if (types::TypesHandler::isPrimitiveType(type)) {
             return visitPrimitive(type, name, view, access, depth);
         }
@@ -87,35 +85,20 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitStruct(const types::Type &type,
-                                               const std::string &name,
-                                               const tests::AbstractValueView *view,
-                                               const std::string &access,
-                                               int depth) {
-        auto structInfo = typesHandler->getStructInfo(type);
-        auto subViews = view ? &view->getSubViews() : nullptr;
-        for (int i = 0; i < structInfo.fields.size(); i++) {
-            auto const &field = structInfo.fields[i];
-            auto newName = PrinterUtils::getFieldAccess(name, field);
-            auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
-            auto newAccess = PrinterUtils::getFieldAccess(access, field);
-            visitAny(field.type, newName, newView, newAccess, depth + 1);
-        }
-    }
-    void AbstractValueViewVisitor::visitUnion(const types::Type &type,
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
                                               int depth) {
-        auto unionInfo = typesHandler->getUnionInfo(type);
+        const types::StructInfo &structInfo = typesHandler->getStructInfo(type);
         auto subViews = view ? &view->getSubViews() : nullptr;
 
         bool oldFlag = inUnion;
-        inUnion = true;
-        for (int i = 0; i < unionInfo.fields.size(); i++) {
-            auto const &field = unionInfo.fields[i];
-            auto newName = PrinterUtils::getFieldAccess(name, field.name);
-            auto const *newView = subViews ? (*subViews)[i].get() : nullptr;
-            auto newAccess = PrinterUtils::getFieldAccess(access, field.name);
+        inUnion = structInfo.subType == types::SubType::Union;
+        for (int i = 0; i < structInfo.fields.size(); ++i) {
+            auto const &field = structInfo.fields[i];
+            auto newName = PrinterUtils::getFieldAccess(name, field);
+            auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
+            auto newAccess = PrinterUtils::getFieldAccess(access, field);
             visitAny(field.type, newName, newView, newAccess, depth + 1);
         }
         inUnion = oldFlag;

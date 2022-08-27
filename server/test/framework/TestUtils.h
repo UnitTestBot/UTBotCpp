@@ -3,7 +3,6 @@
 
 #include "gtest/gtest.h"
 
-#include "ProjectTarget.h"
 #include "Server.h"
 #include "Tests.h"
 #include "coverage/Coverage.h"
@@ -47,12 +46,19 @@ namespace testUtils {
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap);
 
-    int getNumberOfTests(const tests::TestsMap &tests);
+    size_t getNumberOfTests(const tests::TestsMap &tests);
 
-    void checkMinNumberOfTests(const tests::TestsMap &tests, int minNumber);
+    size_t getNumberOfTestsForFile(const BaseTestGen &testGen, const std::string &fileName);
+
+    void checkMinNumberOfTests(const tests::TestsMap &tests, size_t minNumber);
 
     void checkMinNumberOfTests(const std::vector<tests::Tests::MethodTestCase> &testCases,
-                               int minNumber);
+                               size_t minNumber);
+
+    void checkNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
+
+    void
+    checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
@@ -62,6 +68,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
+                                                         const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                          bool useStubs = false,
                                                          bool verbose = true,
                                                          int kleeTimeout = 60);
@@ -71,23 +78,32 @@ namespace testUtils {
                                                    const std::string &buildDirRelativePath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
+                                                   const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
-                                                   bool verbose = true);
+                                                   bool verbose = true,
+                                                   int kleeTimeout = 60);
 
-    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName, const fs::path &projectPath,
+    std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
+                                                   const fs::path &projectPath,
                                                    const std::string &buildDirRelativePath,
-                                                   const std::vector<fs::path> &srcPaths, const fs::path &filePath,
-                                                   int line, bool useStubs,
-                                                   bool verbose, int kleeTimeout);
+                                                   const std::vector<fs::path> &srcPaths,
+                                                   const fs::path &filePath,
+                                                   int line,
+                                                   const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
+                                                   bool useStubs = false,
+                                                   bool verbose = true,
+                                                   int kleeTimeout = 60);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
-                                                    const fs::path &projectPath,
-                                                    const std::string &buildDirRelativePath,
-                                                    const std::vector<fs::path> &srcPaths,
-                                                    const fs::path &filePath,
-                                                    int line,
-                                                    bool verbose = true,
-                                                    int kleeTimeout = 60);
+                                                     const fs::path &projectPath,
+                                                     const std::string &buildDirRelativePath,
+                                                     const std::vector<fs::path> &srcPaths,
+                                                     const fs::path &filePath,
+                                                     int line,
+                                                     const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
+                                                     bool useStubs = false,
+                                                     bool verbose = true,
+                                                     int kleeTimeout = 60);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
@@ -107,7 +123,8 @@ namespace testUtils {
     void tryExecGetBuildCommands(
             const fs::path &path,
             CompilationUtils::CompilerName compilerName = CompilationUtils::CompilerName::CLANG,
-            BuildCommandsTool buildCommandsTool = CMAKE_BUILD_COMMANDS_TOOL, bool build = true);
+            BuildCommandsTool buildCommandsTool = CMAKE_BUILD_COMMANDS_TOOL,
+            bool build = true);
 
     fs::path getRelativeTestSuitePath(const std::string &suiteName);
 
@@ -115,9 +132,7 @@ namespace testUtils {
 
     std::string unexpectedFileMessage(const fs::path &filePath);
 
-    std::vector<char*> createArgvVector(const std::vector<std::string> &args);
-
-    void setTargetForFirstSource(ProjectTestGen &testGen);
+    std::vector<char *> createArgvVector(const std::vector<std::string> &args);
 
     void checkGenerationStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles);
 
