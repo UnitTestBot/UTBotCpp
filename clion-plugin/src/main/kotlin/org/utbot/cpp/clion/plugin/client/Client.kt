@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
@@ -73,7 +74,7 @@ class Client(
         if (isDisposed) {
             // if client is disposed, then connection settings were changed, and requests issued to this client
             // are no longer relevant, so we don't execute them
-            notifyWarning("Reconnecting to server! Request won't be executed! Please try again, later.")
+            notifyWarning(UTBot.message("warning.reconnecting"))
             return
         }
         executeRequestImpl(request)
