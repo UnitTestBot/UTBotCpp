@@ -226,7 +226,7 @@ public:
 
     std::shared_ptr<TargetInfo> getPriorityTarget() const;
 
-    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target);
+    CollectionUtils::FileSet getSourceFilesForTarget(const fs::path &_target) const;
 
     std::shared_ptr<TargetInfo> getTargetInfo(const fs::path &_target);
 

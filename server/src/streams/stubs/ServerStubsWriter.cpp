@@ -3,21 +3,22 @@
 #include "loguru.h"
 
 void ServerStubsWriter::writeResponse(const std::vector<Stubs> &synchronizedStubs,
-                                      const fs::path &testDirPath) {
+                                      const fs::path &testDirPath,
+                                      const std::string &message) {
     writeStubsFilesOnServer(synchronizedStubs, testDirPath);
     if (!hasStream()) {
         return;
     }
-    testsgen::StubsResponse response;
-    LOG_S(DEBUG) << "Creating final response.";
-    for (const auto &synchronizedStub : synchronizedStubs) {
+    LOG_S(DEBUG) << "Writing stubs with progress.";
+    for (size_t i = 0; i < synchronizedStubs.size(); i++) {
+        testsgen::StubsResponse response;
         auto sData = response.add_stubsources();
-        sData->set_filepath(synchronizedStub.filePath);
+        sData->set_filepath(synchronizedStubs[i].filePath);
         if (synchronizeCode) {
-            sData->set_code(synchronizedStub.code);
+            sData->set_code(synchronizedStubs[i].code);
         }
+        auto progress = GrpcUtils::createProgress(message, (100.0 * i) / synchronizedStubs.size(), true);
+        response.set_allocated_progress(progress.release());
+        writeMessage(response);
     }
-    auto progress = GrpcUtils::createProgress(std::nullopt, 0, true);
-    response.set_allocated_progress(progress.release());
-    writeMessage(response);
 }

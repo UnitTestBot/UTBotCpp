@@ -22,42 +22,42 @@ namespace printer {
     static const std::string STUB_OBJECT_FILES_NAME = "STUB_OBJECT_FILES";
     static const std::string STUB_OBJECT_FILES = "$(STUB_OBJECT_FILES)";
 
-    static const std::string FPIC_FLAG = "-fPIC";
-    static const std::vector<std::string> SANITIZER_NEEDED_FLAGS = {
-        "-g", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls"
+    const std::string FPIC_FLAG = "-fPIC";
+    const std::vector<std::string> SANITIZER_NEEDED_FLAGS = {
+            "-g", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls"
     };
-    static const std::string STATIC_FLAG = "-static";
-    static const std::string SHARED_FLAG = "-shared";
-    static const std::string RELOCATE_FLAG = "-r";
-    static const std::string OPTIMIZATION_FLAG = "-O0";
-    static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE = {
-        // See https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
-        "-ansi",
-        "-fallow-parameterless-variadic-functions",
-        "-fallow-single-precision",
-        "-fcond-mismatch",
-        "-ffreestanding",
-        "-fgnu89-inline",
-        "-fhosted",
-        "-flax-vector-conversions",
-        "-fms-extensions",
-        "-fno-asm",
-        "-fno-builtin",
-        "-fno-builtin-function",
-        "-fgimple",
-        "-fopenacc",
-        "-fopenacc-dim",
-        "-fopenacc-kernels",
-        "-fopenmp",
-        "-fopenmp-simd",
-        "-fpermitted-flt-eval-methods",
-        "-fplan9-extensions",
-        "-fsigned-bitfields",
-        "-fsigned-char",
-        "-fsso-struct",
-        "-funsigned-bitfields",
-        "-funsigned-char",
-        "-std",
+    const std::string STATIC_FLAG = "-static";
+    const std::string SHARED_FLAG = "-shared";
+    const std::string RELOCATE_FLAG = "-r";
+    const std::string OPTIMIZATION_FLAG = "-O0";
+    const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE = {
+            // See https://gcc.gnu.org/onlinedocs/gcc/Option-Summary.html
+            "-ansi",
+            "-fallow-parameterless-variadic-functions",
+            "-fallow-single-precision",
+            "-fcond-mismatch",
+            "-ffreestanding",
+            "-fgnu89-inline",
+            "-fhosted",
+            "-flax-vector-conversions",
+            "-fms-extensions",
+            "-fno-asm",
+            "-fno-builtin",
+            "-fno-builtin-function",
+            "-fgimple",
+            "-fopenacc",
+            "-fopenacc-dim",
+            "-fopenacc-kernels",
+            "-fopenmp",
+            "-fopenmp-simd",
+            "-fpermitted-flt-eval-methods",
+            "-fplan9-extensions",
+            "-fsigned-bitfields",
+            "-fsigned-char",
+            "-fsso-struct",
+            "-funsigned-bitfields",
+            "-funsigned-char",
+            "-std",
     };
 
     static void eraseIfWlOnly(std::string &argument) {
@@ -577,6 +577,7 @@ namespace printer {
                 const fs::path relativeDir = getRelativePath(linkCommand.getDirectory());
 
                 if (isExecutable && !transformExeToLib) {
+                    // todo: how to translate objcopy to cmake?
                     return stringFormat("%s && objcopy --redefine-sym main=main__ %s",
                                         linkCommand.toStringWithChangingDirectoryToNew(relativeDir),
                                         linkCommand.getOutput().string());

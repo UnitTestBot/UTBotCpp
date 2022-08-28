@@ -23,6 +23,8 @@ public:
                      const std::string &message,
                      const fs::path &pathToStore) const override;
 
+    void writeFile(const std::string& content, const std::string& message, const std::string& filePath) const override;
+
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,
                                                         const fs::path &testDirPath,

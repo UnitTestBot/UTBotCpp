@@ -273,7 +273,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                                                            generationStartTime -
                                                                            preprocessingStartTime));
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
-                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode, generationStatsMap);
+                           lineInfo, testsWriter, testGen.isBatched(), interactiveMode, generationStatsMap, linker.getGeneratedCMakeFile());
         LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>
                 (generationStatsMap.getTotal().kleeStats.getKleeTime()).count() << " ms\n";
         printer::CSVPrinter printer = generationStatsMap.toCSV();
@@ -557,7 +557,8 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
     Synchronizer synchronizer(testGen, &sizeContext);
     synchronizer.synchronize(typesHandler);
-    stubsWriter->writeResponse(testGen->synchronizedStubs, testGen->projectContext.testDirPath);
+    stubsWriter->writeResponse(testGen->synchronizedStubs, testGen->projectContext.testDirPath, "Sending stubs");
+    stubsWriter->writeResponse(testGen->synchronizedWrappers, testGen->projectContext.testDirPath, "Sending wrappers");
     return Status::OK;
 }
 

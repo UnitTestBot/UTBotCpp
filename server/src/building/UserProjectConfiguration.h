@@ -49,6 +49,8 @@ private:
     static fs::path createBearShScript(const fs::path &buildDirPath);
 
     static bool createBuildDirectory(const fs::path &buildDirPath, ProjectConfigWriter const &writer);
+
+    static void prepareCMakeListsFile(const fs::path &path);
 };
 
 

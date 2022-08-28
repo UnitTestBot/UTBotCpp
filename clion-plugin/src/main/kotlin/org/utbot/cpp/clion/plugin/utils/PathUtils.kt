@@ -56,6 +56,8 @@ fun Path.visitAllDirectories(action: (Path) -> Unit) {
 
 fun Path.isSarifReport() = this.fileName.toString().endsWith(".sarif")
 
+fun Path.isCMakeListsFile() = this.fileName.toString() == "CMakeLists.txt"
+
 fun String.fileNameOrNull(): String? {
     return try {
         Paths.get(this).fileName.toString()

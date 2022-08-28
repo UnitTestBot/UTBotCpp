@@ -20,6 +20,8 @@ public:
                                         std::function<void(tests::Tests &)> &&prepareTests,
                                         std::function<void()> &&prepareTotal) = 0;
 
+    virtual void writeFile(const std::string& content, const std::string& message, const std::string& filePath) const;
+
     virtual void writeReport(const std::string &content,
                              const std::string &message,
                              const fs::path &pathToStore) const;

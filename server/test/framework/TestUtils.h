@@ -137,6 +137,8 @@ namespace testUtils {
     void checkGenerationStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles);
 
     void checkExecutionStatsCSV(const fs::path &statsPath, const std::vector<fs::path> &containedFiles);
+
+    void checkCMakeGenerated(const fs::path &suitePath, const fs::path &testsDirPath, const std::optional<fs::path> &expectedCMakePath = {});
 }
 
 #endif // UNITTESTBOT_TESTUTILS_H

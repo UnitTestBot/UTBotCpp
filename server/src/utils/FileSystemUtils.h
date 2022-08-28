@@ -14,6 +14,8 @@ namespace FileSystemUtils {
 
     std::vector<fs::path> recursiveDirectories(const fs::path &root);
 
+    std::string read(const fs::path &path);
+
     class DirectoryIterator : public fs::directory_iterator {
         fs::path directory;
 

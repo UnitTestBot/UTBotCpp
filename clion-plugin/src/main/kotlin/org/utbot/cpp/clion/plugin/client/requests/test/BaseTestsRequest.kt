@@ -5,7 +5,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.FocusAction
-import org.utbot.cpp.clion.plugin.client.handlers.TestsStreamHandler
+import org.utbot.cpp.clion.plugin.client.handlers.testsStreamHandler.TestsStreamHandler
 import org.utbot.cpp.clion.plugin.client.requests.BaseRequest
 import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import org.utbot.cpp.clion.plugin.utils.getLongestCommonPathFromRoot

@@ -69,6 +69,11 @@ namespace FileSystemUtils {
         this->directory = directory;
     }
 
+    std::string read(const fs::path &path) {
+        std::ifstream inputStream(path);
+        return std::string { std::istreambuf_iterator<char>(inputStream), std::istreambuf_iterator<char>() };
+    }
+
     size_t RecursiveDirectoryIterator::size() const {
         return std::distance(fs::recursive_directory_iterator(directory), fs::recursive_directory_iterator());
     }

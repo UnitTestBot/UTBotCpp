@@ -22,6 +22,7 @@ import org.utbot.cpp.clion.plugin.actions.ReconnectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
+import org.utbot.cpp.clion.plugin.actions.SyncWrappersAndStubsAction
 import org.utbot.cpp.clion.plugin.actions.TogglePluginAction
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus

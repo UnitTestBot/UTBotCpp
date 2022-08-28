@@ -1,22 +1,32 @@
-package org.utbot.cpp.clion.plugin.client.handlers
+package org.utbot.cpp.clion.plugin.client.handlers.testsStreamHandler
 
 import com.intellij.openapi.components.service
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.exists
+import com.intellij.util.io.readText
+import kotlin.io.path.appendText
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.client.handlers.SourceCode
+import org.utbot.cpp.clion.plugin.client.handlers.StreamHandlerWithProgress
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
-import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.createFileWithText
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
+import org.utbot.cpp.clion.plugin.utils.isCMakeListsFile
 import org.utbot.cpp.clion.plugin.utils.isSarifReport
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.markDirtyAndRefresh
 import org.utbot.cpp.clion.plugin.utils.nioPath
+import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Testgen
 import testsgen.Util
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -31,23 +41,31 @@ class TestsStreamHandler(
 ) : StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
 
     private val myGeneratedTestFilesLocalFS: MutableList<Path> = mutableListOf()
+    private var isCMakePresent = false
+    private var isSarifPresent = false
 
     override fun onData(data: Testgen.TestsResponse) {
         super.onData(data)
 
-        val testSourceCodes = data.testSourcesList
-            .map { SourceCode(it, project) }
-            .filter { !it.localPath.isSarifReport() }
+        // currently testSourcesList contains not only test sourse codes but
+        // also some extra files like sarif report, cmake generated file
+        // this was done for compatibility
+        val sourceCodes = data.testSourcesList.mapNotNull { it.toSourceCodeOrNull() }
+        val testSourceCodes = sourceCodes
+            .filter { !it.localPath.isSarifReport() && !it.localPath.isCMakeListsFile() }
         handleTestSources(testSourceCodes)
 
-        val stubSourceCodes = data.stubs.stubSourcesList.map { SourceCode(it, project) }
+        // for stubs we know that stubSourcesList contains only stub sources
+        val stubSourceCodes = data.stubs.stubSourcesList.mapNotNull { it.toSourceCodeOrNull() }
         handleStubSources(stubSourceCodes)
 
-        val sarifReport =
-            data.testSourcesList.find { it.filePath.convertFromRemotePathIfNeeded(project).isSarifReport() }?.let {
-                SourceCode(it, project)
-            }
-        sarifReport?.let { handleSarifReport(it) }
+        val sarifReport = sourceCodes.find { it.localPath.isSarifReport() }
+        if (sarifReport != null)
+            handleSarifReport(sarifReport)
+
+        val cmakeFile = sourceCodes.find { it.localPath.endsWith("CMakeLists.txt") }
+        if (cmakeFile != null)
+            handleCMakeFile(cmakeFile)
 
         // for new generated tests remove previous testResults
         project.service<TestsResultsStorage>().clearTestResults(testSourceCodes)
@@ -55,8 +73,57 @@ class TestsStreamHandler(
 
     override fun onFinish() {
         super.onFinish()
+        if (!isCMakePresent)
+            project.logger.warn("CMake file is missing in the tests response")
+        if (!isSarifPresent)
+            project.logger.warn("Sarif report is missing in the tests response")
         // tell ide to refresh vfs and refresh project tree
         markDirtyAndRefresh(project.nioPath)
+    }
+
+    private fun handleCMakeFile(cmakeSourceCode: SourceCode) {
+        isCMakePresent = true
+        createFileWithText(cmakeSourceCode.localPath, cmakeSourceCode.content)
+        val rootCMakeFile = project.nioPath.resolve("CMakeLists.txt")
+        if (!rootCMakeFile.exists()) {
+            project.logger.warn("Root CMakeLists.txt file does not exist. Skipping CMake patches.")
+            return
+        }
+
+        val currentCMakeFileContent = rootCMakeFile.readText()
+        val cMakePrinter = CMakePrinter(currentCMakeFileContent)
+        invokeOnEdt { // we can show dialog only from edt
+
+            if (!project.settings.storedSettings.isGTestInstalled) {
+                val shouldInstallGTestDialog = ShouldInstallGTestDialog(project)
+
+                if (shouldInstallGTestDialog.showAndGet()) {
+                    cMakePrinter.addDownloadGTestSection()
+                }
+
+                // whether user confirmed that gtest is installed or we added the gtest section, from now on
+                // we will assume that gtest is installed
+                project.settings.storedSettings.isGTestInstalled = true
+            }
+
+            cMakePrinter.addSubdirectory(project.settings.storedSettings.testDirRelativePath)
+
+            // currently we are on EDT, but writing to file better to be done on background thread
+            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Modifying CMakeLists.txt file", false) {
+                override fun run(progressIndicator: ProgressIndicator) {
+                    try {
+                        if (!cMakePrinter.isEmpty)
+                            project.nioPath.resolve("CMakeLists.txt").appendText(cMakePrinter.get())
+                    } catch (e: IOException) {
+                        notifyError(
+                            UTBot.message("notify.title.error"),
+                            UTBot.message("notify.error.write.to.file", e.message ?: "unknown reason"),
+                            project
+                        )
+                    }
+                }
+            })
+        }
     }
 
     override fun onCompletion(exception: Throwable?) {
@@ -71,6 +138,7 @@ class TestsStreamHandler(
     }
 
     private fun handleSarifReport(sarif: SourceCode) {
+        isSarifPresent = true
         backupPreviousClientSarifReport(sarif.localPath)
         createSourceCodeFiles(listOf(sarif), "sarif report")
         project.logger.info { "Generated SARIF report file ${sarif.localPath}" }
@@ -94,6 +162,15 @@ class TestsStreamHandler(
                 "Generated test file ${sourceCode.localPath}"
             }
             logger.info(testsGenerationResultMessage)
+        }
+    }
+
+    private fun Util.SourceCode.toSourceCodeOrNull(): SourceCode? {
+        return try {
+            SourceCode(this, project)
+        } catch (e: IllegalArgumentException) {
+            project.logger.error("Could not convert remote path to local version: bad path: ${this.filePath}")
+            null
         }
     }
 

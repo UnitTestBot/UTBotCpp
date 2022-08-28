@@ -41,7 +41,8 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var verbose: Boolean = false,
         var timeoutPerFunction: Int = 30,
         var timeoutPerTest: Int = 0,
-        var isPluginEnabled: Boolean = false
+        var isPluginEnabled: Boolean = false,
+        var isGTestInstalled: Boolean = false
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
             buildDirRelativePath = model.projectSettings.buildDirRelativePath
@@ -144,17 +145,23 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             }
         }
 
-    var sourceDirs: Set<String> get() {
-        return state.sourceDirs
-    }
-    set(value) {
-        state.sourceDirs = value
-    }
+    var isGTestInstalled: Boolean
+        get() = myState.isGTestInstalled
+        set(value) {
+            myState.isGTestInstalled = value
+        }
+
+    var sourceDirs: Set<String>
+        get() {
+            return state.sourceDirs
+        }
+        set(value) {
+            state.sourceDirs = value
+        }
 
     private fun isTargetUpToDate(): Boolean {
         return project.service<UTBotTargetsController>().isTargetUpToDate(myState.targetPath)
     }
-
 
 
     override fun getState() = myState

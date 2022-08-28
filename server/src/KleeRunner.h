@@ -12,6 +12,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include <vector>
+#include <utils/FileInfoForTransfer.h>
 
 class KleeRunner {
 public:
@@ -33,7 +34,8 @@ public:
                  const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo, TestsWriter *testsWriter, bool isBatched,
                  bool interactiveMode,
-                 StatsUtils::TestsGenerationStatsFileMap &generationStats);
+                 StatsUtils::TestsGenerationStatsFileMap &generationStats,
+                 const FileInfoForTransfer &generatedCMake);
 
 private:
     const utbot::ProjectContext projectContext;

@@ -132,7 +132,8 @@ export function checkTestFilesGenerated(dirPath: string, srcFiles: string[]): bo
     walk(testDirPath).forEach(file => {
         const fileExt = path.parse(file).ext;
         const testFileName = path.parse(file).name;
-        if (testFileName.search(/_stub$/) < 0 && !(fileExt === ".mk") && !(testFileName.endsWith("_wrapper"))) {
+        if (testFileName.search(/_stub$/) < 0 && !(fileExt === ".mk") && !(testFileName.endsWith("_wrapper"))
+           && !(testFileName === "CMakeLists.txt")) {
             const fileName = checkForFirstMatch(testFileName, [/_dot_c_test_error$/, /_dot_c_test$/]);
             if (!srcFilesUsedMap.has(fileName)) {
                 TestLogger.getLogger().error('Unable to find a corresponding source file for test: [%s]', testFileName);

@@ -535,7 +535,7 @@ fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
     return Paths::createNewDirForFile(file, base, this->serverBuildDir);
 }
 
-CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &_target) {
+CollectionUtils::FileSet BuildDatabase::getSourceFilesForTarget(const fs::path &_target) const {
     return CollectionUtils::transformTo<CollectionUtils::FileSet>(
             getArchiveObjectFiles(_target),
             [this](fs::path const &objectPath) {

@@ -103,6 +103,10 @@ class ManagedClient(val project: Project) : Disposable {
         return "${(System.getenv("USER") ?: "user")}-${createRandomSequence()}"
     }
 
+    fun syncWrappersAnsStubs() {
+        client?.syncWrappersAndStubs()
+    }
+
     @TestOnly
     fun waitForServerRequestsToFinish(
         timeout: Long = SERVER_TIMEOUT,
