@@ -9,15 +9,16 @@ import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.channels.ServerLogChannelImpl
 import kotlin.random.Random
 import kotlinx.coroutines.Job
-import org.utbot.cpp.clion.plugin.UTBotPluginAwareEntity
 import org.utbot.cpp.clion.plugin.client.Client.Companion.SERVER_TIMEOUT
 import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
+import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 
 @Service
-class ManagedClient(project: Project) : Disposable, UTBotPluginAwareEntity(project) {
+class ManagedClient(val project: Project) : Disposable {
     private val clientId = generateClientID()
     private val loggingChannels = listOf<LogChannel>(GTestLogChannelImpl(project), ServerLogChannelImpl(project))
 
@@ -37,6 +38,15 @@ class ManagedClient(project: Project) : Disposable, UTBotPluginAwareEntity(proje
     fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
 
     private fun subscribeToEvents() {
+        with(project.messageBus.connect(project.projectLifetimeDisposable)) {
+            subscribe(PluginActivationListener.TOPIC, PluginActivationListener { enabled ->
+                client = if (enabled && client == null) {
+                    Client(project, clientId, loggingChannels)
+                } else {
+                    client?.dispose()
+                    null
+                }
+            })
         with(project.messageBus.connect(project.projectLifetimeDisposable)) {
             subscribe(ConnectionSettingsListener.TOPIC, object : ConnectionSettingsListener {
                 override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
@@ -58,16 +68,10 @@ class ManagedClient(project: Project) : Disposable, UTBotPluginAwareEntity(proje
         client?.executeRequestIfNotDisposed(request) ?: error("Plugin is disabled! Can't execute any requests")
     }
 
-    override fun enable() {
-        if (client == null)
-            client = Client(project, clientId, loggingChannels)
-    }
-
-    override fun disable() {
+    override fun dispose() {
         client?.dispose()
         client = null
     }
-
 
     private fun generateClientID(): String {
         fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)

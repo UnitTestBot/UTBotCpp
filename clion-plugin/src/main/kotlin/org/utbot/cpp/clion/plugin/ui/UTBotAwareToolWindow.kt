@@ -8,7 +8,10 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.client
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 
-//todo: docs
+/**
+ * Base class for creating tool windows that appear/disappear
+ * when plugin is enabled/disabled.
+ */
 abstract class UTBotAwareToolWindowFactory : ToolWindowFactory {
     abstract fun createToolWindow(project: Project, toolWindow: ToolWindow)
 
