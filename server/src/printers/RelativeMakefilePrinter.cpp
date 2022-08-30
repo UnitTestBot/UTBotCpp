@@ -27,7 +27,7 @@ RelativeMakefilePrinter::RelativeMakefilePrinter(
     initializePathsToShellVariables();
 }
 
-fs::path RelativeMakefilePrinter::getRelativePath(fs::path source) const {
+fs::path RelativeMakefilePrinter::getRelativePath(const fs::path &source) const {
     return getRelativePath(source, true);
 }
 

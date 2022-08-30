@@ -27,7 +27,7 @@ protected:
 
     // map variable with absolute path to $(someVar)
     std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable;
-    fs::path getRelativePath(fs::path source) const;
+    fs::path getRelativePath(const fs::path &source) const;
     void declareShellVariable(const std::string& variableName, fs::path path,
                               std::function<void(const std::string&, const std::string&)> shellVariableDeclarationFunction,
                               bool shouldWriteToMap = true, bool isCanonical = true);
