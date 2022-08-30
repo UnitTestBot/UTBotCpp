@@ -12,7 +12,7 @@ import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.utils.logger
 
 @Service
-class ClientManager(val project: Project): Disposable {
+class ClientManager(val project: Project) : Disposable {
     private val clientId = generateClientID()
     private val loggingChannels = listOf<LogChannel>(GTestLogChannelImpl(project), ServerLogChannelImpl(project))
     var client: Client = Client(project, clientId, loggingChannels)
@@ -28,12 +28,16 @@ class ClientManager(val project: Project): Disposable {
                 override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
                     if (newPort != client.port || newServerName != client.serverName) {
                         project.logger.trace { "Connection settings changed. Setting up new client." }
-                        client.dispose()
-                        client = Client(project, clientId, loggingChannels)
+                        restartClient()
                     }
                 }
             })
         }
+    }
+
+    fun restartClient() {
+        client.dispose()
+        client = Client(project, clientId, loggingChannels)
     }
 
     override fun dispose() = client.dispose()

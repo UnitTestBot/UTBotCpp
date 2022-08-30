@@ -188,8 +188,16 @@
                 description="Generates tests for file without context of a project">
             <synonym text="US"/>
         </action>
+
         <action id="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
                 class="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
                 text="UTBot: Run All Tests and Show Coverage"/>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.ReconnectAction"
+                class="org.utbot.cpp.clion.plugin.actions.ReconnectAction" text="Reconnect to Server"
+                description="Recreates connection to server, useful when you launch the server and plugin don&#39;t connect immedeately">
+            <override-text place="GoToAction" text="UTBot: Reconnect to Server"/>
+        </action>
+
     </actions>
 </idea-plugin>
