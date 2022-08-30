@@ -12,6 +12,7 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.Consumer
+import org.utbot.cpp.clion.plugin.actions.ReconnectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
@@ -107,6 +108,8 @@ object StatusBarActionsPopup {
         actionGroup.add(ShowWizardAction())
         actionGroup.addSeparator()
         actionGroup.add(ConfigureProjectAction())
+        actionGroup.addSeparator()
+        actionGroup.add(ReconnectAction())
         actionGroup.addSeparator()
         actionGroup.addAction(ReconfigureProjectAction())
 

@@ -9,8 +9,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
 import javax.swing.Icon
+import kotlin.io.path.name
 import org.utbot.cpp.clion.plugin.actions.generate.RunWithCoverageAction
+import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
+import org.utbot.cpp.clion.plugin.utils.localPath
 import testsgen.Testgen
 
 class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
@@ -42,6 +45,7 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
                 if (element.firstChild != null
                     || !elementRequiresIcon
                     || element.containingFile.name.endsWith(".h")
+                    || !isElementInTestFileGeneratedByUTBot(element)
                 ) {
                     return null
                 }
@@ -51,7 +55,13 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
                 return UTBotRunWithCoverageLineMarkerInfo(element, message, getStatusIcon(element))
             }
 
-            private fun getStatusIcon(element: PsiElement): Icon {
+            private fun isElementInTestFileGeneratedByUTBot(element: PsiElement) =
+                element.containingFile.virtualFile.localPath.let {
+                    it.toString().startsWith(element.project.settings.testsDirPath.toString()) &&
+                            it.name.contains("test")
+                }
+
+            fun getStatusIcon(element: PsiElement): Icon {
                 // return icon for Running All Tests
                 if (element.canPlaceAllTestsIcon()) {
                     return AllIcons.RunConfigurations.TestState.Run_run
