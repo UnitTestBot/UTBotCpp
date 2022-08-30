@@ -56,13 +56,31 @@ class ConnectionStep(
     private val connectionStatus = ObservableValue(ConnectionStatus.Failed)
     private val useConnectionDefaults = ObservableValue(false)
 
+    inner class ConnectionInfo(val port: Int, val host: String, val remotePath: String) {
+        constructor(): this(portComponent.number, hostTextField.text, remotePathTextField.text)
+        fun apply() {
+            portComponent.number = port
+            hostTextField.text = host
+            remotePathTextField.text = remotePath
+        }
+    }
+
+    private val defaultConnectionInfo = ConnectionInfo(
+        UTBotAllProjectSettings.DEFAULT_PORT,
+        UTBotAllProjectSettings.DEFAULT_HOST,
+        if (isWindows) project.path.toWslFormatIfNeeded()
+                else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
+    )
+
+    private var beforeCheckingBoxConnectionInfo: ConnectionInfo? = null
+
     init {
         useConnectionDefaults.addOnChangeListener { newValue ->
             if (newValue) {
-                portComponent.number = UTBotAllProjectSettings.DEFAULT_PORT
-                hostTextField.text = UTBotAllProjectSettings.DEFAULT_HOST
-                remotePathTextField.text = if (isWindows) project.path.toWslFormatIfNeeded()
-                    else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
+                beforeCheckingBoxConnectionInfo = ConnectionInfo()
+                defaultConnectionInfo.apply()
+            } else {
+                beforeCheckingBoxConnectionInfo?.apply()
             }
         }
     }
@@ -143,7 +161,7 @@ class ConnectionStep(
                 })
 
                 val warningMessage: () -> String = {
-                    "⚠️ Warning! Versions are different or not defined:" +
+                    "⚠️ Warning! Versions are different or not defined: " +
                             "Client: ${ourPluginVersion} Server: ${serverVersion ?: "not defined"}"
                 }
                 label(warningMessage()).visibleIf(
@@ -172,11 +190,11 @@ class ConnectionStep(
                     .applyToComponent {
                         remotePathTextField = this
                     }.enabledIf(object : ComponentPredicate() {
-                    override fun invoke() = !useConnectionDefaults.value
-                    override fun addListener(listener: (Boolean) -> Unit) {
-                        useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
-                    }
-                })
+                        override fun invoke() = !useConnectionDefaults.value
+                        override fun addListener(listener: (Boolean) -> Unit) {
+                            useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
+                        }
+                    })
             }
         }.addToUI()
     }

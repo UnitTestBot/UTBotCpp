@@ -69,6 +69,6 @@ class UTBotAllProjectSettings(val project: Project) {
 }
 
 data class UTBotSettingsModel(
-    var projectSettings: UTBotProjectStoredSettings.State,
-    var globalSettings: UTBotProjectIndependentSettings.State,
+    val projectSettings: UTBotProjectStoredSettings.State,
+    val globalSettings: UTBotProjectIndependentSettings.State,
 )
