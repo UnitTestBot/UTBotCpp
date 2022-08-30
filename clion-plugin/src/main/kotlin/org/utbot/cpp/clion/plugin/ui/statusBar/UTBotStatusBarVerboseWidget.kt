@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.util.Consumer
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Component
 import java.awt.event.MouseEvent
 
@@ -16,9 +17,12 @@ class UTBotStatusBarVerboseWidget : StatusBarWidget, StatusBarWidget.TextPresent
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
         statusBar?.updateWidget(ID())
-        statusbar.project?.messageBus?.connect()?.subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
-            statusbar.updateWidget(ID())
-        })
+        statusbar.project?.let { project ->
+            project.messageBus.connect(project.projectLifetimeDisposable)
+                .subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
+                    statusbar.updateWidget(ID())
+                })
+        }
     }
 
     override fun dispose() {}

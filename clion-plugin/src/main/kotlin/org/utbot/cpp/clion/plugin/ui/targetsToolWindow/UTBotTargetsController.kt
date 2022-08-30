@@ -12,6 +12,7 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import testsgen.Testgen
 
 @Service
@@ -98,18 +99,17 @@ class UTBotTargetsController(val project: Project) {
     }
 
     private fun connectToEvents() {
-        project.messageBus.connect().also { connection ->
+        // this connection is needed during project lifetime so we pass this service as parent disposable
+        project.messageBus.connect(project.projectLifetimeDisposable).subscribe(
             // when we reconnected to server, the targets should be updated, so we request them from server
-            connection.subscribe(
-                UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
-                object : UTBotEventsListener {
-                    override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                        if (newStatus != oldStatus) {
-                            requestTargetsFromServer()
-                        }
+            UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
+            object : UTBotEventsListener {
+                override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
+                    if (newStatus != oldStatus) {
+                        requestTargetsFromServer()
                     }
                 }
-            )
-        }
+            }
+        )
     }
 }

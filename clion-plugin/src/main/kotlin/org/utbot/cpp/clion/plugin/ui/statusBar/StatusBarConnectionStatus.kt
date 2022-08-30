@@ -12,13 +12,13 @@ import com.intellij.openapi.wm.StatusBarWidget
 import com.intellij.openapi.wm.StatusBarWidgetFactory
 import com.intellij.ui.awt.RelativePoint
 import com.intellij.util.Consumer
-import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
 import org.utbot.cpp.clion.plugin.actions.ReconnectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction
 import org.utbot.cpp.clion.plugin.actions.ShowWizardAction
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Component
 import java.awt.Point
 import java.awt.event.MouseEvent
@@ -50,14 +50,17 @@ class UTBotStatusBarWidget : StatusBarWidget, StatusBarWidget.TextPresentation {
 
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
-        statusbar.project?.messageBus?.connect()?.subscribe(
-            UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
-            object : UTBotEventsListener {
-                override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                    myConnectionStatusText = newStatus.description
-                    statusBar?.updateWidget(ID())
-                }
-            })
+        statusbar.project?.let { project ->
+            // use project level service as disposable
+            project.messageBus.connect(project.projectLifetimeDisposable).subscribe(
+                UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
+                object : UTBotEventsListener {
+                    override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
+                        myConnectionStatusText = newStatus.description
+                        statusBar?.updateWidget(ID())
+                    }
+                })
+        }
     }
 
     override fun dispose() {}

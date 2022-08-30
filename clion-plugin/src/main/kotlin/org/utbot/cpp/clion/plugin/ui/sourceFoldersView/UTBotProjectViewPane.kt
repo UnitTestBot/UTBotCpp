@@ -11,6 +11,7 @@ import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.localPath
 import javax.swing.tree.DefaultTreeModel
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 
 open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun enableDnD() = Unit
@@ -19,8 +20,9 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun getPresentableSubIdName(subId: String): String = "UTBotSourceDirectoriesPane"
 
     init {
-        // when sourceDirs are updated in model, update view
-        project.messageBus.connect().subscribe(SourceFoldersListener.TOPIC, SourceFoldersListener {
+        // this connection is needed during project lifetime, so using projectLifetimeDisposable as parent disposable
+        project.messageBus.connect(project.projectLifetimeDisposable).subscribe(SourceFoldersListener.TOPIC, SourceFoldersListener {
+            // when sourceDirs are updated in model, update view
             // it will eventually call node.update, see UTBotNode
             updateFromRoot(true)
         })

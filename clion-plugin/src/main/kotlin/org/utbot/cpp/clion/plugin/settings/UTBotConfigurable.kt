@@ -4,7 +4,6 @@ package org.utbot.cpp.clion.plugin.settings
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
@@ -14,7 +13,6 @@ import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
 import com.intellij.ui.dsl.builder.LabelPosition
 import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.bindIntValue
 import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
@@ -25,6 +23,7 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Dimension
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
@@ -39,23 +38,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
 
     init {
-        myProject.messageBus.connect()
+        myProject.messageBus.connect(myProject.projectLifetimeDisposable)
             .subscribe(UTBotSettingsChangedListener.TOPIC, UTBotSettingsChangedListener {
                 reset()
             })
     }
 
     override fun createPanel() = panel
-
-    private fun Panel.createPathChooser(property: KMutableProperty0<String>, name: String, chooserTitle: String): Row {
-        return row(name) {
-            textFieldWithBrowseButton(
-                chooserTitle,
-                myProject,
-                FileChooserDescriptorFactory.createSingleFileDescriptor()
-            ).bindText(property).columns(COLUMNS_LARGE)
-        }
-    }
 
     private fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
