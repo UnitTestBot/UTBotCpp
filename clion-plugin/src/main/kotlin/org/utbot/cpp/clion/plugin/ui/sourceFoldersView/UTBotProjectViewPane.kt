@@ -20,7 +20,7 @@ open class UTBotProjectViewPane(project: Project) : ProjectViewPane(project) {
     override fun getPresentableSubIdName(subId: String): String = "UTBotSourceDirectoriesPane"
 
     init {
-        // this connection is needed during project lifetime, so pass project service ClientManager as parent disposable
+        // this connection is needed during project lifetime, so using projectLifetimeDisposable as parent disposable
         project.messageBus.connect(project.projectLifetimeDisposable).subscribe(SourceFoldersListener.TOPIC, SourceFoldersListener {
             // when sourceDirs are updated in model, update view
             // it will eventually call node.update, see UTBotNode
