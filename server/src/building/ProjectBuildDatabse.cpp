@@ -1,23 +1,31 @@
 #include "ProjectBuildDatabase.h"
+
 #include "utils/GrpcUtils.h"
 #include "exceptions/CompilationDatabaseException.h"
 #include "utils/JsonUtils.h"
 #include "loguru.h"
 #include "utils/StringUtils.h"
+#include "utils/CompilationUtils.h"
 
+static std::string tryConvertToFullPath(const std::string &possibleFilePath, const fs::path &dirPath) {
+    fs::path fullFilePath = Paths::getCCJsonFileFullPath(possibleFilePath, dirPath);
+    return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
+}
 
-static std::string tryConvertOptionToPath(const std::string &possibleFilePath,
-                                          const fs::path &dirPath) {
-    if (StringUtils::startsWith(possibleFilePath, "-")) {
-        return possibleFilePath;
-    }
-    fs::path fullFilePath;
+static std::string tryConvertOptionToPath(const std::string &possibleFilePath, const fs::path &dirPath) {
+    std::string resOption;
     try {
-        fullFilePath = Paths::getCCJsonFileFullPath(possibleFilePath, dirPath);
+        if (StringUtils::startsWith(possibleFilePath, "-I")) {
+            resOption = CompilationUtils::getIncludePath(tryConvertToFullPath(possibleFilePath.substr(2), dirPath));
+        } else if (!StringUtils::startsWith(possibleFilePath, "-")) {
+            resOption = tryConvertToFullPath(possibleFilePath, dirPath);
+        } else {
+            resOption = possibleFilePath;
+        }
     } catch (...) {
         return possibleFilePath;
     }
-    return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
+    return resOption;
 }
 
 ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,

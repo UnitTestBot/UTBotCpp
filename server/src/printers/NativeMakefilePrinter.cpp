@@ -653,7 +653,7 @@ namespace printer {
             return;
         }
         // if in -I flag
-        if (argument.length() >= 3 && StringUtils::startsWith(argument, "-I")) {
+        if (StringUtils::startsWith(argument, "-I/")) {
             argument = CompilationUtils::getIncludePath(getRelativePath(argument.substr(2)).string());
         }
     }
