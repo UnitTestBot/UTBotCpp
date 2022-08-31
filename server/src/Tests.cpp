@@ -29,7 +29,8 @@ Tests::MethodDescription::MethodDescription()
         : suiteTestCases{{ Tests::DEFAULT_SUITE_NAME, std::vector<int>() },
                          { Tests::ERROR_SUITE_NAME,   std::vector<int>() }},
           codeText{{ Tests::DEFAULT_SUITE_NAME, std::string() },
-                   { Tests::ERROR_SUITE_NAME,   std::string() }} { }
+                   { Tests::ERROR_SUITE_NAME,   std::string() }},
+          modifiers{} { }
 
 static std::string makeDecimalConstant(std::string value, const std::string &typeName) {
     if (typeName == "long") {
@@ -65,7 +66,7 @@ static const std::unordered_map<std::string, std::string> FPSpecialValuesMapping
 
 namespace tests {
 /**
- * The function checks for precense of argument in values as it is
+ * The function checks for presence of argument in values as it is
  * called by the time processFPSpecialValue is already applied
 */
 bool isFPSpecialValue(const std::string& value) {
@@ -246,7 +247,7 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::arrayView(const std::vector<c
         elementLenInBits = typesHandler.typeSize(type);
     }
     for (size_t curPos = 0; curPos < arraySizeInBits; curPos += elementLenInBits) {
-        switch (typesHandler.getTypeKind(type)) { // tdm_todo copypaste
+        switch (typesHandler.getTypeKind(type)) {
             case TypeKind::STRUCT:
                 structInfo = typesHandler.getStructInfo(type);
                 subViews.push_back(structView(byteArray, structInfo, curPos + offsetInBits, usage));
@@ -1005,7 +1006,7 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
         const MapAddressName &fromAddressToName,
         std::vector<InitReference> &initReferences,
         const std::optional<const Tests::MethodDescription> &testingMethod) {
-    EnumInfo enumInfo; // tdm_todo refactor so don't create useless variable. create it in switch
+    EnumInfo enumInfo; // TODO refactor so don't create useless variable. create it in switch
     StructInfo structInfo;
     UnionInfo unionInfo;
     std::string message, name;

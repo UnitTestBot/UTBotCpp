@@ -8,18 +8,18 @@ static int ALIGN = -30;
 
 #define print_sizeof(S) printf("size of %*s : %zu bytes\n", ALIGN, #S, sizeof((S){}))
 
-//int main() {
-//    print_sizeof(SimpleSignedStr);
-//    print_sizeof(SimpleUnsignedStr);
-//    print_sizeof(ImplementationDefinedStr);
-//    print_sizeof(PossiblySmallStr);
-//    print_sizeof(SimpleUnsignedUnion);
-//    print_sizeof(ComplexStr);
-//    print_sizeof(StrWithBool);
-//    print_sizeof(StrWithUnnamedBitfields);
-//    print_sizeof(StrWithUnnamedZeroBitfield);
-//    print_sizeof(StrWithBreak);
-//}
+void print_sizeof_structs() {
+    print_sizeof(SimpleSignedStr);
+    print_sizeof(SimpleUnsignedStr);
+    print_sizeof(ImplementationDefinedStr);
+    print_sizeof(PossiblySmallStr);
+    print_sizeof(SimpleUnsignedUnion);
+    print_sizeof(ComplexStr);
+    print_sizeof(StrWithBool);
+    print_sizeof(StrWithUnnamedBitfields);
+    print_sizeof(StrWithUnnamedZeroBitfield);
+    print_sizeof(StrWithBreak);
+}
 
 int check_simple_signed_str(SimpleSignedStr s) {
     if (s.a == 1024 && s.b == -1 && s.d == -16) {
