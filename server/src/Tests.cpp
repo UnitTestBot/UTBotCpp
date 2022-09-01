@@ -4,6 +4,7 @@
 #include "exceptions/UnImplementedException.h"
 #include "printers/TestsPrinter.h"
 #include "utils/KleeUtils.h"
+#include "utils/StringUtils.h"
 
 #include "loguru.h"
 
@@ -481,14 +482,8 @@ namespace { //Predicate utilities.
         }
      }
 
-    bool stobool(const std::string& s) {
-        if (s == "false") return false;
-        if (s == "true") return true;
-        ABORT_F("Wrong bool value: %s", s.c_str());
-    }
-
     bool predicateMatch(const std::string &value, const LineInfo::PredicateInfo &info) {
-        switch(info.type) {
+        switch (info.type) {
             case testsgen::CHAR:
                 return compareSimpleValues(info.predicate, value, "\'" + info.returnValue + "\'");
             case testsgen::STRING:
@@ -497,16 +492,20 @@ namespace { //Predicate utilities.
             case testsgen::INT16_T:
             case testsgen::INT32_T:
             case testsgen::INT64_T:
-                return compareSimpleValues(info.predicate, std::stoll(value), std::stoll(info.returnValue));
+                return compareSimpleValues(info.predicate, StringUtils::stot<long long>(value),
+                                           StringUtils::stot<long long>(info.returnValue));
             case testsgen::UINT8_T:
             case testsgen::UINT16_T:
             case testsgen::UINT32_T:
             case testsgen::UINT64_T:
-                return compareSimpleValues(info.predicate, std::stoull(value), std::stoull(info.returnValue));
+                return compareSimpleValues(info.predicate, StringUtils::stot<unsigned long long>(value),
+                                           StringUtils::stot<unsigned long long>(info.returnValue));
             case testsgen::BOOL:
-                return compareSimpleValues(info.predicate, stobool(value), stobool(info.returnValue));
+                return compareSimpleValues(info.predicate, StringUtils::stot<bool>(value),
+                                           StringUtils::stot<bool>(info.returnValue));
             case testsgen::FLOAT:
-                return compareSimpleValues(info.predicate, std::stof(value), std::stof(info.returnValue));
+                return compareSimpleValues(info.predicate, StringUtils::stot<float>(value),
+                                           StringUtils::stot<float>(info.returnValue));
             default:
                 ABORT_F("Unsupported ValidationType: %s", ValidationType_Name(info.type).c_str());
         }

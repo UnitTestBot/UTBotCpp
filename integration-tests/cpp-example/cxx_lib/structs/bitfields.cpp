@@ -1,4 +1,4 @@
-#include "bitfields.h"
+#include "bitfields.hpp"
 #include <cassert>
 #include <limits>
 #include <cstdio>
