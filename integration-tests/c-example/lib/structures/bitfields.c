@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 static int ALIGN = -30;
 
@@ -101,7 +102,7 @@ int decode_from_bool_simple(StrWithBool s) {
      return 0;
  }
 
-int checkFieldsBounds(StrWithBreak s) {
+int check_fields_bounds(StrWithBreak s) {
     assert(s.b1 >= 0 && s.b1 <= 127);
     assert(s.breaking >= LLONG_MIN && s.breaking <= LLONG_MAX);
     assert(s.b2 >= -65536 && s.b2 <= 65535);
@@ -115,4 +116,33 @@ int checkFieldsBounds(StrWithBreak s) {
         return 3;
     }
     return 4;
+}
+
+void simple_modify(SimpleSignedStr* s) {
+    s->a++;
+    s->b = ~s->b;
+    if (s->c >= 0) {
+        s->c *= 2;
+    }
+    s->d /= 2;
+}
+
+SimpleSignedStr* create_on_heap(int a, int b, int c, int d) {
+    SimpleSignedStr* s = malloc(sizeof(SimpleSignedStr));
+    if (s) {
+        s->a = s->b = s->c = s->d = -1;
+        if (a >= -8388608 && a <= 8388607) {
+            s->a = a;
+        }
+        if (b >= -1 && b <= 0) {
+            s->b = b;
+        }
+        if (c >= -2 && c <= 1) {
+            s->c = c;
+        }
+        if (d >= -16 && d <= 15) {
+            s->d = d;
+        }
+    }
+    return s;
 }
