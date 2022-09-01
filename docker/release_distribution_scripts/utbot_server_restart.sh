@@ -22,7 +22,7 @@ then
         echo $pp
     done
     read -r -p "Do you want kill them? [Y/n] " response
-    if [[ $response =~ ^(yes|y| ) ]] || [[ -z $response ]]
+    if [[ $response =~ ^([yY][eE][sS]|[yY]| ) ]] || [[ -z $response ]]
     then
         for pp in $RUNNING; do
             echo $pp | awk '{print $2;}' | xargs kill
