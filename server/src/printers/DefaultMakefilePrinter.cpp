@@ -4,6 +4,10 @@
 
 namespace printer {
 
+const std::string DefaultMakefilePrinter::TARGET_ALL = "all";
+const std::string DefaultMakefilePrinter::TARGET_BUILD = "build";
+const std::string DefaultMakefilePrinter::TARGET_RUN = "run";
+
 DefaultMakefilePrinter::DefaultMakefilePrinter() {
     writeCopyrightHeader();
 }

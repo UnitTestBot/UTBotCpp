@@ -228,4 +228,8 @@ namespace CompilationUtils {
             return std::nullopt;
         }
     }
+
+    std::string getIncludePath(const fs::path &includePath) {
+        return "-I" + includePath.string();
+    }
 }

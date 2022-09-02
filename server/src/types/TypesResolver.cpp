@@ -20,7 +20,7 @@ static bool canBeReplaced(const std::string &nameInMap, const std::string &name)
     return nameInMap.empty() && !name.empty();
 }
 
-template <class Info>
+template<class Info>
 bool isCandidateToReplace(uint64_t id,
                           std::unordered_map<uint64_t, Info> &someMap,
                           std::string const &name) {
@@ -40,7 +40,7 @@ static size_t getDeclAlignment(const clang::TagDecl *T) {
     return T->getASTContext().getTypeAlign(T->getTypeForDecl()) / 8;
 }
 
-template <class Info>
+template<class Info>
 static void addInfo(uint64_t id, std::unordered_map<uint64_t, Info> &someMap, Info info) {
     auto [iterator, inserted] = someMap.emplace(id, info);
     LOG_IF_S(MAX, !inserted) << "Type with id=" << id << " already existed";
@@ -77,7 +77,15 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
     return fullname[id];
 }
 
+void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &name) {
+    resolveStructEx(D, name, types::SubType::Union);
+}
+
 void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string &name) {
+    resolveStructEx(D, name, types::SubType::Struct);
+}
+
+void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::string &name, types::SubType subType) {
     clang::ASTContext const &context = D->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
 
@@ -90,7 +98,8 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     types::StructInfo structInfo;
     fs::path filename =
             sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(
+            sourceManager.getMainFileID())->tryGetRealPathName().str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasAnonymousStructOrUnion = false;
@@ -111,6 +120,10 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
     ss << "Struct: " << structInfo.name << "\n"
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
+
+    structInfo.longestFieldIndexForUnionInit = SIZE_MAX;
+    size_t i = 0;
+    size_t maxFieldSize = 0;
     for (const clang::FieldDecl *F : D->fields()) {
         structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
@@ -119,12 +132,12 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                    F->getFunctionType(), field.name, sourceManager,
-                    field.type.isArrayOfPointersToFunction());
+                F->getFunctionType(), field.name, sourceManager,
+                field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
             if (returnType->isPointerType() && returnType->getPointeeType()->isStructureType()) {
                 std::string structName =
-                        returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
+                    returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
                                                   structName)) {
                     (*parent->structsToDeclare)[sourceFilePath].insert(structName);
@@ -132,8 +145,8 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
             }
         } else if (field.type.isArrayOfPointersToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                    F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
-                    field.name, sourceManager, field.type.isArrayOfPointersToFunction());
+                F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
+                field.name, sourceManager, field.type.isArrayOfPointersToFunction());
         }
         field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
         field.offset = context.getFieldOffset(F);
@@ -159,10 +172,17 @@ void TypesResolver::resolveStruct(const clang::RecordDecl *D, const std::string 
             field.accessSpecifier = types::Field::AS_pubic;
         }
         fields.push_back(field);
+        if (subType == types::SubType::Union && maxFieldSize < field.size) {
+            structInfo.longestFieldIndexForUnionInit = i;
+            maxFieldSize = field.size;
+        }
+        ++i;
     }
     structInfo.fields = fields;
     structInfo.size = getRecordSize(D);
     structInfo.alignment = getDeclAlignment(D);
+    structInfo.subType = subType;
+
     addInfo(id, parent->projectTypes->structs, structInfo);
     ss << "\nName: " << structInfo.name << ", id: " << id << " , size: " << structInfo.size << "\n";
 
@@ -238,56 +258,7 @@ void TypesResolver::updateMaximumAlignment(size_t alignment) const {
     maximumAlignment = std::max(maximumAlignment, alignment);
 }
 
-void TypesResolver::resolveUnion(const clang::RecordDecl *D, const std::string &name) {
-    clang::ASTContext const &context = D->getASTContext();
-    clang::SourceManager const &sourceManager = context.getSourceManager();
 
-    clang::QualType canonicalType = context.getTypeDeclType(D).getCanonicalType();
-    uint64_t id = types::Type::getIdFromCanonicalType(canonicalType);
-    if (!isCandidateToReplace(id, parent->projectTypes->unions, name)) {
-        return;
-    }
-
-    types::UnionInfo unionInfo;
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
-    unionInfo.filePath = Paths::getCCJsonFileFullPath(
-        sourceManager.getFilename(D->getLocation()).str(), parent->buildRootPath.string());
-    unionInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
-
-    if (Paths::isGtest(unionInfo.filePath)) {
-        return;
-    }
-
-    std::stringstream ss;
-    unionInfo.definition = ASTPrinter::getSourceText(D->getSourceRange(), sourceManager);
-    ss << "Union: " << unionInfo.name << "\n"
-       << "\tFile path: " << unionInfo.filePath.string() << "";
-    std::vector<types::Field> fields;
-    unionInfo.hasAnonymousStructOrUnion = false;
-    for (const clang::FieldDecl *F : D->fields()) {
-        unionInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
-        types::Field field;
-        field.name = F->getNameAsString();
-        const clang::QualType paramType = F->getType().getCanonicalType();
-        field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
-        // TODO: add flag in logger that prevents line ending
-        if (LogUtils::isMaxVerbosity()) {
-            ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
-        }
-        field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
-        fields.push_back(field);
-    }
-    unionInfo.fields = fields;
-    unionInfo.size = getRecordSize(D);
-    unionInfo.alignment = getDeclAlignment(D);
-
-    addInfo(id, parent->projectTypes->unions, unionInfo);
-    ss << "\nName: " << unionInfo.name << ", id: " << id << "\n";
-
-    updateMaximumAlignment(unionInfo.alignment);
-
-    LOG_S(DEBUG) << ss.str();
-}
 
 void TypesResolver::resolve(const clang::QualType &type) {
     clang::TagDecl *tagDecl = type->getAsTagDecl();

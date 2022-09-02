@@ -21,7 +21,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
     strComment("Please, do not change the line above") << NL;
     writeCopyrightHeader();
     ss << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
-    ss << TAB_N() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << NL;
+    ss << LINE_INDENT() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << NL;
     ss << "#endif" << NL;
     strInclude(Paths::sourcePathToHeaderInclude(tests.sourceFilePath));
     ss << NL;

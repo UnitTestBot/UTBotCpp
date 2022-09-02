@@ -50,6 +50,8 @@ namespace CompilationUtils {
     fs::path getBundledCompilerPath(CompilerName compilerName);
 
     std::optional<fs::path> getResourceDirectory(const fs::path& buildCompilerPath);
+
+    std::string getIncludePath(const fs::path &includePath);
 }
 
 #endif //UNITTESTBOT_COPMILATIONUTILS_H

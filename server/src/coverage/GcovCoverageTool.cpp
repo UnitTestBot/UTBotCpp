@@ -13,6 +13,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 #include "json.hpp"
@@ -39,11 +40,12 @@ GcovCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch
                 projectContext,
                 Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath));
             auto gtestFlags = getGTestFlags(testToLaunch);
-            auto buildCommand =
-                MakefileUtils::MakefileCommand(projectContext, makefile, "build", gtestFlags);
-            auto runCommand =
-                MakefileUtils::MakefileCommand(projectContext, makefile, "run", gtestFlags);
-            result.push_back({ testToLaunch, buildCommand, runCommand });
+            auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                               printer::DefaultMakefilePrinter::TARGET_BUILD,
+                                                               gtestFlags);
+            auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                             printer::DefaultMakefilePrinter::TARGET_RUN, gtestFlags);
+            result.push_back({testToLaunch, buildCommand, runCommand});
         });
     return result;
 }

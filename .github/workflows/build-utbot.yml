@@ -24,7 +24,7 @@ jobs:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
@@ -63,7 +63,7 @@ jobs:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
@@ -94,12 +94,29 @@ jobs:
           ./docker/action-scripts/build-vsix.sh
           chmod +x docker/action-scripts/integration-tests.sh
           ./docker/action-scripts/integration-tests.sh
+      - name: Setup Java for building CLion plugin
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
+      - name: Run CLion integration tests
+        run: |
+          chmod +x docker/action-scripts/runClionIntegrationTests.sh 
+          ./docker/action-scripts/runClionIntegrationTests.sh
+      - name: Upload logs
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: test-report
+          path: |
+            /github/home/logs
+            clion-plugin/build/reports/tests/**/*
 
   build-utbot-and-generate-test:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
@@ -136,7 +153,7 @@ jobs:
 
   build-portable-container:
     needs: build-utbot-and-generate-test
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     env:
       DOCKER_IMAGE_TAG: docker-image
       PORTABLE_CONTAINER_NAME: Portable

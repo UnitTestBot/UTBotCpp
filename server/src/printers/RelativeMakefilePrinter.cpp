@@ -27,7 +27,7 @@ RelativeMakefilePrinter::RelativeMakefilePrinter(
     initializePathsToShellVariables();
 }
 
-fs::path RelativeMakefilePrinter::getRelativePath(fs::path source) const {
+fs::path RelativeMakefilePrinter::getRelativePath(const fs::path &source) const {
     return getRelativePath(source, true);
 }
 
@@ -64,16 +64,12 @@ void RelativeMakefilePrinter::declareShellVariable(const std::string& variableNa
 
 std::string RelativeMakefilePrinter::getProjectStructureRelativeTo(fs::path path) const {
     DefaultMakefilePrinter printer;
-    printer.declareVariable("export PROJECT_DIR_RELATIVE_TO_MAKEFILE",
-                    fs::relative(projectPath, path));
+    printer.declareVariable("export PROJECT_DIR_RELATIVE_TO_MAKEFILE", fs::relative(projectPath, path));
     // magic spell from https://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
     printer.declareVariable("export MAKEFILE_DIR", "$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))");
-    printer.declareVariable("export PROJECT_DIR",
-                    StringUtils::stringFormat("%s/%s", "$(MAKEFILE_DIR)", "$(PROJECT_DIR_RELATIVE_TO_MAKEFILE)"));
+    printer.declareVariable("export PROJECT_DIR", "$(MAKEFILE_DIR)/$(PROJECT_DIR_RELATIVE_TO_MAKEFILE)");
     printer.declareVariable("export BUILD_RELATIVE", buildDirectoryRelative);
-    printer.declareVariable("export BUILD_DIR", StringUtils::stringFormat("%s/%s",
-                                                           getRelativePath(projectPath),
-                                                           getRelativePath(buildDirectoryRelative)));
+    printer.declareVariable("export BUILD_DIR", "$(PROJECT_DIR)/$(BUILD_RELATIVE)");
     return printer.ss.str();
 }
 

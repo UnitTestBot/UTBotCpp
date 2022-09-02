@@ -6,7 +6,6 @@ on:
       - '[1-9][0-9][0-9][0-9].[1]?[0-9].[0-9]+'
     branches:
       - main
-      - belous-dp/bitfields
 
 jobs:
   matrix-prep:
@@ -26,7 +25,7 @@ jobs:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     env:
       ARTIFACT_DIR: utbot-artifact
     container:
@@ -66,6 +65,15 @@ jobs:
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
           ./docker/action-scripts/build-vsix.sh
+      - name: Setup Java for building CLion plugin
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
+      - name: build CLion plugin
+        run: |
+          chmod +x docker/action-scripts/build-clion-plugin.sh
+          ./docker/action-scripts/build-clion-plugin.sh
       - name: build UTBot
         run: |
           chmod +x docker/action-scripts/build-utbot.sh

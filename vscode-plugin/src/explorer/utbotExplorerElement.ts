@@ -18,7 +18,7 @@ export class UTBotExplorerFolder extends vs.TreeItem {
     ) {
         super(label, collapsibleState);
         this.tooltip = `${this.path}`;
-        this.description = pathlib.relative(vsUtils.getProjectDirByOpenedFile().fsPath, vs.Uri.parse(this.path).fsPath);
+        this.description = pathlib.relative(vsUtils.getProjectDirByOpenedFile().fsPath, vs.Uri.file(this.path).fsPath);
     }
 
     contextValue = this.isUsed ? UTBotExplorerFolder.UTBOT_FOLDER_USED : UTBotExplorerFolder.UTBOT_FOLDER_NOT_USED;

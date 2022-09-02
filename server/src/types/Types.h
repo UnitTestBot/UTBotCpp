@@ -285,14 +285,18 @@ namespace types {
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
 
-    struct UnionInfo: TypeInfo {
-        std::vector<Field> fields{};
-        bool hasAnonymousStructOrUnion;
+    enum class SubType {
+        Struct,
+        Union
     };
 
-    struct StructInfo: UnionInfo {
+    struct StructInfo: TypeInfo {
+        std::vector<Field> fields{};
+        size_t longestFieldIndexForUnionInit;
         FPointerMap functionFields{};
+        bool hasAnonymousStructOrUnion;
         bool isCLike;
+        SubType subType;
     };
 
     struct EnumInfo: TypeInfo {
@@ -305,7 +309,7 @@ namespace types {
 
         std::optional<std::string> access;
 
-        std::string getEntryName(std::string const& value, utbot::Language language);
+        std::string getEntryName(std::string const& value, utbot::Language language) const;
     };
 
     struct TypeSupport {
@@ -316,17 +320,21 @@ namespace types {
 
     using StructsMap = std::unordered_map<uint64_t, StructInfo>;
     using EnumsMap = std::unordered_map<uint64_t, EnumInfo>;
-    using UnionsMap = std::unordered_map<uint64_t, UnionInfo>;
 
     struct TypeMaps {
         StructsMap structs;
         EnumsMap enums;
-        UnionsMap unions;
     };
 
     // Looking for a better name
-    enum class TypeKind { PRIMITIVE, STRUCT, OBJECT_POINTER,
-            FUNCTION_POINTER, ARRAY, ENUM, UNION, UNKNOWN };
+    enum class TypeKind {
+        PRIMITIVE,
+        STRUCT_LIKE,
+        ENUM,
+        OBJECT_POINTER,
+        FUNCTION_POINTER,
+        ARRAY,
+        UNKNOWN };
 
     enum class TypeUsage { PARAMETER, RETURN, ALL };
     enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
@@ -435,7 +443,7 @@ namespace types {
          * Returns true if given type is a struct, otherwise false.
          * @return whether given type is a struct
          */
-        bool isStruct(const Type&) const;
+        bool isStructLike(const Type&) const;
 
 
         /**
@@ -443,13 +451,6 @@ namespace types {
          * @return whether given type is an enum
          */
         bool isEnum(const Type&) const;
-
-
-        /**
-         * Returns true if given type is a union, otherwise false.
-         * @return whether given type is a union
-         */
-        bool isUnion(const Type&) const;
 
 
         /**
@@ -513,7 +514,7 @@ namespace types {
 
         /**
          * Returns StructInfo by given struct name.
-         * For safe usage, please use isStruct(..) before calling getStructInfo(..).
+         * For safe usage, please use isStructLike(..) before calling getStructInfo(..).
          * @return StructInfo for given struct.
          */
         StructInfo getStructInfo(const Type&) const;
@@ -525,20 +526,11 @@ namespace types {
          */
         EnumInfo getEnumInfo(const Type&) const;
 
-        /**
-         * Returns UnionInfo by given union name.
-         * For safe usage, please use isUnion(..) before calling getUnionInfo(..).
-         * @return UnionInfo for given union.
-         */
-        UnionInfo getUnionInfo(const Type&) const;
-
-        bool isStruct(uint64_t id) const;
+        bool isStructLike(uint64_t id) const;
         bool isEnum(uint64_t id) const;
-        bool isUnion(uint64_t id) const;
 
         [[nodiscard]] StructInfo getStructInfo(uint64_t id) const;
         [[nodiscard]] EnumInfo getEnumInfo(uint64_t id) const;
-        [[nodiscard]] UnionInfo getUnionInfo(uint64_t id) const;
 
         /**
          * Returns map of constraints for every supported primitive type, that might be used in

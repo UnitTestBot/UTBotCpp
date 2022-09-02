@@ -15,11 +15,13 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
-
 #include "utils/path/FileSystemPath.h"
+#include "testgens/BaseTestGen.h"
+
 #include <optional>
 #include <sstream>
 #include <string>
+
 
 using json = nlohmann::json;
 
@@ -33,13 +35,7 @@ class KleeGenerator {
 public:
     /**
      * @brief Also creates tmp directories for build files.
-     * @param projectContext contains context about current project.
-     * @param settingsContext contains context about settings applied for current request.
-     * @param serverBuildDir Path to folder on server machine where project build dirs are located.
-     * @param sourcesFilePaths Paths to project files. Files which are listed in
-     * [compile_commands.json](https://clang.llvm.org/docs/JSONCompilationDatabase.html), filtered
-     * by them.
-     * @param compilationDatabase Pointer to compile_commands.json object.
+     * @param testGen contains request and build information.
      * @param typesHandler provides additional information about types.
      * @param filePathsSubstitution Mapping from source file path to modified file. Required for
      * line test generation requests.
@@ -47,14 +43,8 @@ public:
      * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
      * reasons.
      */
-    KleeGenerator(utbot::ProjectContext projectContext,
-                  utbot::SettingsContext settingsContext,
-                  fs::path serverBuildDir,
-                  std::shared_ptr<CompilationDatabase> compilationDatabase,
-                  types::TypesHandler &typesHandler,
-                  PathSubstitution filePathsSubstitution,
-                  std::shared_ptr<BuildDatabase> buildDatabase = nullptr,
-                  const ProgressWriter *progressWriter = DummyStreamWriter::getInstance());
+    KleeGenerator(BaseTestGen *testGen, types::TypesHandler &typesHandler,
+                  PathSubstitution filePathsSubstitution);
 
     struct BuildFileInfo {
         fs::path outFilePath;
@@ -128,7 +118,7 @@ public:
                            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
                            bool verbose = false);
 
-    [[nodiscard]] std::shared_ptr<BuildDatabase> getBuildDatabase() const;
+    [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 
     void handleFailedFunctions(tests::TestsMap &testsMap);
 
@@ -146,29 +136,25 @@ public:
     std::optional<utbot::CompileCommand>
     getCompileCommandForKlee(const fs::path &hintPath,
                              const CollectionUtils::FileSet &stubSources,
-                             const std::vector<std::string> &flags) const;
+                             const std::vector<std::string> &flags,
+                             bool forStub) const;
 
     std::vector<utbot::CompileCommand>
     getCompileCommandsForKlee(const CollectionUtils::MapFileTo<fs::path> &filesToBuild,
                               const CollectionUtils::FileSet &stubSources) const;
 
 private:
-    const utbot::ProjectContext projectContext;
-    const utbot::SettingsContext settingsContext;
-    fs::path projectTmpPath;
-    std::shared_ptr<CompilationDatabase> compilationDatabase;
+    BaseTestGen *testGen;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
-    std::shared_ptr<BuildDatabase> buildDatabase;
-    const ProgressWriter *progressWriter;
 
     CollectionUtils::MapFileTo<std::vector<std::string>> failedFunctions;
 
     fs::path writeKleeFile(
-        printer::KleePrinter &kleePrinter,
-        Tests const &tests,
-        const std::shared_ptr<LineInfo> &lineInfo,
-        const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
+            printer::KleePrinter &kleePrinter,
+            Tests const &tests,
+            const std::shared_ptr<LineInfo> &lineInfo,
+            const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
             [](tests::Tests::MethodDescription const &) { return true; });
 };
 

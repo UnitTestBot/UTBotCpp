@@ -42,11 +42,7 @@ namespace printer {
 
         void genConstraintsForEnum(const ConstraintsState &state);
 
-        void genConstraintsForUnion(const ConstraintsState &state);
-
         void genConstraintsForPointerInStruct(const ConstraintsState &state);
-
-        void genConstraintsForPointerInUnion(const ConstraintsState &state);
 
         static std::string cexConstraints(const std::string &name, const types::Type &type);
 

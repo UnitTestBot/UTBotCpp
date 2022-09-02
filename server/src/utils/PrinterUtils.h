@@ -40,9 +40,7 @@ namespace PrinterUtils {
                             utbot::ProjectContext const &projectContext,
                             const fs::path& sourceFilePath);
 
-    std::string getFieldAccess(std::string const& objectName, types::Field const &field);
-
-    std::string getFieldAccess(std::string const &objectName, std::string const &fieldName);
+    std::string getFieldAccess(const std::string &objectName, const types::Field &field);
 
     std::string fillVarName(std::string const &temp, std::string const &varName);
 

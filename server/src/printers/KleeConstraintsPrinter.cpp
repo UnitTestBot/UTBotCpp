@@ -26,14 +26,11 @@ KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Typ
             state = { name, name, paramType, state.endString };
             genConstraintsForPointerOrArray(state);
             break;
-        case TypeKind::STRUCT:
+        case TypeKind::STRUCT_LIKE:
             genConstraintsForStruct(state);
             break;
         case TypeKind::ENUM:
             genConstraintsForEnum(state);
-            break;
-        case TypeKind::UNION:
-            genConstraintsForUnion(state);
             break;
         default:
             genConstraintsForPrimitive(state);
@@ -57,7 +54,7 @@ void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &
 }
 
 void KleeConstraintsPrinter::noConstraints(const std::string &cause) {
-    ss << TAB_N() << "// No constraints for " << cause << NL;
+    ss << LINE_INDENT() << "// No constraints for " << cause << NL;
 }
 
 void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state) {
@@ -71,44 +68,6 @@ void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state
         }
     }
     strFunctionCall(PrinterUtils::KLEE_ASSUME, { _ss.str() });
-}
-
-void KleeConstraintsPrinter::genConstraintsForUnion(const ConstraintsState &state) {
-    UnionInfo curUnion = typesHandler->getUnionInfo(state.curType);
-
-    for (const auto &field : curUnion.fields) {
-        if (field.isUnnamedBitfield()) {
-            noConstraints("unnamed bit fields");
-            continue;
-        }
-        auto access = PrinterUtils::getFieldAccess(state.curElement, field);
-        ConstraintsState newState = { state.paramName, access, field.type, false, state.depth + 1 };
-        switch (typesHandler->getTypeKind(field.type)) {
-        case TypeKind::PRIMITIVE:
-            genConstraintsForPrimitive(newState);
-            break;
-        case TypeKind::STRUCT:
-            return genConstraintsForStruct(newState);
-        case TypeKind::ARRAY:
-            return genConstraintsForPointerOrArray(newState);
-        case TypeKind::ENUM:
-            return genConstraintsForEnum(newState);
-        case TypeKind::UNION:
-            return genConstraintsForUnion(newState);
-        case TypeKind::OBJECT_POINTER:
-            return genConstraintsForPointerInUnion(newState);
-        case TypeKind::UNKNOWN: {
-            std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
-                                       "' in union '" + curUnion.name + "'.";
-            LOG_S(ERROR) << errorMessage;
-            throw UnImplementedException(errorMessage);
-        }
-        default:
-            std::string message = "Missing case for this TypeKind in switch";
-            LOG_S(ERROR) << message;
-            throw NoSuchTypeException(message);
-        }
-    }
 }
 
 void KleeConstraintsPrinter::genConstraintsForPointerOrArray(const ConstraintsState &state) {
@@ -131,21 +90,19 @@ void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const Constrai
         TypesHandler::isCStringType(state.curType)) {
         std::vector<std::string> charSizes(indexes.begin(), indexes.end() - 1);
         const auto charElement = constrMultiIndex(state.curElement, charSizes);
-        ss << TAB_N() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
-        ss << TAB_N() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
-        ss << TAB_N() << "break" << SCNL;
+        ss << LINE_INDENT() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
+        ss << LINE_INDENT() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
+        ss << LINE_INDENT() << "break" << SCNL;
         ss << RB();
     }
 
     ConstraintsState newState = { state.paramName, element, baseType };
     if (assignPointersToNull) {
         genConstraintsForPointerInStruct(newState);
-    } else if (typesHandler->isStruct(baseType)) {
+    } else if (typesHandler->isStructLike(baseType)) {
         genConstraintsForStruct(newState);
     } else if (typesHandler->isEnum(baseType)) {
         genConstraintsForEnum(newState);
-    } else if (typesHandler->isUnion(baseType)) {
-        genConstraintsForUnion(newState);
     } else {
         newState = { state.paramName, element, baseType };
         genConstraintsForPrimitive(newState);
@@ -160,38 +117,42 @@ void KleeConstraintsPrinter::genConstraintsForPointerInStruct(const ConstraintsS
 
 void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &state) {
     StructInfo curStruct = typesHandler->getStructInfo(state.curType);
-
+    bool isStruct = curStruct.subType == SubType::Struct;
     for (const auto &field : curStruct.fields) {
         if (field.isUnnamedBitfield()) {
             noConstraints("unnamed bit fields");
             continue;
         }
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
-        ConstraintsState newState = { state.paramName, access, field.type, state.endString, state.depth + 1 };
+        ConstraintsState newState = { state.paramName,
+                                      access,
+                                      field.type,
+                                      isStruct ? state.endString : false,
+                                      state.depth + 1 };
         std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
         switch (typesHandler->getTypeKind(field.type)) {
-        case TypeKind::PRIMITIVE:
-            genConstraintsForPrimitive(newState);
-            break;
-        case TypeKind::STRUCT:
+        case TypeKind::STRUCT_LIKE:
             genConstraintsForStruct(newState);
-            break;
-        case TypeKind::ARRAY:
-            genConstraintsForPointerOrArray(newState);
             break;
         case TypeKind::ENUM:
             genConstraintsForEnum(newState);
             break;
-        case TypeKind::UNION:
-            genConstraintsForUnion(newState);
+        case TypeKind::PRIMITIVE:
+            genConstraintsForPrimitive(newState);
+            break;
+        case TypeKind::ARRAY:
+            genConstraintsForPointerOrArray(newState);
             break;
         case TypeKind::OBJECT_POINTER:
             if (types::TypesHandler::isArrayOfPointersToFunction(field.type)) {
-                genStubForStructFunctionPointerArray(state.curElement, field.name, stubFunctionName);
+                genStubForStructFunctionPointerArray(state.curElement, field,
+                                                     stubFunctionName);
             }
             break;
         case TypeKind::FUNCTION_POINTER:
-            genStubForStructFunctionPointer(state.curElement, field.name, stubFunctionName);
+            genStubForStructFunctionPointer(state.curElement,
+                                            field,
+                                            stubFunctionName);
             break;
         case TypeKind::UNKNOWN: {
             std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
@@ -219,11 +180,6 @@ std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, cons
         }
     }
     return ssCex.str();
-}
-
-void printer::KleeConstraintsPrinter::genConstraintsForPointerInUnion(
-    const ConstraintsState &state) {
-    strFunctionCall(PrinterUtils::KLEE_ASSUME, { state.curElement + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL });
 }
 
 utbot::Language printer::KleeConstraintsPrinter::getLanguage() const {

@@ -14,6 +14,9 @@
 
 namespace utbot {
     class BaseCommand {
+    private:
+        void initOutput();
+
     protected:
         bool shouldChangeDirectory = false;
         fs::path directory;
@@ -23,6 +26,8 @@ namespace utbot {
         using iterator = decltype(commandLine)::iterator;
         using const_iterator = decltype(commandLine)::const_iterator;
 
+        iterator output;
+
         std::optional<iterator> optimizationLevel;
 
         void initOptimizationLevel();
@@ -31,7 +36,7 @@ namespace utbot {
 
         iterator findOptimizationLevelFlag();
 
-    public:
+
         BaseCommand() = default;
 
         BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
@@ -42,13 +47,17 @@ namespace utbot {
 
         BaseCommand(BaseCommand &&other) noexcept;
 
+    public:
+
         [[nodiscard]] std::list<std::string> &getCommandLine();
 
         [[nodiscard]] const std::list<std::string> &getCommandLine() const;
 
         [[nodiscard]] const fs::path &getDirectory() const;
 
-        [[nodiscard]] virtual fs::path getOutput() const = 0;
+        [[nodiscard]] fs::path getOutput() const;
+
+        void setOutput(fs::path output);
 
         [[nodiscard]] virtual bool isArchiveCommand() const = 0;
 
@@ -89,6 +98,10 @@ namespace utbot {
         size_t erase_if(std::function<bool(std::string)> f);
 
         void setOptimizationLevel(const std::string &flag);
+
+        [[nodiscard]] fs::path getBuildTool() const;
+
+        void setBuildTool(fs::path buildTool);
     };
 }
 

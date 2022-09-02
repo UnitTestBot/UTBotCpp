@@ -116,14 +116,14 @@ namespace printer {
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(
-        utbot::ProjectContext projectContext,
-        std::shared_ptr<BuildDatabase> buildDatabase,
+        const BaseTestGen *testGen,
         fs::path const &rootPath,
         fs::path primaryCompiler,
         CollectionUtils::FileSet const *stubSources,
         std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable)
         : RelativeMakefilePrinter(pathToShellVariable),
-          projectContext(std::move(projectContext)), buildDatabase(buildDatabase), rootPath(std::move(rootPath)),
+          testGen(testGen),
+          rootPath(std::move(rootPath)),
           primaryCompiler(std::move(primaryCompiler)),
           primaryCxxCompiler(CompilationUtils::toCppCompiler(this->primaryCompiler)),
           primaryCompilerName(CompilationUtils::getCompilerName(this->primaryCompiler)),
@@ -135,7 +135,7 @@ namespace printer {
               CompilationUtils::getCoverageLinkFlags(primaryCxxCompilerName), " ")),
           sanitizerLinkFlags(SanitizerUtils::getSanitizeLinkFlags(primaryCxxCompilerName)),
 
-          buildDirectory(Paths::getUtbotBuildDir(projectContext)),
+          buildDirectory(Paths::getUtbotBuildDir(testGen->projectContext)),
           dependencyDirectory(buildDirectory / "dependencies"),
           stubSources(stubSources) {
 
@@ -164,13 +164,13 @@ namespace printer {
     }
 
     fs::path NativeMakefilePrinter::getTemporaryDependencyFile(fs::path const &file) {
-        fs::path relativePath = fs::relative(file, projectContext.projectPath);
+        fs::path relativePath = fs::relative(file, testGen->projectContext.projectPath);
         return getRelativePath(dependencyDirectory) /
                Paths::addExtension(relativePath, ".Td");
     }
 
     fs::path NativeMakefilePrinter::getDependencyFile(fs::path const &file) {
-        fs::path relativePath = fs::relative(file, projectContext.projectPath);
+        fs::path relativePath = fs::relative(file, testGen->projectContext.projectPath);
         return getRelativePath(dependencyDirectory) /
                Paths::addExtension(relativePath, ".d");
     }
@@ -185,8 +185,8 @@ namespace printer {
         gtestCompilationArguments.setSourcePath(getRelativePath(gtestAllSourceFile));
         gtestCompilationArguments.setOutput(gtestAllObjectFile);
         gtestCompilationArguments.addFlagsToBegin(
-            { stringFormat("-I%s", getRelativePath(gtestLib) / "googletest" / "include"),
-              stringFormat("-I%s", getRelativePath(gtestLib) / "googletest") });
+            { CompilationUtils::getIncludePath(getRelativePath(gtestLib) / "googletest" / "include"),
+              CompilationUtils::getIncludePath(getRelativePath(gtestLib) / "googletest") });
 
         declareTarget(gtestAllObjectFile, { gtestCompilationArguments.getSourcePath() },
                       { gtestCompilationArguments.toStringWithChangingDirectory() });
@@ -206,8 +206,8 @@ namespace printer {
 
         auto gtestCompilationArguments = defaultCompileCommand;
         gtestCompilationArguments.addFlagsToBegin(
-                {stringFormat("-I%s", getRelativePath(gtestLib / "googletest" / "include")),
-                stringFormat("-I%s", getRelativePath(gtestLib / "googletest"))});
+                {CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest" / "include")),
+                 CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest"))});
         gtestCompilationArguments.setSourcePath(getRelativePath(gtestMainSourceFile));
         gtestCompilationArguments.setOutput(gtestMainObjectFile);
         declareTarget(gtestMainObjectFile, { gtestCompilationArguments.getSourcePath() },
@@ -226,10 +226,10 @@ namespace printer {
         const BuildDatabase::ObjectFileInfo &compilationUnitInfo) {
         auto compileCommand = compilationUnitInfo.command;
         fs::path compiler = CompilationUtils::getBundledCompilerPath(
-                CompilationUtils::getCompilerName(compileCommand.getCompiler()));
+                CompilationUtils::getCompilerName(compileCommand.getBuildTool()));
         fs::path cxxCompiler = CompilationUtils::toCppCompiler(compiler);
         auto compilerName = CompilationUtils::getCompilerName(compiler);
-        compileCommand.setCompiler(getRelativePathForLinker(compiler));
+        compileCommand.setBuildTool(getRelativePathForLinker(compiler));
         compileCommand.setSourcePath(getRelativePath(sourcePath));
         compileCommand.setOutput(getRelativePath(target));
 
@@ -270,7 +270,7 @@ namespace printer {
     BuildResult NativeMakefilePrinter::addObjectFile(const fs::path &objectFile,
                                                      const std::string &suffixForParentOfStubs) {
 
-        auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(objectFile);
+        auto compilationUnitInfo = testGen->getClientCompilationUnitInfo(objectFile);
         fs::path sourcePath = compilationUnitInfo->getSourcePath();
 
         fs::path pathToCompile;
@@ -278,17 +278,17 @@ namespace printer {
         BuildResult::Type buildResultType;
         BuildResult buildResult;
         if (CollectionUtils::contains(*stubSources, sourcePath)) {
-            pathToCompile = Paths::sourcePathToStubPath(projectContext, sourcePath);
-            recompiledFile = Paths::getRecompiledFile(projectContext, pathToCompile);
+            pathToCompile = Paths::sourcePathToStubPath(testGen->projectContext, sourcePath);
+            recompiledFile = Paths::getRecompiledFile(testGen->projectContext, pathToCompile);
             buildResultType = BuildResult::Type::ALL_STUBS;
         } else {
             if (Paths::isCXXFile(sourcePath)) {
                 pathToCompile = sourcePath;
             } else {
-                pathToCompile = Paths::getWrapperFilePath(projectContext, sourcePath);
+                pathToCompile = Paths::getWrapperFilePath(testGen->projectContext, sourcePath);
             }
             recompiledFile =
-                Paths::getRecompiledFile(projectContext, compilationUnitInfo->getOutputFile());
+                Paths::getRecompiledFile(testGen->projectContext, compilationUnitInfo->getOutputFile());
             buildResultType = BuildResult::Type::NO_STUBS;
         }
 
@@ -299,25 +299,25 @@ namespace printer {
     }
 
     void NativeMakefilePrinter::addTestTarget(const fs::path &sourcePath) {
-        auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(sourcePath);
+        auto compilationUnitInfo = testGen->getClientCompilationUnitInfo(sourcePath);
         auto testCompilationCommand = compilationUnitInfo->command;
-        testCompilationCommand.setCompiler(getRelativePathForLinker(primaryCxxCompiler));
+        testCompilationCommand.setBuildTool(getRelativePathForLinker(primaryCxxCompiler));
         testCompilationCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
         testCompilationCommand.removeCompilerFlagsAndOptions(
             UNSUPPORTED_FLAGS_AND_OPTIONS_TEST_MAKE);
         testCompilationCommand.removeIncludeFlags();
         const fs::path gtestLib = Paths::getGtestLibPath();
-        testCompilationCommand.addFlagToBegin(stringFormat("-I%s", getRelativePath(gtestLib / "googletest" / "include")));
+        testCompilationCommand.addFlagToBegin(CompilationUtils::getIncludePath(getRelativePath(gtestLib / "googletest" / "include")));
         if (Paths::isCXXFile(sourcePath)) {
-            testCompilationCommand.addFlagToBegin(stringFormat("-I%s", getRelativePath(Paths::getAccessPrivateLibPath())));
+            testCompilationCommand.addFlagToBegin(CompilationUtils::getIncludePath(getRelativePath(Paths::getAccessPrivateLibPath())));
         }
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
 
-        fs::path testSourcePath = Paths::sourcePathToTestPath(projectContext, sourcePath);
+        fs::path testSourcePath = Paths::sourcePathToTestPath(testGen->projectContext, sourcePath);
         fs::path compilationDirectory = compilationUnitInfo->getDirectory();
-        fs::path testObjectDir = Paths::getTestObjectDir(projectContext);
-        fs::path testSourceRelativePath = fs::relative(testSourcePath, projectContext.testDirPath);
+        fs::path testObjectDir = Paths::getTestObjectDir(testGen->projectContext);
+        fs::path testSourceRelativePath = fs::relative(testSourcePath, testGen->projectContext.testDirPath);
         fs::path testObjectPathRelative = getRelativePath(
                 testObjectDir / Paths::addExtension(testSourceRelativePath, ".o"));
         testCompilationCommand.setOutput(
@@ -332,7 +332,7 @@ namespace printer {
 
         artifacts.push_back(testCompilationCommand.getOutput());
 
-        auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen->getTargetBuildDatabase()->getClientLinkUnitInfo(rootPath);
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
         std::vector<std::string> filesToLink{ "$(GTEST_MAIN)", "$(GTEST_ALL)", testCompilationCommand.getOutput(),
@@ -353,7 +353,7 @@ namespace printer {
                           { dynamicLinkCommand.toStringWithChangingDirectory() });
         } else {
             utbot::LinkCommand dynamicLinkCommand = rootLinkUnitInfo->commands.front();
-            dynamicLinkCommand.setLinker(cxxLinker);
+            dynamicLinkCommand.setBuildTool(cxxLinker);
             dynamicLinkCommand.setOutput(testExecutablePath);
             dynamicLinkCommand.erase_if([&](std::string const &argument) {
                 return CollectionUtils::contains(rootLinkUnitInfo->files, argument) ||
@@ -386,7 +386,7 @@ namespace printer {
                             sharedOutput.value().parent_path())));
             dynamicLinkCommand.addFlagToBegin("$(LDFLAGS)");
 
-            dynamicLinkCommand.setLinker(getRelativePathForLinker(cxxLinker));
+            dynamicLinkCommand.setBuildTool(getRelativePathForLinker(cxxLinker));
             dynamicLinkCommand.setOutput(
                     getRelativePath(testExecutablePath));
 
@@ -399,14 +399,13 @@ namespace printer {
     }
     fs::path NativeMakefilePrinter::getTestExecutablePath(const fs::path &sourcePath) const {
         return Paths::removeExtension(
-            Paths::removeExtension(Paths::getRecompiledFile(projectContext, sourcePath)));
+            Paths::removeExtension(Paths::getRecompiledFile(testGen->projectContext, sourcePath)));
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(const NativeMakefilePrinter &baseMakefilePrinter,
                                                  const fs::path &sourcePath)
         : RelativeMakefilePrinter(baseMakefilePrinter.pathToShellVariable),
-          projectContext(baseMakefilePrinter.projectContext),
-          buildDatabase(baseMakefilePrinter.buildDatabase),
+          testGen(baseMakefilePrinter.testGen),
           rootPath(baseMakefilePrinter.rootPath),
           primaryCompiler(baseMakefilePrinter.primaryCompiler),
           primaryCxxCompiler(baseMakefilePrinter.primaryCxxCompiler),
@@ -427,7 +426,7 @@ namespace printer {
 
         fs::path testExecutablePath = getTestExecutablePath(sourcePath);
 
-        auto rootLinkUnitInfo = buildDatabase->getClientLinkUnitInfo(rootPath);
+        auto rootLinkUnitInfo = testGen->getTargetBuildDatabase()->getClientLinkUnitInfo(rootPath);
 
         fs::path coverageInfoBinary = sharedOutput.value();
         if (!Paths::isLibraryFile(coverageInfoBinary)) {
@@ -449,8 +448,8 @@ namespace printer {
         testRunCommand.addEnvironmentVariable(SanitizerUtils::ASAN_OPTIONS_NAME,
                                               SanitizerUtils::ASAN_OPTIONS_VALUE);
 
-        declareTarget("build", { getRelativePath(testExecutablePath) }, {});
-        declareTarget("run", { "build" },
+        declareTarget(TARGET_BUILD, { getRelativePath(testExecutablePath) }, {});
+        declareTarget(TARGET_RUN, { TARGET_BUILD },
                       { testRunCommand.toStringWithChangingDirectory() });
 
         close();
@@ -469,7 +468,7 @@ namespace printer {
             return buildResults[unitFile] = buildResult;
         }
 
-        auto linkUnitInfo = buildDatabase->getClientLinkUnitInfo(unitFile);
+        auto linkUnitInfo = testGen->getTargetBuildDatabase()->getClientLinkUnitInfo(unitFile);
         BuildResult::Type unitType = BuildResult::Type::NONE;
         CollectionUtils::MapFileTo<fs::path> fileMapping;
         auto unitBuildResults = CollectionUtils::transformTo<std::vector<BuildResult>>(
@@ -490,7 +489,7 @@ namespace printer {
         bool isExecutable = !Paths::isLibraryFile(unitFile);
 
         fs::path recompiledFile =
-            Paths::getRecompiledFile(projectContext, linkUnitInfo->getOutput());
+            Paths::getRecompiledFile(testGen->projectContext, linkUnitInfo->getOutput());
         if (isExecutable && !transformExeToLib) {
             recompiledFile = Paths::isObjectFile(recompiledFile) ?
                              recompiledFile : Paths::addExtension(recompiledFile, ".o");
@@ -514,13 +513,13 @@ namespace printer {
                 }
                 if (!linkCommand.isArchiveCommand()) {
                     if (isExecutable && !transformExeToLib) {
-                        linkCommand.setLinker(Paths::getLd());
+                        linkCommand.setBuildTool(Paths::getLd());
                         for (std::string &argument : linkCommand.getCommandLine()) {
                             transformCompilerFlagsToLinkerFlags(argument);
                         }
                     } else {
-                        linkCommand.setLinker(CompilationUtils::getBundledCompilerPath(
-                                CompilationUtils::getCompilerName(linkCommand.getLinker())));
+                        linkCommand.setBuildTool(CompilationUtils::getBundledCompilerPath(
+                                CompilationUtils::getCompilerName(linkCommand.getBuildTool())));
                     }
                     std::vector <std::string> libraryDirectoriesFlags;
                     for (std::string &argument : linkCommand.getCommandLine()) {
@@ -530,9 +529,9 @@ namespace printer {
                                 getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
                             const fs::path &absolutePath = optionalLibraryAbsolutePath.value();
-                            if (Paths::isSubPathOf(projectContext.buildDir(), absolutePath)) {
+                            if (Paths::isSubPathOf(testGen->projectContext.buildDir(), absolutePath)) {
                                 fs::path recompiledDir =
-                                        Paths::getRecompiledFile(projectContext, absolutePath);
+                                        Paths::getRecompiledFile(testGen->projectContext, absolutePath);
                                 std::string directoryFlag = getLibraryDirectoryFlag(recompiledDir);
                                 libraryDirectoriesFlags.push_back(directoryFlag);
                             }
@@ -555,7 +554,7 @@ namespace printer {
                     }
                 }
 
-                linkCommand.setLinker(getRelativePathForLinker(linkCommand.getLinker()));
+                linkCommand.setBuildTool(getRelativePathForLinker(linkCommand.getBuildTool()));
 
                 for (std::string &argument : linkCommand.getCommandLine()) {
                     tryChangeToRelativePath(argument);
@@ -614,11 +613,11 @@ namespace printer {
     void NativeMakefilePrinter::addStubs(const CollectionUtils::FileSet &stubsSet) {
         auto stubObjectFiles = CollectionUtils::transformTo<CollectionUtils::FileSet>(
             Synchronizer::dropHeaders(stubsSet), [this](fs::path const &stub) {
-                fs::path sourcePath = Paths::stubPathToSourcePath(projectContext, stub);
+                fs::path sourcePath = Paths::stubPathToSourcePath(testGen->projectContext, stub);
                 fs::path stubBuildFilePath =
-                    Paths::getStubBuildFilePath(projectContext, sourcePath);
-                auto compilationUnitInfo = buildDatabase->getClientCompilationUnitInfo(sourcePath);
-                fs::path target = Paths::getRecompiledFile(projectContext, stub);
+                    Paths::getStubBuildFilePath(testGen->projectContext, sourcePath);
+                auto compilationUnitInfo = testGen->getClientCompilationUnitInfo(sourcePath, true);
+                fs::path target = Paths::getRecompiledFile(testGen->projectContext, stub);
                 addCompileTarget(stub, target, *compilationUnitInfo);
                 return target;
             });
@@ -654,9 +653,8 @@ namespace printer {
             return;
         }
         // if in -I flag
-        if (argument.length() >= 3 && StringUtils::startsWith(argument, "-I")) {
-            argument = "-I" +
-                    getRelativePath(argument.substr(2)).string();
+        if (StringUtils::startsWith(argument, "-I/")) {
+            argument = CompilationUtils::getIncludePath(getRelativePath(argument.substr(2)).string());
         }
     }
 }
