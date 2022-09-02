@@ -150,4 +150,50 @@ namespace StringUtils {
         s.erase(std::remove(s.begin(), s.end(), '\n'), s.end());
     }
 
+    template<>
+    int stot<>(const std::string& s) {
+        return std::stoi(s);
+    }
+    template<>
+    long stot(const std::string& s) {
+        return std::stol(s);
+    }
+    template<>
+    long long stot(const std::string& s) {
+        return std::stoll(s);
+    }
+    template<>
+    unsigned int stot(const std::string& s) {
+        return std::stoul(s);
+    }
+    template<>
+    unsigned long stot(const std::string& s) {
+        return std::stoul(s);
+    }
+    template<>
+    unsigned long long stot(const std::string& s) {
+        return std::stoull(s);
+    }
+    template<>
+    float stot(const std::string& s) {
+        return std::stof(s);
+    }
+    template<>
+    double stot(const std::string& s) {
+        return std::stod(s);
+    }
+    template<>
+    long double stot(const std::string& s) {
+        return std::stold(s);
+    }
+    template<>
+    bool stot(const std::string& s) {
+        if (s == "false") {
+            return false;
+        } else if (s == "true") {
+            return true;
+        }
+        throw std::invalid_argument("Wrong bool value: " + s);
+    }
+
 }

@@ -6,6 +6,7 @@
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
+#include "utils/SizeUtils.h"
 #include "json.hpp"
 
 #include <klee/KTest.h>
@@ -13,9 +14,14 @@
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 
+#include <cassert>
+#include <climits>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <memory>
 #include <optional>
+#include <type_traits>
 #include <queue>
 #include <utility>
 #include <vector>
@@ -44,10 +50,18 @@ namespace tests {
     struct UTBotKTestObject {
         std::string name;
         std::vector<char> bytes;
-        std::vector<Offset> offsets;
+        std::vector<Offset> offsetsInBytes;
         size_t address;
         bool is_lazy = false;
 
+        /**
+         * Constructs UTBotKTestObject
+         * @param name object's name
+         * @param bytes byte array associated with object
+         * @param offsets in bytes
+         * @param address object's address
+         * @param is_lazy whether object is lazy
+         */
         UTBotKTestObject(std::string name,
                          std::vector<char> bytes,
                          std::vector<Offset> offsets,
@@ -65,15 +79,14 @@ namespace tests {
         Status status;
         std::vector<std::string> errorDescriptors;
 
-        UTBotKTest(const std::vector<UTBotKTestObject> &objects,
+        UTBotKTest(std::vector<UTBotKTestObject> objects,
                    const Status &status,
                    std::vector<std::string> &errorDescriptors) :
-            objects(objects),
-            status(status),
-            errorDescriptors(errorDescriptors)
-        {}
+                objects(std::move(objects)),
+                status(status),
+                errorDescriptors(errorDescriptors) {}
 
-        bool isError() {
+        [[nodiscard]] bool isError() const {
             return !errorDescriptors.empty();
         }
 
@@ -303,24 +316,24 @@ namespace tests {
         struct MethodParam {
             types::Type type;
             std::string name;
-            std::optional<uint64_t> alignment;
+            std::optional<size_t> alignment;
 
             bool hasIncompleteType = false;
 
             MethodParam(types::Type type,
                         std::string name,
-                        std::optional<uint64_t> alignment,
+                        std::optional<size_t> alignment,
                         bool hasIncompleteType = false)
-                : type(std::move(type)), name(std::move(name)), alignment(std::move(alignment)),
+                : type(std::move(type)), name(std::move(name)), alignment(alignment),
                   hasIncompleteType(hasIncompleteType) {
 
             }
 
-            std::string underscoredName() const {
+            [[nodiscard]] std::string underscoredName() const {
                 return "_" + name;
             }
 
-            bool isChangeable() const {
+            [[nodiscard]] bool isChangeable() const {
                 if((type.isObjectPointer() || type.isLValueReference()) &&
                     !type.isTypeContainsFunctionPointer() &&
                     !type.isConstQualifiedValue() && !types::TypesHandler::baseTypeIsVoid(type)) {
@@ -329,7 +342,7 @@ namespace tests {
                 return false;
             }
 
-            std::string dataVariableName() const {
+            [[nodiscard]] std::string dataVariableName() const {
                 return this->type.isTwoDimensionalPointer() ?
                        this->underscoredName() :
                        this->name;
@@ -338,18 +351,18 @@ namespace tests {
 
         struct TestCaseParamValue {
             std::string name;
-            std::optional<uint64_t> alignment;
+            std::optional<size_t> alignment;
             std::shared_ptr<AbstractValueView> view;
             std::vector<MethodParam> lazyParams;
             std::vector<TestCaseParamValue> lazyValues;
             TestCaseParamValue() = default;
 
-            TestCaseParamValue(const std::string &_name,
-                               const std::optional<uint64_t> &_alignment,
-                               const std::shared_ptr<AbstractValueView> &_view)
-                : name(_name),
+            TestCaseParamValue(std::string _name,
+                               const std::optional<size_t> &_alignment,
+                               std::shared_ptr<AbstractValueView> _view)
+                : name(std::move(_name)),
                   alignment(_alignment),
-                  view(_view) {}
+                  view(std::move(_view)) {}
         };
 
         struct TestCaseDescription {
@@ -470,7 +483,7 @@ namespace tests {
             }
 
             [[nodiscard]] bool hasChangeable() const {
-                for(const auto& i : params) {
+                for (const auto& i : params) {
                     if (i.isChangeable()) {
                         return true;
                     }
@@ -568,9 +581,9 @@ namespace tests {
          */
         void parseKTest(const MethodKtests &batch,
                         tests::Tests &tests,
-                        const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
+                        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                         bool filterByLineFlag,
-                        std::shared_ptr<LineInfo> lineInfo);
+                        const std::shared_ptr<LineInfo> &lineInfo);
     private:
         fs::path sourceFilePath;
 
@@ -609,8 +622,8 @@ namespace tests {
         void parseTestCases(const UTBotKTestList &cases,
                             bool filterByLineFlag,
                             Tests::MethodDescription &methodDescription,
-                            const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
-                            std::shared_ptr<LineInfo> lineInfo);
+                            const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+                            const std::shared_ptr<LineInfo> &lineInfo);
         /**
          * Parses parameters that are stored in given objects. Then parameters
          * are written into paramValues.
@@ -636,20 +649,20 @@ namespace tests {
 
         std::shared_ptr<ArrayValueView> multiArrayView(const std::vector<char> &byteArray,
                                                        const types::Type &type,
-                                                       size_t arraySize,
-                                                       size_t offset,
+                                                       size_t arraySizeInBits,
+                                                       size_t offsetInBits,
                                                        types::PointerUsage usage);
 
         std::shared_ptr<ArrayValueView> arrayView(const std::vector<char> &byteArray,
                                                   const types::Type &type,
-                                                  size_t arraySize,
-                                                  unsigned int offset,
+                                                  size_t arraySizeInBits,
+                                                  size_t offsetInBits,
                                                   types::PointerUsage usage);
 
         static std::shared_ptr<StringValueView> stringLiteralView(const std::vector<char> &byteArray,
                                                                   size_t length = 0);
 
-        std::shared_ptr<FunctionPointerView> functionPointerView(const std::optional<std::string>& scopeName,
+        std::shared_ptr<FunctionPointerView> functionPointerView(const std::optional<std::string> &scopeName,
                                                                  const std::string &methodName,
                                                                  const std::string &paramName);
 
@@ -658,12 +671,12 @@ namespace tests {
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     const types::StructInfo &curStruct,
-                                                    unsigned int offset,
+                                                    size_t offsetInBits,
                                                     types::PointerUsage usage);
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     const types::StructInfo &curStruct,
-                                                    unsigned int offset,
+                                                    size_t offsetInBits,
                                                     types::PointerUsage usage,
                                                     const std::optional<const Tests::MethodDescription> &testingMethod,
                                                     const std::string &name,
@@ -672,21 +685,21 @@ namespace tests {
 
         static std::shared_ptr<EnumValueView> enumView(const std::vector<char> &byteArray,
                                                        const types::EnumInfo &enumInfo,
-                                                       size_t offset,
-                                                       size_t len);
+                                                       size_t offsetInBits,
+                                                       size_t lenInBits);
 
         std::shared_ptr<PrimitiveValueView> primitiveView(const std::vector<char> &byteArray,
                                                           const types::Type &type,
-                                                          size_t offset,
-                                                          size_t len);
+                                                          size_t offsetInBits,
+                                                          size_t lenInBits);
 
         std::string primitiveCharView(const types::Type &type, std::string value);
         static std::string primitiveBoolView(const std::string &value);
 
         constexpr static const char *const KLEE_PATH_FLAG = "kleePathFlag";
 
-        const std::string PointerWidthType = "unsigned long long";
-        const size_t PointerWidthSize = 8;
+        const std::string PointerWidthType = "std::uintptr_t";
+        const size_t PointerWidthSizeInBits = SizeUtils::bytesToBits(sizeof(std::uintptr_t));
 
         constexpr static const char *const KLEE_PATH_FLAG_SYMBOLIC = "kleePathFlagSymbolic";
         static std::vector<RawKleeParam>::const_iterator
@@ -696,8 +709,9 @@ namespace tests {
         Tests::TestCaseDescription
         parseTestCaseParams(const UTBotKTest &ktest,
                             const Tests::MethodDescription &methodDescription,
-                            const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
+                            const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                             const std::stringstream &traceStream);
+
         void processGlobalParamPreValue(Tests::TestCaseDescription &testCaseDescription,
                                         const Tests::MethodParam &globalParam,
                                         std::vector<RawKleeParam> &rawKleeParams);
@@ -726,7 +740,7 @@ namespace tests {
                                const types::Type &paramType,
                                Tests::TestCaseParamValue &paramValue,
                                std::vector<bool> &visited,
-                               std::queue<JsonIndAndParam>& order);
+                               std::queue<JsonIndAndParam> &order);
 
         void assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
                                   const Tests::MethodDescription &methodDescription);
@@ -734,11 +748,11 @@ namespace tests {
         void assignTypeStubVar(Tests::MethodTestCase &testCase,
                                const Tests::MethodDescription &methodDescription);
 
-        size_t findFieldIndex(const types::StructInfo &structInfo, size_t offset);
+        size_t findFieldIndex(const types::StructInfo &structInfo, size_t offsetInBits);
 
         types::Type traverseLazyInStruct(std::vector<bool> &visited,
                                          const types::Type &curVarType,
-                                         size_t offset,
+                                         size_t offsetInBits,
                                          const Tests::MethodTestCase &testCase,
                                          const Tests::MethodDescription &methodDescription);
 
@@ -747,9 +761,14 @@ namespace tests {
                                                               const std::string &name,
                                                               std::string res,
                                                               const types::Type &paramType) const;
+
+        void
+        getTestParamView(const Tests::MethodDescription &methodDescription, const std::vector<RawKleeParam> &rawKleeParams,
+                         const RawKleeParam &emptyKleeParam, Tests::TestCaseDescription &testCaseDescription,
+                         const Tests::MethodParam& methodParam, std::shared_ptr<AbstractValueView> &testParamView);
     };
     /**
-     * @brief This function is used for converting primiive value of a specific type
+     * @brief This function is used for converting primitive value of a specific type
      * To a string value which we can print to .cpp file.
      */
     template <typename T>
@@ -766,37 +785,86 @@ namespace tests {
         ss << value;
         return ss.str();
     }
+
+    /**
+     * Sign extension of number stored in @b bytes with sign bit at @b signPos
+     * @tparam T type: @a char or @a unsigned @a char
+     * @param bytes byte array
+     * @param len length of bytes
+     * @param signPos 0-based index of sign bit in two's complement
+     */
+    template <typename T>
+    void sext(T* bytes, size_t len, size_t signPos) {
+        int bit = (bytes[signPos / CHAR_BIT] >> (signPos % CHAR_BIT)) & 1;
+        if (bit) {
+            T mask = static_cast<T>((1 << CHAR_BIT) - 1);
+            bytes[signPos / CHAR_BIT] |= mask ^ ((1 << (signPos % CHAR_BIT)) - 1);
+            for (size_t i = signPos / CHAR_BIT + 1; i < len; ++i) {
+                bytes[i] = mask;
+            }
+        }
+    }
+
     /**
      * This function is used for converting sequence of bytes to specific type.
-     * Returns string representation of a value recorded in byteArray.
+     * Returns string representation of a value recorded in @b byteArray.
      * @tparam T - type of value
      * @param byteArray
-     * @param offset - initial position of a value in byteArray
-     * @param len - size of T
+     * @param offset - initial position in bits of a value in byteArray
+     * @param len - number of bits to read
      * @return string representation of value
      */
     template <typename T>
     std::string readBytesAsValue(const std::vector<char> &byteArray, size_t offset, size_t len) {
-        char bytes[len];
-        for (int j = 0; j < len; j++) {
-            bytes[j] = byteArray[offset + j];
+        char bytes[sizeof(T)] = {};
+        if (offset % CHAR_BIT != 0 || len % CHAR_BIT != 0) {
+            // WARNING: assuming little endian and two's complement
+            size_t lo = offset % CHAR_BIT;
+            size_t hi = CHAR_BIT - lo;
+            size_t stop = (offset + len + CHAR_BIT - 1) / CHAR_BIT;
+            for (size_t i = offset / CHAR_BIT, j = 0; i < stop; ++i, ++j) {
+                auto byte = static_cast<unsigned char>(byteArray[i]);
+                if (i + 1 == stop) {
+                    size_t top = (offset + len) % CHAR_BIT;
+                    if (top == 0) {
+                        top = CHAR_BIT;
+                    }
+                    byte &= ((1 << top) - 1);
+                }
+                unsigned char low = byte & ((1 << lo) - 1);
+                unsigned char high = byte >> lo;
+                if (j > 0) {
+                    bytes[j - 1] |= low << hi;
+                }
+                if (j < sizeof(T)) {
+                    bytes[j] = high;
+                }
+            }
+        } else {
+            for (size_t j = 0; j < len / CHAR_BIT; j++) {
+                bytes[j] = byteArray[offset / CHAR_BIT + j];
+            }
         }
-        T *pTypeValue = (T *)bytes;
+        if constexpr(std::is_signed_v<T>) {
+            sext(bytes, sizeof(T), len - 1);
+        }
+        T *pTypeValue = (T *) bytes;
         T pValue = *pTypeValue;
         return primitiveValueToString<T>(pValue);
     }
+
     /**
      * Same as readBytesAsValue, but returns result of readBytesAsValue that is already
      * parametrized by type that corresponds to given typeName.
      * @param typeName - string name of type
      * @param byteArray - array of bytes
-     * @param offset - initial position
-     * @param len - size of type that corresponds to typeName
+     * @param offsetInBits - initial position in bits
+     * @param lenInBits - number of bits to read
      * @return string representation of value.
      */
     std::string readBytesAsValueForType(const std::vector<char> &byteArray,
                                         const std::string &typeName,
-                                        unsigned int offset,
-                                        unsigned int len);
+                                        size_t offsetInBits,
+                                        size_t lenInBits);
 }
 #endif // UNITTESTBOT_TESTS_H

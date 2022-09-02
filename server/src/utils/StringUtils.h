@@ -80,6 +80,11 @@ namespace StringUtils {
     std::string repeat(const std::string &s, int n);
 
     bool contains(std::string_view s, std::string_view t);
+
+    template<typename T>
+    T stot(const std::string&) {
+        return T();
+    }
 }
 
 #endif //UNITTESTBOT_STRINGUTIL_H

@@ -5,6 +5,8 @@
 
 #include "loguru.h"
 
+#include <cstddef>
+
 using namespace types;
 using printer::KleeConstraintsPrinter;
 
@@ -47,8 +49,12 @@ void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &
     if (!cons.empty()) {
         strFunctionCall(PrinterUtils::KLEE_PREFER_CEX, { state.paramName, cons });
     } else {
-        ss << LINE_INDENT() << "// No constraints for " << state.curElement << NL;
+        noConstraints(state.curElement);
     }
+}
+
+void KleeConstraintsPrinter::noConstraints(const std::string &cause) {
+    ss << LINE_INDENT() << "// No constraints for " << cause << NL;
 }
 
 void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state) {
@@ -113,24 +119,24 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
     StructInfo curStruct = typesHandler->getStructInfo(state.curType);
     bool isStruct = curStruct.subType == SubType::Struct;
     for (const auto &field : curStruct.fields) {
-        std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
-                                   "' in struct '" + curStruct.name + "'.";
+        if (field.isUnnamedBitfield()) {
+            noConstraints("unnamed bit fields");
+            continue;
+        }
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
         ConstraintsState newState = { state.paramName,
                                       access,
                                       field.type,
                                       isStruct ? state.endString : false,
                                       state.depth + 1 };
-        TypeKind kind = typesHandler->getTypeKind(field.type);
         std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
-        switch (kind) {
+        switch (typesHandler->getTypeKind(field.type)) {
         case TypeKind::STRUCT_LIKE:
             genConstraintsForStruct(newState);
             break;
         case TypeKind::ENUM:
             genConstraintsForEnum(newState);
             break;
-
         case TypeKind::PRIMITIVE:
             genConstraintsForPrimitive(newState);
             break;
@@ -148,8 +154,11 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
                                             field,
                                             stubFunctionName);
             break;
-        case TypeKind::UNKNOWN:
+        case TypeKind::UNKNOWN: {
+            std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
+                                       "' in struct '" + curStruct.name + "'.";
             throw UnImplementedException(errorMessage);
+        }
         default:
             std::string message = "Missing case for this TypeKind in switch";
             LOG_S(ERROR) << message;
@@ -157,15 +166,16 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
         }
     }
 }
+
 std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, const types::Type &type) {
-    std::stringstream ssCex;
     if (!CollectionUtils::containsKey(TypesHandler::preferredConstraints(), type.baseType())) {
         return "";
     }
-    for (int i = 0; i < TypesHandler::preferredConstraints().at(type.baseType()).size(); i++) {
-        ssCex << name;
-        ssCex << TypesHandler::preferredConstraints().at(type.baseType())[i];
-        if (i < (int)TypesHandler::preferredConstraints().at(type.baseType()).size() - 1) {
+    std::stringstream ssCex;
+    const std::vector<std::string> &constraints = TypesHandler::preferredConstraints().at(type.baseType());
+    for (size_t i = 0; i < constraints.size(); i++) {
+        ssCex << name << " " << constraints[i];
+        if (i + 1 < constraints.size()) {
             ssCex << " & ";
         }
     }

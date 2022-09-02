@@ -96,6 +96,9 @@ namespace visitor {
         inUnion = structInfo.subType == types::SubType::Union;
         for (int i = 0; i < structInfo.fields.size(); ++i) {
             auto const &field = structInfo.fields[i];
+            if (field.isUnnamedBitfield()) {
+                continue;
+            }
             auto newName = PrinterUtils::getFieldAccess(name, field);
             auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
             auto newAccess = PrinterUtils::getFieldAccess(access, field);

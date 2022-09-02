@@ -45,6 +45,8 @@ namespace printer {
         void genConstraintsForPointerInStruct(const ConstraintsState &state);
 
         static std::string cexConstraints(const std::string &name, const types::Type &type);
+
+        void noConstraints(const std::string &cause);
     };
 }
 

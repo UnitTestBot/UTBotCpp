@@ -5,6 +5,7 @@
 
 #include <clang/AST/Decl.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -33,7 +34,7 @@ private:
     std::string getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
                             uint64_t id, const fs::path &sourceFilePath);
 
-    void updateMaximumAlignment(uint64_t alignment) const;
+    void updateMaximumAlignment(size_t alignment) const;
 };
 
 

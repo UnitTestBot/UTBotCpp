@@ -12,6 +12,7 @@
 #include <protobuf/util.pb.h>
 #include <tsl/ordered_set.h>
 
+#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -258,9 +259,10 @@ namespace types {
     struct Field {
         types::Type type;
         std::string name;
-        unsigned int size;
-        // reassigned in structFields
-        unsigned int offset = 0;
+        /// size in @b bits
+        size_t size;
+        /// offset in @b bits, reassigned in structFields
+        size_t offset = 0;
         enum AccessSpecifier {
             AS_pubic,
             AS_protected,
@@ -268,14 +270,17 @@ namespace types {
             AS_none
         };
         AccessSpecifier accessSpecifier = AS_pubic;
+        [[nodiscard]] bool isUnnamedBitfield() const;
     };
 
     struct TypeInfo {
         fs::path filePath;
         std::string name;
         std::string definition;
-        uint64_t size;
-        uint64_t alignment;
+        /// size in @b bits
+        size_t size;
+        /// alignment in @b bytes
+        size_t alignment;
     };
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
@@ -289,7 +294,7 @@ namespace types {
         std::vector<Field> fields{};
         size_t longestFieldIndexForUnionInit;
         FPointerMap functionFields{};
-        bool hasUnnamedFields;
+        bool hasAnonymousStructOrUnion;
         bool isCLike;
         SubType subType;
     };
@@ -337,8 +342,8 @@ namespace types {
     class TypesHandler {
     public:
         struct SizeContext {
-            uint64_t pointerSize = 8;
-            uint64_t maximumAlignment = 16;
+            size_t pointerSize = 8; /// pointerSize in @b bytes
+            size_t maximumAlignment = 16; /// maximumAlignment in @b bytes
         };
 
         explicit TypesHandler(TypeMaps &types, SizeContext sizeContext)
@@ -347,7 +352,7 @@ namespace types {
         /**
          * This functions calculates size of a given type. For structs in it calculates sum of sizes of its fields,
          * ignoring alignment.
-         * @return size of given type.
+         * @return size of given type in @b bits.
          */
         size_t typeSize(const types::Type &type) const;
 
@@ -532,13 +537,13 @@ namespace types {
          * 'klee_prefer_cex' function.
          * @return map type -> constraints.
          */
-        static std::unordered_map<TypeName, std::vector<std::string>> preferredConstraints() noexcept;
+        static const std::unordered_map<TypeName, std::vector<std::string>> &preferredConstraints() noexcept;
 
         size_t getPointerSize() const noexcept {
             return sizeContext.pointerSize;
         }
 
-        uint64_t getMaximumAlignment() const noexcept {
+        size_t getMaximumAlignment() const noexcept {
             return sizeContext.maximumAlignment;
         }
 
@@ -627,11 +632,6 @@ namespace types {
                                    types::TypeSupport,
                                    IsSupportedTypeArgumentsHash>
             isSupportedTypeHash{};
-
-        static std::unordered_map<TypeName, size_t> integerTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> floatingPointTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> characterTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> boolTypesToSizes() noexcept;
 
         template<typename T>
         bool typeIsInMap(uint64_t id, const std::unordered_map<uint64_t, T>& someMap) const {

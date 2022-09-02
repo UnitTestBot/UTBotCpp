@@ -33,14 +33,14 @@ bool isCandidateToReplace(uint64_t id,
 }
 
 static size_t getRecordSize(const clang::RecordDecl *D) {
-    return D->getASTContext().getTypeSize(D->getASTContext().getRecordType(D)) / 8;
+    return D->getASTContext().getTypeSize(D->getASTContext().getRecordType(D));
 }
 
 static size_t getDeclAlignment(const clang::TagDecl *T) {
     return T->getASTContext().getTypeAlign(T->getTypeForDecl()) / 8;
 }
 
-template <class Info>
+template<class Info>
 static void addInfo(uint64_t id, std::unordered_map<uint64_t, Info> &someMap, Info info) {
     auto [iterator, inserted] = someMap.emplace(id, info);
     LOG_IF_S(MAX, !inserted) << "Type with id=" << id << " already existed";
@@ -66,7 +66,7 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
     fullname.insert(std::make_pair(id, currentStructName));
 
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
-        if (const clang::RecordDecl *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
+        if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
             clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
             uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
             if (!fullname[parentID].empty()) {
@@ -97,13 +97,14 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
 
     types::StructInfo structInfo;
     fs::path filename =
-        sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+            sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
+    fs::path sourceFilePath = sourceManager.getFileEntryForID(
+            sourceManager.getMainFileID())->tryGetRealPathName().str();
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
-    structInfo.hasUnnamedFields = false;
+    structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
-        const clang::CXXRecordDecl *cppD =  dynamic_cast<const clang::CXXRecordDecl *>(D);
+        const auto *cppD =  llvm::dyn_cast<const clang::CXXRecordDecl>(D);
         structInfo.isCLike = cppD != nullptr && cppD->isCLike();
     }
     else {
@@ -122,11 +123,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
 
     structInfo.longestFieldIndexForUnionInit = SIZE_MAX;
     size_t i = 0;
-    uint64_t maxFieldSize = 0;
+    size_t maxFieldSize = 0;
     for (const clang::FieldDecl *F : D->fields()) {
-        if (F->isUnnamedBitfield()) {
-            continue;
-        }
+        structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();
         const clang::QualType paramType = F->getType().getCanonicalType();
@@ -149,26 +148,25 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
                 F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
                 field.name, sourceManager, field.type.isArrayOfPointersToFunction());
         }
-        field.size = context.getTypeSize(F->getType()) / 8;
-        field.offset = context.getFieldOffset(F) / 8;
+        field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
+        field.offset = context.getFieldOffset(F);
         if (LogUtils::isMaxVerbosity()) {
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
-        structInfo.hasUnnamedFields |= F->isAnonymousStructOrUnion();
         if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
             switch (F->getAccess()) {
-            case clang::AccessSpecifier::AS_private :
-                field.accessSpecifier = types::Field::AS_private;
-                break;
-            case clang::AccessSpecifier::AS_protected :
-                field.accessSpecifier = types::Field::AS_protected;
-                break;
-            case clang::AccessSpecifier::AS_public :
-                field.accessSpecifier = types::Field::AS_pubic;
-                break;
-            case clang::AccessSpecifier::AS_none :
-                field.accessSpecifier = types::Field::AS_none;
-                break;
+                case clang::AccessSpecifier::AS_private :
+                    field.accessSpecifier = types::Field::AS_private;
+                    break;
+                case clang::AccessSpecifier::AS_protected :
+                    field.accessSpecifier = types::Field::AS_protected;
+                    break;
+                case clang::AccessSpecifier::AS_public :
+                    field.accessSpecifier = types::Field::AS_pubic;
+                    break;
+                case clang::AccessSpecifier::AS_none :
+                    field.accessSpecifier = types::Field::AS_none;
+                    break;
             }
         } else {
             field.accessSpecifier = types::Field::AS_pubic;
@@ -254,8 +252,9 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
        << "\tFile path: " << enumInfo.filePath.string();
     LOG_S(DEBUG) << ss.str();
 }
-void TypesResolver::updateMaximumAlignment(uint64_t alignment) const {
-    uint64_t &maximumAlignment = *(this->parent->maximumAlignment);
+
+void TypesResolver::updateMaximumAlignment(size_t alignment) const {
+    size_t &maximumAlignment = *(this->parent->maximumAlignment);
     maximumAlignment = std::max(maximumAlignment, alignment);
 }
 

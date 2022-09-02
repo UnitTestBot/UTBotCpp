@@ -6,8 +6,12 @@
 #include "TypeVisitor.h"
 #include "exceptions/UnImplementedException.h"
 #include "utils/PrinterUtils.h"
+#include "utils/SizeUtils.h"
 
 #include "loguru.h"
+
+#include <climits>
+
 /*
  * class Type
  */
@@ -146,11 +150,9 @@ bool types::Type::maybeReturnArray() const {
 
 size_t types::Type::countReturnPointers(bool decrementIfArray) const {
     size_t returnPointer = 0;
-    for (size_t i = 0; i < this->pointerArrayKinds().size(); ++i) {
-        returnPointer +=
-            this->pointerArrayKinds()[i]->getKind() == AbstractType::OBJECT_POINTER
-            ? 1
-            : 0;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    for (const auto &pointerArrayKind: pointerArrayKinds) {
+        returnPointer += pointerArrayKind->getKind() == AbstractType::OBJECT_POINTER;
     }
     if (decrementIfArray && maybeReturnArray()) {
         returnPointer--;
@@ -167,7 +169,7 @@ std::vector<size_t> types::Type::arraysSizes(PointerUsage usage) const {
         return {};
     }
     std::vector<size_t> sizes;
-    for (const auto& kind: pointerArrayKinds()) {
+    for (const auto &kind: pointerArrayKinds()) {
         switch (kind->getKind()) {
         case AbstractType::ARRAY:
             sizes.push_back(kind->getSize());
@@ -279,9 +281,10 @@ const std::string &types::Type::getStdinParamName() {
 }
 
 bool types::Type::isPointerToPointer() const {
-    return pointerArrayKinds().size() > 1 &&
-           pointerArrayKinds()[0]->getKind() == AbstractType::OBJECT_POINTER &&
-           pointerArrayKinds()[1]->getKind() == AbstractType::OBJECT_POINTER;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return pointerArrayKinds.size() > 1 &&
+           pointerArrayKinds[0]->getKind() == AbstractType::OBJECT_POINTER &&
+           pointerArrayKinds[1]->getKind() == AbstractType::OBJECT_POINTER;
 }
 
 
@@ -290,13 +293,14 @@ bool types::Type::isTwoDimensionalPointer() const {
 }
 
 bool types::Type::isPointerToArray() const {
-    return pointerArrayKinds().size() > 1 &&
-           pointerArrayKinds()[0]->getKind() == AbstractType::OBJECT_POINTER &&
-           pointerArrayKinds()[1]->getKind() == AbstractType::ARRAY;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return pointerArrayKinds.size() > 1 &&
+           pointerArrayKinds[0]->getKind() == AbstractType::OBJECT_POINTER &&
+           pointerArrayKinds[1]->getKind() == AbstractType::ARRAY;
 }
 
 bool types::Type::isConstQualifiedValue() const {
-    for(const auto& kind : mKinds) {
+    for (const auto &kind: mKinds) {
         if(kind->getKind() == AbstractType::SIMPLE) {
             if(dynamic_cast<SimpleType*>(kind.get())->isConstQualified()) {
                 return true;
@@ -312,21 +316,14 @@ bool types::Type::isConstQualifiedValue() const {
 }
 
 bool types::Type::isTypeContainsPointer() const {
-    for (const auto &kind : pointerArrayKinds()) {
-        if (kind->getKind() == AbstractType::OBJECT_POINTER) {
-            return true;
-        }
-    }
-    return false;
+    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
+    return std::any_of(pointerArrayKinds.cbegin(), pointerArrayKinds.cend(),
+                       [](auto const &kind){ return kind->getKind() == AbstractType::OBJECT_POINTER; });
 }
 
 bool types::Type::isTypeContainsFunctionPointer() const {
-    for (const auto &kind : mKinds) {
-        if (kind->getKind() == AbstractType::FUNCTION_POINTER) {
-            return true;
-        }
-    }
-    return false;
+    return std::any_of(mKinds.cbegin(), mKinds.cend(),
+                       [](auto const &kind){ return kind->getKind() == AbstractType::FUNCTION_POINTER; });
 }
 
 int types::Type::indexOfFirstPointerInTypeKinds() const {
@@ -387,6 +384,19 @@ void types::Type::replaceUsedType(const types::TypeName &newUsedType) {
 /*
  * Integer types
  */
+static const std::unordered_map<std::string, size_t> integerTypesToSizes = {
+        {"utbot_byte",         SizeUtils::bytesToBits(sizeof(char))}, // we use different name to not trigger char processing
+        {"short",              SizeUtils::bytesToBits(sizeof(short))},
+        {"int",                SizeUtils::bytesToBits(sizeof(int))},
+        {"long",               SizeUtils::bytesToBits(sizeof(long))},
+        {"long long",          SizeUtils::bytesToBits(sizeof(long long))},
+        {"unsigned short",     SizeUtils::bytesToBits(sizeof(unsigned short))},
+        {"unsigned int",       SizeUtils::bytesToBits(sizeof(unsigned int))},
+        {"unsigned long",      SizeUtils::bytesToBits(sizeof(unsigned long))},
+        {"unsigned long long", SizeUtils::bytesToBits(sizeof(unsigned long long))},
+        {"unsigned char",      SizeUtils::bytesToBits(sizeof(unsigned char))} // we do not want to treat an unsigned char as character literal
+};
+
 bool types::TypesHandler::isIntegerType(const Type &type) {
     return type.isSimple() && isIntegerType(type.baseType());
 }
@@ -396,40 +406,56 @@ bool types::TypesHandler::isUnsignedType(const Type &type) {
 }
 
 bool types::TypesHandler::isIntegerType(const TypeName &typeName) {
-    return CollectionUtils::containsKey(integerTypesToSizes(), typeName);
+    return CollectionUtils::containsKey(integerTypesToSizes, typeName);
 }
 
 /*
  * Floating point types
  */
+static const std::unordered_map<std::string, size_t> floatingPointTypesToSizes = {
+        {"float",       SizeUtils::bytesToBits(sizeof(float))},
+        {"double",      SizeUtils::bytesToBits(sizeof(double))},
+        {"long double", SizeUtils::bytesToBits(sizeof(long double))}
+};
+
 bool types::TypesHandler::isFloatingPointType(const Type &type) {
     return type.isSimple() && isFloatingPointType(type.baseType());
 }
 
 bool types::TypesHandler::isFloatingPointType(const TypeName &type) {
-    return CollectionUtils::containsKey(floatingPointTypesToSizes(), type);
+    return CollectionUtils::containsKey(floatingPointTypesToSizes, type);
 }
 
 /*
  * Character types
  */
+static const std::unordered_map<std::string, size_t> characterTypesToSizes = {
+        {"char",          SizeUtils::bytesToBits(sizeof(char))},
+        {"signed char",   SizeUtils::bytesToBits(sizeof(signed char))},
+};
+
 bool types::TypesHandler::isCharacterType(const Type &type) {
     return type.isSimple() && isCharacterType(type.baseType());
 }
 
 bool types::TypesHandler::isCharacterType(const TypeName &type) {
-    return CollectionUtils::containsKey(characterTypesToSizes(), type);
+    return CollectionUtils::containsKey(characterTypesToSizes, type);
 }
 
 /*
  * Boolean types
  */
+static const std::unordered_map<std::string, size_t> boolTypesToSizes = {
+        {"bool",  SizeUtils::bytesToBits(sizeof(bool))},
+        {"_Bool", SizeUtils::bytesToBits(sizeof(bool))}
+};
+
 bool types::TypesHandler::isBoolType(const Type &type) {
     return type.isSimple() && isBoolType(type.baseType());
 }
 
 bool types::TypesHandler::isBoolType(const TypeName &type) {
-    return CollectionUtils::containsKey(boolTypesToSizes(), type);
+    return CollectionUtils::containsKey(boolTypesToSizes, type);
 }
 
 /*
@@ -460,6 +486,10 @@ bool types::TypesHandler::isStructLike(const Type &type) const {
 
 bool types::TypesHandler::isStructLike(uint64_t id) const {
     return typeIsInMap(id, typeMaps.structs);
+}
+
+bool types::Field::isUnnamedBitfield() const {
+    return name.empty() && TypesHandler::isPrimitiveType(type);
 }
 
 /*
@@ -527,15 +557,15 @@ types::EnumInfo types::TypesHandler::getEnumInfo(uint64_t id) const {
     return typeFromMap<EnumInfo>(id, typeMaps.enums);
 }
 
-/*
- * Check if type is a pointer
+/**
+ * Checks whether type is a pointer
  */
 bool types::TypesHandler::isObjectPointerType(const Type &type) {
     return type.isObjectPointer();
 }
 
-/*
- * Check if type is an array
+/**
+ * Checks whether type is an array
  */
 bool types::TypesHandler::isArrayType(const Type &type) {
     return type.isArray();
@@ -551,19 +581,19 @@ bool types::TypesHandler::isOneDimensionPointer(const types::Type &type) {
 
 size_t types::TypesHandler::typeSize(const types::Type &type) const {
     if (isIntegerType(type)) {
-        return integerTypesToSizes().at(type.baseType());
+        return integerTypesToSizes.at(type.baseType());
     }
 
     if (isBoolType(type)) {
-        return boolTypesToSizes().at(type.baseType());
+        return boolTypesToSizes.at(type.baseType());
     }
 
     if (isFloatingPointType(type)) {
-        return floatingPointTypesToSizes().at(type.baseType());
+        return floatingPointTypesToSizes.at(type.baseType());
     }
 
     if (isCharacterType(type)) {
-        return characterTypesToSizes().at(type.baseType());
+        return characterTypesToSizes.at(type.baseType());
     }
 
     if (isStructLike(type)) {
@@ -581,11 +611,11 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
     }
 
     if (isObjectPointerType(type)) {
-        return getPointerSize();
+        return SizeUtils::bytesToBits(getPointerSize());
     }
 
     if (isPointerToFunction(type)) {
-        return sizeof(char *);
+        return SizeUtils::bytesToBits(sizeof(char *));
     }
 
     throw UnImplementedException("Type is unknown for: " + type.typeName());
@@ -595,9 +625,9 @@ std::string types::TypesHandler::removeConstPrefix(const TypeName &type) {
     std::vector<std::string> tmp = StringUtils::split(type);
     if (tmp[0] == CONST_QUALIFIER) {
         std::string res;
-        for (int i = 1; i < (int) tmp.size(); i++) {
+        for (size_t i = 1; i < tmp.size(); i++) {
             res += tmp[i];
-            if (i < (int) tmp.size() - 1) {
+            if (i + 1 < tmp.size()) {
                 res.push_back(' ');
             }
         }
@@ -639,88 +669,44 @@ std::string types::TypesHandler::removeArrayBrackets(TypeName type) {
     return type;
 }
 
-std::unordered_map<std::string, size_t> types::TypesHandler::integerTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> integerTypes = {
-            {"utbot_byte",         sizeof(char)}, //we use different name to not trigger char processing
-            {"short",              sizeof(short)},
-            {"int",                sizeof(int)},
-            {"long",               sizeof(long)},
-            {"long long",          sizeof(long long)},
-            {"unsigned short",     sizeof(unsigned short)},
-            {"unsigned int",       sizeof(unsigned int)},
-            {"unsigned long",      sizeof(unsigned long)},
-            {"unsigned long long", sizeof(unsigned long long)},
-            {"unsigned char",          sizeof(unsigned char)} // we do not want to treat an unsigned char as character literal
-    };
-    return integerTypes;
-}
-
 testsgen::ValidationType types::TypesHandler::getIntegerValidationType(const Type &type) {
     size_t size;
     if (isIntegerType(type)) {
-        size = integerTypesToSizes().at(type.baseType());
+        size = integerTypesToSizes.at(type.baseType());
     } else {
         ABORT_F("type is not an integerType: %s", type.baseType().c_str());
     }
     bool isUnsigned = isUnsignedType(type);
-    if (size == 1) {
+    if (size == 8) {
         return (isUnsigned) ? testsgen::UINT8_T : testsgen::INT8_T;
-    } else if (size == 2) {
+    } else if (size == 16) {
         return (isUnsigned) ? testsgen::UINT16_T : testsgen::INT16_T;
-    } else if (size == 4) {
+    } else if (size == 32) {
         return (isUnsigned) ? testsgen::UINT32_T : testsgen::INT32_T;
-    } else if (size == 8) {
+    } else if (size == 64) {
         return (isUnsigned) ? testsgen::UINT64_T : testsgen::INT64_T;
     } else {
-        ABORT_F("Unknown integer size: %d", (int)size);
+        ABORT_F("Unknown integer size: %zu", size);
     }
 }
 
-std::unordered_map<std::string, size_t> types::TypesHandler::floatingPointTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> floatingPointTypes = {
-            {"float",       sizeof(float)},
-            {"double",      sizeof(double)},
-            {"long double", sizeof(long double)}
-    };
-
-    return floatingPointTypes;
-}
-
-std::unordered_map<types::TypeName, size_t> types::TypesHandler::characterTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> characterTypes = {
-            {"char",          sizeof(char)},
-            {"signed char",   sizeof(signed char)},
-    };
-
-    return characterTypes;
-}
-
-std::unordered_map<types::TypeName, size_t> types::TypesHandler::boolTypesToSizes() noexcept {
-    static std::unordered_map<std::string, size_t> boolTypes = {
-            {"bool",  sizeof(bool)},
-            {"_Bool", sizeof(bool)}
-    };
-
-    return boolTypes;
-}
-
-std::unordered_map<types::TypeName, std::vector<std::string>> types::TypesHandler::preferredConstraints() noexcept {
-    static std::unordered_map<std::string, std::vector<std::string>> constraints = {
-            {"char",               {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"signed char",        {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"unsigned char",      {" >= 'a'",  " <= 'z'", " != '\\0'"}},
-            {"short",              {" >= -10 ", " <= 10"}},
-            {"int",                {" >= -10 ", " <= 10"}},
-            {"long",               {" >= -10 ", " <= 10"}},
-            {"long long",          {" >= -10 ", " <= 10"}},
+const std::unordered_map<types::TypeName, std::vector<std::string>> &types::TypesHandler::preferredConstraints() noexcept {
+    static const std::unordered_map<std::string, std::vector<std::string>> constraints = {
+            {"char",               {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"signed char",        {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"unsigned char",      {">= 'a'",  "<= 'z'", "!= '\\0'"}},
+            {"short",              {">= -10", "<= 10"}},
+            {"int",                {">= -10", "<= 10"}},
+            {"long",               {">= -10", "<= 10"}},
+            {"long long",          {">= -10", "<= 10"}},
             {"unsigned short",     {"<= 10"}},
             {"unsigned int",       {"<= 10"}},
             {"unsigned long",      {"<= 10"}},
             {"unsigned long long", {"<= 10"}},
-            {"float",              {" >= -10 ", " <= 10"}},
-            {"double",             {" >= -10 ", " <= 10"}},
-            {"long double",        {" >= -10 ", " <= 10"}},
-            {"void",               {" <= 10"}},
+            {"float",              {">= -10", "<= 10"}},
+            {"double",             {">= -10", "<= 10"}},
+            {"long double",        {">= -10", "<= 10"}},
+            {"void",               {"<= 10"}},
     };
 
     return constraints;

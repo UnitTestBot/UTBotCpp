@@ -38,4 +38,5 @@ add_executable(syntax1
         array_sort.c
         stubs.c
         namespace.cpp
-        input_output.c)
+        input_output.c
+        bitfields.c)

@@ -59,8 +59,8 @@ public:
                      const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                      tests::TestsMap &tests,
                      types::TypeMaps *types,
-                     uint64_t *pointerSize,
-                     uint64_t *maximumAlignment,
+                     size_t *pointerSize,
+                     size_t *maximumAlignment,
                      const fs::path &compileCommandsJsonPath,
                      bool fetchFunctionBodies);
 
@@ -76,8 +76,8 @@ private:
 
     tests::TestsMap *const projectTests;
     types::TypeMaps *const projectTypes;
-    uint64_t *const pointerSize;
-    uint64_t *const maximumAlignment;
+    size_t *const pointerSize;
+    size_t *const maximumAlignment;
     fs::path buildRootPath;
 
     std::shared_ptr<FileToStringSet> structsToDeclare = std::make_shared<FileToStringSet>();
