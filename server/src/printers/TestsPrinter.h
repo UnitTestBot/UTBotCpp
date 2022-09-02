@@ -115,6 +115,8 @@ namespace printer {
     private:
         types::TypesHandler const *typesHandler;
 
+        static bool paramNeedsMathHeader(const Tests::TestCaseParamValue &paramValue);
+
         void
         parametrizedInitializeGlobalVariables(const Tests::MethodDescription &methodDescription,
                                               const Tests::MethodTestCase &testCase);
