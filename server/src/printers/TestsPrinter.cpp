@@ -18,22 +18,34 @@ using printer::TestsPrinter;
 TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
 }
 
+bool TestsPrinter::paramNeedsMathHeader(const Tests::TestCaseParamValue &paramValue) {
+    if (paramValue.view->containsFPSpecialValue()) {
+        return true;
+    }
+    for (const auto &lazyParamValue : paramValue.lazyValues) {
+        if (paramNeedsMathHeader(lazyParamValue)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 //we need this header for tests with generated NAN and INFINITY parameters to be compilable
 bool TestsPrinter::needsMathHeader(const Tests &tests) {
     for (const auto &[methodName, methodDescription] : tests.methods) {
         for (const auto &methodTestCase : methodDescription.testCases) {
             for (const auto &paramValue : methodTestCase.paramValues) {
-                if (paramValue.view->containsFPSpecialValue()) {
+                if (paramNeedsMathHeader(paramValue)) {
                     return true;
                 }
             }
             for (const auto &paramValue : methodTestCase.globalPreValues) {
-                    if (paramValue.view->containsFPSpecialValue()) {
+                if (paramNeedsMathHeader(paramValue)) {
                     return true;
                 }
             }
             for (const auto &paramValue : methodTestCase.globalPostValues) {
-                    if (paramValue.view->containsFPSpecialValue()) {
+                if (paramNeedsMathHeader(paramValue)) {
                     return true;
                 }
             }
