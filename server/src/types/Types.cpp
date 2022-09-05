@@ -488,10 +488,6 @@ bool types::TypesHandler::isStructLike(uint64_t id) const {
     return typeIsInMap(id, typeMaps.structs);
 }
 
-bool types::Field::isUnnamedBitfield() const {
-    return name.empty() && TypesHandler::isPrimitiveType(type);
-}
-
 /*
  * Enum types
  */
