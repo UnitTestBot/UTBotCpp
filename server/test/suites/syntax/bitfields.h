@@ -75,11 +75,13 @@ typedef struct {
     // 7 bits: value of b1
     // 25 bits: unused
     // 6 bits: value of b2
+    // 3 bits: unused
     // 15 bits: value of b3
-    // 11 bits: unused
+    // 8 bits: unused
     unsigned b1 : 7;
     unsigned : 0; // start a new allocation unit
     unsigned b2 : 6;
+    unsigned : 3;
     unsigned b3 : 15;
 } StrWithUnnamedZeroBitfield;
 
