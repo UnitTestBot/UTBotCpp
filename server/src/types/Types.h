@@ -270,7 +270,6 @@ namespace types {
             AS_none
         };
         AccessSpecifier accessSpecifier = AS_pubic;
-        [[nodiscard]] bool isUnnamedBitfield() const;
     };
 
     struct TypeInfo {
