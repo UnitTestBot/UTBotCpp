@@ -1693,12 +1693,18 @@ namespace {
 
 
         ASSERT_TRUE(status.ok()) << status.error_message();
+
+        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        const auto &tests = testGen.tests.at(floats_special_c)
+                                .methods.begin().value().testCases;
         checkTestCasePredicates(
-                testGen.tests.at(floats_special_c).methods.begin().value().testCases,
-                std::vector<TestCasePredicate>(
-                        {[](const tests::Tests::MethodTestCase &testCase) {
+            tests, std::vector<TestCasePredicate>(
+                       { [](const tests::Tests::MethodTestCase &testCase) {
                             return testCase.paramValues[0].view->getEntryValue(nullptr) == "NAN";
-                        }}));
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.paramValues[0].view->getEntryValue(nullptr) == "0.000000e+00L";
+                         } }));
     }
 
     TEST_F(Syntax_Test, Floats_Special_Values_Inf) {

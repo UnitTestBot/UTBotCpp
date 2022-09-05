@@ -33,6 +33,13 @@ Tests::MethodDescription::MethodDescription()
                    { Tests::ERROR_SUITE_NAME,   std::string() }},
           modifiers{} { }
 
+static const std::unordered_map<std::string, std::string> FPSpecialValuesMappings = {
+    {"nan", "NAN"},
+    {"-nan", "-NAN"},
+    {"inf", "INFINITY"},
+    {"-inf", "-INFINITY"}
+};
+
 static std::string makeDecimalConstant(std::string value, const std::string &typeName) {
     if (typeName == "long") {
         if (value == INT64_MIN_STRING) {
@@ -55,15 +62,15 @@ static std::string makeDecimalConstant(std::string value, const std::string &typ
     if (typeName == "unsigned long long") {
         return value + "ULL";
     }
+    if (typeName == "long double") {
+        if ( FPSpecialValuesMappings.find(value) == FPSpecialValuesMappings.end()) {
+            // we need it to avoid overflow in exponent for const like 1.18973e+4932L
+            // BUT! Skip the NAN/INFINITY values
+            return value + "L";
+        }
+    }
     return value;
 }
-
-static const std::unordered_map<std::string, std::string> FPSpecialValuesMappings = {
-        {"nan", "NAN"},
-        {"-nan", "-NAN"},
-        {"inf", "INFINITY"},
-        {"-inf", "-INFINITY"}
-};
 
 namespace tests {
 /**
