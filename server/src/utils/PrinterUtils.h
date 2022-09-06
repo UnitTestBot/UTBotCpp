@@ -32,7 +32,6 @@ namespace PrinterUtils {
     extern const std::string EXPECT_DOUBLE_EQ;
 
     extern const std::string ACTUAL;
-    extern const std::string ABS_ERROR;
     extern const std::string EXPECT_;
     extern const std::string EQ;
 
