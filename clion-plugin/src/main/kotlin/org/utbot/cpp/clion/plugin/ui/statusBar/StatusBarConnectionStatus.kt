@@ -2,6 +2,7 @@ package org.utbot.cpp.clion.plugin.ui.statusBar
 
 import com.intellij.ide.DataManager
 import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -26,7 +27,6 @@ import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
-import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import org.utbot.cpp.clion.plugin.settings.UTBotConfigurable
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.client
@@ -44,7 +44,9 @@ class ConnectionStatusBarWidgetFactory : StatusBarWidgetFactory {
 
     override fun createWidget(project: Project): StatusBarWidget = UTBotStatusBarWidget(project)
 
-    override fun disposeWidget(widget: StatusBarWidget) {}
+    override fun disposeWidget(widget: StatusBarWidget) {
+        (widget as? UTBotStatusBarWidget)?.dispose()
+    }
 
     override fun canBeEnabledOn(statusBar: StatusBar): Boolean = statusBar.project != null
 
@@ -58,23 +60,23 @@ class UTBotStatusBarWidget(val project: Project) : StatusBarWidget, StatusBarWid
     private val client: ManagedClient = project.client
     private val myStatusText: String get() = if (project.settings.storedSettings.isPluginEnabled) client.connectionStatus.description else "disabled"
 
+    init {
+        project.messageBus.connect(this).subscribe(
+            UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
+            object : UTBotEventsListener {
+                override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
+                    statusBar?.updateWidget(ID())
+                }
+            })
+        project.messageBus.connect(this).subscribe(PluginActivationListener.TOPIC, PluginActivationListener {
+            statusBar?.updateWidget(ID())
+        })
+    }
+
     override fun ID(): String = WIDGET_ID
 
     override fun install(statusbar: StatusBar) {
         this.statusBar = statusbar
-
-        with(project.messageBus.connect(project.projectLifetimeDisposable)) {
-            subscribe(
-                UTBotEventsListener.CONNECTION_CHANGED_TOPIC,
-                object : UTBotEventsListener {
-                    override fun onConnectionChange(oldStatus: ConnectionStatus, newStatus: ConnectionStatus) {
-                        statusBar?.updateWidget(ID())
-                    }
-                })
-            subscribe(PluginActivationListener.TOPIC, PluginActivationListener { enabled ->
-                statusBar?.updateWidget(ID())
-            })
-        }
     }
 
     override fun dispose() {}
@@ -128,20 +130,21 @@ object StatusBarActionsPopup {
     private fun getActions(): DefaultActionGroup {
         val actionGroup = DefaultActionGroup()
         actionGroup.isPopup = true
+        fun addToActionGroup(action: AnAction, isLast: Boolean = false) {
+            actionGroup.add(action)
+            if (!isLast)
+                actionGroup.addSeparator()
+        }
 
-        actionGroup.add(ShowWizardAction())
-        actionGroup.addSeparator()
-        actionGroup.add(ConfigureProjectAction())
-        actionGroup.addSeparator()
-        actionGroup.add(ShortcutSettingsAction)
-        actionGroup.addSeparator()
-        actionGroup.add(ReconnectAction())
-        actionGroup.addSeparator()
-        actionGroup.addAction(ReconfigureProjectAction())
-        actionGroup.addSeparator()
-        actionGroup.add(ChangeVerboseModeAction())
-        actionGroup.addSeparator()
-        actionGroup.add(TogglePluginAction())
+        addToActionGroup(ShowWizardAction())
+        addToActionGroup(ConfigureProjectAction())
+        addToActionGroup(ReconnectAction())
+        addToActionGroup(ReconfigureProjectAction())
+        addToActionGroup(ShortcutSettingsAction)
+        addToActionGroup(ReconnectAction())
+        addToActionGroup(ChangeVerboseModeAction())
+        addToActionGroup(TogglePluginAction(), isLast = true)
+
 
         return actionGroup
     }

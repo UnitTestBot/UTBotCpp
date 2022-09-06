@@ -9,10 +9,10 @@ import com.intellij.openapi.wm.impl.status.widget.StatusBarWidgetsManager
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.ui.statusBar.UTBotStatusBarVerboseWidget
 import org.utbot.cpp.clion.plugin.ui.statusBar.VerboseModeWidgetFactory
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizard
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
+import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 
 class UTBotStartupActivity : StartupActivity {
     override fun runActivity(project: Project) {
@@ -46,7 +46,7 @@ class UTBotStartupActivity : StartupActivity {
      * Makes subscriptions to events, that should work even if plugin is disabled
      */
     private fun subscribeToUTBotDumpEvents(project: Project) {
-        with(project.messageBus.connect(project.service<DummyProjectServiceForDisposing>())) {
+        with(project.messageBus.connect(project.projectLifetimeDisposable)) {
             subscribe(PluginActivationListener.TOPIC, PluginActivationListener {
                 project.service<StatusBarWidgetsManager>().updateWidget(VerboseModeWidgetFactory::class.java)
             })

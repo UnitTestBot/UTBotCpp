@@ -99,8 +99,6 @@ class Client(
         }
     }
 
-    fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
-
     private fun provideLoggingChannels() {
         for (channel in loggingChannels) {
             servicesCS.launch(CoroutineName(channel.toString())) {

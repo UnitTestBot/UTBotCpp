@@ -68,6 +68,10 @@ class ManagedClient(val project: Project) : Disposable {
         client?.executeRequestIfNotDisposed(request) ?: error("Plugin is disabled! Can't execute any requests")
     }
 
+    fun configureProject() {
+        client?.configureProject()
+    }
+
     override fun dispose() {
         client?.dispose()
         client = null
