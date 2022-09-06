@@ -2,7 +2,6 @@
 
 #include "gtest/gtest.h"
 namespace UTBot {
-    static const float utbot_abs_error = 1e-6;
 
 
 

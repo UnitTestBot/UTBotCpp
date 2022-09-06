@@ -36,8 +36,9 @@ namespace PrinterUtils {
 
     const std::string EXPECTED = "expected";
     const std::string ACTUAL = "actual";
-    const std::string ABS_ERROR = "utbot_abs_error";
     const std::string EXPECT_ = "EXPECT_";
+    const std::string EXPECT_FLOAT_EQ  = "EXPECT_FLOAT_EQ";
+    const std::string EXPECT_DOUBLE_EQ = "EXPECT_DOUBLE_EQ";
     const std::string EQ = "EQ";
 
     std::string convertToBytesFunctionName(const std::string &typeName) {

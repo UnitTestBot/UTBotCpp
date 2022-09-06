@@ -23,12 +23,15 @@ namespace PrinterUtils {
     extern const std::string KLEE_PATH_FLAG;
     extern const std::string KLEE_PATH_FLAG_SYMBOLIC;
     extern const std::string EQ_OPERATOR;
+
     extern const std::string ASSIGN_OPERATOR;
     extern const std::string TAB;
 
     extern const std::string EXPECTED;
+    extern const std::string EXPECT_FLOAT_EQ;
+    extern const std::string EXPECT_DOUBLE_EQ;
+
     extern const std::string ACTUAL;
-    extern const std::string ABS_ERROR;
     extern const std::string EXPECT_;
     extern const std::string EQ;
 

@@ -48,8 +48,6 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 
-    strDeclareAbsError(PrinterUtils::ABS_ERROR);
-
     for (const auto &commentBlock : tests.commentBlocks) {
         strComment(commentBlock) << NL;
     }

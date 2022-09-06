@@ -30,13 +30,16 @@ namespace visitor {
 
     AssertsVisitor::FunctionSignature AssertsVisitor::processExpect(
         const types::Type &type, const std::string &gtestMacro, std::vector<std::string> &&args) {
-        bool changePredicate = types::TypesHandler::isFloatingPointType(type) && (gtestMacro == PrinterUtils::EQ);
-        std::string targetMacro = gtestMacro;
-        if (changePredicate) {
-            targetMacro = "NEAR";
-            args.emplace_back(PrinterUtils::ABS_ERROR);
+        std::string macroName = PrinterUtils::EXPECT_ + gtestMacro;
+        if (types::TypesHandler::isFloatingPointType(type) && gtestMacro == PrinterUtils::EQ) {
+            const types::TypeName &typeName = type.baseType();
+            if (typeName == "float") {
+                macroName = PrinterUtils::EXPECT_FLOAT_EQ;
+            } else if (typeName == "double" || typeName == "long double") {
+                macroName = PrinterUtils::EXPECT_DOUBLE_EQ;
+            }
         }
-        return VerboseAssertsVisitor::FunctionSignature{ PrinterUtils::EXPECT_ + targetMacro, std::move(args) };
+        return VerboseAssertsVisitor::FunctionSignature{ macroName, std::move(args) };
     }
 
     std::string AssertsVisitor::getDecorateActualVarName(const std::string &access) {

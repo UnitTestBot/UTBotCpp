@@ -71,6 +71,7 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
             sourceFileToInclude =
                 fs::canonical(test.sourceFilePath.parent_path() / test.mainHeader.value().path);
         }
+        sourceFileToInclude = fs::relative(sourceFilePath, test.testHeaderFilePath.parent_path());
         return StringUtils::stringFormat("#define main main__\n\n"
                                          "#include \"%s\"\n\n",
                                          sourceFileToInclude);

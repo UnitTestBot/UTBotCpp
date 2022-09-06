@@ -7,7 +7,6 @@
 ACCESS_PRIVATE_FIELD(Point_2d, int, x);
 
 namespace UTBot {
-  static const float utbot_abs_error = 1e-6;
 
 
 
@@ -67,7 +66,7 @@ namespace UTBot {
   {
       Point_2d Point_2d_obj;
       double actual = Point_2d_obj.get_dist_to_zero();
-      EXPECT_NEAR(-0.000000e+00, actual, utbot_abs_error);
+      EXPECT_DOUBLE_EQ(-0.000000e+00, actual);
   }
 
 
@@ -106,7 +105,7 @@ namespace UTBot {
       class Point_2d lhs = {0, 0};
       class Point_2d rhs = {0, 0};
       double actual = get_dist(lhs, rhs);
-      EXPECT_NEAR(0.000000e+00, actual, utbot_abs_error);
+      EXPECT_DOUBLE_EQ(0.000000e+00, actual);
       class Point_2d expected_lhs = {0, 0};
       EXPECT_EQ(access_private::x(expected_lhs), access_private::x(lhs));
       EXPECT_EQ(expected_lhs.y, lhs.y);

@@ -9,7 +9,7 @@ int is_nanf(float x) {
     }
 }
 
-int is_nan(double x) {
+int is_nan(long double x) {
     if (x != x) {
         return 1;
     } else {
