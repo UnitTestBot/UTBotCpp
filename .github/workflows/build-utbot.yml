@@ -82,12 +82,13 @@ jobs:
         with:
           submodules: recursive
 
-      - name: build UTBot
+      - name: build and run UTBot
         run: |
           export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
           chmod +x docker/action-scripts/build-utbot.sh
           ./docker/action-scripts/build-utbot.sh
+          ./server/build/utbot server > /dev/null 2>&1 &
       - name: Run Integration Tests
         run: |
           chmod +x docker/action-scripts/build-vsix.sh

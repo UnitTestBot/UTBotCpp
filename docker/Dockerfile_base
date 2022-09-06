@@ -47,6 +47,10 @@ RUN apt install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-
 RUN apt install -y libasound2
 RUN apt install -y xvfb
 
+# install clion dependencies
+# install font config. Without it java.awt will throw, and ide will exit during tests
+apt-get install libfreetype6 fontconfig fonts-dejavu -y
+
 RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
 
 # Install latest CMake
