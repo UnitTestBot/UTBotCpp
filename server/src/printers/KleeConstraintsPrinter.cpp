@@ -119,10 +119,6 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
     StructInfo curStruct = typesHandler->getStructInfo(state.curType);
     bool isStruct = curStruct.subType == SubType::Struct;
     for (const auto &field : curStruct.fields) {
-        if (field.isUnnamedBitfield()) {
-            noConstraints("unnamed bit fields");
-            continue;
-        }
         auto access = PrinterUtils::getFieldAccess(state.curElement, field);
         ConstraintsState newState = { state.paramName,
                                       access,

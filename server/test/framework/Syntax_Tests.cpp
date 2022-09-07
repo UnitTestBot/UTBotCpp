@@ -3172,4 +3172,33 @@ namespace {
             })
         );
     }
+
+    TEST_F(Syntax_Test, bitfields_check_unnamed) {
+        auto [testGen, status] = createTestForFunction(bitfields_c, 99);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+    testGen.tests.at(bitfields_c).methods.begin().value().testCases,
+    std::vector<TestCasePredicate>(
+            {
+                [](const tests::Tests::MethodTestCase &testCase) {
+                    auto &subViews = testCase.paramValues.front().view->getSubViews();
+                    return subViews.size() == 3 &&
+                           checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                           checkBitfieldFit<unsigned>(subViews[1], 6) &&
+                           checkBitfieldFit<unsigned>(subViews[2], 15) &&
+                           testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                },
+                [](const tests::Tests::MethodTestCase &testCase) {
+                    auto &subViews = testCase.paramValues.front().view->getSubViews();
+                    return subViews.size() == 3 &&
+                           checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                           checkBitfieldFit<unsigned>(subViews[1], 6) &&
+                           checkBitfieldFit<unsigned>(subViews[2], 15) &&
+                           testCase.returnValue.view->getEntryValue(nullptr) == "13";
+                }
+            })
+        );
+    }
 }

@@ -720,7 +720,6 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     const size_t longestFieldIndexForUnionInit = structInfo.longestFieldIndexForUnionInit;
     const bool isStruct = structInfo.subType == types::SubType::Struct;
 
-    bool firstField = true;
     size_t i = 0;
     for (const auto &sview : subViews) {
         if (i != 0) {

@@ -270,7 +270,6 @@ namespace types {
             AS_none
         };
         AccessSpecifier accessSpecifier = AS_pubic;
-        [[nodiscard]] bool isUnnamedBitfield() const;
     };
 
     struct TypeInfo {
@@ -350,8 +349,7 @@ namespace types {
             : typeMaps(types), sizeContext(sizeContext){};
 
         /**
-         * This functions calculates size of a given type. For structs in it calculates sum of sizes of its fields,
-         * ignoring alignment.
+         * Calculates size of a given type.
          * @return size of given type in @b bits.
          */
         size_t typeSize(const types::Type &type) const;

@@ -125,6 +125,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     size_t i = 0;
     size_t maxFieldSize = 0;
     for (const clang::FieldDecl *F : D->fields()) {
+        if (F->isUnnamedBitfield()) {
+            continue;
+        }
         structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
         field.name = F->getNameAsString();

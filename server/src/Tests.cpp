@@ -266,9 +266,6 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
 
     for (const auto &field: curStruct.fields) {
-        if (field.isUnnamedBitfield()) {
-            continue;
-        }
         size_t fieldLen = typesHandler.typeSize(field.type);
         size_t fieldOffset = offsetInBits + field.offset;
 
