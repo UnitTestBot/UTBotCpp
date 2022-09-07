@@ -18,6 +18,8 @@
 
 class BuildDatabase {
 public:
+    static const std::string BITS_32_FLAG;
+
     struct KleeFilesInfo {
         explicit KleeFilesInfo(fs::path kleeFile);
 

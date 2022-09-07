@@ -254,9 +254,9 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
                 continue;
             }
             isAnyOneLinked = true;
+            auto compilationUnitInfo =
+                testGen.getClientCompilationUnitInfo(fileName);
             for (const auto &[methodName, _] : tests.methods) {
-                auto compilationUnitInfo =
-                    testGen.getClientCompilationUnitInfo(fileName);
                 if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
                     testMethods.emplace_back(methodName,
                                              bitcodePath,
@@ -266,37 +266,40 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
             }
         }
     } else {
-        [&] {
-            for (auto &[fileName, tests] : testGen.tests) {
-                if (CollectionUtils::contains(brokenLinkFiles, bitcodeFileName.at(fileName))) {
-                    LOG_S(ERROR) << "Couldn't link bitcode file for current source file: "
-                                 << fileName;
-                    continue;
-                }
-                isAnyOneLinked = true;
-                if (fileName != lineInfo->filePath) {
-                    continue;
-                }
-                for (const auto &[methodName, method] : tests.methods) {
-                    if (methodName == lineInfo->methodName ||
-                        (lineInfo->forClass &&
-                         method.classObj.has_value() &&
-                         method.classObj->type.typeName() == lineInfo->scopeName)) {
-                        auto compilationUnitInfo =
-                            testGen.getClientCompilationUnitInfo(fileName);
-                        if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
-                            tests::TestMethod testMethod{ methodName,
-                                                          bitcodeFileName.at(lineInfo->filePath),
-                                                          fileName,
-                                                          compilationUnitInfo->is32bits()};
-                            testMethods.emplace_back(testMethod);
-                        }
-                        if (!lineInfo->forClass)
-                            return;
+        bool needBreak = false;
+        for (auto &[fileName, tests] : testGen.tests) {
+            if (CollectionUtils::contains(brokenLinkFiles, bitcodeFileName.at(fileName))) {
+                LOG_S(ERROR) << "Couldn't link bitcode file for current source file: "
+                             << fileName;
+                continue;
+            }
+            isAnyOneLinked = true;
+            if (fileName != lineInfo->filePath) {
+                continue;
+            }
+            for (const auto &[methodName, method] : tests.methods) {
+                if (methodName == lineInfo->methodName ||
+                    (lineInfo->forClass &&
+                     method.classObj.has_value() &&
+                     method.classObj->type.typeName() == lineInfo->scopeName)) {
+                    auto compilationUnitInfo =
+                        testGen.getClientCompilationUnitInfo(fileName);
+                    if (compilationUnitInfo->kleeFilesInfo->isCorrectMethod(methodName)) {
+                        testMethods.emplace_back(methodName,
+                                                 bitcodeFileName.at(lineInfo->filePath),
+                                                 fileName,
+                                                 compilationUnitInfo->is32bits());
+                    }
+                    if (!lineInfo->forClass) {
+                        needBreak = true;
+                        break;
                     }
                 }
             }
-        }();
+            if (needBreak) {
+                break;
+            }
+        }
     }
     if (!isAnyOneLinked) {
         throw CompilationDatabaseException("Couldn't link any files");
@@ -317,7 +320,7 @@ Linker::Linker(BaseTestGen &testGen,
 
 Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::path> &bitcodeFiles,
                                         const fs::path &target,
-                                        std::string const &suffixForParentOfStubs,
+                                        const std::string &suffixForParentOfStubs,
                                         const std::optional<fs::path> &testedFilePath,
                                         const CollectionUtils::FileSet &stubSources,
                                         bool errorOnMissingBitcode) {

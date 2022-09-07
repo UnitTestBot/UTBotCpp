@@ -24,6 +24,7 @@ namespace printer {
         CompilationUtils::CompilerName primaryCxxCompilerName;
         fs::path cxxLinker;
 
+        std::string bits32Flag;
         std::string pthreadFlag;
         std::string coverageLinkFlags;
         std::string sanitizerLinkFlags;
