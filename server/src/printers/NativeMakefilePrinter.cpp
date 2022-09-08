@@ -144,23 +144,36 @@ namespace printer {
     }
 
     void NativeMakefilePrinter::init() {
-
+        bits32Flag = "";
+        for (auto &[fileName, _] : testGen->tests) {
+            const auto &ptr = testGen->getClientCompilationUnitInfo(fileName);
+            if (ptr && ptr->is32bits()) {
+                bits32Flag = BuildDatabase::BITS_32_FLAG;
+                break;
+            }
+        }
+        
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)", getRelativePath(buildDirectory)));
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)",
                                    getRelativePath(dependencyDirectory)));
         declareTarget(FORCE, {}, {});
 
-        comment("gtest");
+        comment("{ gtest");
 
         fs::path gtestBuildDirectory = getRelativePath(buildDirectory / "googletest");
         fs::path defaultPath = "default.c";
-        std::vector<std::string> defaultGtestCompileCommandLine{ getRelativePathForLinker(primaryCxxCompiler), "-c", "-std=c++11",
-                                                            FPIC_FLAG, defaultPath };
+        std::vector<std::string> defaultGtestCompileCommandLine{
+            getRelativePathForLinker(primaryCxxCompiler),
+            bits32Flag,
+            "-c",
+            "-std=c++11",
+            FPIC_FLAG,
+            defaultPath };
         utbot::CompileCommand defaultGtestCompileCommand{ defaultGtestCompileCommandLine,
                                                           getRelativePath(buildDirectory), defaultPath };
         gtestAllTargets(defaultGtestCompileCommand, gtestBuildDirectory);
         gtestMainTargets(defaultGtestCompileCommand, gtestBuildDirectory);
-        comment("/gtest");
+        comment("} gtest");
     }
 
     fs::path NativeMakefilePrinter::getTemporaryDependencyFile(fs::path const &file) {
@@ -340,6 +353,7 @@ namespace printer {
                                                      sharedOutput.value()) };
         if (rootLinkUnitInfo->commands.front().isArchiveCommand()) {
             std::vector<std::string> dynamicLinkCommandLine{ getRelativePathForLinker(cxxLinker), "$(LDFLAGS)",
+                                                            bits32Flag,
                                                             pthreadFlag, coverageLinkFlags,
                                                             sanitizerLinkFlags, "-o",
                                                             getRelativePath(
@@ -367,7 +381,7 @@ namespace printer {
             }
             dynamicLinkCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
             dynamicLinkCommand.addFlagsToBegin(
-                { pthreadFlag, coverageLinkFlags, sanitizerLinkFlags });
+                { bits32Flag, pthreadFlag, coverageLinkFlags, sanitizerLinkFlags });
             std::copy_if(rootLinkUnitInfo->files.begin(), rootLinkUnitInfo->files.end(), std::back_inserter(filesToLink),
                          [](const fs::path& path) {return Paths::isLibraryFile(path);});
             for(std::string& file : filesToLink) {

@@ -18,6 +18,8 @@
 #include <unordered_map>
 #include <utility>
 
+const std::string BuildDatabase::BITS_32_FLAG = "-m32";
+
 BuildDatabase::BuildDatabase(
         fs::path serverBuildDir,
         fs::path buildCommandsJsonPath,
@@ -426,7 +428,7 @@ void BuildDatabase::BaseFileInfo::addFile(fs::path file) {
 }
 
 bool BuildDatabase::ObjectFileInfo::is32bits() const {
-    return CollectionUtils::contains(command.getCommandLine(), "-m32");
+    return CollectionUtils::contains(command.getCommandLine(), BITS_32_FLAG);
 }
 
 fs::path BuildDatabase::TargetInfo::getOutput() const {
