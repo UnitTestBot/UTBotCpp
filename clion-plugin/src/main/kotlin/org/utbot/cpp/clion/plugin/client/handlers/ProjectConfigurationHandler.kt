@@ -94,7 +94,7 @@ class CreateBuildDirHandler(
                 }
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
-                notifyInfo("Failed to create build directory! ${response.message}", project)
+                notifyError("Failed to create build directory! ${response.message}", project)
             }
             else -> notifyUnknownResponse(response, project)
         }
