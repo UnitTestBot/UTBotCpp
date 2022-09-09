@@ -139,10 +139,10 @@ namespace StringUtils {
         rtrim(s);
     }
 
-    std::string repeat(const std::string &s, size_t n) {
+    std::string repeat(const std::string &s, int n) {
         std::string s1;
-        s1.reserve(s.size() * std::max(std::size_t{0}, n));
-        for (size_t i = 0; i < n; i++) {
+        s1.reserve(s.size() * std::max(0, n));
+        for (int i = 0; i < n; i++) {
             s1 += s;
         }
         return s1;
