@@ -79,7 +79,7 @@ namespace StringUtils {
 
     void trim(std::string &s);
 
-    std::string repeat(const std::string &s, size_t n);
+    std::string repeat(const std::string &s, int n);
 
     bool contains(std::string_view s, std::string_view t);
 
