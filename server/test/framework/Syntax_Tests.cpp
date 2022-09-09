@@ -3657,7 +3657,7 @@ namespace {
                                checkBitfieldFit<unsigned>(subViews[2], 15) &&
                                testCase.returnValue.view->getEntryValue(nullptr) == "13";
                 }
-            })
+                })
         );
     }
 
@@ -3667,25 +3667,58 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(hard_linked_list_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                { [](const tests::Tests::MethodTestCase &testCase) {
-                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
-                 },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -2;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -3;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
-                  } }));
+                testGen.tests.at(hard_linked_list_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -2;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -3;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
+                         }}));
+    }
+
+    TEST_F(Syntax_Test, DISABLED_int128_mult) {
+        auto [testGen, status] = createTestForFunction(types_c, 120);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        for (const auto &testCase: testGen.tests.at(types_c).methods.begin().value().testCases) {
+            auto res = StringUtils::stot<unsigned __int128>(
+                    testCase.returnValue.view->getEntryValue(nullptr));
+            auto a = StringUtils::stot<unsigned long long>(
+                    testCase.paramValues[0].view->getEntryValue(nullptr));
+            auto b = StringUtils::stot<unsigned long long>(
+                    testCase.paramValues[1].view->getEntryValue(nullptr));
+            ASSERT_TRUE(res == ~((unsigned __int128) 0) || res == static_cast<unsigned __int128>(a) * b);
+        }
+
+        checkTestCasePredicates(
+                testGen.tests.at(bitfields_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {
+                                [](const tests::Tests::MethodTestCase &testCase) {
+                                    return StringUtils::stot<unsigned __int128>(
+                                            testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                           ~((unsigned __int128) 0);
+                                },
+                                [](const tests::Tests::MethodTestCase &testCase) {
+                                    return StringUtils::stot<unsigned __int128>(
+                                            testCase.returnValue.view->getEntryValue(nullptr)) !=
+                                           ~((unsigned __int128) 0);
+                                }
+                        })
+        );
     }
 }
