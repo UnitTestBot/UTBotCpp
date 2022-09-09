@@ -27,17 +27,12 @@
         <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
         <coverageRunner implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner"/>
 
-        <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.VerboseModeWidgetFactory"/>
+<!--        <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.VerboseModeWidgetFactory"/>-->
         <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.ConnectionStatusBarWidgetFactory"/>
-        <toolWindow id="UTBot targets"
+        <toolWindow id="UTBot"
                     secondary="false"
                     anchor="bottom"
-                    factoryClass="org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsToolWindowFactory"/>
-        <toolWindow factoryClass="org.utbot.cpp.clion.plugin.ui.userLog.ConsoleToolWindowProvider"
-                    id="UTBot consoles"
-                    anchor="bottom"
-                    secondary="true"
-        />
+                    factoryClass="org.utbot.cpp.clion.plugin.ui.utbotToolWindow.UTBotToolWindowFactory"/>
         <projectViewPane implementation="org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPane"/>
     </extensions>
 
@@ -199,5 +194,10 @@
             <override-text place="GoToAction" text="UTBot: Reconnect to Server"/>
         </action>
 
+        <action id="org.utbot.cpp.clion.plugin.actions.ChangeVerboseModeAction"
+                class="org.utbot.cpp.clion.plugin.actions.ChangeVerboseModeAction" text="UTBot: Turn On/Off Verbose Mode"
+                description="Turns on/off verbose formatting for tests">
+            <override-text place="GoToAction" text="UTBot: Enable Verbose Mode"/>
+        </action>
     </actions>
 </idea-plugin>

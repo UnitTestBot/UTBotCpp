@@ -15,7 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.logger.SystemWriter
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
 import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.logger
 import java.io.File

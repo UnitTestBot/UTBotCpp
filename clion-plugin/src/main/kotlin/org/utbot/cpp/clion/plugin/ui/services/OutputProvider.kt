@@ -9,14 +9,14 @@ import com.intellij.openapi.util.Disposer
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.components.BorderLayoutPanel
 import org.utbot.cpp.clion.plugin.client.logger.LogLevel
-import org.utbot.cpp.clion.plugin.ui.userLog.OutputType
-import org.utbot.cpp.clion.plugin.ui.userLog.UTBotConsole
 import org.utbot.cpp.clion.plugin.utils.logger
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridLayout
 import java.awt.event.ItemEvent
 import javax.swing.JPanel
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow.OutputType
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow.UTBotConsole
 
 @Service
 class OutputProvider(val project: Project) : Disposable {

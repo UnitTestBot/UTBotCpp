@@ -6,8 +6,8 @@ import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarget
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
 import org.utbot.cpp.clion.plugin.utils.path
 import java.nio.file.Paths
 

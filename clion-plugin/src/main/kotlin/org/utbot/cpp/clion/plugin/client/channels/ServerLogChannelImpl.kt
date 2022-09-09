@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.grpc.getDummyGrpcRequest
 import org.utbot.cpp.clion.plugin.grpc.getLogChannelGrpcRequest
 import org.utbot.cpp.clion.plugin.ui.services.OutputProvider
-import org.utbot.cpp.clion.plugin.ui.userLog.UTBotConsole
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow.UTBotConsole
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
