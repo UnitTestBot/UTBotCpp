@@ -200,7 +200,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         LOG_S(DEBUG) << logMessage;
         Fetcher fetcher(Fetcher::Options::Value::ALL,
                         testGen.getTargetBuildDatabase()->compilationDatabase, testGen.tests, &testGen.types,
-                        &sizeContext.pointerSize, &sizeContext.maximumAlignment,
+                        &sizeContext.maximumAlignment,
                         testGen.compileCommandsJsonPath, false);
         fetcher.fetchWithProgress(testGen.progressWriter, logMessage);
         SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
@@ -552,7 +552,7 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
     LOG_S(DEBUG) << logMessage;
     Fetcher fetcher(Fetcher::Options::Value::TYPE | Fetcher::Options::Value::FUNCTION,
                     testGen->getTargetBuildDatabase()->compilationDatabase, testGen->tests, &testGen->types,
-                    &sizeContext.pointerSize, &sizeContext.maximumAlignment,
+                    &sizeContext.maximumAlignment,
                     testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);

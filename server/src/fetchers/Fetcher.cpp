@@ -24,13 +24,12 @@ Fetcher::Fetcher(Options options,
                  const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                  tests::TestsMap &tests,
                  types::TypeMaps *types,
-                 size_t *pointerSize,
                  size_t *maximumAlignment,
                  const fs::path &compileCommandsJsonPath,
                  bool fetchFunctionBodies)
-    : options(options), projectTests(&tests), projectTypes(types),
-      pointerSize(pointerSize), maximumAlignment(maximumAlignment),
-      fetchFunctionBodies(fetchFunctionBodies), clangToolRunner(compilationDatabase) {
+        : options(options), projectTests(&tests), projectTypes(types),
+          maximumAlignment(maximumAlignment), fetchFunctionBodies(fetchFunctionBodies),
+          clangToolRunner(compilationDatabase) {
     buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(), CompilationUtils::UTBOT_BUILD_DIR_NAME);
     if (options.has(Options::Value::TYPE)) {
         addMatcher<TypeDeclsMatchCallback>(anyTypeDeclarationMatcher);
@@ -83,6 +82,7 @@ void Fetcher::fetchWithProgress(const ProgressWriter *progressWriter,
 
 void Fetcher::postProcess() const {
     if (options.has(Options::Value::FUNCTION) && maximumAlignment != nullptr) {
+        // TODO maybe this is useless?
         for (auto projectTestsIterator = projectTests->begin();
              projectTestsIterator != projectTests->end(); projectTestsIterator++) {
             tests::Tests &tests = projectTestsIterator.value();

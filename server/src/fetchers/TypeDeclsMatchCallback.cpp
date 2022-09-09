@@ -14,7 +14,6 @@ TypeDeclsMatchCallback::TypeDeclsMatchCallback(const Fetcher *parent)
 void TypeDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     QualType pointerType = Result.Context->getPointerType(Result.Context->getWideCharType());
     uint64_t pointerSize = Result.Context->getTypeSize(pointerType) / 8;
-    *parent->pointerSize = pointerSize;
 
     ExecUtils::throwIfCancelled();
     checkStructDecl(Result);

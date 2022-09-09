@@ -197,21 +197,6 @@ namespace {
             "ret");
     }
 
-    TEST_F(Regression_Test, Unnamed_Bit_Field) {
-        fs::path source = getTestFilePath("PR124.c");
-        auto [testGen, status] = createTestForFunction(source, 8);
-
-        ASSERT_TRUE(status.ok()) << status.error_message();
-
-        checkTestCasePredicates(
-            testGen.tests.at(source).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                { [](const tests::Tests::MethodTestCase &testCase) {
-                    return !testCase.isError();
-                } }),
-            "bpf_xdp_attach");
-    }
-
     TEST_F(Regression_Test, VaList_In_Function_Pointer_Type) {
         fs::path source = getTestFilePath("PR123.c");
         auto [testGen, status] = createTestForFunction(source, 7);
