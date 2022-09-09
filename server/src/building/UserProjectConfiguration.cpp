@@ -12,6 +12,8 @@
 
 #include "loguru.h"
 
+#include <fstream>
+
 Status UserProjectConfiguration::CheckProjectConfiguration(const fs::path &buildDirPath,
                                                            ProjectConfigWriter const &writer) {
     if (!fs::exists(buildDirPath)) {
@@ -46,37 +48,65 @@ static const std::vector<std::string> CMAKE_MANDATORY_OPTIONS = {
     "-DCMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES=OFF",
 };
 
+static std::string IN_PROJECT_ROOT_CI_BUILD_SCRIPT_NAME = "utbot_build.sh";
+static std::string IN_BUILD_CONFIGURATION_SCRIPT_NAME = "utbot_configure.sh";
+static std::string IN_BUILD_CONFIGURATION_SCRIPT_CONTENT =
+    "#!/bin/bash\n" +
+    Copyright::GENERATED_SH_HEADER +
+    "cd ..\n"
+    "./" + IN_PROJECT_ROOT_CI_BUILD_SCRIPT_NAME + "\n";
+
 Status
 UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildDirPath,
                                                           const utbot::ProjectContext &projectContext,
                                                           std::vector<std::string> cmakeOptions,
                                                           ProjectConfigWriter const &writer) {
     try {
-        fs::path bearShPath = createBearShScript(buildDirPath);
+        if (fs::exists(buildDirPath.parent_path() / IN_PROJECT_ROOT_CI_BUILD_SCRIPT_NAME)) {
+            LOG_S(INFO) << "Configure project by " << IN_PROJECT_ROOT_CI_BUILD_SCRIPT_NAME;
 
-        std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
-        for (const std::string &op : cmakeOptions) {
-            if (op.find("_USE_RESPONSE_FILE_FOR_") == std::string::npos) {
-                cmakeOptionsWithMandatory.emplace_back(op);
+            const fs::path utbotConfigurePath = buildDirPath / IN_BUILD_CONFIGURATION_SCRIPT_NAME;
+            {
+                // create wrapper script for in-root build script
+                std::ofstream(buildDirPath / IN_BUILD_CONFIGURATION_SCRIPT_NAME)
+                    << IN_BUILD_CONFIGURATION_SCRIPT_CONTENT;
             }
+            fs::permissions(utbotConfigurePath,
+                            fs::perms::owner_exec,
+                            std::filesystem::perm_options::add);
+
+            ShellExecTask::ExecutionParameters bearBuildParams(
+                Paths::getBear(),
+                {utbotConfigurePath});
+            RunProjectConfigurationCommand(buildDirPath, bearBuildParams, projectContext, writer);
         }
-        cmakeOptionsWithMandatory.emplace_back("..");
+        else {
+            std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
+            for (const std::string &op : cmakeOptions) {
+                if (op.find("_USE_RESPONSE_FILE_FOR_") == std::string::npos) {
+                    cmakeOptionsWithMandatory.emplace_back(op);
+                }
+            }
+            cmakeOptionsWithMandatory.emplace_back("..");
 
-        ShellExecTask::ExecutionParameters cmakeParams(Paths::getCMake(), cmakeOptionsWithMandatory);
-        ShellExecTask::ExecutionParameters bearMakeParams(Paths::getBear(),
-                                                          {Paths::getMake(), MakefileUtils::threadFlag()});
+            ShellExecTask::ExecutionParameters cmakeParams(
+                Paths::getCMake(),
+                cmakeOptionsWithMandatory);
+            ShellExecTask::ExecutionParameters bearMakeParams(
+                Paths::getBear(),
+                { Paths::getMake(), MakefileUtils::threadFlag() });
 
-
-        fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
-        if (fs::exists(cmakeListsPath)) {
-            LOG_S(INFO) << "Configure cmake project";
-            RunProjectConfigurationCommand(buildDirPath, cmakeParams, projectContext, writer);
-        } else {
-            LOG_S(INFO) << "CMakeLists.txt not found in root project directory: " << cmakeListsPath
-                        << ". Skipping cmake step.";
+            fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
+            if (fs::exists(cmakeListsPath)) {
+                LOG_S(INFO) << "Configure cmake project";
+                RunProjectConfigurationCommand(buildDirPath, cmakeParams, projectContext, writer);
+            } else {
+                LOG_S(INFO) << "CMakeLists.txt not found in root project directory: "
+                            << cmakeListsPath << ". Skipping cmake step.";
+            }
+            LOG_S(INFO) << "Configure make project";
+            RunProjectConfigurationCommand(buildDirPath, bearMakeParams, projectContext, writer);
         }
-        LOG_S(INFO) << "Configure make project";
-        RunProjectConfigurationCommand(buildDirPath, bearMakeParams, projectContext, writer);
         writer.writeResponse(ProjectConfigStatus::IS_OK);
     } catch (const std::exception &e) {
         fs::remove(getCompileCommandsJsonPath(buildDirPath));
