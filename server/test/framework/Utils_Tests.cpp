@@ -17,18 +17,18 @@ namespace {
 
     TEST(StringUtils_stotInt128, simple) {
         __int128 val = 42;
-        ASSERT_EQ(val, StringUtils::stot<__int128>("42"));
+        ASSERT_TRUE(val == StringUtils::stot<__int128>("42"));
     }
 
     TEST(StringUtils_stotInt128, simple_unsigned) {
         unsigned __int128 val = 42;
-        ASSERT_EQ(val, StringUtils::stot<unsigned __int128>("42"));
+        ASSERT_TRUE(val == StringUtils::stot<unsigned __int128>("42"));
     }
 
     TEST(StringUtils_stotInt128, INT128_MIN) {
         __int128 val = 1;
         val <<= 127;
-        ASSERT_EQ(val, StringUtils::stot<__int128>("-170141183460469231731687303715884105728"));
+        ASSERT_TRUE(val == StringUtils::stot<__int128>("-170141183460469231731687303715884105728"));
     }
 
     TEST(ReadBytesAsValueTest, Unsigned1) {
