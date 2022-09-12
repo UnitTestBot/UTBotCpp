@@ -41,7 +41,7 @@ namespace printer {
 
         void addStubs(const CollectionUtils::FileSet &stubsSet);
 
-        [[nodiscard]] TestMakefilesContent GetMakefiles(const fs::path &path);
+        [[nodiscard]] TestMakefilesContent GetMakefiles(const fs::path &sourcePath);
     };
 }
 

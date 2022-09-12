@@ -25,7 +25,6 @@ namespace {
         CLI_Test() : BaseTest("cli") {
         }
 
-        const std::string resultsDirectoryName = "utbot-report";
         const std::string buildDirectoryName = "build_clang";
 
         const std::string assertion_failures = "assertion_failures";
@@ -67,7 +66,7 @@ namespace {
 
         void SetUp() override {
             clearTestDirectory();
-            clearDirectory(suitePath / resultsDirectoryName);
+            clearDirectory(suitePath / Paths::UTBOT_REPORT);
             clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
@@ -97,10 +96,9 @@ namespace {
         }
 
         void checkResultsDirectory() {
-            FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath /
-                                                                          resultsDirectoryName);
+            FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath / Paths::UTBOT_REPORT);
             EXPECT_EQ(directoryIterator.size(), 3);
-            for (auto &&it : directoryIterator) {
+            for (const auto &it : directoryIterator) {
                 EXPECT_TRUE(it.is_regular_file());
             }
         }
@@ -167,15 +165,15 @@ namespace {
     }
 
     TEST_F(CLI_Test, Generate_Project_Tests) {
-        fs::remove(suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+        fs::remove(suitePath / Paths::UTBOT_REPORT / sarif::SARIF_FILE_NAME);
 
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath, "--build-dir",
                          buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
 
         compareSARIFFiles(
-            suitePath / "goldenImage" / sarif::SARIF_DIR_NAME /sarif::SARIF_FILE_NAME,
-            suitePath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+            suitePath / "goldenImage" / Paths::UTBOT_REPORT /sarif::SARIF_FILE_NAME,
+            suitePath / Paths::UTBOT_REPORT / sarif::SARIF_FILE_NAME);
     }
 
     TEST_F(CLI_Test, Generate_File_Tests) {
@@ -231,10 +229,10 @@ namespace {
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath,
                          "--build-dir", buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
-        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv", allProjectSrcFiles);
+        testUtils::checkGenerationStatsCSV(suitePath / Paths::UTBOT_REPORT / "generation-stats.csv", allProjectSrcFiles);
         runCommandLine({ "./utbot", "run", "--project-path", suitePath, "--build-dir", buildDirectoryName, "project" });
         checkResultsDirectory();
-        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv", allProjectSrcFiles);
+        testUtils::checkExecutionStatsCSV(suitePath / Paths::UTBOT_REPORT / "execution-stats.csv", allProjectSrcFiles);
     }
 
     TEST_F(CLI_Test, Run_File_Tests) {
@@ -242,11 +240,11 @@ namespace {
                          "--build-dir", buildDirectoryName, "file",
                          "--file-path", suitePath / "basic_functions.c" });
         checkTestDirectory({ basic_functions_tests_cpp, basic_functions_tests_h });
-        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv",
+        testUtils::checkGenerationStatsCSV(suitePath / Paths::UTBOT_REPORT / "generation-stats.csv",
                                            {"basic_functions.c"});
         runCommandLine({ "./utbot", "run", "--project-path", suitePath, "--build-dir", buildDirectoryName, "file",
                          "--file-path", getTestDirectory() / basic_functions_tests_cpp });
-        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv",
+        testUtils::checkExecutionStatsCSV(suitePath / Paths::UTBOT_REPORT / "execution-stats.csv",
                                           {"basic_functions.c"});
         checkResultsDirectory();
     }
@@ -267,8 +265,8 @@ namespace {
         runCommandLine({ "./utbot", "all", "--project-path", suitePath, "--build-dir", buildDirectoryName });
         checkTestDirectory(allProjectTestFiles);
         checkResultsDirectory();
-        testUtils::checkGenerationStatsCSV(suitePath / resultsDirectoryName / "generation-stats.csv", allProjectSrcFiles);
-        testUtils::checkExecutionStatsCSV(suitePath / resultsDirectoryName / "execution-stats.csv", allProjectSrcFiles);
+        testUtils::checkGenerationStatsCSV(suitePath / Paths::UTBOT_REPORT / "generation-stats.csv", allProjectSrcFiles);
+        testUtils::checkExecutionStatsCSV(suitePath / Paths::UTBOT_REPORT / "execution-stats.csv", allProjectSrcFiles);
     }
 
     TEST_F(CLI_Test, Target_Option_Tests) {

@@ -158,8 +158,7 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
 
 void TestRunner::init(bool withCoverage) {
     MEASURE_FUNCTION_EXECUTION_TIME
-    fs::path ccJson = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(
-        projectContext.projectPath, projectContext.buildDirRelativePath);
+    fs::path ccJson = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext);
     coverageTool = getCoverageTool(ccJson, projectContext, progressWriter);
     if (withCoverage) {
         cleanCoverage();

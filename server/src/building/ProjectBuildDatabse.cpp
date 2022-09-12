@@ -52,9 +52,8 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
 }
 
 ProjectBuildDatabase::ProjectBuildDatabase(utbot::ProjectContext projectContext) : ProjectBuildDatabase(
-        CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext.projectPath,
-                                                                        projectContext.buildDirRelativePath),
-        Paths::getUtbotBuildDir(projectContext), std::move(projectContext)) {
+        CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext),
+        Paths::getUTBotBuildDir(projectContext), std::move(projectContext)) {
 }
 
 
@@ -80,8 +79,8 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         objectInfo->command = utbot::CompileCommand(jsonArguments, directory, sourceFile);
         objectInfo->command.removeWerror();
         fs::path outputFile = objectInfo->getOutputFile();
-        fs::path kleeFilePathTemplate =
-                Paths::createNewDirForFile(sourceFile, projectContext.buildDir(), serverBuildDir);
+        fs::path kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, projectContext.projectPath,
+                                                                   Paths::getUTBotFiles(projectContext));
         fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
         objectInfo->kleeFilesInfo = std::make_shared<KleeFilesInfo>(kleeFile);
 

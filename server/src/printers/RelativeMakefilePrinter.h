@@ -32,7 +32,7 @@ protected:
                               std::function<void(const std::string&, const std::string&)> shellVariableDeclarationFunction,
                               bool shouldWriteToMap = true, bool isCanonical = true);
     fs::path getRelativePathForLinker(fs::path path) const;
-    std::string getProjectStructureRelativeTo(fs::path path) const;
+    std::string getProjectStructureRelativeTo(const fs::path &makefilePath) const;
 };
 }
 
