@@ -182,4 +182,4 @@ jobs:
       - name: Check test portability
         run: |
           rm -r /home/runner/work/UTBotCpp/UTBotCpp/c-example/build
-          env make -f /home/runner/work/UTBotCpp/UTBotCpp/c-example/tests/lib/floats/floating_point_plain.mk run GTEST_FLAGS="--gtest_filter=*.plain_isnan_test_1" CLANG="/usr/bin/clang-10" CLANGXX="/usr/bin/clang++-10" GTEST="/gtest"
+          env make -f /home/runner/work/UTBotCpp/UTBotCpp/c-example/tests/makefiles/lib/floats/floating_point_plain.mk run GTEST_FLAGS="--gtest_filter=*.plain_isnan_test_1" CLANG="/usr/bin/clang-10" CLANGXX="/usr/bin/clang++-10" GTEST="/gtest"
