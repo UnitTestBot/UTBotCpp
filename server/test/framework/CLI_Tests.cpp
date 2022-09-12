@@ -97,7 +97,7 @@ namespace {
 
         void checkResultsDirectory() {
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(suitePath / Paths::UTBOT_REPORT);
-            EXPECT_EQ(directoryIterator.size(), 3);
+            EXPECT_EQ(directoryIterator.size(), 4);
             for (const auto &it : directoryIterator) {
                 EXPECT_TRUE(it.is_regular_file());
             }
