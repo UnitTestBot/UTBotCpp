@@ -5,6 +5,7 @@
 
 #include "json.hpp"
 
+#include "ProjectContext.h"
 #include "utils/path/FileSystemPath.h"
 #include <memory>
 
@@ -26,6 +27,7 @@ namespace CompilationUtils {
     inline static const std::string CLANG_PATH = "clang";
     inline static const std::string CLANGXX_PATH = "clang++";
 
+    static inline const std::string UTBOT_FILES_DIR_NAME = "utbot_files";
     static inline const std::string UTBOT_BUILD_DIR_NAME = "utbot_build";
 
     static inline const std::string FULL_COMMAND_PATTERN_WITH_CD = R"(cd "%s" && mkdir -p %s && %s)";
@@ -38,8 +40,7 @@ namespace CompilationUtils {
 
     CompilerName getCompilerName(fs::path const &compilerPath);
 
-    fs::path substituteRemotePathToCompileCommandsJsonPath(const fs::path &projectPath,
-                                                           const std::string &buildDirRelativePath);
+    fs::path substituteRemotePathToCompileCommandsJsonPath(const utbot::ProjectContext &projectContext);
 
     fs::path getClangCompileCommandsJsonPath(const fs::path &buildCommandsJsonPath);
 

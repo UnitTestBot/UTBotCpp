@@ -122,7 +122,7 @@ void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &bu
                                                               const ProjectConfigWriter &writer) {
     auto[out, status, _] = ShellExecTask::runShellCommandTask(params, buildDirPath, projectContext.projectName, true, true);
     if (status != 0) {
-        auto logFilePath = LogUtils::writeLog(out, Paths::getUtbotBuildDir(projectContext), "project-import");
+        auto logFilePath = LogUtils::writeLog(out, Paths::getUTBotBuildDir(projectContext), "project-import");
         std::string message = StringUtils::stringFormat(
                 "Running command \"%s\" failed. See more info in logs.", params.toString());
         throw std::runtime_error(message);

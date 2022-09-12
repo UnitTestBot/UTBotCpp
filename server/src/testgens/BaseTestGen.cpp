@@ -15,7 +15,7 @@ BaseTestGen::BaseTestGen(const testsgen::ProjectContext &projectContext,
                          bool testMode)
         : projectContext(projectContext),
           settingsContext(settingsContext), progressWriter(progressWriter) {
-    serverBuildDir = Paths::getUtbotBuildDir(this->projectContext);
+    serverBuildDir = Paths::getUTBotBuildDir(this->projectContext);
 }
 
 bool BaseTestGen::needToBeMocked() const {

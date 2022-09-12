@@ -45,7 +45,7 @@ namespace printer {
             fs::path const &rootPath,
             fs::path primaryCompiler,
             CollectionUtils::FileSet const *stubSources) :
-            RelativeMakefilePrinter(Paths::getUtbotBuildDir(testGen->projectContext),
+            RelativeMakefilePrinter(Paths::getUTBotBuildDir(testGen->projectContext),
                                     Paths::getRelativeUtbotBuildDir(testGen->projectContext),
                                     testGen->projectContext.projectPath),
             projectContext(testGen->projectContext),
@@ -69,13 +69,13 @@ namespace printer {
         objMakefilePrinter.addStubs(stubsSet);
     }
 
-    TestMakefilesContent TestMakefilesPrinter::GetMakefiles(const fs::path &path) {
+    TestMakefilesContent TestMakefilesPrinter::GetMakefiles(const fs::path &sourcePath) {
         printer::DefaultMakefilePrinter generalMakefilePrinter;
-        fs::path generalMakefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, path);
+        fs::path generalMakefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
         fs::path sharedMakefilePath = getMakefilePathForShared(generalMakefilePath);
         fs::path objMakefilePath = getMakefilePathForObject(generalMakefilePath);
 
-        generalMakefilePrinter.ss << getProjectStructureRelativeTo(path);
+        generalMakefilePrinter.ss << getProjectStructureRelativeTo(generalMakefilePath);
         generalMakefilePrinter.ss << ss.str();
 
         generalMakefilePrinter.declareTarget(FORCE, {}, {});
@@ -117,7 +117,7 @@ namespace printer {
 
         return {generalMakefilePath,
                 generalMakefilePrinter.ss.str(),
-                NativeMakefilePrinter(sharedMakefilePrinter, path).ss.str(),
-                NativeMakefilePrinter(objMakefilePrinter, path).ss.str()};
+                NativeMakefilePrinter(sharedMakefilePrinter, sourcePath).ss.str(),
+                NativeMakefilePrinter(objMakefilePrinter, sourcePath).ss.str()};
     }
 }

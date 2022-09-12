@@ -161,18 +161,16 @@ namespace Paths {
         return errFiles;
     }
 
-    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                   const fs::path &filePath) {
-        fs::path kleeOutDir = getKleeOutDir(projectTmpPath);
+    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &filePath) {
+        fs::path kleeOutDir = getKleeOutDir(projectContext);
         fs::path relative = fs::relative(addOrigExtensionAsSuffixAndAddNew(filePath, ""), projectContext.projectPath);
         return kleeOutDir / relative;
     }
 
     fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
-                                      const fs::path &projectTmpPath,
                                       const fs::path &srcFilePath,
                                       const std::string &methodNameOrEmptyForFolder) {
-        auto kleeOutDirForFile = kleeOutDirForFilePath(projectContext, projectTmpPath, srcFilePath);
+        auto kleeOutDirForFile = kleeOutDirForFilePath(projectContext, srcFilePath);
         std::string suffix = methodNameOrEmptyForFolder.empty()
                              ? addOrigExtensionAsSuffixAndAddNew(srcFilePath, "").filename().string()
                              : methodNameOrEmptyForFolder;
@@ -218,7 +216,7 @@ namespace Paths {
         return getArtifactsRootDir(projectContext) / "tests";
     }
     fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
-        return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
+        return getPathDirRelativeToTestDir(projectContext, sourceFilePath) / "makefiles";
     }
     fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
         return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
@@ -229,13 +227,13 @@ namespace Paths {
     }
 
     fs::path getRecompiledDir(const utbot::ProjectContext &projectContext) {
-        return getUtbotBuildDir(projectContext) / "recompiled";
+        return getUTBotBuildDir(projectContext) / "recompiled";
     }
     fs::path getTestObjectDir(const utbot::ProjectContext &projectContext) {
-        return getUtbotBuildDir(projectContext) / "test_objects";
+        return getUTBotBuildDir(projectContext) / "test_objects";
     }
     fs::path getCoverageDir(const utbot::ProjectContext &projectContext) {
-        return getUtbotBuildDir(projectContext) / "coverage";
+        return getUTBotBuildDir(projectContext) / "coverage";
     }
     fs::path getClangCoverageDir(const utbot::ProjectContext &projectContext) {
         return getCoverageDir(projectContext) / "lcov";
@@ -278,7 +276,7 @@ namespace Paths {
 
     fs::path getBuildFilePath(const utbot::ProjectContext &projectContext,
                               const fs::path &sourceFilePath) {
-        fs::path path = getUtbotBuildDir(projectContext) /
+        fs::path path = getUTBotBuildDir(projectContext) /
                         getRelativeDirPath(projectContext, sourceFilePath) /
                         sourceFilePath.filename();
         return addExtension(path, ".o");
@@ -286,7 +284,7 @@ namespace Paths {
 
     fs::path getStubBuildFilePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
-        fs::path path = getUtbotBuildDir(projectContext) /
+        fs::path path = getUTBotBuildDir(projectContext) /
                         getRelativeDirPath(projectContext, sourceFilePath) /
                         sourcePathToStubName(sourceFilePath);
         return addExtension(path, ".o");
@@ -409,9 +407,6 @@ namespace Paths {
 
     bool isHeadersEqual(const fs::path &srcPath, const fs::path &headerPath) {
         return removeSuffix(srcPath, STUB_SUFFIX).stem() == headerPath.stem();
-    }
-    fs::path getUtbotBuildDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.buildDir() / CompilationUtils::UTBOT_BUILD_DIR_NAME;
     }
 
     //endregion
