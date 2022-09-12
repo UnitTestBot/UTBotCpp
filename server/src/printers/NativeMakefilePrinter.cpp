@@ -135,7 +135,7 @@ namespace printer {
               CompilationUtils::getCoverageLinkFlags(primaryCxxCompilerName), " ")),
           sanitizerLinkFlags(SanitizerUtils::getSanitizeLinkFlags(primaryCxxCompilerName)),
 
-          buildDirectory(Paths::getUtbotBuildDir(testGen->projectContext)),
+          buildDirectory(Paths::getUTBotBuildDir(testGen->projectContext)),
           dependencyDirectory(buildDirectory / "dependencies"),
           stubSources(stubSources) {
 

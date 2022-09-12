@@ -16,8 +16,7 @@
 class KleeRunner {
 public:
     KleeRunner(utbot::ProjectContext projectContext,
-               utbot::SettingsContext settingsContext,
-               fs::path serverBuildDir);
+               utbot::SettingsContext settingsContext);
     /**
      * @brief Passes arguments to `run_klee.cpp` and executes it.
      *
@@ -39,7 +38,6 @@ public:
 private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
-    fs::path projectTmpPath;
 
     void processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
                                         tests::Tests &tests,

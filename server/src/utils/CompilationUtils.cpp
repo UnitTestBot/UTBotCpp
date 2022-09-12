@@ -117,19 +117,18 @@ namespace CompilationUtils {
         LOG_S(DEBUG) << jsonFileName << " for mount is written to: " << newJsonDir;
     }
 
-    fs::path
-    substituteRemotePathToCompileCommandsJsonPath(
-            const fs::path& projectPath,
-            const std::string& buildDirRelativePath) {
+    fs::path substituteRemotePathToCompileCommandsJsonPath(const utbot::ProjectContext &projectContext) {
         const std::string ccJsonFileName = "compile_commands.json";
-        fs::path utbotBuildDir = projectPath / buildDirRelativePath / UTBOT_BUILD_DIR_NAME;
-        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, ccJsonFileName, utbotBuildDir);
-        substituteRemotePathToCCJsonForFile(projectPath, buildDirRelativePath, "link_commands.json", utbotBuildDir);
+        fs::path utbotBuildDir = Paths::getUTBotBuildDir(projectContext);
+        substituteRemotePathToCCJsonForFile(projectContext.projectPath, projectContext.buildDirRelativePath,
+                                            ccJsonFileName, utbotBuildDir);
+        substituteRemotePathToCCJsonForFile(projectContext.projectPath, projectContext.buildDirRelativePath,
+                                            "link_commands.json", utbotBuildDir);
         return utbotBuildDir;
     }
 
     fs::path getClangCompileCommandsJsonPath(const fs::path &buildCommandsJsonPath) {
-        return buildCommandsJsonPath / "utbot_clang" / "compile_commands.json";
+        return buildCommandsJsonPath / "clang_compile_database" / "compile_commands.json";
     }
 
     std::string to_string(CompilerName compilerName) {

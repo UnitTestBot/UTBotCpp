@@ -9,7 +9,6 @@ namespace sarif {
     const std::string TEST_NAME_KEY = "TestName";
     const std::string ERROR_ID_KEY = "ErrorId";
 
-    const std::string SARIF_DIR_NAME = "codeAnalysis";
     const std::string SARIF_FILE_NAME = "project_code_analysis.sarif";
 
     void sarifAddTestsToResults(const utbot::ProjectContext &projectContext,

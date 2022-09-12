@@ -189,10 +189,16 @@ namespace Paths {
 
     //endregion
 
-    fs::path getUtbotBuildDir(const utbot::ProjectContext &projectContext);
+    static inline fs::path getUTBotFiles(const utbot::ProjectContext &projectContext) {
+        return projectContext.buildDir() / CompilationUtils::UTBOT_FILES_DIR_NAME;
+    }
+
+    static inline fs::path getUTBotBuildDir(const utbot::ProjectContext &projectContext) {
+        return getUTBotFiles(projectContext) / CompilationUtils::UTBOT_BUILD_DIR_NAME;
+    }
 
     static inline fs::path getRelativeUtbotBuildDir(const utbot::ProjectContext &projectContext) {
-        return fs::relative(getUtbotBuildDir(projectContext), projectContext.projectPath);
+        return fs::relative(getUTBotBuildDir(projectContext), projectContext.projectPath);
     }
 
     //region json
@@ -218,8 +224,8 @@ namespace Paths {
         return getBaseLogDir() / "klee_tmp_log.txt";
     }
 
-    static inline fs::path getKleeOutDir(const fs::path &projectTmpPath) {
-        return projectTmpPath / "klee_out";
+    static inline fs::path getKleeOutDir(const utbot::ProjectContext &projectContext) {
+        return getUTBotFiles(projectContext) / "klee_out";
     }
 
     static inline bool isKtest(fs::path const &path) {
@@ -239,11 +245,9 @@ namespace Paths {
 
     std::vector<fs::path> getErrorDescriptors(fs::path const &path);
 
-    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &projectTmpPath,
-                                   const fs::path &filePath);
+    fs::path kleeOutDirForFilePath(const utbot::ProjectContext &projectContext, const fs::path &filePath);
 
     fs::path kleeOutDirForEntrypoints(const utbot::ProjectContext &projectContext,
-                                      const fs::path &projectTmpPath,
                                       const fs::path &srcFilePath,
                                       const std::string &methodNameOrEmptyForFolder);
 
@@ -417,10 +421,12 @@ namespace Paths {
 
     //endregion
 
-    //region utbot-report
+    //region utbot_report
+
+    const std::string UTBOT_REPORT = "utbot_report";
 
     inline fs::path getUTBotReportDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.projectPath / "utbot-report";
+        return projectContext.projectPath / UTBOT_REPORT;
     }
 
     inline fs::path getGenerationStatsCSVPath(const utbot::ProjectContext &projectContext) {

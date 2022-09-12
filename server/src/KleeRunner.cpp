@@ -42,10 +42,8 @@ namespace {
 }
 
 KleeRunner::KleeRunner(utbot::ProjectContext projectContext,
-                       utbot::SettingsContext settingsContext,
-                       fs::path serverBuildDir)
-    : projectContext(std::move(projectContext)), settingsContext(std::move(settingsContext)),
-      projectTmpPath(std::move(serverBuildDir)) {
+                       utbot::SettingsContext settingsContext)
+    : projectContext(std::move(projectContext)), settingsContext(std::move(settingsContext)) {
 }
 
 void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
@@ -59,7 +57,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          StatsUtils::TestsGenerationStatsFileMap &generationStats) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
-    fs::path kleeOutDir = Paths::getKleeOutDir(projectTmpPath);
+    fs::path kleeOutDir = Paths::getKleeOutDir(projectContext);
     if (fs::exists(kleeOutDir)) {
         FileSystemUtils::removeAll(kleeOutDir);
     }
@@ -105,7 +103,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         } else {
             processBatchWithoutInteractive(batch, tests, ktests);
         }
-        auto kleeStats = writeKleeStats(Paths::kleeOutDirForFilePath(projectContext, projectTmpPath, filePath));
+        auto kleeStats = writeKleeStats(Paths::kleeOutDirForFilePath(projectContext, filePath));
         generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
                                           settingsContext.verbose);
         generationStats.addFileStats(kleeStats, tests);
@@ -116,7 +114,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     std::function<void()> prepareTotal = [&]() {
         testsWriter->writeReport(sarif::sarifPackResults(sarifResults),
                                  "Sarif Report was created",
-                                 projectContext.projectPath / sarif::SARIF_DIR_NAME / sarif::SARIF_FILE_NAME);
+                                 Paths::getUTBotReportDir(projectContext) / sarif::SARIF_FILE_NAME);
     };
 
     testsWriter->writeTestsWithProgress(
@@ -212,7 +210,6 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
                              const tests::Tests &tests,
                              const std::string &methodNameOrEmptyForFolder) {
     fs::path kleeOut = Paths::kleeOutDirForEntrypoints(projectContext,
-                                                       projectTmpPath,
                                                        tests.sourceFilePath,
                                                        methodNameOrEmptyForFolder);
     fs::create_directories(kleeOut.parent_path());
