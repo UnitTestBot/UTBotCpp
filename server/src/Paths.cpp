@@ -216,7 +216,7 @@ namespace Paths {
         return getArtifactsRootDir(projectContext) / "tests";
     }
     fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
-        return getPathDirRelativeToTestDir(projectContext, sourceFilePath) / "makefiles";
+        return projectContext.testDirPath / "makefiles" / getRelativeDirPath(projectContext, sourceFilePath);
     }
     fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
         return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
