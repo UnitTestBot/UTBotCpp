@@ -43,8 +43,7 @@ StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescrip
         stubFilesMap[file].sourceFilePath = file;
     }
     Fetcher::Options::Value options = Fetcher::Options::Value::FUNCTION_NAMES_ONLY;
-    Fetcher fetcher(options, stubsCdb, stubFilesMap, nullptr,
-                              nullptr, nullptr, ccJsonDirPath, true);
+    Fetcher fetcher(options, stubsCdb, stubFilesMap, nullptr, nullptr, ccJsonDirPath, true);
     fetcher.fetchWithProgress(testGen.progressWriter, "Finding stub files", true);
     CollectionUtils::FileSet stubFilesSet;
     auto signatureNamesSet = CollectionUtils::transformTo<std::unordered_set<std::string>>(

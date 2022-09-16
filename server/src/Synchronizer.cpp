@@ -136,7 +136,8 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     auto filesInFolder = Paths::findFilesInFolder(stubDirPath);
     auto presentStubs = CollectionUtils::transformTo<StubSet>(
     dropHeaders(filesInFolder), [this](const fs::path &stubPath) {
-        return StubOperator(Paths::stubPathToSourcePath(this->testGen->projectContext, stubPath), Paths::isHeaderFile(stubPath));
+        return StubOperator(Paths::stubPathToSourcePath(this->testGen->projectContext, stubPath),
+                            Paths::isHeaderFile(stubPath));
     });
     StubSet stubFiles = CollectionUtils::unionSet(allStubs, presentStubs);
     tests::TestsMap stubFilesMap, sourceFilesMap;
@@ -153,11 +154,10 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
 
     auto stubFetcher =
         Fetcher(options, testGen->getProjectBuildDatabase()->compilationDatabase, sourceFilesMap, &testGen->types,
-                &sizeContext->pointerSize, &sizeContext->maximumAlignment,
+                &sizeContext->maximumAlignment,
                 testGen->compileCommandsJsonPath, false);
 
-    stubFetcher.fetchWithProgress(testGen->progressWriter, "Finding source files required for stubs",
-                           true);
+    stubFetcher.fetchWithProgress(testGen->progressWriter, "Finding source files required for stubs", true);
 
     fs::path ccJsonStubDirPath =
             Paths::getUtbotBuildDir(testGen->projectContext) / "stubs_build_files";

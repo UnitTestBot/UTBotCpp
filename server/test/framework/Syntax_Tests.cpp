@@ -3080,33 +3080,37 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        for (const auto &testCase: testGen.tests.at(bitfields_c).methods.begin().value().testCases) {
+            ASSERT_TRUE(!testCase.isError());
+        }
+
         checkTestCasePredicates(
-    testGen.tests.at(bitfields_c).methods.begin().value().testCases,
-    std::vector<TestCasePredicate>(
-            {
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<int>(subViews[0], 24) &&
-                           checkBitfieldFit<int>(subViews[1], 1) &&
-                           checkBitfieldFit<int>(subViews[2], 2) &&
-                           checkBitfieldFit<int>(subViews[3], 5) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "1";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<int>(subViews[0], 24) &&
-                           checkBitfieldFit<int>(subViews[1], 1) &&
-                           checkBitfieldFit<int>(subViews[2], 2) &&
-                           checkBitfieldFit<int>(subViews[3], 5) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "-1";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<int>(subViews[0], 24) &&
-                           checkBitfieldFit<int>(subViews[1], 1) &&
-                           checkBitfieldFit<int>(subViews[2], 2) &&
-                           checkBitfieldFit<int>(subViews[3], 5) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "0";
+            testGen.tests.at(bitfields_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<int>(subViews[0], 24) &&
+                               checkBitfieldFit<int>(subViews[1], 1) &&
+                               checkBitfieldFit<int>(subViews[2], 2) &&
+                               checkBitfieldFit<int>(subViews[3], 5) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<int>(subViews[0], 24) &&
+                               checkBitfieldFit<int>(subViews[1], 1) &&
+                               checkBitfieldFit<int>(subViews[2], 2) &&
+                               checkBitfieldFit<int>(subViews[3], 5) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "-1";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<int>(subViews[0], 24) &&
+                               checkBitfieldFit<int>(subViews[1], 1) &&
+                               checkBitfieldFit<int>(subViews[2], 2) &&
+                               checkBitfieldFit<int>(subViews[3], 5) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "0";
                 }
             })
         );
@@ -3118,56 +3122,56 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         for (const auto &testCase: testGen.tests.at(bitfields_c).methods.begin().value().testCases) {
-            ASSERT_EQ(testCase.suiteName, tests::Tests::DEFAULT_SUITE_NAME);
+            ASSERT_TRUE(!testCase.isError());
         }
 
         checkTestCasePredicates(
-    testGen.tests.at(bitfields_c).methods.begin().value().testCases,
-    std::vector<TestCasePredicate>(
-            {
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<long long>(subViews[1],
-                                                       SizeUtils::bytesToBits(
-                                                               sizeof(long long))) &&
-                           checkBitfieldFit<signed>(subViews[2], 17) &&
-                           checkBitfieldFit<bool>(subViews[3], 1) &&
-                           checkBitfieldFit<int>(subViews[4], 22) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "1";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<long long>(subViews[1],
-                                                       SizeUtils::bytesToBits(
-                                                               sizeof(long long))) &&
-                           checkBitfieldFit<signed>(subViews[2], 17) &&
-                           checkBitfieldFit<bool>(subViews[3], 1) &&
-                           checkBitfieldFit<int>(subViews[4], 22) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "2";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<long long>(subViews[1],
-                                                       SizeUtils::bytesToBits(
-                                                               sizeof(long long))) &&
-                           checkBitfieldFit<signed>(subViews[2], 17) &&
-                           checkBitfieldFit<bool>(subViews[3], 1) &&
-                           checkBitfieldFit<int>(subViews[4], 22) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "3";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<long long>(subViews[1],
-                                                       SizeUtils::bytesToBits(
-                                                               sizeof(long long))) &&
-                           checkBitfieldFit<signed>(subViews[2], 17) &&
-                           checkBitfieldFit<bool>(subViews[3], 1) &&
-                           checkBitfieldFit<int>(subViews[4], 22) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "4";
+            testGen.tests.at(bitfields_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<long long>(subViews[1],
+                                                           SizeUtils::bytesToBits(
+                                                                   sizeof(long long))) &&
+                               checkBitfieldFit<signed>(subViews[2], 17) &&
+                               checkBitfieldFit<bool>(subViews[3], 1) &&
+                               checkBitfieldFit<int>(subViews[4], 22) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<long long>(subViews[1],
+                                                           SizeUtils::bytesToBits(
+                                                                   sizeof(long long))) &&
+                               checkBitfieldFit<signed>(subViews[2], 17) &&
+                               checkBitfieldFit<bool>(subViews[3], 1) &&
+                               checkBitfieldFit<int>(subViews[4], 22) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "2";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<long long>(subViews[1],
+                                                           SizeUtils::bytesToBits(
+                                                                   sizeof(long long))) &&
+                               checkBitfieldFit<signed>(subViews[2], 17) &&
+                               checkBitfieldFit<bool>(subViews[3], 1) &&
+                               checkBitfieldFit<int>(subViews[4], 22) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "3";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<long long>(subViews[1],
+                                                           SizeUtils::bytesToBits(
+                                                                   sizeof(long long))) &&
+                               checkBitfieldFit<signed>(subViews[2], 17) &&
+                               checkBitfieldFit<bool>(subViews[3], 1) &&
+                               checkBitfieldFit<int>(subViews[4], 22) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "4";
                 }
             })
         );
@@ -3178,25 +3182,29 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
+        for (const auto &testCase: testGen.tests.at(bitfields_c).methods.begin().value().testCases) {
+            ASSERT_TRUE(!testCase.isError());
+        }
+
         checkTestCasePredicates(
-    testGen.tests.at(bitfields_c).methods.begin().value().testCases,
-    std::vector<TestCasePredicate>(
-            {
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return subViews.size() == 3 &&
-                           checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<unsigned>(subViews[1], 6) &&
-                           checkBitfieldFit<unsigned>(subViews[2], 15) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "0";
-                },
-                [](const tests::Tests::MethodTestCase &testCase) {
-                    auto &subViews = testCase.paramValues.front().view->getSubViews();
-                    return subViews.size() == 3 &&
-                           checkBitfieldFit<unsigned>(subViews[0], 7) &&
-                           checkBitfieldFit<unsigned>(subViews[1], 6) &&
-                           checkBitfieldFit<unsigned>(subViews[2], 15) &&
-                           testCase.returnValue.view->getEntryValue(nullptr) == "13";
+        testGen.tests.at(bitfields_c).methods.begin().value().testCases,
+        std::vector<TestCasePredicate>(
+                {
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return subViews.size() == 3 &&
+                               checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<unsigned>(subViews[1], 6) &&
+                               checkBitfieldFit<unsigned>(subViews[2], 15) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        auto &subViews = testCase.paramValues.front().view->getSubViews();
+                        return subViews.size() == 3 &&
+                               checkBitfieldFit<unsigned>(subViews[0], 7) &&
+                               checkBitfieldFit<unsigned>(subViews[1], 6) &&
+                               checkBitfieldFit<unsigned>(subViews[2], 15) &&
+                               testCase.returnValue.view->getEntryValue(nullptr) == "13";
                 }
             })
         );
