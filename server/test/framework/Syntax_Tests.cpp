@@ -1464,7 +1464,7 @@ namespace {
     }
 
     TEST_F(Syntax_Test, Correct_CodeText_For_Regression_And_Error) {
-        auto [testGen, status] = createTestForFunction(linked_list_c, 3);
+        auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 78);
         const std::string code = testGen.tests.begin()->second.code;
         const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
         const std::string endRegion = std::string("#pragma endregion") + NL;
@@ -1982,9 +1982,6 @@ namespace {
                 {
                     [] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
-                },
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) > -1;
                 }
             })
         );
@@ -2676,9 +2673,6 @@ namespace {
             testGen.tests.at(linked_list_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>(
                 {
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                    },
                     [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                     },
