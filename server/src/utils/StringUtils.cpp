@@ -158,7 +158,7 @@ namespace StringUtils {
     }
 
     template<>
-    int stot<>(const std::string& s) {
+    int stot(const std::string& s) {
         return std::stoi(s);
     }
     template<>
