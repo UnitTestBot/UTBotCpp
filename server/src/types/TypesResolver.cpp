@@ -121,16 +121,15 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
 
-    structInfo.longestFieldIndexForUnionInit = SIZE_MAX;
-    size_t i = 0;
-    size_t maxFieldSize = 0;
     for (const clang::FieldDecl *F : D->fields()) {
         if (F->isUnnamedBitfield()) {
             continue;
         }
-        structInfo.hasAnonymousStructOrUnion |= F->isAnonymousStructOrUnion();
         types::Field field;
+        field.anonymous = F->isAnonymousStructOrUnion();
         field.name = F->getNameAsString();
+        structInfo.hasAnonymousStructOrUnion |= field.anonymous;
+
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         if (field.type.isPointerToFunction()) {
@@ -175,11 +174,6 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
             field.accessSpecifier = types::Field::AS_pubic;
         }
         fields.push_back(field);
-        if (subType == types::SubType::Union && maxFieldSize < field.size) {
-            structInfo.longestFieldIndexForUnionInit = i;
-            maxFieldSize = field.size;
-        }
-        ++i;
     }
     structInfo.fields = fields;
     structInfo.size = getRecordSize(D);

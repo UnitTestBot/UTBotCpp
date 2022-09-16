@@ -258,6 +258,7 @@ namespace types {
 
     struct Field {
         types::Type type;
+        bool anonymous;
         std::string name;
         /// size in @b bits
         size_t size;
@@ -291,7 +292,6 @@ namespace types {
 
     struct StructInfo: TypeInfo {
         std::vector<Field> fields{};
-        size_t longestFieldIndexForUnionInit;
         FPointerMap functionFields{};
         bool hasAnonymousStructOrUnion;
         bool isCLike;

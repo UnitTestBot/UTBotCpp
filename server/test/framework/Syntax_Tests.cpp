@@ -1825,7 +1825,8 @@ namespace {
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                    testCase.returnValue.view->getEntryValue(nullptr) == "{{{'k', 1.010100e+00}}}";
+                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
+                                                 "{from_bytes<StructWithStructInUnion::DeepUnion>({");
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
@@ -2557,11 +2558,12 @@ namespace {
                 std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     std::stringstream ss;
                     EXPECT_EQ(testCase.paramValues.front().view->getEntryValue(nullptr).size(), 3);
-                    ss << "from_bytes<StructWithUnnamedUnion>({"
+                    ss << "{{"
+                       // "'x'"[1] => int('x')
                        << int(testCase.paramValues.front().view->getEntryValue(nullptr)[1])
-                       << ", 0, 0, 0, "
+                       << "}, "
                        << int(testCase.paramValues.front().view->getEntryValue(nullptr)[1])
-                       << ", 0, 0, 0})";
+                       << "}";
                     return testCase.returnValue.view->getEntryValue(nullptr) == ss.str();
                 }}));
     }
@@ -2574,15 +2576,11 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
-                    return "from_bytes<StructWithUnnamedUnion>({0, 0, 0, 0, 0, 0, 0, 0})" ==
-                           testCase.paramValues.front().view->getEntryValue(nullptr) &&
-                           "from_bytes<StructWithUnnamedUnion>({42, 0, 0, 0, 42, 0, 0, 0})" ==
-                           testCase.returnValue.view->getEntryValue(nullptr);
+                    return "{{0}, 0}" == testCase.paramValues.front().view->getEntryValue(nullptr) &&
+                           "{{42}, 42}" == testCase.returnValue.view->getEntryValue(nullptr);
                 }, [](const tests::Tests::MethodTestCase &testCase) {
-                    return "from_bytes<StructWithUnnamedUnion>({0, 0, 0, 0, 0, 0, 0, 0})" !=
-                           testCase.paramValues.front().view->getEntryValue(nullptr) &&
-                           "from_bytes<StructWithUnnamedUnion>({24, 0, 0, 0, 24, 0, 0, 0})" ==
-                           testCase.returnValue.view->getEntryValue(nullptr);
+                    return "{{0}, 0}" != testCase.paramValues.front().view->getEntryValue(nullptr) &&
+                           "{{24}, 24}" == testCase.returnValue.view->getEntryValue(nullptr);
 
                 }}));
     }
@@ -2597,11 +2595,11 @@ namespace {
                 std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
                     std::stringstream ss;
                     EXPECT_EQ(testCase.paramValues.front().view->getEntryValue(nullptr).size(), 3);
-                    ss << "from_bytes<UnionWithUnnamedStruct>({"
+                    ss << "{{'"
+                       << char(testCase.paramValues.front().view->getEntryValue(nullptr)[1])
+                       << "', "
                        << int(testCase.paramValues.front().view->getEntryValue(nullptr)[1])
-                       << ", 0, 0, 0, "
-                       << int(testCase.paramValues.front().view->getEntryValue(nullptr)[1])
-                       << ", 0, 0, 0})";
+                       << "}}";
                     return testCase.returnValue.view->getEntryValue(nullptr) == ss.str();
                 }}));
     }
@@ -2615,14 +2613,14 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(inner_unnamed_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>({[](const tests::Tests::MethodTestCase &testCase) {
-                    return "from_bytes<UnionWithUnnamedStruct>({0, 0, 0, 0, 0, 0, 0, 0})" ==
+                     return "{{'\\0', 0}}" ==
                            testCase.paramValues.front().view->getEntryValue(nullptr) &&
-                           "from_bytes<UnionWithUnnamedStruct>({42, 0, 0, 0, 42, 0, 0, 0})" ==
+                           "{{'*', 42}}" ==
                            testCase.returnValue.view->getEntryValue(nullptr);
                 }, [](const tests::Tests::MethodTestCase &testCase) {
-                    return "from_bytes<UnionWithUnnamedStruct>({0, 0, 0, 0, 0, 0, 0, 0})" !=
+                    return "{{'\\0', 0}}" !=
                            testCase.paramValues.front().view->getEntryValue(nullptr) &&
-                           "from_bytes<UnionWithUnnamedStruct>({24, 0, 0, 0, 24, 0, 0, 0})" ==
+                           "{{'\\x18', 24}}" ==
                            testCase.returnValue.view->getEntryValue(nullptr);
 
                 }}));

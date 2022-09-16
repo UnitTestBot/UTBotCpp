@@ -3,12 +3,12 @@
 
 #include "Include.h"
 #include "LineInfo.h"
+#include "NameDecorator.h"
 #include "types/Types.h"
 #include "utils/CollectionUtils.h"
 #include "utils/PrinterUtils.h"
 #include "utils/SizeUtils.h"
 #include "json.hpp"
-
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include <tsl/ordered_map.h>
@@ -21,8 +21,8 @@
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <type_traits>
 #include <queue>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -233,9 +233,27 @@ namespace tests {
     struct StructValueView : AbstractValueView {
         explicit StructValueView(const types::StructInfo &_structInfo,
                                  std::vector<std::shared_ptr<AbstractValueView>> _subViews,
-                                 std::optional<std::string> _entryValue)
-            : AbstractValueView(std::move(_subViews)), entryValue(std::move(_entryValue)),
-              structInfo(_structInfo){
+                                 std::optional<std::string> _entryValue,
+                                 bool _anonymous,
+                                 bool _dirtyInit,
+                                 size_t _fieldIndexToInitUnion)
+            : AbstractValueView(std::move(_subViews))
+            , entryValue(std::move(_entryValue))
+            , structInfo(_structInfo)
+            , anonymous(_anonymous)
+            , dirtyInit(_dirtyInit)
+            , fieldIndexToInitUnion(_fieldIndexToInitUnion){}
+
+        bool isDirtyInit() const {
+            return dirtyInit;
+        }
+
+        bool isAnonymous() const {
+            return anonymous;
+        }
+
+        size_t getFieldIndexToInitUnion() const {
+            return fieldIndexToInitUnion;
         }
 
         [[nodiscard]] const std::vector<std::shared_ptr<AbstractValueView>> &getSubViews() const override {
@@ -254,7 +272,7 @@ namespace tests {
             std::vector<std::string> entries;
             size_t i = 0;
             for (const auto &subView : subViews) {
-                if (structInfo.subType == types::SubType::Struct || structInfo.longestFieldIndexForUnionInit == i) {
+                if (structInfo.subType == types::SubType::Struct || fieldIndexToInitUnion == i) {
                     entries.push_back(subView->getEntryValue(nullptr));
                 }
                 ++i;
@@ -273,6 +291,9 @@ namespace tests {
         }
 
         [[nodiscard]] std::string getFieldPrefix(int i) const {
+            if (structInfo.fields[i].name.empty())
+                return "";
+
             std::string prefix = "." + structInfo.fields[i].name + " = ";
             if (structInfo.isCLike) {
                 return prefix;
@@ -291,6 +312,10 @@ namespace tests {
     private:
         const types::StructInfo structInfo;
         std::optional<std::string> entryValue;
+
+        bool anonymous;
+        bool dirtyInit;
+        size_t fieldIndexToInitUnion;
     };
 
     struct InitReference {
@@ -679,6 +704,7 @@ namespace tests {
                                                     size_t offsetInBits,
                                                     types::PointerUsage usage,
                                                     const std::optional<const Tests::MethodDescription> &testingMethod,
+                                                    const bool anonymous,
                                                     const std::string &name,
                                                     const MapAddressName &fromAddressToName,
                                                     std::vector<InitReference> &initReferences);
