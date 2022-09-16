@@ -423,7 +423,7 @@ Status Server::TestsGenServiceImpl::provideLoggingCallbacks(
          */
         using namespace std::chrono_literals;
         while (holdLockFlag[callbackName].exchange(true, std::memory_order_acquire)) {
-            std::this_thread::sleep_for(100ms);
+            std::this_thread::sleep_for(1ms);
         }
         loguru::remove_callback(callbackName.c_str());
         if (openFiles) {

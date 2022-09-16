@@ -141,7 +141,8 @@ Result<Linker::LinkResult> Linker::linkWholeTarget(const fs::path &target) {
                 insideFolder = false;
             }
         }
-        if (!CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) && insideFolder) {
+        if ( CollectionUtils::contains(testGen.tests, objectInfo->getSourcePath()) &&
+             !CollectionUtils::contains(testedFiles, objectInfo->getSourcePath()) && insideFolder) {
             fs::path bitcodeFile = objectInfo->kleeFilesInfo->getKleeBitcodeFile();
             filesToLink.emplace(objectFile, bitcodeFile);
         } else {
