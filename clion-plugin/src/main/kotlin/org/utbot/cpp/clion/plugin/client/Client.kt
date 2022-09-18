@@ -19,6 +19,9 @@ import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
+import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
+import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
+import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
 import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
@@ -83,9 +86,22 @@ class Client(
                 request.execute(stub, coroutineContext[Job])
             } catch (e: io.grpc.StatusException) {
                 handleGRPCStatusException(e, "Exception when executing server request")
+            } catch (e: IllegalPathException) {
+                e.notifyUser()
             }
         }
     }
+
+    fun configureProject() {
+        CheckProjectConfigurationRequest(
+            ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
+            project,
+        ).also {
+            this.executeRequestIfNotDisposed(it)
+        }
+    }
+
+    fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
 
     private fun provideLoggingChannels() {
         for (channel in loggingChannels) {

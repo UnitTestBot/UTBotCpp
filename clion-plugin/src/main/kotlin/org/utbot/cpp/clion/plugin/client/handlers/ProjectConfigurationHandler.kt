@@ -8,7 +8,6 @@ import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
@@ -85,9 +84,12 @@ class CreateBuildDirHandler(
                 notifyInfo("Build directory was created!", project)
 
                 CheckProjectConfigurationRequest(
-                    getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
-                    project,
-                ).execute()
+                    project
+                ).also {
+                    if (!client.isDisposed) {
+                        client.execute(it)
+                    }
+                }
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
                 notifyError("Failed to create build directory! ${response.message}", project)

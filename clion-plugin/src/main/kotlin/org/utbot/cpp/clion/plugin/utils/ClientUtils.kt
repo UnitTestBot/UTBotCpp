@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
+import org.utbot.cpp.clion.plugin.grpc.IllegalActionEventException
 
 //TODO: remove logger from this file
 val Project.logger: ClientLogger get() = this.service()
@@ -22,4 +23,4 @@ val AnActionEvent.client: ManagedClient
 val Project.client: ManagedClient get() = this.service<ManagedClient>()
 
 fun AnActionEvent.activeProject() = this.project
-    ?: error("A project related to action event $this not found")
+    ?: throw IllegalActionEventException(this, "project")
