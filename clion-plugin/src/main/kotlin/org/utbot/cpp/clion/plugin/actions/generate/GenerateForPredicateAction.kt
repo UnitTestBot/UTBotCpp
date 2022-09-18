@@ -9,12 +9,13 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.fields.ExtendableTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
-import org.utbot.cpp.clion.plugin.grpc.getFunctionGrpcRequest
-import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
+import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
+import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
+import org.utbot.cpp.clion.plugin.utils.getLineNumberUnsafe
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
@@ -46,7 +47,13 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         // when we gathered all needed information for predicate request, assemble it and execute it.
         fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
             PredicateRequest(
-                getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
+                ParamsBuilder(e.activeProject()).buildPredicateRequestParams(
+                    comparisonOperator,
+                    validationType,
+                    valueToCompare,
+                    e.getLineNumberUnsafe(),
+                    e.getFilePathUnsafe()
+                ),
                 e.activeProject()
             ).apply {
                 e.client.executeRequest(this)
@@ -101,7 +108,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         }
         //ask server for return type
         FunctionReturnTypeRequest(
-            getFunctionGrpcRequest(e),
+            ParamsBuilder(e.activeProject()).buildFunctionRequestParams(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
             e.activeProject(),
         ) { functionReturnType ->
             val validationType = functionReturnType.validationType
