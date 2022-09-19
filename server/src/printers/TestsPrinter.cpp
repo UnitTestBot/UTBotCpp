@@ -713,12 +713,12 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
                                              const tests::StructValueView *view) {
     auto subViews = view->getSubViews();
     std::stringstream structuredValuesWithPrefixes;
-    structuredValuesWithPrefixes << "{" << NL;
+
+    structuredValuesWithPrefixes << (view->isAnonymous() ? "/* { */" : "{") << NL;
     ++printer->tabsDepth;
 
-    const types::StructInfo &structInfo = view->getStructInfo();
-    const size_t longestFieldIndexForUnionInit = structInfo.longestFieldIndexForUnionInit;
-    const bool isStruct = structInfo.subType == types::SubType::Struct;
+    const size_t fieldIndexToInitUnion = view->getFieldIndexToInitUnion();
+    const bool isStruct = view->getStructInfo().subType == types::SubType::Struct;
 
     size_t i = 0;
     for (const auto &sview : subViews) {
@@ -728,7 +728,7 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
             structuredValuesWithPrefixes << NL;
         }
 
-        bool printInComment = !(isStruct || longestFieldIndexForUnionInit == i);
+        bool printInComment = !(isStruct || fieldIndexToInitUnion == i);
         if (printInComment) {
             ++printer->commentDepth;
         }
@@ -743,7 +743,9 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     }
 
     --printer->tabsDepth;
-    structuredValuesWithPrefixes << NL << printer->LINE_INDENT() << "}";
+    structuredValuesWithPrefixes << NL
+                                 << printer->LINE_INDENT()
+                                 << (view->isAnonymous() ? "/* } */" : "}");
 
     return structuredValuesWithPrefixes.str();
 }
