@@ -130,6 +130,12 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             myState.buildDirRelativePath = value
         }
 
+    var isPluginEnabled: Boolean
+        get() = myState.isPluginEnabled
+        set(value) {
+            myState.isPluginEnabled = value
+        }
+
     private fun isTargetUpToDate(): Boolean {
         return project.service<UTBotTargetsController>().isTargetUpToDate(myState.targetPath)
     }

@@ -8,6 +8,7 @@ import com.intellij.openapi.options.BoundConfigurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.JBIntSpinner
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
@@ -18,13 +19,16 @@ import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.layout.ComponentPredicate
 import kotlin.reflect.KMutableProperty0
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
+import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
 import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Dimension
+import java.awt.event.ItemEvent
 
 class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     "Project Settings to Generate Tests"
@@ -35,7 +39,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val settings: UTBotProjectStoredSettings = myProject.service()
     private lateinit var portComponent: JBIntSpinner
     private lateinit var serverNameTextField: JBTextField
-
+    private lateinit var pluginEnabledCheckBox: JBCheckBox
+    private val isPluginEnabledObservable = ObservableValue<Boolean>(settings.isPluginEnabled)
 
     init {
         myProject.messageBus.connect(myProject.projectLifetimeDisposable)
@@ -49,10 +54,34 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private fun createMainPanel(): DialogPanel {
         logger.trace("createPanel was called")
         return panel {
-            group("Connection Settings") { createConnectionSettings() }
-            group("Paths") { createPathsSettings() }
-            group("CMake") { createCMakeSettings() }
-            group("Generator Settings") { createGeneratorSettings() }
+            createEnabledCheckBox()
+            panel {
+                group("Connection Settings") { createConnectionSettings() }
+                group("Paths") { createPathsSettings() }
+                group("CMake") { createCMakeSettings() }
+                group("Generator Settings") { createGeneratorSettings() }
+            }.visibleIf(object : ComponentPredicate() {
+                override fun invoke(): Boolean = isPluginEnabledObservable.value
+
+                override fun addListener(listener: (Boolean) -> Unit) {
+                    isPluginEnabledObservable.addOnChangeListener(listener)
+                }
+            })
+        }
+    }
+
+    private fun Panel.createEnabledCheckBox() {
+        row(UTBot.message("settings.enabled.title")) {
+            checkBox("").bindSelected(settings::isPluginEnabled).applyToComponent {
+                pluginEnabledCheckBox = this
+                addItemListener { itemEvent ->
+                    if (itemEvent.stateChange == ItemEvent.SELECTED) {
+                        isPluginEnabledObservable.value = true
+                    } else if (itemEvent.stateChange == ItemEvent.DESELECTED) {
+                        isPluginEnabledObservable.value = false
+                    }
+                }
+            }
         }
     }
 
@@ -181,10 +210,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     override fun apply() {
         val wereConnectionSettingsModified =
             portComponent.number != projectIndependentSettings.port || serverNameTextField.text != projectIndependentSettings.serverName
+        val wasPluginEnabledChanged = pluginEnabledCheckBox.isSelected != settings.isPluginEnabled
         panel.apply()
         myProject.settings.fireUTBotSettingsChanged()
         if (wereConnectionSettingsModified)
             projectIndependentSettings.fireConnectionSettingsChanged()
+        if (wasPluginEnabledChanged)
+            myProject.service<UTBotAllProjectSettings>().fireUTBotEnabledStateChanged()
     }
 
     override fun reset() {
