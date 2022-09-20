@@ -2,6 +2,7 @@
 
 package org.utbot.cpp.clion.plugin.ui.wizard.steps
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.AnimatedIcon
@@ -30,8 +31,13 @@ import org.utbot.cpp.clion.plugin.ui.wizard.UTBotBaseWizardStep
 import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 import javax.swing.JComponent
 import javax.swing.event.DocumentEvent
+import kotlinx.coroutines.CoroutineExceptionHandler
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.settings.UTBotProjectStoredSettings
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
+import org.utbot.cpp.clion.plugin.utils.ValidationCondition
+import org.utbot.cpp.clion.plugin.utils.isLookLikeUnixPath
+import org.utbot.cpp.clion.plugin.utils.isValidHostName
 import org.utbot.cpp.clion.plugin.utils.isWindows
 import org.utbot.cpp.clion.plugin.utils.ourPluginVersion
 import org.utbot.cpp.clion.plugin.utils.path
@@ -44,9 +50,10 @@ enum class ConnectionStatus {
 }
 
 class ConnectionStep(
+    parentDisposable: Disposable,
     private val project: Project,
     private val settingsModel: UTBotSettingsModel,
-) : UTBotBaseWizardStep() {
+) : UTBotBaseWizardStep(parentDisposable) {
     private lateinit var hostTextField: JBTextField
     private lateinit var portComponent: JBIntSpinner
     private lateinit var remotePathTextField: JBTextField
@@ -57,7 +64,8 @@ class ConnectionStep(
     private val useConnectionDefaults = ObservableValue(false)
 
     inner class ConnectionInfo(val port: Int, val host: String, val remotePath: String) {
-        constructor(): this(portComponent.number, hostTextField.text, remotePathTextField.text)
+        constructor() : this(portComponent.number, hostTextField.text, remotePathTextField.text)
+
         fun apply() {
             portComponent.number = port
             hostTextField.text = host
@@ -69,7 +77,7 @@ class ConnectionStep(
         UTBotAllProjectSettings.DEFAULT_PORT,
         UTBotAllProjectSettings.DEFAULT_HOST,
         if (isWindows) project.path.toWslFormatIfNeeded()
-                else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
+        else UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
     )
 
     private var beforeCheckingBoxConnectionInfo: ConnectionInfo? = null
@@ -91,8 +99,14 @@ class ConnectionStep(
     }
 
     override fun canProceedToNextStep(): Boolean {
-        if (connectionStatus.value != ConnectionStatus.Failed) {
+        val validationResult = validate()
+        if (connectionStatus.value != ConnectionStatus.Failed && validationResult == null) {
             return true
+        }
+
+        if (validationResult != null) {
+            validationResult.requestFocus()
+            return false
         }
 
         return NotConnectedWarningDialog(project).showAndGet()
@@ -119,7 +133,11 @@ class ConnectionStep(
                     override fun addListener(listener: (Boolean) -> Unit) {
                         useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
                     }
-                })
+                }).validateWith(
+                    ValidationCondition(
+                        UTBot.message("validation.invalid.host")
+                    ) { it.text.isValidHostName() }
+                )
             }
 
             row("Port") {
@@ -194,7 +212,10 @@ class ConnectionStep(
                         override fun addListener(listener: (Boolean) -> Unit) {
                             useConnectionDefaults.addOnChangeListener { newValue -> listener(!newValue) }
                         }
-                    })
+                    }).validateWith(
+                        ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() },
+                        ValidationCondition(UTBot.message("validation.not.unix.path")) { it.text.isLookLikeUnixPath() }
+                    )
             }
         }.addToUI()
     }
@@ -221,7 +242,10 @@ class ConnectionStep(
     }
 
     private fun pingServer() {
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+        val handler = CoroutineExceptionHandler { _, e ->
+            e.printStackTrace()
+        }
+        CoroutineScope(Dispatchers.IO + SupervisorJob() + handler).launch {
             connectionStatus.value = pingServer(portComponent.number, hostTextField.text)
         }
     }
@@ -229,7 +253,8 @@ class ConnectionStep(
     private fun setupPingOnPortOrHostChange() {
         hostTextField.document.addDocumentListener(object : DocumentAdapter() {
             override fun textChanged(e: DocumentEvent) {
-                pingServer()
+                if (hostTextField.text.isValidHostName())
+                    pingServer()
             }
         })
         portComponent.addChangeListener {
