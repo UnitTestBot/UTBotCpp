@@ -121,12 +121,4 @@ class TestsStreamHandler(
             Files.move(previousReportPaths, newPath)
         }
     }
-
-    override fun onCompletion(exception: Throwable?) {
-        super.onCompletion(exception)
-        if (exception == null)
-            onSuccess(myGeneratedTestFilesLocalFS)
-        else
-            onError(exception)
-    }
 }

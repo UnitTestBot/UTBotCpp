@@ -104,21 +104,13 @@ class ParamsBuilder(
     }
 
     fun buildTestFilterParams(element: PsiElement): Params<Testgen.TestFilter> {
-        try {
-            val (testName: String, testSuite: String) = TestNameAndTestSuite.create(element)
-            val testFilePath = element.containingFile.virtualFile.localPath.toString()
-            return TestFilterParams(
-                testFilePath,
-                testName,
-                testSuite
-            )
-        } catch (_: Throwable) {
-            throw object : ClientException("Could not create test filter from psi element") {
-                override fun notifyUser() {
-                    notifyError(UTBot.message("coverageAndResults.creation.failure"))
-                }
-            }
-        }
+        val (testName: String, testSuite: String) = TestNameAndTestSuite.create(element)
+        val testFilePath = element.containingFile.virtualFile.localPath.toString()
+        return TestFilterParams(
+            testFilePath,
+            testName,
+            testSuite
+        )
     }
 
     fun buildClassRequestParams(filePath: String, lineNumber: Int): Params<Testgen.ClassRequest> {

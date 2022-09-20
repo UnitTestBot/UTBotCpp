@@ -7,24 +7,10 @@ import org.utbot.cpp.clion.plugin.utils.notifyError
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 
-abstract class ClientException(message: String) : Exception(message) {
-    abstract fun notifyUser()
-}
-
-class IllegalActionEventException(val event: AnActionEvent, missingKey: String) :
-    ClientException("Action event has no $missingKey!") {
-    override fun notifyUser() {
-        notifyError("Could create request for server, from Action context invocation! Probably you are invoking Action in a wrong way, please see docs")
-    }
-}
+abstract class ClientException(message: String) : Exception(message)
 
 class IllegalPathException(val path: String, val info: String) :
-    ClientException("Bad path: $path. Info: $info") {
-
-    override fun notifyUser() {
-        notifyError(info)
-    }
-}
+    ClientException("Bad path: $path. Info: $info")
 
 
 data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: String) {

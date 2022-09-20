@@ -12,6 +12,7 @@ class SnippetRequest(
     params: Params<Testgen.SnippetRequest>,
     project: Project
 ) : BaseTestsRequest<Testgen.SnippetRequest>(params, project, UTBot.message("requests.snippet.description.progress")) {
+    override val id: String = "Generate for Snippet"
 
     override val logMessage: String = "Sending request to generate tests for snippet"
     override fun getInfoMessage(): String = "Tests for snippet are generated!"

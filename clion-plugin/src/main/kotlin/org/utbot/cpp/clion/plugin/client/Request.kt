@@ -14,4 +14,5 @@ interface Request {
      * request can't be completed, for example because user canceled it from UI.
      */
     suspend fun execute(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub, cancellationJob: Job?)
+    abstract val id: String
 }

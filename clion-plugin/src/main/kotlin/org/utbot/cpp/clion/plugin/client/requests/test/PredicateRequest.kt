@@ -12,6 +12,7 @@ class PredicateRequest(
     params: Params<Testgen.PredicateRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.PredicateRequest>(params, project, UTBot.message("requests.predicate.description.progress")) {
+    override val id: String = "Generate for Predicate"
 
     override val logMessage: String = "Sending request to generate tests for predicate"
     override fun getInfoMessage(): String = "Tests for predicate are generated!"

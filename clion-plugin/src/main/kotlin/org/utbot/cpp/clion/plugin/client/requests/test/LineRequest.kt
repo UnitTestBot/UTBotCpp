@@ -12,6 +12,7 @@ class LineRequest(
     params: Params<Testgen.LineRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.LineRequest>(params, project, UTBot.message("requests.line.description.progress")) {
+    override val id: String = "Generate for Line"
 
     override val logMessage: String = "Sending request to generate tests for line."
     override fun getInfoMessage(): String = "Tests for line are generated!"

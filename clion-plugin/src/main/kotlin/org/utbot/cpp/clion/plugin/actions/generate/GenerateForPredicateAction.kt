@@ -9,6 +9,7 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.fields.ExtendableTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
 import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
@@ -72,6 +73,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
                 ValidationType.UNSUPPORTED -> {
                     notifyError(
+                        UTBot.message("notify.title.error"),
                         "Unsupported return type for \'Generate Tests With Prompted Result\' feature: \n" +
                                 "supported types are integers, booleans, characters, floats and strings"
                     )
@@ -79,6 +81,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
                 ValidationType.UNRECOGNIZED -> {
                     notifyError(
+                        UTBot.message("notify.title.error"),
                         "Could not recognise return type for 'Generate Tests With Prompted Result' feature: \n" +
                                 "supported types are integers, booleans, characters, floats and strings"
                     )

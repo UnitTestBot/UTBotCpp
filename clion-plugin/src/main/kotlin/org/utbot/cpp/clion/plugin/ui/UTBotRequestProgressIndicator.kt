@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ex.StatusBarEx
 import com.intellij.openapi.wm.ex.WindowManagerEx
 import kotlinx.coroutines.Job
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 
@@ -16,6 +17,7 @@ class UTBotRequestProgressIndicator(
 ) : AbstractProgressIndicatorExBase(true) {
 
     private val requestTask = UTBotRequestTaskInfo(taskDisplayName)
+
     init {
         isIndeterminate = false
     }
@@ -41,7 +43,10 @@ class UTBotRequestProgressIndicator(
         requestJob?.cancel()
         finish(requestTask)
         super.cancel()
-        notifyInfo("Successfully canceled: $taskDisplayName")
+        notifyInfo(
+            UTBot.message("notify.cancelled.request.title"),
+            UTBot.message("notify.cancelled.request", taskDisplayName)
+        )
     }
 
     private class UTBotRequestTaskInfo(private val titleText: String) : TaskInfo {

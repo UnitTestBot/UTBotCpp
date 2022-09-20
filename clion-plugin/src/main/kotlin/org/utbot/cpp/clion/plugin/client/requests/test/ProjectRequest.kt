@@ -12,6 +12,7 @@ class ProjectRequest(
     params: Params<Testgen.ProjectRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.ProjectRequest>(params, project, UTBot.message("requests.project.description.progress")) {
+    override val id: String = "Generate for Project"
 
     override val logMessage: String = "Sending request to generate tests for project"
     override fun getInfoMessage(): String = "Tests for project are generated!"

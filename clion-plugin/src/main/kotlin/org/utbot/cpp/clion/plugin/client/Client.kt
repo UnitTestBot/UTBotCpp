@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.client
 import com.intellij.openapi.Disposable
 import com.intellij.util.messages.MessageBus
 import io.grpc.Status
+import io.grpc.StatusException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +19,8 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.actions.ReconnectAction
+import org.utbot.cpp.clion.plugin.actions.ShowSettingsAction
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
@@ -26,6 +29,9 @@ import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
+import org.utbot.cpp.clion.plugin.utils.logger
+import org.utbot.cpp.clion.plugin.utils.notifyError
+import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import testsgen.Testgen
 
@@ -74,7 +80,10 @@ class Client(
         if (isDisposed) {
             // if client is disposed, then connection settings were changed, and requests issued to this client
             // are no longer relevant, so we don't execute them
-            notifyWarning(UTBot.message("warning.reconnecting"))
+            notifyWarning(
+                UTBot.message("notify.warning.reconnecting.title"),
+                UTBot.message("notify.warning.reconnecting")
+            )
             return
         }
         executeRequestImpl(request)
@@ -85,9 +94,57 @@ class Client(
             try {
                 request.execute(stub, coroutineContext[Job])
             } catch (e: io.grpc.StatusException) {
-                handleGRPCStatusException(e, "Exception when executing server request")
+                val id = request.id
+                when (e.status.code) {
+                    Status.UNAVAILABLE.code -> notifyError(
+                        UTBot.message("notify.title.noConnection"),
+                        UTBot.message("notify.noConnection"),
+                        project,
+                        ShowSettingsAction(),
+                        ReconnectAction()
+                    )
+                    Status.UNKNOWN.code -> notifyError(
+                        UTBot.message("notify.title.unknownServerException"),
+                        UTBot.message("notify.unknownServerException"),
+                        project
+                    )
+                    Status.CANCELLED.code -> notifyError(
+                        UTBot.message("notify.title.cancelled"),
+                        UTBot.message("notify.cancelled", id, e.message ?: ""),
+                        project
+                    )
+                    Status.FAILED_PRECONDITION.code -> notifyError(
+                        UTBot.message("notify.title.failedPrecondition"),
+                        UTBot.message("notify.failedPrecondition", id, e.message ?: ""),
+                        project
+                    )
+                    Status.INTERNAL.code -> notifyError(
+                        UTBot.message("notify.title.internalError"),
+                        UTBot.message("notify.internalError", request, e.message ?: ""),
+                        project
+                    )
+                    Status.UNIMPLEMENTED.code -> notifyError(
+                        UTBot.message("notify.title.error"),
+                        UTBot.message("notify.unimplemented", id, e.message ?: ""),
+                        project
+                    )
+                    Status.INVALID_ARGUMENT.code -> notifyError(
+                        UTBot.message("notify.title.invalid.argument"),
+                        UTBot.message("notify.invalid.argument", e.message ?: "", id),
+                        project
+                    )
+                    else -> notifyError(
+                        UTBot.message("notify.title.error"),
+                        e.message ?: "Corresponding exception's message is missing",
+                        project
+                    )
+                }
             } catch (e: IllegalPathException) {
-                e.notifyUser()
+                notifyError(
+                    UTBot.message("notify.bad.settings.title"),
+                    UTBot.message("notify.bad.path", e.message ?: ""),
+                    project
+                )
             }
         }
     }
@@ -117,7 +174,7 @@ class Client(
                 logger.info { "Sending REGISTER CLIENT request, clientID == $clientId" }
                 stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientId).build())
             } catch (e: io.grpc.StatusException) {
-                handleGRPCStatusException(e, "Register client request failed with grpc exception!")
+                logger.error { "${e.status}: ${e.message}" }
             }
         }
     }
@@ -141,6 +198,7 @@ class Client(
             connectionStatus = ConnectionStatus.CONNECTED
 
             if (oldStatus != ConnectionStatus.CONNECTED) {
+                notifyInfo(UTBot.message("notify.connected.title"), UTBot.message("notify.connected", port, serverName))
                 logger.info { "Successfully connected to server!" }
                 registerClient()
             }
@@ -164,19 +222,18 @@ class Client(
 
             if (!messageBus.isDisposed) {
                 val connectionChangedPublisher = messageBus.syncPublisher(UTBotEventsListener.CONNECTION_CHANGED_TOPIC)
-                if (oldStatus != ConnectionStatus.BROKEN)
+                if (oldStatus != ConnectionStatus.BROKEN) {
+                    notifyError(
+                        UTBot.message("notify.disconnected.title"),
+                        UTBot.message("notify.disconnected", port, serverName),
+                        project,
+                        ShowSettingsAction()
+                    )
                     connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.BROKEN)
+                }
             }
 
-            handleGRPCStatusException(e, "Heartbeat failed with grpc io exception")
-        }
-    }
-
-    private fun handleGRPCStatusException(e: io.grpc.StatusException, message: String) {
-        logger.error { "$message \n${e.message}" }
-        when (e.status) {
-            Status.UNAVAILABLE -> logger.error { "Server is unavailable: possibly it is shut down." }
-            Status.UNKNOWN -> logger.error { "Server threw an exception." }
+            logger.error { "${e.status} \n${e.message}" }
         }
     }
 
@@ -192,9 +249,11 @@ class Client(
 
     // should be used only in tests
     @TestOnly
-    fun waitForServerRequestsToFinish(timeout: Long = SERVER_TIMEOUT,
-                                      delayTime: Long = 1000L,
-                                      ifNotFinished: (List<Job>) -> Unit = {}) {
+    fun waitForServerRequestsToFinish(
+        timeout: Long = SERVER_TIMEOUT,
+        delayTime: Long = 1000L,
+        ifNotFinished: (List<Job>) -> Unit = {}
+    ) {
         runBlocking {
             withTimeout(timeout) {
                 while (requestsCS.coroutineContext.job.children.toList().any()) {
