@@ -32,6 +32,7 @@ import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
+import org.utbot.cpp.clion.plugin.utils.notifyNotConnected
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import testsgen.Testgen
 
@@ -96,13 +97,7 @@ class Client(
             } catch (e: io.grpc.StatusException) {
                 val id = request.id
                 when (e.status.code) {
-                    Status.UNAVAILABLE.code -> notifyError(
-                        UTBot.message("notify.title.noConnection"),
-                        UTBot.message("notify.noConnection"),
-                        project,
-                        ShowSettingsAction(),
-                        ReconnectAction()
-                    )
+                    Status.UNAVAILABLE.code -> notifyNotConnected(project, port, serverName)
                     Status.UNKNOWN.code -> notifyError(
                         UTBot.message("notify.title.unknownServerException"),
                         UTBot.message("notify.unknownServerException"),
@@ -223,12 +218,7 @@ class Client(
             if (!messageBus.isDisposed) {
                 val connectionChangedPublisher = messageBus.syncPublisher(UTBotEventsListener.CONNECTION_CHANGED_TOPIC)
                 if (oldStatus != ConnectionStatus.BROKEN) {
-                    notifyError(
-                        UTBot.message("notify.disconnected.title"),
-                        UTBot.message("notify.disconnected", port, serverName),
-                        project,
-                        ShowSettingsAction()
-                    )
+                    notifyNotConnected(project, port, serverName)
                     connectionChangedPublisher.onConnectionChange(oldStatus, ConnectionStatus.BROKEN)
                 }
             }
