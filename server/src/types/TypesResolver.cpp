@@ -224,7 +224,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
     enumInfo.filePath = Paths::getCCJsonFileFullPath(
         sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
     clang::QualType promotionType = EN->getPromotionType();
-    enumInfo.size = context.getTypeSize(promotionType) / 8;
+    enumInfo.size = context.getTypeSize(promotionType);
 
     enumInfo.access = getAccess(EN);
 
