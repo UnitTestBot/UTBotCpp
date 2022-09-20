@@ -16,13 +16,14 @@ import java.awt.event.KeyEvent
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
-    private val mySettingsModel = UTBotSettingsModel(project.settings.storedSettings.state.copy(), projectIndependentSettings.copy())
+    private val mySettingsModel =
+        UTBotSettingsModel(project.settings.storedSettings.copy(), projectIndependentSettings.copy())
 
     init {
-        addStep(IntroStep())
-        addStep(ConnectionStep(project, mySettingsModel))
-        addStep(BuildOptionsStep(mySettingsModel))
-        addStep(FinalStep())
+        addStep(IntroStep(disposable))
+        addStep(ConnectionStep(disposable, project, mySettingsModel))
+        addStep(BuildOptionsStep(disposable, mySettingsModel))
+        addStep(FinalStep(disposable))
         super.init()
         isResizable = true
         setSize(400, 400)
@@ -54,6 +55,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
             nextButton.mnemonic = KeyEvent.getExtendedKeyCodeForChar('F'.code)
         }
     }
+
 
     override fun proceedToNextStep() {
         if (currentStepObject?.canProceedToNextStep() != false) {

@@ -1,7 +1,10 @@
 package org.utbot.cpp.clion.plugin.ui.wizard
 
 import com.intellij.ide.wizard.Step
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.Cell
 import com.intellij.util.ui.HtmlPanel
 import com.intellij.util.ui.UIUtil
 import javax.swing.Box
@@ -9,16 +12,19 @@ import javax.swing.BoxLayout
 import javax.swing.Icon
 import javax.swing.JComponent
 import javax.swing.JPanel
+import org.utbot.cpp.clion.plugin.utils.ComponentValidationInfo
+import org.utbot.cpp.clion.plugin.utils.ValidationCondition
+import org.utbot.cpp.clion.plugin.utils.validateInput
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 
-abstract class UTBotBaseWizardStep: Step {
+abstract class UTBotBaseWizardStep(private val parentDisposable: Disposable) : Step {
     private val panel by lazy { JPanel() }
     private var isInitialized = false
-
+    private val validators = mutableListOf<ComponentValidationInfo>()
     private val onApplyCallbacks = mutableListOf<() -> Unit>()
-
+    class Validator(val component: JComponent, val isValid: ()->Boolean)
     abstract fun createUI()
 
     override fun _init() {
@@ -37,6 +43,12 @@ abstract class UTBotBaseWizardStep: Step {
         this.maximumSize = Dimension(maximumSize.width, minimumSize.height)
         onApplyCallbacks.add { apply() }
         addComponentToStep(this)
+    }
+
+    protected fun <T : JBTextField> Cell<T>.validateWith(vararg conditions: ValidationCondition): Cell<T> {
+        return this.applyToComponent {
+            validators.add(this.validateInput(parentDisposable, *conditions))
+        }
     }
 
     override fun _commit(finishChosen: Boolean) = onApplyCallbacks.forEach { it.invoke() }
@@ -60,7 +72,15 @@ abstract class UTBotBaseWizardStep: Step {
         panel.add(component)
     }
 
-    open fun canProceedToNextStep(): Boolean = true
+    protected fun validate(): JComponent? {
+        return validators.find { !it.isValid() }?.component
+    }
+
+    open fun canProceedToNextStep(): Boolean {
+        val validationResult = validate()
+        validationResult?.requestFocus()
+        return validationResult == null
+    }
 
     private fun createHtmlComponent(html: String): JComponent = object : HtmlPanel() {
         init {
