@@ -225,7 +225,6 @@ namespace {
     }
 
     TEST_F(CLI_Test, Run_All_Tests) {
-        clearTestDirectory();
         runCommandLine({ "./utbot", "generate", "--project-path", suitePath,
                          "--build-dir", buildDirectoryName, "project" });
         checkTestDirectory(allProjectTestFiles);
