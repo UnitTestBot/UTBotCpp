@@ -5,6 +5,8 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.actions.ReconnectAction
+import org.utbot.cpp.clion.plugin.actions.ShowSettingsAction
 import testsgen.Testgen
 
 fun notifyError(title: String, errorText: String, project: Project? = null, vararg actions: AnAction?) =
@@ -34,4 +36,14 @@ private fun notify(
     actions.filterNotNull().forEach {
         notification.addAction(it)
     }
+}
+
+fun notifyNotConnected(project: Project? = null, port: Int, serverName: String) {
+    notifyError(
+        UTBot.message("notify.disconnected.title"),
+        UTBot.message("notify.disconnected", port, serverName),
+        project,
+        ShowSettingsAction(),
+        ReconnectAction()
+    )
 }
