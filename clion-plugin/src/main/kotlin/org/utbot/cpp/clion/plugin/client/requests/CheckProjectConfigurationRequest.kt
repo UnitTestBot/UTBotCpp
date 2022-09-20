@@ -14,6 +14,7 @@ class CheckProjectConfigurationRequest(
     params: Params<Testgen.ProjectConfigRequest>,
     project: Project,
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {
+    override val id: String = "Configure Project"
 
     override val logMessage: String = "Sending request to check project configuration."
 

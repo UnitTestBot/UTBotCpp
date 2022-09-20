@@ -12,7 +12,7 @@ class ProjectTargetsRequest(
     val processTargets: suspend (Testgen.ProjectTargetsResponse)->Unit,
     val onError: suspend (Throwable) -> Unit
 ): BaseRequest<Testgen.ProjectTargetsRequest, Testgen.ProjectTargetsResponse>(params, project) {
-
+    override val id: String = "Get Project Targets"
     override val logMessage: String = "Sending request to get project targets"
 
     override suspend fun execute(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub, cancellationJob: Job?) {

@@ -19,8 +19,9 @@ import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 class CreateBuildDirRequest(
     params: Params<Testgen.ProjectConfigRequest>,
     project: Project,
-    val client: ManagedClient,
-) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(request, client.project) {
+    val client: ManagedClient
+) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {
+    override val id: String = "Create Build Directory"
     override val logMessage: String = "Sending request to check project configuration."
 
     override suspend fun TestsGenServiceCoroutineStub.send(cancellationJob: Job?): Flow<Testgen.ProjectConfigResponse> =

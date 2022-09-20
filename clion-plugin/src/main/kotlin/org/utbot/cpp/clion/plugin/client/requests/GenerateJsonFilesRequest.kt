@@ -16,6 +16,7 @@ class GenerateJsonFilesRequest(
     params: Params<Testgen.ProjectConfigRequest>,
     project: Project
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {
+    override val id: String = "Generate JSON Files"
     override val logMessage: String = "Sending request to check project configuration."
 
     constructor(project: Project) : this(

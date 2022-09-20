@@ -13,6 +13,7 @@ class FolderRequest(
     folderRequestParams: Params<Testgen.FolderRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.FolderRequest>(folderRequestParams, project, UTBot.message("requests.folder.description.progress")) {
+    override val id: String = "Generate for Folder"
 
     override val logMessage: String = "Sending request to generate tests for folder."
     override fun getInfoMessage(): String = "Tests for folder <em>${request.folderPath.fileNameOrNull()?.plus(" ") ?: ""}</em> are generated!"

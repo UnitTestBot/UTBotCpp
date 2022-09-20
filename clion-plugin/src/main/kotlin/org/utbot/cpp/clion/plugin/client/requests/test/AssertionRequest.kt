@@ -10,8 +10,9 @@ import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class AssertionRequest(
     params: Params<Testgen.AssertionRequest>,
-    project: Project,
+    project: Project
 ) : BaseTestsRequest<Testgen.AssertionRequest>(params, project, UTBot.message("requests.assertion.description.progress")) {
+    override val id: String = "Generate for Assertion"
 
     override val logMessage: String = "Sending request to generate tests for Assertion"
     override fun getInfoMessage(): String = "Tests for assertion are generated!"

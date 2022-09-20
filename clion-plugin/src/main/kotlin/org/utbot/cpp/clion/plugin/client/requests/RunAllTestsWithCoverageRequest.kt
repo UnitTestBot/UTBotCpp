@@ -14,7 +14,7 @@ class RunAllTestsWithCoverageRequest(
     params: Params<CoverageAndResultsRequest>,
     project: Project,
 ) : BaseRequest<CoverageAndResultsRequest, Flow<Testgen.CoverageAndResultsResponse>>(params, project) {
-
+    override val id: String = "Run All Tests with Coverage"
     override val logMessage: String = "Sending request to get tests run results and coverage"
 
     override suspend fun Flow<Testgen.CoverageAndResultsResponse>.handle(cancellationJob: Job?) {

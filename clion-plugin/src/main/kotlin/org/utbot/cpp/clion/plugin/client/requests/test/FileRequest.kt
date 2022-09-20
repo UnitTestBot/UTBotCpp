@@ -13,6 +13,7 @@ class FileRequest(
     params: Params<Testgen.FileRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.FileRequest>(params, project, UTBot.message("requests.file.description.progress")) {
+    override val id: String = "Generate for File"
 
     override val logMessage: String = "Sending request to generate tests for file"
     override fun getInfoMessage(): String = "Tests for file <em>${(request.filePath.fileNameOrNull()?.plus(" ")) ?: ""}</em> are generated!"

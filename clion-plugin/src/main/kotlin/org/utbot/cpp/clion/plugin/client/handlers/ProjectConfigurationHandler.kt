@@ -1,6 +1,7 @@
 package org.utbot.cpp.clion.plugin.client.handlers
 
 import com.intellij.openapi.project.Project
+import kotlin.io.path.name
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
@@ -8,6 +9,7 @@ import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
+import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
@@ -44,11 +46,12 @@ class CheckProjectConfigurationHandler(
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
-                notifyInfo("Project is configured!", project)
+                notifyInfo(UTBot.message("notify.title.configured"), UTBot.message("notify.configured"), project)
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_NOT_FOUND -> {
                 notifyError(
-                    "Project build dir not found! ${response.message}",
+                    UTBot.message("notify.title.missingBuildDir"),
+                    UTBot.message("notify.missingBuildDir"),
                     project,
                     AskServerToGenerateBuildDir()
                 )
@@ -57,7 +60,8 @@ class CheckProjectConfigurationHandler(
                 val missingFileName =
                     if (response.type == Testgen.ProjectConfigStatus.LINK_COMMANDS_JSON_NOT_FOUND) "link_commands.json" else "compile_commands.json"
                 notifyError(
-                    "Project is not configured properly: file $missingFileName is missed in the build directory",
+                    UTBot.message("notify.title.notConfigured"),
+                    UTBot.message("notify.missing.cdb.files", missingFileName),
                     project,
                     AskServerToGenerateJsonForProjectConfiguration(),
                 )
@@ -65,7 +69,7 @@ class CheckProjectConfigurationHandler(
             Testgen.ProjectConfigStatus.BUILD_DIR_SAME_AS_PROJECT -> {
                 val message = response.message
                 logger.warn(message)
-                notifyWarning("$message ${UTBot.message("uri.wiki")}", project)
+                notifyError(UTBot.message("notify.title.error"), "$message ${UTBot.message("uri.wiki")}", project)
             }
             else -> notifyUnknownResponse(response, project)
         }
@@ -81,9 +85,14 @@ class CreateBuildDirHandler(
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
             Testgen.ProjectConfigStatus.IS_OK -> {
-                notifyInfo("Build directory was created!", project)
+                notifyInfo(
+                    UTBot.message("notify.build.dir.created.title"),
+                    UTBot.message("notify.build.dir.created", project.settings.buildDirPath.name),
+                    project
+                )
 
                 CheckProjectConfigurationRequest(
+                    ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
                     project
                 ).also {
                     if (!client.isDisposed) {
@@ -92,7 +101,11 @@ class CreateBuildDirHandler(
                 }
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
-                notifyError("Failed to create build directory! ${response.message}", project)
+                notifyError(
+                    UTBot.message("notify.failed.to.create.build.dir.title"),
+                    "",
+                    project
+                )
             }
             else -> notifyUnknownResponse(response, project)
         }
@@ -108,10 +121,14 @@ class GenerateJsonHandler(
 ) : ProjectConfigResponseHandler(project, grpcStream, progressName, cancellationJob) {
     override fun handle(response: Testgen.ProjectConfigResponse) {
         when (response.type) {
-            Testgen.ProjectConfigStatus.IS_OK -> notifyInfo("Successfully configured project!", project)
+            Testgen.ProjectConfigStatus.IS_OK -> notifyInfo(
+                UTBot.message("notify.title.configured"),
+                UTBot.message("notify.configured"),
+                project
+            )
             Testgen.ProjectConfigStatus.RUN_JSON_GENERATION_FAILED -> notifyError(
-                "UTBot tried to configure project, but failed with the " +
-                        "following message: ${response.message}", project
+                UTBot.message("notify.title.notConfigured"),
+                response.message
             )
             else -> notifyUnknownResponse(response, project)
         }

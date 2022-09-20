@@ -4,30 +4,34 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
+import org.utbot.cpp.clion.plugin.UTBot
 import testsgen.Testgen
 
-fun notifyError(errorText: String, project: Project? = null, action: AnAction? = null) =
-    notify(NotificationType.ERROR, errorText, project, action)
+fun notifyError(title: String, errorText: String, project: Project? = null, vararg actions: AnAction?) =
+    notify(NotificationType.ERROR, title, errorText,project, *actions)
 
-fun notifyInfo(infoText: String, project: Project? = null, action: AnAction? = null) =
-    notify(NotificationType.INFORMATION, infoText, project, action)
+fun notifyInfo(title: String, infoText: String, project: Project? = null, vararg actions: AnAction?) =
+    notify(NotificationType.INFORMATION, title, infoText, project, *actions)
 
-fun notifyWarning(warningText: String, project: Project? = null, action: AnAction? = null) =
-    notify(NotificationType.WARNING, warningText, project, action)
+fun notifyWarning(title: String, warningText: String, project: Project? = null, vararg actions: AnAction?) =
+    notify(NotificationType.WARNING, title, warningText, project, *actions)
 
 fun notifyUnknownResponse(response: Testgen.ProjectConfigResponse, project: Project) =
-    notifyInfo("Unknown server response: ${response.message}", project)
+    notifyError(UTBot.message("notify.title.error"), "Unknown server response: ${response.message}", project)
 
 private fun notify(
     type: NotificationType,
+    title: String,
     content: String,
     project: Project? = null,
-    action: AnAction? = null,
+    vararg actions: AnAction?
 ) {
     val notification = NotificationGroupManager.getInstance()
         .getNotificationGroup("UTBot events")
-        .createNotification(content, type)
+        .createNotification(title, content, type)
 
     notification.notify(project)
-    action?.let { notification.addAction(it) }
+    actions.filterNotNull().forEach {
+        notification.addAction(it)
+    }
 }

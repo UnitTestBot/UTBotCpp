@@ -49,11 +49,11 @@ abstract class StreamHandlerWithProgress<T>(
     abstract fun T.getProgress(): Util.Progress
 
     override fun onCompletion(exception: Throwable?) {
-        super.onCompletion(exception)
         if (exception != null) {
             invokeOnEdt {
                 indicator.stop()
             }
+            throw exception
         }
     }
 }

@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.client.requests.test
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.FocusAction
 import org.utbot.cpp.clion.plugin.client.handlers.TestsStreamHandler
 import org.utbot.cpp.clion.plugin.client.requests.BaseRequest
@@ -51,9 +52,13 @@ abstract class BaseTestsRequest<R>(params: Params<R>, project: Project, private 
     open fun getInfoMessage() = "Tests generated!"
 
     open fun notifySuccess(generatedTestFiles: List<Path>) {
-        notifyInfo(getInfoMessage(), project, getFocusTarget(generatedTestFiles)?.let {
-            FocusAction(it)
-        })
+        notifyInfo(
+            UTBot.message("notify.tests.generated"),
+            getInfoMessage(),
+            project,
+            getFocusTarget(generatedTestFiles)?.let {
+                FocusAction(it)
+            })
     }
 
     open fun notifyError(cause: Throwable) {}

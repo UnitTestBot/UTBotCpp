@@ -37,12 +37,8 @@ abstract class StreamHandler<T>(
     abstract fun onData(data: T)
 
     open fun onCompletion(exception: Throwable?) {
-        if (exception != null) {
-            logger.warn(exception.message)
-            if (exception !is CancellationException) {
-                exception.printStackTrace()
-                exception.message?.let { notifyError(it, project) }
-            }
+        exception?.let {
+            throw it
         }
     }
 
