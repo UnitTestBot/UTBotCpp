@@ -37,9 +37,8 @@ void BaseTest::clearEnv(const CompilationUtils::CompilerName& compiler) {
 
     ServerUtils::setThreadOptions(ctx.get(), TESTMODE);
 
-    fs::path utbotBuildDir = buildPath / CompilationUtils::UTBOT_BUILD_DIR_NAME;
+    fs::path utbotBuildDir = buildPath / CompilationUtils::UTBOT_FILES_DIR_NAME;
     clearDirectory(utbotBuildDir);
-    fs::create_directories(utbotBuildDir);
 }
 
 void BaseTest::clearTestDirectory() {
