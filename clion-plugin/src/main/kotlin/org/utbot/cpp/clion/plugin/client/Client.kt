@@ -233,7 +233,7 @@ class Client(
                 }
             }
 
-            logger.error { "${e.status} \n${e.message}" }
+            logger.error { "Failed to ping the server. Status code: ${e.status.code}" }
         }
     }
 
