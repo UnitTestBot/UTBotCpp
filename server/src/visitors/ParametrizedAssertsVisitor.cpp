@@ -78,9 +78,7 @@ namespace visitor {
             printer->strDeclareVar(
                 type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
         }
-        else {
-            printer->ss << value << NL;
-        }
+        AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
     }
 
     void ParametrizedAssertsVisitor::visitPrimitive(const types::Type &type,
