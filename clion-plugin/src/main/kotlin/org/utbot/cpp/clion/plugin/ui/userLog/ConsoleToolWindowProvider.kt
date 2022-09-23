@@ -4,6 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow.ConsoleToolWindow
 
 class ConsoleToolWindowProvider : ToolWindowFactory {
     private val logger = Logger.getInstance(this::class.java)

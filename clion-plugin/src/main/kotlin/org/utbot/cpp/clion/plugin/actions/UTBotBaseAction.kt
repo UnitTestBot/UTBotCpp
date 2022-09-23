@@ -3,7 +3,7 @@ package org.utbot.cpp.clion.plugin.actions
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import javax.swing.Icon
-import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.utils.isPluginEnabled
 
 abstract class UTBotBaseAction(
     text: () -> String? = { null },
@@ -13,14 +13,10 @@ abstract class UTBotBaseAction(
     constructor(text: String) : this({ text })
 
     override fun update(e: AnActionEvent) {
-        var isEnabled = false
-        val project = e.project
-        if (project != null) {
-            isEnabled = project.settings.storedSettings.isPluginEnabled
-        }
-        e.presentation.isEnabledAndVisible = isEnabled
-        if (isEnabled) {
+        if (isPluginEnabled(e)) {
             updateIfEnabled(e)
+        } else {
+            e.presentation.isEnabledAndVisible = false
         }
     }
 

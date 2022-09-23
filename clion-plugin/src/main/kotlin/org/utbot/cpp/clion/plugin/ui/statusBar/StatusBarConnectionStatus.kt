@@ -138,13 +138,11 @@ object StatusBarActionsPopup {
 
         addToActionGroup(ShowWizardAction())
         addToActionGroup(ConfigureProjectAction())
-        addToActionGroup(ReconnectAction())
         addToActionGroup(ReconfigureProjectAction())
         addToActionGroup(ShortcutSettingsAction)
         addToActionGroup(ReconnectAction())
         addToActionGroup(ChangeVerboseModeAction())
         addToActionGroup(TogglePluginAction(), isLast = true)
-
 
         return actionGroup
     }

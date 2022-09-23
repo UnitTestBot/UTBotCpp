@@ -12,11 +12,8 @@ import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.extension.ExtendWith
-import org.utbot.cpp.clion.plugin.client.Client
 import org.utbot.cpp.clion.plugin.client.logger.SystemWriter
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTargetsController
-import org.utbot.cpp.clion.plugin.utils.getCurrentClient
 import org.utbot.cpp.clion.plugin.utils.logger
 import java.io.File
 import java.nio.file.Path
@@ -24,6 +21,8 @@ import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlinx.coroutines.Job
 import org.utbot.cpp.clion.plugin.client.ManagedClient
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.utils.client
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @ExtendWith(SwingEdtInterceptor::class)
