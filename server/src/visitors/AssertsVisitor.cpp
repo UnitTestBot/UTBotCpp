@@ -39,6 +39,9 @@ namespace visitor {
                 macroName = PrinterUtils::EXPECT_DOUBLE_EQ;
             }
         }
+        std::for_each(args.begin(), args.end(), [&type](std::string &arg) {
+            arg = NameDecorator::decorate(arg);
+        });
         return VerboseAssertsVisitor::FunctionSignature{ macroName, std::move(args) };
     }
 

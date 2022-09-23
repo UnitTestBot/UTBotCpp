@@ -294,7 +294,7 @@ namespace tests {
             if (structInfo.fields[i].name.empty())
                 return "";
 
-            std::string prefix = "." + structInfo.fields[i].name + " = ";
+            std::string prefix = "." + NameDecorator::decorate(structInfo.fields[i].name) + " = ";
             if (structInfo.isCLike) {
                 return prefix;
             }
