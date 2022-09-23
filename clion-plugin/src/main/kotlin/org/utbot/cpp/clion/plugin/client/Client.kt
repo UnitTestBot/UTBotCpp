@@ -96,8 +96,8 @@ class Client(
                 when (e.status.code) {
                     Status.UNAVAILABLE.code -> notifyNotConnected(project, port, serverName)
                     Status.UNKNOWN.code -> notifyError(
-                        UTBot.message("notify.title.unknownServerException"),
-                        UTBot.message("notify.unknownServerException"),
+                        UTBot.message("notify.title.unknown.server.error"), // unknown server error
+                        UTBot.message("notify.unknown.server.error"),
                         project
                     )
                     Status.CANCELLED.code -> notifyError(
@@ -106,17 +106,17 @@ class Client(
                         project
                     )
                     Status.FAILED_PRECONDITION.code -> notifyError(
-                        UTBot.message("notify.title.failedPrecondition"),
-                        UTBot.message("notify.failedPrecondition", id, e.message ?: ""),
+                        UTBot.message("notify.title.failed.precondition"),
+                        UTBot.message("notify.failed.precondition", e.message ?: "", id),
                         project
                     )
                     Status.INTERNAL.code -> notifyError(
-                        UTBot.message("notify.title.internalError"),
-                        UTBot.message("notify.internalError", request, e.message ?: ""),
+                        UTBot.message("notify.title.internal.error"),
+                        UTBot.message("notify.internal.error", request, e.message ?: ""),
                         project
                     )
                     Status.UNIMPLEMENTED.code -> notifyError(
-                        UTBot.message("notify.title.error"),
+                        UTBot.message("notify.title.server.error"),
                         UTBot.message("notify.unimplemented", id, e.message ?: ""),
                         project
                     )
