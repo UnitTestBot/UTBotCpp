@@ -3,7 +3,6 @@ package org.utbot.cpp.clion.plugin.client
 import com.intellij.openapi.Disposable
 import com.intellij.util.messages.MessageBus
 import io.grpc.Status
-import io.grpc.StatusException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -19,8 +18,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.actions.ReconnectAction
-import org.utbot.cpp.clion.plugin.actions.ShowSettingsAction
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.IllegalPathException

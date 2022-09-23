@@ -46,7 +46,7 @@ plugins {
     kotlin("plugin.serialization") version "1.6.10"
     id("com.google.protobuf") version "0.8.15"
     // code style
-    // id("io.gitlab.arturbosch.detekt").version("1.21.0")
+    id("io.gitlab.arturbosch.detekt").version("1.21.0")
     idea
     application
 }
@@ -86,18 +86,16 @@ sourceSets {
     }
 }
 
-/*
 detekt {
     buildUponDefaultConfig = true // preconfigure defaults
     allRules = false // activate all available (even unstable) rules.
 }
- */
 
-//kotlin {
-//    jvmToolchain {
-//        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
-//    }
-//}
+kotlin {
+    jvmToolchain {
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
 
 protobuf {
     protoc {
@@ -170,14 +168,12 @@ qodana {
 }
 
 tasks {
-    /**
     withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
         jvmTarget = "1.8"
     }
     withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
         jvmTarget = "1.8"
     }
-    */
 
     // Set the JVM compatibility versions
     properties("javaVersion").let {
