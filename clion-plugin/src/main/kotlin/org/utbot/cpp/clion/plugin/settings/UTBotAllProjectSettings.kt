@@ -3,12 +3,10 @@ package org.utbot.cpp.clion.plugin.settings
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.jetbrains.cidr.cpp.execution.CMakeAppRunConfiguration
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
-import org.utbot.cpp.clion.plugin.ui.targetsToolWindow.UTBotTarget
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.utils.convertToRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.isWindows
-import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import org.utbot.cpp.clion.plugin.utils.path
 import java.io.File
 import java.nio.file.Path

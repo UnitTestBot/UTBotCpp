@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.ui.userLog
+package org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow
 
 import com.intellij.execution.impl.ConsoleViewImpl
 import com.intellij.execution.ui.ConsoleViewContentType

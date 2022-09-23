@@ -1,4 +1,4 @@
-package org.utbot.cpp.clion.plugin.ui.targetsToolWindow
+package org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow
 
 import com.intellij.openapi.actionSystem.ActionGroup
 import com.intellij.openapi.actionSystem.ActionManager
@@ -16,8 +16,6 @@ import javax.swing.JList
 import javax.swing.ListSelectionModel
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.RefreshTargetsAction
-import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
-import org.utbot.cpp.clion.plugin.utils.logger
 
 class UTBotTargetsToolWindow(
     listModel: CollectionListModel<UTBotTarget>,
