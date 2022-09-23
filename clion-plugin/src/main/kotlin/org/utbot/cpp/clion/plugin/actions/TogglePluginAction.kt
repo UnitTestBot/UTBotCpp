@@ -14,12 +14,12 @@ class TogglePluginAction : ToggleAction() {
         return project.settings.storedSettings.isPluginEnabled
     }
 
-    override fun setSelected(e: AnActionEvent, state: Boolean) {
+    override fun setSelected(e: AnActionEvent, pluginEnabled: Boolean) {
         val project = e.project ?: return
         val previousValue = project.settings.storedSettings.isPluginEnabled
-        project.settings.storedSettings.isPluginEnabled = state
+        project.settings.storedSettings.isPluginEnabled = pluginEnabled
         updateActionText(e, project)
-        if (previousValue != state)
+        if (previousValue != pluginEnabled)
             project.settings.fireUTBotEnabledStateChanged()
     }
 

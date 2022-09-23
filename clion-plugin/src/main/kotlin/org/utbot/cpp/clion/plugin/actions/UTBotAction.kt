@@ -14,8 +14,9 @@ abstract class UTBotBaseAction(
 
     override fun update(e: AnActionEvent) {
         var isEnabled = false
-        e.project?.let {
-            isEnabled = it.settings.storedSettings.isPluginEnabled
+        val project = e.project
+        if (project != null) {
+            isEnabled = project.settings.storedSettings.isPluginEnabled
         }
         e.presentation.isEnabledAndVisible = isEnabled
         if (isEnabled) {
