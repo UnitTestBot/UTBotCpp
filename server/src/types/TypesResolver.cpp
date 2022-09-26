@@ -137,7 +137,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
                 F->getFunctionType(), field.name, sourceManager,
                 field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
-            if (returnType->isPointerType() && returnType->getPointeeType()->isStructureType()) {
+            if (returnType->isPointerType()
+                && returnType->getPointeeType()->isStructureType()
+                && returnType->getPointeeType().getBaseTypeIdentifier()) {
                 std::string structName =
                     returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
