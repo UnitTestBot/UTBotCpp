@@ -22,7 +22,11 @@ class UTBotStartupActivity : StartupActivity {
     // Here we address the service ClientManager for the first time so that it
     // will be initialized by the ide and Client will be created.
     // Client in turn will create a grpc channel and start heart-beating the server.
-    private fun initializeClient(project: Project) = project.service<ClientManager>()
+    private fun initializeClient(project: Project) {
+        if (!ApplicationManager.getApplication().isUnitTestMode) {
+            project.service<ClientManager>()
+        }
+    }
 
 
     private fun showWizardOnFirstOpen(project: Project) {

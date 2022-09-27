@@ -1,6 +1,8 @@
 package org.utbot.cpp.clion.plugin.tests
 
+import com.intellij.openapi.components.service
 import org.junit.jupiter.api.Test
+import org.tinylog.kotlin.Logger
 import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
 import org.utbot.cpp.clion.plugin.Clang
 import org.utbot.cpp.clion.plugin.CppCompiler
@@ -9,15 +11,16 @@ import org.utbot.cpp.clion.plugin.actions.generate.GenerateForProjectAction
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
 import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
 
 class GenerateForProjectTest : BaseGenerationTestCase() {
-    private val logger = setupLogger()
     private fun doTest(compiler: CppCompiler, isVerbose: Boolean, targetNames: List<String> = emptyList()) {
-        logger.info ( "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}")
+        Logger.info { "Testing generate for project with ${compiler.name}, verbose mode: $isVerbose, and targets: ${targetNames.joinToString()}"}
 
         project.settings.storedSettings.verbose = isVerbose
         compiler.buildProject(projectPath, buildDirName)
 
+        waitForConnection()
         for (targetName in targetNames) {
             setTarget(targetName)
             generateForProject()
@@ -38,7 +41,7 @@ class GenerateForProjectTest : BaseGenerationTestCase() {
 
     @Test
     fun `test generate for project with clang, non-verbose mode, targets - all`() {
-        doTest(Clang, false, targetsController.targets.map { it.name })
+        doTest(Clang, false, project.service<UTBotTargetsController>().targets.map { it.name })
     }
 
     @Test
