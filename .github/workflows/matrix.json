@@ -1,7 +1,7 @@
 {
   "include": [
     {
-      "DOCKER_TAG": "2022.8.0",
+      "DOCKER_TAG": "2022.9.0",
       "OPERATING_SYSTEM_TAG": "18.04",
       "LLVM_VERSION_MAJOR": "10"
     }
