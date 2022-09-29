@@ -1987,7 +1987,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, sort_list) {
+    TEST_F(Syntax_Test, DISABLED_sort_list) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 104, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2009,7 +2009,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, sort_list_with_cmp) {
+    TEST_F(Syntax_Test, DISABLED_sort_list_with_cmp) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 135, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
