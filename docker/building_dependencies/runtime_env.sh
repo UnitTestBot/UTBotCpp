@@ -35,4 +35,7 @@ export LD_LIBRARY_PATH=$UTBOT_INSTALL_DIR/lib
 export LDFLAGS='-fuse-ld=gold'
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH
 
-export VERSION=$(date '+%Y.%-m').0
+if [ -z "${VERSION}" ]
+then
+    export VERSION=$(date '+%Y.%-m').0
+fi
