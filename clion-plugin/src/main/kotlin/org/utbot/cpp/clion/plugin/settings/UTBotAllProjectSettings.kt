@@ -15,14 +15,14 @@ import java.nio.file.Paths
 
 @Service
 class UTBotAllProjectSettings(val project: Project) {
-    val storedSettings: UTBotProjectStoredSettings.State
-        get() = project.service<UTBotProjectStoredSettings>().state
+    val storedSettings: UTBotProjectStoredSettings
+        get() = project.service<UTBotProjectStoredSettings>()
 
     val buildDirPath: Path
         get() = Paths.get(project.path).resolve(storedSettings.buildDirRelativePath)
 
     val testsDirPath: Path
-        get() = Paths.get(project.path).resolve(storedSettings.testsDirRelativePath)
+        get() = Paths.get(project.path).resolve(storedSettings.testDirRelativePath)
 
     val convertedSourcePaths: List<String>
         get() = storedSettings.sourceDirs.map { it.convertToRemotePathIfNeeded(project) }

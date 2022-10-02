@@ -16,7 +16,7 @@ import java.awt.event.KeyEvent
 
 class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizardStep>("UTBot: Quickstart", project) {
     // copy of settings to make changes during wizard steps
-    private val mySettingsModel = UTBotSettingsModel(project.settings.storedSettings.copy(), projectIndependentSettings.copy())
+    private val mySettingsModel = UTBotSettingsModel(project.settings.storedSettings.state.copy(), projectIndependentSettings.copy())
 
     init {
         addStep(IntroStep())
@@ -33,7 +33,7 @@ class UTBotWizard(private val project: Project) : AbstractWizard<UTBotBaseWizard
      * Commits settings changes made in wizard and sends a notification.
      */
     override fun doOKAction() {
-        project.settings.storedSettings.fromSettingsModel(mySettingsModel)
+        project.settings.storedSettings.state.fromSettingsModel(mySettingsModel)
         projectIndependentSettings.fromSettingsModel(mySettingsModel)
         projectIndependentSettings.fireConnectionSettingsChanged()
 
