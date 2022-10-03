@@ -1,6 +1,7 @@
 package org.utbot.cpp.clion.plugin.tests
 
 import com.intellij.openapi.editor.Editor
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
 import org.utbot.cpp.clion.plugin.Clang
@@ -11,6 +12,7 @@ import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
 import org.utbot.cpp.clion.plugin.settings.settings
 
+@Disabled("Disabled as a flaky test until #483 is fixed")
 class GenerateForLineTest: BaseGenerationTestCase() {
     private val logger = setupLogger()
 
