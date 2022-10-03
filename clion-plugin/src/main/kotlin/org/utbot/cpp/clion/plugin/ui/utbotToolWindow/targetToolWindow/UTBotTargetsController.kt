@@ -30,7 +30,6 @@ class UTBotTargetsController(val project: Project) {
         get() = targetsUiModel.toList()
 
     init {
-        requestTargetsFromServer()
         connectToEvents()
     }
 

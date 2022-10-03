@@ -56,7 +56,6 @@ abstract class BaseGenerationTestCase {
         get() = fixture.project
     val client: Client
         get() = project.getCurrentClient()
-    val targetsController = UTBotTargetsController(project)
 
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
@@ -87,6 +86,7 @@ abstract class BaseGenerationTestCase {
     }
 
     fun setTarget(targetName: String) {
+        val targetsController = UTBotTargetsController(project)
         assert(client.isServerAvailable()) { "Not connected to server!" }
         targetsController.requestTargetsFromServer()
         waitForRequestsToFinish()
