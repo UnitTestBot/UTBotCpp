@@ -16,12 +16,14 @@ class UTBotToolWindowFactory : ToolWindowFactory, DumbAware {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         logger.info("createToolWindowContent was called")
         val contentManager = toolWindow.contentManager
+        val targetsController = project.service<UTBotTargetsController>()
         val targetsToolWindow = contentManager.factory.createContent(
-            project.service<UTBotTargetsController>().targetsToolWindow, UTBot.message("toolwindow.targets.displayName"), false
+            targetsController.targetsToolWindow, UTBot.message("toolwindow.targets.displayName"), false
         )
         val logsToolWindow =
             contentManager.factory.createContent(ConsoleToolWindow(project), UTBot.message("toolwindow.logs.displayName"), false)
         toolWindow.contentManager.addContent(logsToolWindow)
         toolWindow.contentManager.addContent(targetsToolWindow)
+        targetsController.requestTargetsFromServer()
     }
 }

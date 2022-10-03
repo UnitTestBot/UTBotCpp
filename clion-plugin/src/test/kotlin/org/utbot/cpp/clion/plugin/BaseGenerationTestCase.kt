@@ -1,5 +1,6 @@
 package org.utbot.cpp.clion.plugin
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
@@ -55,11 +56,10 @@ abstract class BaseGenerationTestCase {
     val project: Project
         get() = fixture.project
     val client: ManagedClient = project.client
-    val targetsController = UTBotTargetsController(project)
 
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
-        project.settings.storedSettings.testsDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
+        project.settings.storedSettings.testDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
         project.logger.logWriters.let {
             it.clear()
             it.add(SystemWriter())
@@ -86,6 +86,7 @@ abstract class BaseGenerationTestCase {
     }
 
     fun setTarget(targetName: String) {
+        val targetsController = project.service<UTBotTargetsController>()
         assert(client.isServerAvailable()) { "Not connected to server!" }
         targetsController.requestTargetsFromServer()
         waitForRequestsToFinish()
