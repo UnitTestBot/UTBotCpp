@@ -86,6 +86,7 @@ abstract class BaseGenerationTestCase {
     }
 
     fun setTarget(targetName: String) {
+        assert(false) { "Can't set target in tests until https://github.com/UnitTestBot/UTBotCpp/issues/483 is fixed" }
         val targetsController = UTBotTargetsController(project)
         assert(client.isServerAvailable()) { "Not connected to server!" }
         targetsController.requestTargetsFromServer()
