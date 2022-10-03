@@ -35,7 +35,6 @@ class ClientLogger(project: Project) : Disposable, Logger {
             info { "Setting new log level: ${value.text}" }
             field = value
         }
-    private var isLoggingEnabled = false
 
     val logWriters: MutableList<LogWriter> = mutableListOf(ConsoleWriter(project))
 

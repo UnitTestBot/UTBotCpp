@@ -15,7 +15,8 @@ class SystemWriter : LogWriter {
 }
 
 class ConsoleWriter(project: Project) : LogWriter {
-    private val console = project.service<OutputProvider>().clientOutputChannel.outputConsole
+    // console should be accessed from EDT
+    private val console by lazy { project.service<OutputProvider>().clientOutputChannel.outputConsole }
 
     override fun write(message: LogMessage) {
         val formattedMessage = LogFormatter.format(message)
