@@ -1,5 +1,6 @@
 package org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
@@ -36,6 +37,8 @@ class UTBotTargetsController(val project: Project) {
     fun isTargetUpToDate(path: String): Boolean = areTargetsUpToDate && targets.find { it.path == path } != null
 
     fun requestTargetsFromServer() {
+        // untill https://github.com/UnitTestBot/UTBotCpp/issues/483 is fixed
+        assert(!ApplicationManager.getApplication().isUnitTestMode) { "Targets are requested in tests!" }
         val currentClient = project.getCurrentClient()
         areTargetsUpToDate = false
 
