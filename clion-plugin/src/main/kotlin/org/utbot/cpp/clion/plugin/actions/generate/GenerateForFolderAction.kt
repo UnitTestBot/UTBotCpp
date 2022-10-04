@@ -12,7 +12,7 @@ class GenerateForFolderAction : BaseGenerateTestsAction() {
             FolderRequest(
                 ParamsBuilder(e.activeProject()).buildFolderRequestParams(e.getFilePathUnsafe()),
                 e.activeProject()
-            ).executeUsingCurrentClient()
+            ).execute()
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

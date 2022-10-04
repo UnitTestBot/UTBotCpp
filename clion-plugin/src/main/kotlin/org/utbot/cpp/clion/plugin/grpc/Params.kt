@@ -1,9 +1,7 @@
 package org.utbot.cpp.clion.plugin.grpc
 
-import com.intellij.openapi.actionSystem.AnActionEvent
 import org.apache.commons.io.FilenameUtils
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.utils.notifyError
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 

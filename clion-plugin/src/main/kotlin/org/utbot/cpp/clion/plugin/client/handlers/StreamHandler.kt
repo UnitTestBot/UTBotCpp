@@ -5,8 +5,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
-import org.utbot.cpp.clion.plugin.utils.notifyError
-import java.util.concurrent.CancellationException
 
 /**
  * Base class for handling stream of server responses

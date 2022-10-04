@@ -9,12 +9,12 @@ import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
 import org.utbot.cpp.clion.plugin.utils.getLineNumberUnsafe
 
 class GenerateForFunctionAction : BaseGenerateTestsAction() {
-
     override fun actionPerformed(e: AnActionEvent) {
         FunctionRequest(
             ParamsBuilder(e.activeProject()).buildFunctionRequestParams(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
             e.activeProject()
         ).execute()
+    }
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

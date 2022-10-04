@@ -1,7 +1,7 @@
 package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
-import com.intellij.util.messages.MessageBus
+import com.intellij.openapi.project.Project
 import io.grpc.Status
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
@@ -26,7 +26,6 @@ import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
-import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyNotConnected
@@ -40,12 +39,13 @@ class Client(
     clientId: String,
     private val logger: ClientLogger,
     private val loggingChannels: List<LogChannel>,
-    private val messageBus: MessageBus
+    private val project: Project
 ) : Disposable,
     GrpcClient(projectIndependentSettings.port, projectIndependentSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT
         private set
 
+    private val messageBus = project.messageBus
     private var newClient = true
     var isDisposed = false
         private set

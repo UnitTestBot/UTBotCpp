@@ -12,7 +12,7 @@ import kotlinx.coroutines.Job
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.client.Client.Companion.SERVER_TIMEOUT
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
+import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
 import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
@@ -76,7 +76,7 @@ class ManagedClient(val project: Project) : Disposable {
 
     fun configureProject() {
         CheckProjectConfigurationRequest(
-            getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
+            ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
             project,
         ).also { request ->
             client?.executeRequestIfNotDisposed(request)
@@ -88,7 +88,7 @@ class ManagedClient(val project: Project) : Disposable {
         client = null
     }
 
-    private fun createNewClient(): Client = Client(clientId, project.logger, loggingChannels, project.messageBus)
+    private fun createNewClient(): Client = Client(clientId, project.logger, loggingChannels, project)
 
     private fun generateClientID(): String {
         fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)

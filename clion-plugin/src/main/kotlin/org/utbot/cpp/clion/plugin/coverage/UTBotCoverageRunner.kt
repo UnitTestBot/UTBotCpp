@@ -12,7 +12,6 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * This class is used to convert from our representation of coverage to IntelliJ's [ProjectData]

@@ -15,7 +15,6 @@ import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
 import org.utbot.cpp.clion.plugin.utils.localPath
-import org.utbot.cpp.clion.plugin.utils.logger
 import testsgen.Testgen
 
 class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
