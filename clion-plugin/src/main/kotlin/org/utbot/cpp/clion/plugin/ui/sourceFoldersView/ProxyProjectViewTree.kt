@@ -5,8 +5,6 @@ import com.intellij.openapi.actionSystem.DataKey
 import com.intellij.openapi.actionSystem.DataProvider
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.settings.settings
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import javax.swing.tree.DefaultTreeModel
 import org.utbot.cpp.clion.plugin.listeners.SourceFoldersListener
 

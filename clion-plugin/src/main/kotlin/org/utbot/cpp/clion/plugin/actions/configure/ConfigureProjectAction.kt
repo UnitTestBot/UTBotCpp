@@ -13,7 +13,7 @@ class ConfigureProjectAction : UTBotBaseAction(UTBot.message("projectConfigure.c
     override fun actionPerformed(e: AnActionEvent) = CheckProjectConfigurationRequest(
         ParamsBuilder(e.activeProject()).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
         e.activeProject()
-    ).executeUsingCurrentClient()
+    ).execute()
 
     override fun updateIfEnabled(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null

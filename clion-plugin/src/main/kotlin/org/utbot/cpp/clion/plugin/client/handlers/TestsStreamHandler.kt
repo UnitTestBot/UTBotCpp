@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.client.handlers
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.util.io.exists
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.settings.settings
@@ -56,6 +57,15 @@ class TestsStreamHandler(
         super.onFinish()
         // tell ide to refresh vfs and refresh project tree
         markDirtyAndRefresh(project.nioPath)
+    }
+
+    override fun onCompletion(exception: Throwable?) {
+        if (exception != null ) {
+            if (exception !is CancellationException)
+                onError(exception)
+        } else {
+            onSuccess(myGeneratedTestFilesLocalFS)
+        }
     }
 
     private fun handleSarifReport(sarif: SourceCode) {

@@ -6,7 +6,7 @@ import org.utbot.cpp.clion.plugin.client.Request
 import org.utbot.cpp.clion.plugin.grpc.Params
 import org.utbot.cpp.clion.plugin.grpc.RemoteMapping
 import org.utbot.cpp.clion.plugin.settings.settings
-import org.utbot.cpp.clion.plugin.utils.getCurrentClient
+import org.utbot.cpp.clion.plugin.utils.client
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.path
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub

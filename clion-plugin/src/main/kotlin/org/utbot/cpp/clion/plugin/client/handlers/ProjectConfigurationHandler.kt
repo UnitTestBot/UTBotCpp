@@ -15,7 +15,6 @@ import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 import org.utbot.cpp.clion.plugin.utils.notifyUnknownResponse
-import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import org.utbot.cpp.clion.plugin.utils.markDirtyAndRefresh
 import testsgen.Testgen
 
@@ -95,9 +94,7 @@ class CreateBuildDirHandler(
                     ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
                     project
                 ).also {
-                    if (!client.isDisposed) {
-                        client.execute(it)
-                    }
+                    client.executeRequest(it)
                 }
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {

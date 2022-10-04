@@ -2,11 +2,9 @@ package org.utbot.cpp.clion.plugin.grpc
 
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
-import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.testsResults.TestNameAndTestSuite
 import org.utbot.cpp.clion.plugin.utils.localPath
-import org.utbot.cpp.clion.plugin.utils.notifyError
 import org.utbot.cpp.clion.plugin.utils.path
 import testsgen.Testgen
 import testsgen.Util
@@ -21,7 +19,7 @@ class ParamsBuilder(
         return ProjectContextParams(
             project.name,
             project.path,
-            project.settings.storedSettings.testsDirRelativePath,
+            project.settings.storedSettings.testDirRelativePath,
             project.settings.storedSettings.buildDirRelativePath
         )
     }

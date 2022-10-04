@@ -40,14 +40,14 @@ class UTBotAllProjectSettings(val project: Project) {
     val testsDirPath: Path
         get() {
             try {
-                return Paths.get(project.path).resolve(storedSettings.testsDirRelativePath)
+                return Paths.get(project.path).resolve(storedSettings.testDirRelativePath)
             } catch (e: InvalidPathException) {
                 throw IllegalPathException(
-                    storedSettings.testsDirRelativePath,
+                    storedSettings.testDirRelativePath,
                     UTBot.message(
                         "paths.invalid",
                         "relative path to tests dir",
-                        storedSettings.testsDirRelativePath
+                        storedSettings.testDirRelativePath
                     )
                 )
             }

@@ -15,6 +15,7 @@ class GenerateForLineAction : BaseGenerateTestsAction() {
             ParamsBuilder(e.activeProject()).buildLineRequestBuilder(lineNumber, filePath),
             e.activeProject(),
         ).execute()
+    }
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project
