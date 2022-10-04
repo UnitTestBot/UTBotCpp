@@ -1,6 +1,7 @@
 package org.utbot.cpp.clion.plugin.grpc
 
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarget
 import testsgen.Testgen
 import testsgen.Util
 import java.nio.file.InvalidPathException
@@ -70,13 +71,15 @@ internal data class ProjectRequestParams(
                     UTBot.message("settings.project.sourcePaths.wrong.conversion")
                 )
             })
-            .setTargetPath(
-                remoteMapping.convertToRemote(
-                    targetPath,
-                    UTBot.message("settings.project.target.wrong.conversion")
-                )
-            )
             .setSynchronizeCode(synchronizeCode)
+            .also { builder ->
+                if (!UTBotTarget.isAutoTargetPath(targetPath)) {
+                    builder.targetPath = remoteMapping.convertToRemote(
+                        targetPath,
+                        UTBot.message("settings.project.target.wrong.conversion")
+                    )
+                }
+            }
             .build()
     }
 }
