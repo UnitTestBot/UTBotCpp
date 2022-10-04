@@ -211,7 +211,7 @@ internal data class ClassRequestParams(
     }
 }
 
-internal class AssertionRequestParams(val lineRequestParams: LineRequestParams) : Params<Testgen.AssertionRequest> {
+internal class AssertionRequestParams(private val lineRequestParams: LineRequestParams) : Params<Testgen.AssertionRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.AssertionRequest {
         return Testgen.AssertionRequest.newBuilder()
             .setLineRequest(lineRequestParams.build(remoteMapping))
@@ -234,8 +234,8 @@ internal data class PredicateInfoParams(
 }
 
 internal class PredicateRequestParams(
-    val lineRequestParams: LineRequestParams,
-    val predicateInfoParams: PredicateInfoParams
+    private val lineRequestParams: LineRequestParams,
+    private val predicateInfoParams: PredicateInfoParams
 ) : Params<Testgen.PredicateRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.PredicateRequest {
         return Testgen.PredicateRequest.newBuilder()
@@ -246,8 +246,8 @@ internal class PredicateRequestParams(
 }
 
 internal class SnippetRequestParams(
-    val projectContextParams: ProjectContextParams,
-    val settingsContextParams: SettingsContextParams,
+    private val projectContextParams: ProjectContextParams,
+    private val settingsContextParams: SettingsContextParams,
     val filePath: String
 ) : Params<Testgen.SnippetRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.SnippetRequest {

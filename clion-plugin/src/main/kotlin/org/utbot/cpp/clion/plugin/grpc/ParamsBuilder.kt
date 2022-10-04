@@ -15,7 +15,7 @@ import testsgen.Util
 class ParamsBuilder(
     val project: Project
 ) {
-    fun buildProjectContextParams(): Params<Testgen.ProjectContext> {
+    private fun buildProjectContextParams(): Params<Testgen.ProjectContext> {
         return ProjectContextParams(
             project.name,
             project.path,
@@ -24,7 +24,7 @@ class ParamsBuilder(
         )
     }
 
-    fun buildSettingsContextParams(): Params<Testgen.SettingsContext> {
+    private fun buildSettingsContextParams(): Params<Testgen.SettingsContext> {
         return project.settings.storedSettings.let {
             SettingsContextParams(
                 it.generateForStaticFunctions,
@@ -101,7 +101,7 @@ class ParamsBuilder(
         )
     }
 
-    fun buildTestFilterParams(element: PsiElement): Params<Testgen.TestFilter> {
+    private fun buildTestFilterParams(element: PsiElement): Params<Testgen.TestFilter> {
         val (testName: String, testSuite: String) = TestNameAndTestSuite.create(element)
         val testFilePath = element.containingFile.virtualFile.localPath.toString()
         return TestFilterParams(

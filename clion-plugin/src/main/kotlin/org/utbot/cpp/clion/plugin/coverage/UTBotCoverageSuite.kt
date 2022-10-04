@@ -35,8 +35,8 @@ class UTBotCoverageSuite(
     coverageRunner, project
 ) {
 
-    val covEngine = coverageEngine
-    val covRunner = coverageRunner
+    private val covEngine = coverageEngine
+    private val covRunner = coverageRunner
     val coveragesList: List<Testgen.FileCoverageSimplified>? = covLists
 
     override fun getCoverageEngine(): CoverageEngine {

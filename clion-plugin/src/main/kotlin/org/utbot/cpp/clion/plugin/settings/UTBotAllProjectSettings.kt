@@ -53,18 +53,6 @@ class UTBotAllProjectSettings(val project: Project) {
             }
         }
 
-    val convertedSourcePaths: List<String>
-        get() = storedSettings.sourceDirs.map { it.convertToRemotePathIfNeeded(project) }
-
-    val convertedTestDirPath: String
-        get() = testsDirPath.toString().convertToRemotePathIfNeeded(project)
-
-    val convertedTargetPath: String
-        get() = if (storedSettings.targetPath == UTBotTarget.autoTarget.path) storedSettings.targetPath
-        else storedSettings.targetPath.convertToRemotePathIfNeeded(project)
-
-    val convertedProjectPath: String get() = project.path.convertToRemotePathIfNeeded(project)
-
     /**
      * If this property returns true, plugin must convert path sent and returned from server.
      * @see [String.convertToRemotePathIfNeeded] and [String.convertFromRemotePathIfNeeded]
@@ -93,8 +81,6 @@ class UTBotAllProjectSettings(val project: Project) {
     }
 
     fun predictPaths() {
-        fun getSourceFoldersFromSources(sources: Collection<File>) = sources.map { it.parent }.toMutableSet()
-
         storedSettings.remotePath = UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
         storedSettings.buildDirRelativePath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
         storedSettings.targetPath = UTBotTarget.autoTarget.path

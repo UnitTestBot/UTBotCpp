@@ -29,7 +29,7 @@ data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: St
         return FilenameUtils.separatorsToUnix(remoteProjectNioPath.resolve(relativeToProjectNioPath).toString())
     }
 
-    fun shouldConvert(): Boolean = localProjectPath != remoteProjectPath
+    private fun shouldConvert(): Boolean = localProjectPath != remoteProjectPath
 }
 
 /**
