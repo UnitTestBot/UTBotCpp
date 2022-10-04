@@ -20,6 +20,10 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.tinylog.kotlin.Logger
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
@@ -60,6 +64,7 @@ abstract class BaseGenerationTestCase {
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
         project.settings.storedSettings.testDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
+        project.settings.storedSettings.isPluginEnabled = true
         project.logger.logWriters.let {
             it.clear()
             it.add(SystemWriter())
@@ -101,6 +106,21 @@ abstract class BaseGenerationTestCase {
             Logger.info("Waiting for requests to finish: $unfinishedCoroutines")
         })
         Logger.info("Finished waiting!")
+    }
+
+    protected fun waitForConnection(timeout: Long = 10000L) {
+        runBlocking {
+            try {
+                withTimeout(timeout) {
+                    while (!client.isServerAvailable()) {
+                        delay(1000L)
+                        Logger.info { "Waiting for connection to server!" }
+                    }
+                }
+            } catch (_: TimeoutCancellationException) {}
+            assert(client.isServerAvailable()) { "Not connected to server!" }
+            Logger.info { "Connected" }
+        }
     }
 
     @AfterEach

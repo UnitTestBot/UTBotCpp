@@ -18,6 +18,7 @@ class GenerateForLineTest: BaseGenerationTestCase() {
     fun doTest(lineNumber: Int, targetName: String = "liblib.a", compiler: CppCompiler = Clang, isVerbose: Boolean = true) {
         Logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
         compiler.buildProject(projectPath, buildDirName)
+        waitForConnection()
         setTarget(targetName)
         project.settings.storedSettings.verbose = isVerbose
 

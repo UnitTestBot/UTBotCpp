@@ -17,6 +17,7 @@ class GenerateForIsolatedFileTest : BaseGenerationTestCase() {
             "Testing generate for snippet using target: auto, compiler: ${compiler.name}, verbose mode = ${project.settings.storedSettings.verbose}")
         compiler.buildProject(projectPath, buildDirName)
         fixture.configureFromTempProjectFile("snippet.c")
+        waitForConnection()
         fixture.performEditorAction("org.utbot.cpp.clion.plugin.actions.GenerateForSnippetAction")
         waitForRequestsToFinish()
         testsDirectoryPath.assertFileOrDirExists()
