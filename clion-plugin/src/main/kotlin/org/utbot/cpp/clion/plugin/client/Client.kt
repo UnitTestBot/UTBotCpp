@@ -1,7 +1,7 @@
 package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.project.Project
+import com.intellij.util.messages.MessageBus
 import io.grpc.Status
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineName
@@ -19,12 +19,10 @@ import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
-import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
+import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
-import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyWarning
 import testsgen.Testgen
 
@@ -32,17 +30,16 @@ import testsgen.Testgen
  * Sends requests to grpc server via stub
  */
 class Client(
-    val project: Project,
     clientId: String,
-    private val loggingChannels: List<LogChannel>
+    private val logger: ClientLogger,
+    private val loggingChannels: List<LogChannel>,
+    private val messageBus: MessageBus
 ) : Disposable,
     GrpcClient(projectIndependentSettings.port, projectIndependentSettings.serverName, clientId) {
     var connectionStatus = ConnectionStatus.INIT
         private set
 
-    private val messageBus = project.messageBus
     private var newClient = true
-    private val logger = project.logger
     var isDisposed = false
         private set
 
@@ -90,17 +87,6 @@ class Client(
         }
     }
 
-    fun configureProject() {
-        CheckProjectConfigurationRequest(
-            getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
-            project,
-        ).also {
-            this.executeRequestIfNotDisposed(it)
-        }
-    }
-
-    fun isServerAvailable() = connectionStatus == ConnectionStatus.CONNECTED
-
     private fun provideLoggingChannels() {
         for (channel in loggingChannels) {
             servicesCS.launch(CoroutineName(channel.toString())) {
@@ -132,8 +118,6 @@ class Client(
     }
 
     private suspend fun heartBeatOnce() {
-        if (project.isDisposed)
-            return
         val oldStatus = connectionStatus
         try {
             val response = stub.heartbeat(Testgen.DummyRequest.newBuilder().build())
@@ -143,7 +127,6 @@ class Client(
             if (oldStatus != ConnectionStatus.CONNECTED) {
                 logger.info { "Successfully connected to server!" }
                 registerClient()
-                configureProject()
             }
 
             if (newClient || !response.linked) {

@@ -1,16 +1,16 @@
 package org.utbot.cpp.clion.plugin.actions.generate
 
-import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import org.utbot.cpp.clion.plugin.utils.currentClient
+import org.utbot.cpp.clion.plugin.actions.UTBotBaseAction
+import org.utbot.cpp.clion.plugin.utils.client
 
-abstract class BaseGenerateTestsAction : AnAction() {
+abstract class BaseGenerateTestsAction : UTBotBaseAction() {
 
-    override fun update(e: AnActionEvent) {
+    override fun updateIfEnabled(e: AnActionEvent) {
         val isDefined: Boolean = isDefined(e)
 
         e.presentation.isVisible = isDefined
-        e.presentation.isEnabled = isDefined && e.currentClient.isServerAvailable()
+        e.presentation.isEnabled = isDefined && e.client.isServerAvailable()
     }
 
     /**

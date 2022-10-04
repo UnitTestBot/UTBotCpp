@@ -3,12 +3,11 @@ package org.utbot.cpp.clion.plugin.actions
 import com.intellij.openapi.actionSystem.ActionPlaces
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.actionSystem.ToggleAction
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.settings.settings
 
-class ChangeVerboseModeAction : ToggleAction() {
+class ChangeVerboseModeAction : UTBotBaseToggleAction() {
     override fun isSelected(e: AnActionEvent): Boolean {
         updateActionText(e)
         return e.getRequiredData(CommonDataKeys.PROJECT).settings.storedSettings.verbose
@@ -16,8 +15,7 @@ class ChangeVerboseModeAction : ToggleAction() {
 
     override fun isDumbAware(): Boolean = true
 
-    override fun update(e: AnActionEvent) {
-        super.update(e)
+    override fun updateIfEnabled(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = (e.project != null)
     }
 

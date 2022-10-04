@@ -14,10 +14,10 @@ class GTestLogChannelImpl(project: Project): LogChannelImpl(project) {
     override val name: String = "GTest Log"
     override val logLevel: String = "TestLogLevel"
 
-    override val console: UTBotConsole = project.service<OutputProvider>().gTestOutputChannel.outputConsole
-
     override suspend fun open(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub): Flow<Testgen.LogEntry> =
         stub.openGTestChannel(getLogChannelGrpcRequest(logLevel))
+
+    override fun createConsole(): UTBotConsole = project.service<OutputProvider>().gTestOutputChannel.outputConsole
 
     override suspend fun close(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub) {
         stub.closeGTestChannel(getDummyGrpcRequest())

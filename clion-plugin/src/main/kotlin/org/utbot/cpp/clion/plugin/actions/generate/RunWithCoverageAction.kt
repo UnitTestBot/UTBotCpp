@@ -23,7 +23,7 @@ class RunWithCoverageAction(val element: PsiElement) : BaseGenerateTestsAction()
         RunWithCoverageRequest(
             getCoverageAndResultsGrpcRequest(project, filePath, suiteName, testedMethodName),
             project,
-        ).executeUsingCurrentClient()
+        ).execute()
     }
 
     override fun isDefined(e: AnActionEvent): Boolean {

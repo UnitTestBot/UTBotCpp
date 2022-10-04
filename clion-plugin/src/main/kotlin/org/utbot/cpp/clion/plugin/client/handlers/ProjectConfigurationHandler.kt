@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
-import org.utbot.cpp.clion.plugin.client.Client
+import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
 import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
 import org.utbot.cpp.clion.plugin.settings.settings
@@ -74,7 +74,7 @@ class CheckProjectConfigurationHandler(
 }
 
 class CreateBuildDirHandler(
-    val client: Client,
+    val client: ManagedClient,
     grpcStream: Flow<Testgen.ProjectConfigResponse>,
     progressName: String,
     cancellationJob: Job
@@ -87,11 +87,7 @@ class CreateBuildDirHandler(
                 CheckProjectConfigurationRequest(
                     getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
                     project,
-                ).also {
-                    if (!client.isDisposed) {
-                        client.executeRequestIfNotDisposed(it)
-                    }
-                }
+                ).execute()
             }
             Testgen.ProjectConfigStatus.BUILD_DIR_CREATION_FAILED -> {
                 notifyError("Failed to create build directory! ${response.message}", project)

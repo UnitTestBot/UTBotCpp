@@ -11,7 +11,7 @@ class GenerateForSnippetAction : BaseGenerateTestsAction() {
         SnippetRequest(
             getSnippetGrpcRequest(e),
             e.activeProject(),
-        ).executeUsingCurrentClient()
+        ).execute()
     }
 
     override fun isDefined(e: AnActionEvent): Boolean {

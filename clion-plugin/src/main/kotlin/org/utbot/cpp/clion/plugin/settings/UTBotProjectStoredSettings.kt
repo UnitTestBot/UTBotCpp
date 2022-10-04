@@ -1,5 +1,7 @@
 package org.utbot.cpp.clion.plugin.settings
 
+import com.intellij.ide.util.RunOnceUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
@@ -8,6 +10,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarget
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizard
+import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.path
 import java.nio.file.Paths
 
@@ -35,7 +39,8 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var useDeterministicSearcher: Boolean = false,
         var verbose: Boolean = false,
         var timeoutPerFunction: Int = 0,
-        var timeoutPerTest: Int = 0
+        var timeoutPerTest: Int = 0,
+        var isPluginEnabled: Boolean = false
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
             buildDirRelativePath = model.projectSettings.buildDirRelativePath
@@ -129,9 +134,27 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             myState.buildDirRelativePath = value
         }
 
+    var isPluginEnabled: Boolean
+        get() = myState.isPluginEnabled
+        set(value) {
+            myState.isPluginEnabled = value
+            if (myState.isPluginEnabled) {
+                onPluginEnabled()
+            }
+        }
+
+    var sourceDirs: Set<String> get() {
+        return state.sourceDirs
+    }
+    set(value) {
+        state.sourceDirs = value
+    }
+
     private fun isTargetUpToDate(): Boolean {
         return project.service<UTBotTargetsController>().isTargetUpToDate(myState.targetPath)
     }
+
+
 
     override fun getState() = myState
     override fun loadState(state: State) {
@@ -144,6 +167,15 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         myState.remotePath = REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
     }
 
+    private fun onPluginEnabled() {
+        if (!ApplicationManager.getApplication().isUnitTestMode) {
+            RunOnceUtil.runOnceForProject(project, "Show UTBot quick-start wizard to configure project") {
+                invokeOnEdt {
+                    UTBotWizard(project).showAndGet()
+                }
+            }
+        }
+    }
 
     companion object {
         val DEFAULT_CMAKE_OPTIONS = listOf("-DCMAKE_EXPORT_COMPILE_COMMANDS=ON", "-DCMAKE_EXPORT_LINK_COMMANDS=ON")

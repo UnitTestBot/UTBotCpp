@@ -14,7 +14,7 @@ import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
-import org.utbot.cpp.clion.plugin.utils.currentClient
+import org.utbot.cpp.clion.plugin.utils.client
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
@@ -49,7 +49,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
                 e.activeProject()
             ).apply {
-                e.currentClient.executeRequestIfNotDisposed(this)
+                e.client.executeRequest(this)
             }
 
         // ask for comparison operator to use in predicate
@@ -116,7 +116,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
             }
         }.apply {
-            e.currentClient.executeRequestIfNotDisposed(this)
+            e.client.executeRequest(this)
         }
     }
 

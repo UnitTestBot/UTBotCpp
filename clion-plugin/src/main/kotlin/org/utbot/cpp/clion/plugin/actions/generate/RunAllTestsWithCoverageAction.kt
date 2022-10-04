@@ -5,7 +5,7 @@ import org.utbot.cpp.clion.plugin.client.requests.RunAllTestsWithCoverageRequest
 
 class RunAllTestsWithCoverageAction: BaseGenerateTestsAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        RunAllTestsWithCoverageRequest(e).executeUsingCurrentClient()
+        RunAllTestsWithCoverageRequest(e).execute()
     }
 
     override fun isDefined(e: AnActionEvent): Boolean {

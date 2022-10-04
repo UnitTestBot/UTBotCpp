@@ -4,7 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import org.utbot.cpp.clion.plugin.grpc.getProjectGrpcRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.ProjectRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
-import org.utbot.cpp.clion.plugin.utils.currentClient
+import org.utbot.cpp.clion.plugin.utils.client
 
 class GenerateForProjectAction : BaseGenerateTestsAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -12,7 +12,7 @@ class GenerateForProjectAction : BaseGenerateTestsAction() {
             getProjectGrpcRequest(e),
             e.activeProject(),
         ).apply {
-            e.currentClient.executeRequestIfNotDisposed(this)
+            e.client.executeRequest(this)
         }
     }
 

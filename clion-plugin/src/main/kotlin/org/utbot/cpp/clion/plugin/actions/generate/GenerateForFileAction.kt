@@ -12,7 +12,7 @@ class GenerateForFileAction : BaseGenerateTestsAction() {
         FileRequest(
             getFileGrpcRequest(e),
             e.activeProject(),
-        ).executeUsingCurrentClient()
+        ).execute()
 
     // action is available only if the selected file ends in .cpp, .hpp, .c or .h
     override fun isDefined(e: AnActionEvent): Boolean {

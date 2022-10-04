@@ -3,7 +3,7 @@ package org.utbot.cpp.clion.plugin.client.requests
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import org.utbot.cpp.clion.plugin.client.Request
-import org.utbot.cpp.clion.plugin.utils.getCurrentClient
+import org.utbot.cpp.clion.plugin.utils.client
 import org.utbot.cpp.clion.plugin.utils.logger
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
@@ -25,7 +25,7 @@ abstract class BaseRequest<X, Y>(val request: X, val project: Project) : Request
 
     abstract suspend fun Y.handle(cancellationJob: Job?)
 
-    fun executeUsingCurrentClient() = project.getCurrentClient().executeRequestIfNotDisposed(this)
+    fun execute() = project.client.executeRequest(this)
 
     open fun logRequest() = project.logger.info { "$logMessage \n$request" }
 }

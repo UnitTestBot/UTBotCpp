@@ -13,7 +13,7 @@ import org.utbot.cpp.clion.plugin.ui.ObservableValue
 open class UTBotProjectViewPaneForSettings(project: Project) : UTBotProjectViewPane(project) {
     private val sourceDirs: ObservableValue<Set<String>> = initObservableDirectories()
 
-    private val settings: UTBotProjectStoredSettings.State
+    private val settings: UTBotProjectStoredSettings
         get() = myProject.settings.storedSettings
 
     override fun createTree(treeModel: DefaultTreeModel): ProjectViewTree {

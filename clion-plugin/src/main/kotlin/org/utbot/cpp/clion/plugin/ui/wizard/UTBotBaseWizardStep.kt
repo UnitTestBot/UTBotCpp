@@ -13,7 +13,7 @@ import java.awt.Component
 import java.awt.Dimension
 import java.awt.Font
 
-abstract class UTBotBaseWizardStep : Step {
+abstract class UTBotBaseWizardStep: Step {
     private val panel by lazy { JPanel() }
     private var isInitialized = false
 
