@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.onCompletion
  */
 abstract class StreamHandler<T>(
     val project: Project,
-    val grpcStream: Flow<T>,
+    private val grpcStream: Flow<T>,
 ) : Handler {
     val logger = com.intellij.openapi.diagnostic.Logger.getInstance(this::class.java)
 

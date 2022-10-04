@@ -108,7 +108,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             ).bindIntValue(projectIndependentSettings::port).applyToComponent {
                 portComponent = this
             }
-        }.rowComment(UTBot.message("deployment.utbotPort.description"))
+        }.rowComment(UTBot.message("deployment.utbot.port.description"))
 
         row(UTBot.message("settings.project.serverName")) {
             textField().bindText(projectIndependentSettings::serverName).applyToComponent {
@@ -118,7 +118,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                     UTBot.message("validation.invalid.host")
                 ) { it.text.isValidHostName() }
             )
-        }.rowComment(UTBot.message("deployment.utbotHost.description"))
+        }.rowComment(UTBot.message("deployment.utbot.host.description"))
 
         row(UTBot.message("settings.project.remotePath")) {
             textField().bindText(settings::remotePath).columns(COLUMNS_LARGE).validateInput(

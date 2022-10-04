@@ -24,7 +24,6 @@ abstract class UTBotBaseWizardStep(private val parentDisposable: Disposable) : S
     private var isInitialized = false
     private val validators = mutableListOf<ComponentValidationInfo>()
     private val onApplyCallbacks = mutableListOf<() -> Unit>()
-    class Validator(val component: JComponent, val isValid: ()->Boolean)
     abstract fun createUI()
 
     override fun _init() {
