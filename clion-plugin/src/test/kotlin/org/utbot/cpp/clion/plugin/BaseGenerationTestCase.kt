@@ -1,7 +1,6 @@
 package org.utbot.cpp.clion.plugin
 
 import com.intellij.openapi.components.service
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.testFramework.TestLoggerFactory
@@ -21,6 +20,7 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.name
 import kotlinx.coroutines.Job
+import org.tinylog.kotlin.Logger
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
 import org.utbot.cpp.clion.plugin.utils.client
@@ -51,11 +51,11 @@ abstract class BaseGenerationTestCase {
         Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     val testsDirectoryPath: Path = projectPath.resolve("cl-plugin-test-tests")
     val buildDirName = "build"
-    private val logger = setupLogger()
-    val fixture: CodeInsightTestFixture = createFixture()
-    val project: Project
+    protected val fixture: CodeInsightTestFixture = createFixture()
+    protected val project: Project
         get() = fixture.project
-    val client: ManagedClient = project.client
+    protected val client: ManagedClient
+        get() = project.client
 
     init {
         project.settings.storedSettings.buildDirRelativePath = buildDirName
@@ -66,13 +66,8 @@ abstract class BaseGenerationTestCase {
         }
     }
 
-    protected fun setupLogger(): Logger {
-        Logger.setFactory(TestLoggerFactory::class.java)
-        return Logger.getInstance(this.javaClass)
-    }
-
     private fun createFixture(): CodeInsightTestFixture {
-        logger.info("Creating fixture")
+        Logger.info("Creating fixture")
         val fixture = IdeaTestFixtureFactory.getFixtureFactory().let {
             it.createCodeInsightFixture(
                 it.createFixtureBuilder(projectPath.name, projectPath, false).fixture,
@@ -81,7 +76,7 @@ abstract class BaseGenerationTestCase {
         }
         fixture.setUp()
         fixture.testDataPath = projectPath.toString()
-        logger.info("Finished creating fixture")
+        Logger.info("Finished creating fixture")
         return fixture
     }
 
@@ -103,22 +98,22 @@ abstract class BaseGenerationTestCase {
             // some requests may be executed only on EDT, so we flush the queue. Otherwise,
             // these requests won't finish
             PlatformTestUtil.dispatchAllInvocationEventsInIdeEventQueue()
-            logger.info("Waiting for requests to finish: $unfinishedCoroutines")
+            Logger.info("Waiting for requests to finish: $unfinishedCoroutines")
         })
-        logger.info("Finished waiting!")
+        Logger.info("Finished waiting!")
     }
 
     @AfterEach
     fun tearDown() {
-        logger.info("tearDown is called!")
+        Logger.info("tearDown is called!")
         project.settings.buildDirPath.delete(recursively = true)
         testsDirectoryPath.delete(recursively = true)
     }
 
     @AfterAll
     fun tearDownAll() {
-        logger.info("tearDownAll of BaseGenerationTest is called")
+        Logger.info("tearDownAll of BaseGenerationTest is called")
         fixture.tearDown()
-        logger.info("tearDownAll of BaseGenerationTest has finished!")
+        Logger.info("tearDownAll of BaseGenerationTest has finished!")
     }
 }

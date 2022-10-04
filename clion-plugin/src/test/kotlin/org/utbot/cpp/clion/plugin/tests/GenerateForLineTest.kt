@@ -3,6 +3,7 @@ package org.utbot.cpp.clion.plugin.tests
 import com.intellij.openapi.editor.Editor
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.tinylog.kotlin.Logger
 import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
 import org.utbot.cpp.clion.plugin.Clang
 import org.utbot.cpp.clion.plugin.CppCompiler
@@ -14,10 +15,8 @@ import org.utbot.cpp.clion.plugin.settings.settings
 
 @Disabled("Disabled as a flaky test until #483 is fixed")
 class GenerateForLineTest: BaseGenerationTestCase() {
-    private val logger = setupLogger()
-
     fun doTest(lineNumber: Int, targetName: String = "liblib.a", compiler: CppCompiler = Clang, isVerbose: Boolean = true) {
-        logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
+        Logger.info("Testing generate for line using target: $targetName, compiler: ${compiler.name}, verbose mode: $isVerbose, line: $lineNumber")
         compiler.buildProject(projectPath, buildDirName)
         setTarget(targetName)
         project.settings.storedSettings.verbose = isVerbose

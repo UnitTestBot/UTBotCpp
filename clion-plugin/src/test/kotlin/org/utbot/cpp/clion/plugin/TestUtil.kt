@@ -5,10 +5,10 @@ import com.intellij.util.io.readText
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.io.path.nameWithoutExtension
+import org.tinylog.kotlin.Logger
 import org.utbot.cpp.clion.plugin.utils.visitAllFiles
 import java.nio.file.Path
 
-private val logger = com.intellij.openapi.diagnostic.Logger.getInstance("TestUtil")
 
 fun Path.assertAllFilesNotEmptyRecursively() {
     val emptyFiles = mutableListOf<Path>()
@@ -21,8 +21,8 @@ fun Path.assertAllFilesNotEmptyRecursively() {
 }
 
 fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
-    logger.info("Scanning folder $this for tests.")
-    logger.info("Source files are: ${sourceFileNames.joinToString()}")
+    Logger.trace("Scanning folder $this for tests.")
+    Logger.trace("Source files are: ${sourceFileNames.joinToString()}")
     var checked = true
     val visitedFile = sourceFileNames.associateWith { false }.toMutableMap()
 
@@ -33,7 +33,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
             testFile.extension != "mk") {
             val sourceFileName = testFile.name.removeTestSuffixes()
             if (sourceFileName !in visitedFile) {
-                logger.error("Unable to find a corresponding source file for test: ${testFile.name}")
+                Logger.error("Unable to find a corresponding source file for test: ${testFile.name}")
                 checked = false
             } else {
                 visitedFile[sourceFileName] = true
@@ -43,7 +43,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
 
     val notVisitedFileNames = visitedFile.filterValues { visited -> !visited }.keys
     if (notVisitedFileNames.isNotEmpty()) {
-        logger.error("Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}")
+        Logger.error("Unable to find tests for corresponding sources: ${notVisitedFileNames.joinToString()}")
         checked = false
     }
 
@@ -52,7 +52,7 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
 
 fun String.removeTestSuffixes(): String {
     val result = this.replace("""(_dot_c_test|_dot_c_test_error)\.(c|cpp|h)$""".toRegex(), "")
-    logger.info("Converting $this to $result")
+    Logger.info("Converting $this to $result")
     return result
 }
 

@@ -70,6 +70,8 @@ dependencies {
     implementation("com.google.protobuf:protobuf-kotlin:$protobufVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
+    implementation("org.tinylog:tinylog-api-kotlin:2.5.0")
+    implementation("org.tinylog:tinylog-impl:2.5.0")
 
     // testing with JUnit 5
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
