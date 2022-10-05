@@ -22,7 +22,8 @@ abstract class BaseRequest<X, Y>(val params: Params<X>, val project: Project) : 
     override fun toString(): String = logMessage
 
     open fun build(): X {
-        val mapping = RemoteMapping(project.path, project.settings.storedSettings.remotePath)
+        val mapping =
+            RemoteMapping(project.path, project.settings.storedSettings.remotePath, project.settings.isRemoteScenario)
         return params.build(mapping)
     }
 
