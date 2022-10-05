@@ -11,9 +11,9 @@ class IllegalPathException(val path: String, val info: String) :
     ClientException("Bad path: $path. Info: $info")
 
 
-data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: String) {
+data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: String, val shouldConvert: Boolean = true) {
     fun convertToRemote(path: String, errorText: String): String {
-        if (!shouldConvert())
+        if (!shouldConvert)
             return path
         val localProjectNioPath = Paths.get(localProjectPath)
         val remoteProjectNioPath = try {
@@ -28,8 +28,6 @@ data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: St
         }
         return FilenameUtils.separatorsToUnix(remoteProjectNioPath.resolve(relativeToProjectNioPath).toString())
     }
-
-    private fun shouldConvert(): Boolean = localProjectPath != remoteProjectPath
 }
 
 /**

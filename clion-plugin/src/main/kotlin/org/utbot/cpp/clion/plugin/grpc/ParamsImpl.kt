@@ -214,7 +214,8 @@ internal data class ClassRequestParams(
     }
 }
 
-internal class AssertionRequestParams(private val lineRequestParams: LineRequestParams) : Params<Testgen.AssertionRequest> {
+internal class AssertionRequestParams(private val lineRequestParams: LineRequestParams) :
+    Params<Testgen.AssertionRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.AssertionRequest {
         return Testgen.AssertionRequest.newBuilder()
             .setLineRequest(lineRequestParams.build(remoteMapping))
