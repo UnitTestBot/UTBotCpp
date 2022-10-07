@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.cancellable
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.onCompletion
+import org.tinylog.kotlin.Logger
 
 /**
  * Base class for handling stream of server responses

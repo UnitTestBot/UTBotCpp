@@ -196,7 +196,7 @@ tasks {
         setScanForTestClasses(false)
         // Only run tests from classes that end with "Test"
         include("**/*Test.class")
-        exclude("**/*BaseGenerationTestCaseTest.class")
+        exclude("**/*BaseGenerationTestCaseTest.class", "**/*BaseBuildingTest.class")
         systemProperty("idea.log.debug.categories", true)
         systemProperty("idea.log.trace.categories", true)
 

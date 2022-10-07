@@ -2,6 +2,7 @@ package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.serviceIfCreated
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.utbot.cpp.clion.plugin.client.channels.GTestLogChannelImpl
@@ -26,6 +27,7 @@ class ManagedClient(val project: Project) : Disposable {
     private val clientId = generateClientID()
     private val loggingChannels = listOf<LogChannel>(GTestLogChannelImpl(project), ServerLogChannelImpl(project))
     val isPluginEnabled: Boolean get() = project.settings.storedSettings.isPluginEnabled
+
     // if plugin is disabled then Client is null
     private var client: Client? =
         if (isPluginEnabled) createNewClient() else null
@@ -107,6 +109,8 @@ class ManagedClient(val project: Project) : Disposable {
     }
 
     companion object {
+        fun isConnectedToServer(project: Project) =
+            project.serviceIfCreated<ManagedClient>()?.isServerAvailable() ?: false
         const val RANDOM_SEQUENCE_MAX_VALUE = 10
         const val RANDOM_SEQUENCE_LENGTH = 5
     }
