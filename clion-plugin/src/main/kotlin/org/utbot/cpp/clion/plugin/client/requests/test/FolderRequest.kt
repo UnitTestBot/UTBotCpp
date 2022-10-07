@@ -4,13 +4,13 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import org.utbot.cpp.clion.plugin.utils.fileNameOrNull
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class FolderRequest(
-    folderRequestParams: Params<Testgen.FolderRequest>,
+    folderRequestParams: GrpcRequestBuilder<Testgen.FolderRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.FolderRequest>(folderRequestParams, project, UTBot.message("requests.folder.description.progress")) {
     override val id: String = "Generate for Folder"

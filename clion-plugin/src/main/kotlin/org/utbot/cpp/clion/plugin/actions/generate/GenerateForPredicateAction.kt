@@ -12,7 +12,7 @@ import javax.swing.event.DocumentEvent
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
 import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
@@ -48,7 +48,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         // when we gathered all needed information for predicate request, assemble it and execute it.
         fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
             PredicateRequest(
-                ParamsBuilder(e.activeProject()).buildPredicateRequestParams(
+                GrpcRequestBuilderFactory(e.activeProject()).createPredicateRequestBuilder(
                     comparisonOperator,
                     validationType,
                     valueToCompare,
@@ -111,7 +111,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         }
         //ask server for return type
         FunctionReturnTypeRequest(
-            ParamsBuilder(e.activeProject()).buildFunctionRequestParams(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
+            GrpcRequestBuilderFactory(e.activeProject()).createFunctionRequestBuilder(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
             e.activeProject(),
         ) { functionReturnType ->
             val validationType = functionReturnType.validationType

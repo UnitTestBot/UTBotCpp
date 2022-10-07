@@ -4,12 +4,12 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class ClassRequest(
-    params: Params<Testgen.ClassRequest>,
+    params: GrpcRequestBuilder<Testgen.ClassRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.ClassRequest>(params, project, UTBot.message("requests.class.description.progress")) {
     override val id: String = "Generate for Class"

@@ -4,12 +4,12 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class PredicateRequest(
-    params: Params<Testgen.PredicateRequest>,
+    params: GrpcRequestBuilder<Testgen.PredicateRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.PredicateRequest>(params, project, UTBot.message("requests.predicate.description.progress")) {
     override val id: String = "Generate for Predicate"

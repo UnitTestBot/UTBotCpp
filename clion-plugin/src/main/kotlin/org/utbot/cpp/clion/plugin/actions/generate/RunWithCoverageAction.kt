@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import org.utbot.cpp.clion.plugin.client.requests.RunWithCoverageRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.utils.activeProject
 
 
@@ -16,7 +16,7 @@ class RunWithCoverageAction(val element: PsiElement) : BaseGenerateTestsAction()
         val project = e.activeProject()
 
         RunWithCoverageRequest(
-            ParamsBuilder(project).buildCoverageAndResultsRequestParams(element),
+            GrpcRequestBuilderFactory(project).createCovAndResulstsRequestBuilder(element),
             project,
         ).execute()
     }

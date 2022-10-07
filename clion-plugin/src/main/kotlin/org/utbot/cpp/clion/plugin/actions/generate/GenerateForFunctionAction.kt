@@ -3,7 +3,7 @@ package org.utbot.cpp.clion.plugin.actions.generate
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
 import org.utbot.cpp.clion.plugin.utils.getLineNumberUnsafe
@@ -11,7 +11,7 @@ import org.utbot.cpp.clion.plugin.utils.getLineNumberUnsafe
 class GenerateForFunctionAction : BaseGenerateTestsAction() {
     override fun actionPerformed(e: AnActionEvent) {
         FunctionRequest(
-            ParamsBuilder(e.activeProject()).buildFunctionRequestParams(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
+            GrpcRequestBuilderFactory(e.activeProject()).createFunctionRequestBuilder(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
             e.activeProject()
         ).execute()
     }

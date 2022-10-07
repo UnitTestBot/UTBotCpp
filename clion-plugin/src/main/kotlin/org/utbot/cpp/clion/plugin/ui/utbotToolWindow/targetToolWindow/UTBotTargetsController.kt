@@ -7,7 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.ui.CollectionListModel
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.requests.ProjectTargetsRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings
@@ -46,7 +46,7 @@ class UTBotTargetsController(val project: Project) {
             targetsToolWindow.setBusy(true)
         }
         ProjectTargetsRequest(
-            ParamsBuilder(project).buildProjectTargetsParams(),
+            GrpcRequestBuilderFactory(project).createProjectTargetsRequestBuilder(),
             project,
             processTargets = { targetsResponse: Testgen.ProjectTargetsResponse ->
                 invokeOnEdt {

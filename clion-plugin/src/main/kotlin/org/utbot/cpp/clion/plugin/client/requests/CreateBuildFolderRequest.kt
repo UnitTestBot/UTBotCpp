@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.handlers.CreateBuildDirHandler
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class CreateBuildDirRequest(
-    params: Params<Testgen.ProjectConfigRequest>,
+    params: GrpcRequestBuilder<Testgen.ProjectConfigRequest>,
     project: Project,
     val client: ManagedClient
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {

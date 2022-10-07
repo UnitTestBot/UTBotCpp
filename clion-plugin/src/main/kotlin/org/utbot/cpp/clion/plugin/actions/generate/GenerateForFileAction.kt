@@ -3,15 +3,14 @@ package org.utbot.cpp.clion.plugin.actions.generate
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import org.utbot.cpp.clion.plugin.client.requests.test.FileRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
 import org.utbot.cpp.clion.plugin.utils.activeProject
-import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
+import org.utbot.cpp.clion.plugin.utils.getBuilderForFileRequest
 import org.utbot.cpp.clion.plugin.utils.isCPPorCFileName
 
 class GenerateForFileAction : BaseGenerateTestsAction() {
     override fun actionPerformed(e: AnActionEvent) =
         FileRequest(
-            ParamsBuilder(e.activeProject()).buildFileRequestParams(e.getFilePathUnsafe()),
+            e.getBuilderForFileRequest(),
             e.activeProject(),
         ).execute()
 

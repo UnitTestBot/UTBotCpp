@@ -5,12 +5,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.handlers.CheckProjectConfigurationHandler
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class CheckProjectConfigurationRequest(
-    params: Params<Testgen.ProjectConfigRequest>,
+    params: GrpcRequestBuilder<Testgen.ProjectConfigRequest>,
     project: Project,
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {
     override val id: String = "Configure Project"

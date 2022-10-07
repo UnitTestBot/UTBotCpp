@@ -1,10 +1,7 @@
-package org.utbot.cpp.clion.plugin.tests
+package org.utbot.cpp.clion.plugin.tests.integrationTests
 
 import org.junit.jupiter.api.Test
 import org.tinylog.kotlin.Logger
-import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
-import org.utbot.cpp.clion.plugin.Clang
-import org.utbot.cpp.clion.plugin.CppCompiler
 import org.utbot.cpp.clion.plugin.assertAllFilesNotEmptyRecursively
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist

@@ -6,21 +6,21 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.handlers.GenerateJsonHandler
-import org.utbot.cpp.clion.plugin.grpc.Params
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt
 
 class GenerateJsonFilesRequest(
-    params: Params<Testgen.ProjectConfigRequest>,
+    params: GrpcRequestBuilder<Testgen.ProjectConfigRequest>,
     project: Project
 ) : BaseRequest<Testgen.ProjectConfigRequest, Flow<Testgen.ProjectConfigResponse>>(params, project) {
     override val id: String = "Generate JSON Files"
     override val logMessage: String = "Sending request to check project configuration."
 
     constructor(project: Project) : this(
-        ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.GENERATE_JSON_FILES),
+        GrpcRequestBuilderFactory(project).createProjectConfigRequestBuilder(Testgen.ConfigMode.GENERATE_JSON_FILES),
         project
     )
 

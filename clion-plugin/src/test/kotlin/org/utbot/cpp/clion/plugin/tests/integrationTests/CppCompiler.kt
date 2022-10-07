@@ -1,6 +1,7 @@
-package org.utbot.cpp.clion.plugin
+package org.utbot.cpp.clion.plugin.tests.integrationTests
 
 import org.tinylog.kotlin.Logger
+import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import java.nio.file.Path
 
 abstract class CppCompiler {

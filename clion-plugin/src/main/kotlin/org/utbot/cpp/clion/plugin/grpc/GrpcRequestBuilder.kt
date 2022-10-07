@@ -1,7 +1,10 @@
 package org.utbot.cpp.clion.plugin.grpc
 
+import com.intellij.openapi.project.Project
 import org.apache.commons.io.FilenameUtils
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.settings.settings
+import org.utbot.cpp.clion.plugin.utils.path
 import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 
@@ -12,6 +15,8 @@ class IllegalPathException(val path: String, val info: String) :
 
 
 data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: String, val shouldConvert: Boolean = true) {
+    constructor(project: Project): this(project.path, project.settings.storedSettings.remotePath, project.settings.isRemoteScenario)
+
     fun convertToRemote(path: String, errorText: String): String {
         if (!shouldConvert)
             return path
@@ -32,9 +37,9 @@ data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: St
 
 /**
  * Wrapper on grpc generated class [G], that can
- * build request for server, converting paths to remote filesystem
+ * build request of type [G] for server, converting paths to remote filesystem
  */
-interface Params<G> {
+fun interface GrpcRequestBuilder<G> {
     /**
      * Builds grpc message [G] with paths converted to remote version.
      * May throw exceptions

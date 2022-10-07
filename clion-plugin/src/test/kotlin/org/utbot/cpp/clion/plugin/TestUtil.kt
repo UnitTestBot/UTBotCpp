@@ -1,5 +1,13 @@
 package org.utbot.cpp.clion.plugin
 
+import com.intellij.openapi.actionSystem.ActionPlaces
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.ex.ActionManagerEx
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
 import com.intellij.util.io.exists
 import com.intellij.util.io.readText
 import kotlin.io.path.extension
@@ -30,7 +38,8 @@ fun Path.assertTestFilesExist(sourceFileNames: List<String>) {
         val name = testFile.nameWithoutExtension
         if (!name.endsWith("_stub") &&
             !name.endsWith("_wrapper") &&
-            testFile.extension != "mk") {
+            testFile.extension != "mk"
+        ) {
             val sourceFileName = testFile.name.removeTestSuffixes()
             if (sourceFileName !in visitedFile) {
                 Logger.error("Unable to find a corresponding source file for test: ${testFile.name}")
@@ -58,4 +67,33 @@ fun String.removeTestSuffixes(): String {
 
 fun Path.assertFileOrDirExists(message: String = "") {
     assert(this.exists()) { "$this does not exist!\n${message}" }
+}
+
+fun createActionEventFrom(editor: Editor): AnActionEvent {
+    val dataContext = (editor as EditorEx).dataContext
+    val actionManager = ActionManagerEx.getInstance()
+    return AnActionEvent(null, dataContext, ActionPlaces.UNKNOWN, Presentation(), actionManager, 0);
+}
+
+/**
+ * moves caret to beginning of the line with [lineNumber]
+ *
+ * @param lineNumber - 1-based line number
+ */
+fun Editor.moveCursorToLine(lineNumber: Int) {
+    this.caretModel.moveToOffset(this.document.getLineStartOffset(lineNumber - 1))
+}
+
+fun createFixture(projectPath: Path): CodeInsightTestFixture {
+    Logger.info("Creating fixture")
+    val fixture = IdeaTestFixtureFactory.getFixtureFactory().let {
+        it.createCodeInsightFixture(
+            it.createFixtureBuilder(projectPath.name, projectPath, false).fixture,
+            TestFixtureProxy(projectPath)
+        )
+    }
+    fixture.setUp()
+    fixture.testDataPath = projectPath.toString()
+    Logger.info("Finished creating fixture")
+    return fixture
 }
