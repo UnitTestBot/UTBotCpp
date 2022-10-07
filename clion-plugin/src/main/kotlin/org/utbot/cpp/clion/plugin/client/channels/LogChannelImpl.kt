@@ -18,12 +18,15 @@ abstract class LogChannelImpl(val project: Project) : LogChannel {
     abstract val name: String
     abstract val logLevel: String
 
-    val console: UTBotConsole by lazy { createConsole() }
+    // because this function is called asynchronously (we call it from invokeOnEdt which is async)
+    // it may be called when project is disposed or other services are disposed -- this is very unlikely in production
+    // but possible in tests, so we do nothing if this happens
+    private val console: UTBotConsole? by lazy { if (project.isDisposed) null else createConsole() }
 
     abstract suspend fun open(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub): Flow<Testgen.LogEntry>
     abstract suspend fun close(stub: TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub)
 
-    abstract fun createConsole(): UTBotConsole
+    abstract fun createConsole(): UTBotConsole?
 
     override fun toString(): String = name
 
@@ -37,6 +40,6 @@ abstract class LogChannelImpl(val project: Project) : LogChannel {
 
         open(stub)
             .catch { cause -> logger.error { "Exception in log channel: $name \n$cause" } }
-            .collect { invokeOnEdt { console.info(it.message) } }
+            .collect { invokeOnEdt { console?.info(it.message) } }
     }
 }

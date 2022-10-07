@@ -74,12 +74,12 @@ abstract class BaseGenerationTestCase {
     }
 
     protected fun waitForConnection(timeout: Long = 10000L) {
+        Logger.info { "Waiting for connection to server!" }
         runBlocking {
             try {
                 withTimeout(timeout) {
                     while (!client.isServerAvailable()) {
                         delay(1000L)
-                        Logger.info { "Waiting for connection to server!" }
                     }
                 }
             } catch (_: TimeoutCancellationException) {

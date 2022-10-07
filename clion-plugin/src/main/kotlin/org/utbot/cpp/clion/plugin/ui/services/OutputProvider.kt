@@ -65,4 +65,8 @@ class OutputProvider(val project: Project) : Disposable {
             }
         }
     }
+
+    companion object {
+
+    }
 }

@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ex.ActionUtil
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.extension.ExtendWith
 import org.utbot.cpp.clion.plugin.SwingEdtInterceptor
 import org.utbot.cpp.clion.plugin.actions.generate.GenerateForLineAction
@@ -39,6 +40,11 @@ open class BaseBuildingTest {
             it.clear()
             it.add(SystemWriter())
         }
+    }
+
+    @AfterEach
+    fun tearDown() {
+        fixture.tearDown()
     }
 
     // HELPER METHODS:
