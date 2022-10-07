@@ -8,12 +8,12 @@ import java.nio.file.InvalidPathException
 import java.nio.file.Paths
 
 
-internal data class ProjectContextParams(
+internal data class ProjectContextBuilder(
     val projectName: String,
     val projectPath: String,
     val testDirRelativePath: String,
     val buildDirRelativePath: String
-) : Params<Testgen.ProjectContext> {
+) : GrpcRequestBuilder<Testgen.ProjectContext> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ProjectContext {
         val projectNioPath = Paths.get(projectPath) // project path is not set by user, assuming it is valid
         val relativeTestsDirNioPath = try {
@@ -36,35 +36,36 @@ internal data class ProjectContextParams(
     }
 }
 
-internal data class SettingsContextParams(
+internal data class SettingsContextBuilder(
     val generateForStaticFunctions: Boolean,
     val verbose: Boolean,
     val timeoutPerFunction: Int,
     val timeoutPerTest: Int,
     val useDeterministicSearcher: Boolean,
     val useStubs: Boolean
-) : Params<Testgen.SettingsContext> {
+) : GrpcRequestBuilder<Testgen.SettingsContext> {
     override fun build(remoteMapping: RemoteMapping): Testgen.SettingsContext {
         return Testgen.SettingsContext.newBuilder()
             .setVerbose(verbose)
             .setGenerateForStaticFunctions(generateForStaticFunctions)
             .setTimeoutPerFunction(timeoutPerFunction)
             .setTimeoutPerTest(timeoutPerTest)
+            .setUseStubs(useStubs)
             .build()
     }
 }
 
-internal data class ProjectRequestParams(
-    val projectContextParams: ProjectContextParams,
-    val settingsContextParams: SettingsContextParams,
+internal data class ProjectRequestBuilder(
+    val projectContextBuilder: ProjectContextBuilder,
+    val settingsContextBuilder: SettingsContextBuilder,
     val sourcePaths: List<String>,
     val synchronizeCode: Boolean,
     val targetPath: String
-) : Params<Testgen.ProjectRequest> {
+) : GrpcRequestBuilder<Testgen.ProjectRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ProjectRequest {
         return Testgen.ProjectRequest.newBuilder()
-            .setProjectContext(projectContextParams.build(remoteMapping))
-            .setSettingsContext(settingsContextParams.build(remoteMapping))
+            .setProjectContext(projectContextBuilder.build(remoteMapping))
+            .setSettingsContext(settingsContextBuilder.build(remoteMapping))
             .addAllSourcePaths(sourcePaths.map { sourcePath ->
                 remoteMapping.convertToRemote(
                     sourcePath,
@@ -78,44 +79,46 @@ internal data class ProjectRequestParams(
                         targetPath,
                         UTBot.message("settings.project.target.wrong.conversion")
                     )
+                } else {
+                    builder.targetPath = targetPath
                 }
             }
             .build()
     }
 }
 
-internal data class FolderRequestParams(
-    val projectRequestParams: ProjectRequestParams,
+internal data class FolderRequestBuilder(
+    val projectRequestBuilder: ProjectRequestBuilder,
     val folderPath: String
-) : Params<Testgen.FolderRequest> {
+) : GrpcRequestBuilder<Testgen.FolderRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.FolderRequest {
         return Testgen.FolderRequest.newBuilder()
             .setFolderPath(remoteMapping.convertToRemote(folderPath, UTBot.message("folderPath.wrong.conversion")))
-            .setProjectRequest(projectRequestParams.build(remoteMapping))
+            .setProjectRequest(projectRequestBuilder.build(remoteMapping))
             .build()
     }
 }
 
-internal data class FileRequestParams(
-    val projectRequestParams: ProjectRequestParams,
+internal data class FileRequestBuilder(
+    val projectRequestBuilder: ProjectRequestBuilder,
     val filePath: String
-) : Params<Testgen.FileRequest> {
+) : GrpcRequestBuilder<Testgen.FileRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.FileRequest {
         return Testgen.FileRequest.newBuilder()
-            .setProjectRequest(projectRequestParams.build(remoteMapping))
+            .setProjectRequest(projectRequestBuilder.build(remoteMapping))
             .setFilePath(remoteMapping.convertToRemote(filePath, UTBot.message("filePath.wrong.conversion")))
             .build()
     }
 }
 
-internal data class ProjectConfigRequestParams(
-    val projectContextParams: ProjectContextParams,
+internal data class ProjectConfigRequestBuilder(
+    val projectContextBuilder: ProjectContextBuilder,
     val configMode: Testgen.ConfigMode,
     val cmakeOptions: List<String>
-) : Params<Testgen.ProjectConfigRequest> {
+) : GrpcRequestBuilder<Testgen.ProjectConfigRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ProjectConfigRequest {
         return Testgen.ProjectConfigRequest.newBuilder()
-            .setProjectContext(projectContextParams.build(remoteMapping))
+            .setProjectContext(projectContextBuilder.build(remoteMapping))
             .setConfigMode(configMode)
             .addAllCmakeOptions(cmakeOptions)
             .build()
@@ -123,20 +126,20 @@ internal data class ProjectConfigRequestParams(
 }
 
 internal data class ProjectTargetsParams(
-    val projectContextParams: ProjectContextParams
-) : Params<Testgen.ProjectTargetsRequest> {
+    val projectContextBuilder: ProjectContextBuilder
+) : GrpcRequestBuilder<Testgen.ProjectTargetsRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ProjectTargetsRequest {
         return Testgen.ProjectTargetsRequest.newBuilder()
-            .setProjectContext(projectContextParams.build(remoteMapping))
+            .setProjectContext(projectContextBuilder.build(remoteMapping))
             .build()
     }
 }
 
-internal data class TestFilterParams(
+internal data class TestFilterBuilder(
     val testFilePath: String,
     val testName: String,
     val testSuite: String
-) : Params<Testgen.TestFilter> {
+) : GrpcRequestBuilder<Testgen.TestFilter> {
     override fun build(remoteMapping: RemoteMapping): Testgen.TestFilter {
         return Testgen.TestFilter.newBuilder()
             .setTestFilePath(
@@ -151,18 +154,18 @@ internal data class TestFilterParams(
     }
 }
 
-internal data class CoverageAndResultsRequestParams(
-    val projectContextParams: ProjectContextParams,
-    val settingsContextParams: SettingsContextParams,
-    val testFilterParams: TestFilterParams? = null,
+internal data class CoverageAndResultsRequestBuilder(
+    val projectContextBuilder: ProjectContextBuilder,
+    val settingsContextBuilder: SettingsContextBuilder,
+    val testFilterBuilder: TestFilterBuilder? = null,
     val coverage: Boolean = true
-) : Params<Testgen.CoverageAndResultsRequest> {
+) : GrpcRequestBuilder<Testgen.CoverageAndResultsRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.CoverageAndResultsRequest {
         val builder = Testgen.CoverageAndResultsRequest.newBuilder()
             .setCoverage(coverage)
-            .setSettingsContext(settingsContextParams.build(remoteMapping))
-            .setProjectContext(projectContextParams.build(remoteMapping))
-        testFilterParams?.let {
+            .setSettingsContext(settingsContextBuilder.build(remoteMapping))
+            .setProjectContext(projectContextBuilder.build(remoteMapping))
+        testFilterBuilder?.let {
             builder.setTestFilter(it.build(remoteMapping))
         }
 
@@ -173,7 +176,7 @@ internal data class CoverageAndResultsRequestParams(
 internal data class SourceInfoParams(
     val filePath: String,
     val line: Int
-) : Params<Util.SourceInfo> {
+) : GrpcRequestBuilder<Util.SourceInfo> {
     override fun build(remoteMapping: RemoteMapping): Util.SourceInfo {
         return Util.SourceInfo.newBuilder()
             .setLine(line)
@@ -182,10 +185,10 @@ internal data class SourceInfoParams(
     }
 }
 
-data class LineRequestParams(
-    val projectRequestParams: Params<Testgen.ProjectRequest>,
-    val sourceInfoParams: Params<Util.SourceInfo>
-) : Params<Testgen.LineRequest> {
+data class LineRequestBuilder(
+    val projectRequestParams: GrpcRequestBuilder<Testgen.ProjectRequest>,
+    val sourceInfoParams: GrpcRequestBuilder<Util.SourceInfo>
+) : GrpcRequestBuilder<Testgen.LineRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.LineRequest {
         return Testgen.LineRequest.newBuilder()
             .setProjectRequest(projectRequestParams.build(remoteMapping))
@@ -194,9 +197,9 @@ data class LineRequestParams(
     }
 }
 
-internal data class FunctionRequestParams(
-    val fileRequestParams: Params<Testgen.LineRequest>
-) : Params<Testgen.FunctionRequest> {
+internal data class FunctionRequestBuilder(
+    val fileRequestParams: GrpcRequestBuilder<Testgen.LineRequest>
+) : GrpcRequestBuilder<Testgen.FunctionRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.FunctionRequest {
         return Testgen.FunctionRequest.newBuilder()
             .setLineRequest(fileRequestParams.build(remoteMapping))
@@ -205,20 +208,20 @@ internal data class FunctionRequestParams(
 }
 
 internal data class ClassRequestParams(
-    val lineRequestParams: LineRequestParams
-) : Params<Testgen.ClassRequest> {
+    val lineRequestBuilder: LineRequestBuilder
+) : GrpcRequestBuilder<Testgen.ClassRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ClassRequest {
         return Testgen.ClassRequest.newBuilder()
-            .setLineRequest(lineRequestParams.build(remoteMapping))
+            .setLineRequest(lineRequestBuilder.build(remoteMapping))
             .build()
     }
 }
 
-internal class AssertionRequestParams(private val lineRequestParams: LineRequestParams) :
-    Params<Testgen.AssertionRequest> {
+internal class AssertionRequestBuilder(private val lineRequestBuilder: LineRequestBuilder) :
+    GrpcRequestBuilder<Testgen.AssertionRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.AssertionRequest {
         return Testgen.AssertionRequest.newBuilder()
-            .setLineRequest(lineRequestParams.build(remoteMapping))
+            .setLineRequest(lineRequestBuilder.build(remoteMapping))
             .build()
     }
 }
@@ -227,7 +230,7 @@ internal data class PredicateInfoParams(
     val validationType: Util.ValidationType,
     val predicate: String,
     val returnValue: String
-) : Params<Util.PredicateInfo> {
+) : GrpcRequestBuilder<Util.PredicateInfo> {
     override fun build(remoteMapping: RemoteMapping): Util.PredicateInfo {
         return Util.PredicateInfo.newBuilder()
             .setPredicate(predicate)
@@ -237,27 +240,27 @@ internal data class PredicateInfoParams(
     }
 }
 
-internal class PredicateRequestParams(
-    private val lineRequestParams: LineRequestParams,
+internal class PredicateRequestBuilder(
+    private val lineRequestBuilder: LineRequestBuilder,
     private val predicateInfoParams: PredicateInfoParams
-) : Params<Testgen.PredicateRequest> {
+) : GrpcRequestBuilder<Testgen.PredicateRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.PredicateRequest {
         return Testgen.PredicateRequest.newBuilder()
-            .setLineRequest(lineRequestParams.build(remoteMapping))
+            .setLineRequest(lineRequestBuilder.build(remoteMapping))
             .setPredicateInfo(predicateInfoParams.build(remoteMapping))
             .build()
     }
 }
 
-internal class SnippetRequestParams(
-    private val projectContextParams: ProjectContextParams,
-    private val settingsContextParams: SettingsContextParams,
+internal class SnippetRequestBuilder(
+    private val projectContextBuilder: ProjectContextBuilder,
+    private val settingsContextBuilder: SettingsContextBuilder,
     val filePath: String
-) : Params<Testgen.SnippetRequest> {
+) : GrpcRequestBuilder<Testgen.SnippetRequest> {
     override fun build(remoteMapping: RemoteMapping): Testgen.SnippetRequest {
         return Testgen.SnippetRequest.newBuilder()
-            .setProjectContext(projectContextParams.build(remoteMapping))
-            .setSettingsContext(settingsContextParams.build(remoteMapping))
+            .setProjectContext(projectContextBuilder.build(remoteMapping))
+            .setSettingsContext(settingsContextBuilder.build(remoteMapping))
             .setFilePath(remoteMapping.convertToRemote(filePath, UTBot.message("filePath.wrong.conversion")))
             .build()
     }

@@ -3,13 +3,13 @@ package org.utbot.cpp.clion.plugin.client.requests.test
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import org.utbot.cpp.clion.plugin.client.requests.BaseRequest
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.Testgen.FunctionTypeResponse
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class FunctionReturnTypeRequest(
-    params: Params<Testgen.FunctionRequest>,
+    params: GrpcRequestBuilder<Testgen.FunctionRequest>,
     project: Project,
     val processReturnType: suspend (FunctionTypeResponse)->(Unit)
 ) : BaseRequest<Testgen.FunctionRequest, FunctionTypeResponse>(params, project) {

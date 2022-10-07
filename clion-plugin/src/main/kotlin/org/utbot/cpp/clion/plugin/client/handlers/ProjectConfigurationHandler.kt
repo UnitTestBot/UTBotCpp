@@ -9,7 +9,7 @@ import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir
 import org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration
 import org.utbot.cpp.clion.plugin.client.ManagedClient
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.grpc.ParamsBuilder
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.notifyError
@@ -91,7 +91,7 @@ class CreateBuildDirHandler(
                 )
 
                 CheckProjectConfigurationRequest(
-                    ParamsBuilder(project).buildProjectConfigRequestParams(Testgen.ConfigMode.CHECK),
+                    GrpcRequestBuilderFactory(project).createProjectConfigRequestBuilder(Testgen.ConfigMode.CHECK),
                     project
                 ).also {
                     client.executeRequest(it)

@@ -4,13 +4,13 @@ import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import org.utbot.cpp.clion.plugin.utils.fileNameOrNull
 import testsgen.Testgen
 import testsgen.TestsGenServiceGrpcKt.TestsGenServiceCoroutineStub
 
 class FileRequest(
-    params: Params<Testgen.FileRequest>,
+    params: GrpcRequestBuilder<Testgen.FileRequest>,
     project: Project,
 ) : BaseTestsRequest<Testgen.FileRequest>(params, project, UTBot.message("requests.file.description.progress")) {
     override val id: String = "Generate for File"

@@ -5,13 +5,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.handlers.CoverageAndResultsHandler
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import testsgen.Testgen
 import testsgen.Testgen.CoverageAndResultsRequest
 import testsgen.TestsGenServiceGrpcKt
 
 class RunAllTestsWithCoverageRequest(
-    params: Params<CoverageAndResultsRequest>,
+    params: GrpcRequestBuilder<CoverageAndResultsRequest>,
     project: Project,
 ) : BaseRequest<CoverageAndResultsRequest, Flow<Testgen.CoverageAndResultsResponse>>(params, project) {
     override val id: String = "Run All Tests with Coverage"

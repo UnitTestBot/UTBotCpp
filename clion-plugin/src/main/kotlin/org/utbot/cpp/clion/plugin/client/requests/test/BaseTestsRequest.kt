@@ -7,7 +7,7 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.FocusAction
 import org.utbot.cpp.clion.plugin.client.handlers.TestsStreamHandler
 import org.utbot.cpp.clion.plugin.client.requests.BaseRequest
-import org.utbot.cpp.clion.plugin.grpc.Params
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilder
 import org.utbot.cpp.clion.plugin.utils.getLongestCommonPathFromRoot
 import org.utbot.cpp.clion.plugin.utils.isHeaderFile
 import org.utbot.cpp.clion.plugin.utils.isSarifReport
@@ -20,7 +20,7 @@ import java.nio.file.Path
  * Base class for requests that handle a stream of [Testgen.TestsResponse].
  * @param progressName - a name of a progress that user will see, when this request will be executing.
  */
-abstract class BaseTestsRequest<R>(params: Params<R>, project: Project, private val progressName: String) :
+abstract class BaseTestsRequest<R>(params: GrpcRequestBuilder<R>, project: Project, private val progressName: String) :
     BaseRequest<R, Flow<Testgen.TestsResponse>>(params, project) {
     val logger = project.logger
     override suspend fun Flow<Testgen.TestsResponse>.handle(cancellationJob: Job?) {

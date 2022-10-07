@@ -76,6 +76,8 @@ dependencies {
     // testing with JUnit 5
     testImplementation(platform("org.junit:junit-bom:5.8.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
+    testImplementation("io.mockk:mockk:1.13.2")
 }
 
 sourceSets {
