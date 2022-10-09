@@ -10,8 +10,8 @@ import java.nio.file.Paths
 
 abstract class ClientException(message: String) : Exception(message)
 
-class IllegalPathException(val path: String, val info: String) :
-    ClientException("Bad path: $path. Info: $info")
+class IllegalPathException(val path: String, val pathName: String, message: String? = null) :
+    ClientException(message ?: "Illegal: $pathName: $path")
 
 
 data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: String, val shouldConvert: Boolean = true) {

@@ -184,6 +184,8 @@ private fun removeSuffix(path: Path, suffix: String): Path {
     )
 }
 
+fun String.stripLeadingSlashes() = this.replace("""^[\\/]+""".toRegex(), "")
+
 val VirtualFile.localPath: Path
     get() = this.fileSystem.getNioPath(this) ?: error("Could not get filesystem path from $this")
 

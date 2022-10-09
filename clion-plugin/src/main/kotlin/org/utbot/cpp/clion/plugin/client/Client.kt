@@ -18,6 +18,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.UTBot
+import org.utbot.cpp.clion.plugin.actions.ShowSettingsAction
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
 import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
@@ -103,24 +104,9 @@ class Client(
                         UTBot.message("notify.cancelled", id, e.message ?: ""),
                         project
                     )
-                    Status.FAILED_PRECONDITION.code -> notifyError(
+                    Status.FAILED_PRECONDITION.code, Status.INTERNAL.code, Status.UNIMPLEMENTED.code, Status.INVALID_ARGUMENT.code -> notifyError(
                         UTBot.message("notify.title.failed.precondition"),
-                        UTBot.message("notify.failed.precondition", e.message ?: "", id),
-                        project
-                    )
-                    Status.INTERNAL.code -> notifyError(
-                        UTBot.message("notify.title.internal.error"),
-                        UTBot.message("notify.internal.error", request, e.message ?: ""),
-                        project
-                    )
-                    Status.UNIMPLEMENTED.code -> notifyError(
-                        UTBot.message("notify.title.server.error"),
-                        UTBot.message("notify.unimplemented", id, e.message ?: ""),
-                        project
-                    )
-                    Status.INVALID_ARGUMENT.code -> notifyError(
-                        UTBot.message("notify.title.invalid.argument"),
-                        UTBot.message("notify.invalid.argument", e.message ?: "", id),
+                        UTBot.message("notify.request.failed", e.message ?: "", id),
                         project
                     )
                     else -> notifyError(
@@ -133,7 +119,8 @@ class Client(
                 notifyError(
                     UTBot.message("notify.bad.settings.title"),
                     UTBot.message("notify.bad.path", e.message ?: ""),
-                    project
+                    project,
+                    ShowSettingsAction()
                 )
             }
         }

@@ -10,6 +10,7 @@ import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
 import org.utbot.cpp.clion.plugin.utils.convertFromRemotePathIfNeeded
 import org.utbot.cpp.clion.plugin.utils.createFileWithText
+import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.isSarifReport
 import org.utbot.cpp.clion.plugin.utils.logger
 import org.utbot.cpp.clion.plugin.utils.markDirtyAndRefresh
@@ -60,6 +61,9 @@ class TestsStreamHandler(
     }
 
     override fun onCompletion(exception: Throwable?) {
+        invokeOnEdt {
+            indicator.stop()
+        }
         if (exception != null ) {
             if (exception !is CancellationException)
                 onError(exception)
