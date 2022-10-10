@@ -105,7 +105,7 @@ class Client(
                         project
                     )
                     Status.FAILED_PRECONDITION.code, Status.INTERNAL.code, Status.UNIMPLEMENTED.code, Status.INVALID_ARGUMENT.code -> notifyError(
-                        UTBot.message("notify.title.failed.precondition"),
+                        UTBot.message("notify.title.error"),
                         UTBot.message("notify.request.failed", e.message ?: "", id),
                         project
                     )
