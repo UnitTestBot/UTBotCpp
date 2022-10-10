@@ -213,14 +213,18 @@ testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command,
         testRes.set_status(testsgen::TEST_DEATH);
         return testRes;
     }
-    nlohmann::json gtestResultsJson = JsonUtils::getJsonFromFile(Paths::getGTestResultsJsonPath(projectContext));
-    if (!google::protobuf::util::TimeUtil::FromString(gtestResultsJson["time"], testRes.mutable_executiontime())) {
-        LOG_S(WARNING) << "Cannot parse duration of test execution";
-    }
-    if (gtestResultsJson["failures"] != 0) {
+    try {
+        nlohmann::json gtestResultsJson = JsonUtils::getJsonFromFile(Paths::getGTestResultsJsonPath(projectContext));
+        if (!google::protobuf::util::TimeUtil::FromString(gtestResultsJson["time"], testRes.mutable_executiontime())) {
+            LOG_S(WARNING) << "Cannot parse duration of test execution";
+        }
+        if (gtestResultsJson["failures"] != 0) {
+            testRes.set_status(testsgen::TEST_FAILED);
+        } else {
+            testRes.set_status(testsgen::TEST_PASSED);
+        }
+    } catch (const std::exception &e) {
         testRes.set_status(testsgen::TEST_FAILED);
-    } else {
-        testRes.set_status(testsgen::TEST_PASSED);
     }
     return testRes;
 }

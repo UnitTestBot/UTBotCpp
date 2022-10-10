@@ -40,15 +40,18 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
         throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
     }
 
-    auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
-    auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
-
-    initObjects(compileCommandsJson);
-    initInfo(linkCommandsJson);
-    filterInstalledFiles();
-    addLocalSharedLibraries();
-    fillTargetInfoParents();
-    createClangCompileCommandsJson();
+    try {
+        auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
+        auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
+        initObjects(compileCommandsJson);
+        initInfo(linkCommandsJson);
+        filterInstalledFiles();
+        addLocalSharedLibraries();
+        fillTargetInfoParents();
+        createClangCompileCommandsJson();
+    } catch (const std::exception &e) {
+        return;
+    }
 }
 
 ProjectBuildDatabase::ProjectBuildDatabase(utbot::ProjectContext projectContext) : ProjectBuildDatabase(
