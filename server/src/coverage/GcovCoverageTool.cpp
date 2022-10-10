@@ -124,15 +124,19 @@ CoverageMap GcovCoverageTool::getCoverageInfo() const {
     ExecUtils::doWorkWithProgress(
         FileSystemUtils::DirectoryIterator(covJsonDirPath), progressWriter,
         "Reading coverage files", [&coverageMap](auto const &entry) {
-            auto jsonPath = entry.path();
-            auto coverageJson = JsonUtils::getJsonFromFile(jsonPath);
-            for (const nlohmann::json &jsonFile : coverageJson.at("files")) {
-                fs::path filePath(std::filesystem::path(jsonFile.at("file")));
-                if (Paths::isGtest(filePath)) {
-                    continue;
+            try {
+                auto jsonPath = entry.path();
+                auto coverageJson = JsonUtils::getJsonFromFile(jsonPath);
+                for (const nlohmann::json &jsonFile: coverageJson.at("files")) {
+                    fs::path filePath(std::filesystem::path(jsonFile.at("file")));
+                    if (Paths::isGtest(filePath)) {
+                        continue;
+                    }
+                    setLineNumbers(jsonFile, coverageMap[filePath]);
+                    setFunctionBorders(jsonFile, coverageMap[filePath]);
                 }
-                setLineNumbers(jsonFile, coverageMap[filePath]);
-                setFunctionBorders(jsonFile, coverageMap[filePath]);
+            } catch (const std::exception &e) {
+                return;
             }
         });
     return coverageMap;

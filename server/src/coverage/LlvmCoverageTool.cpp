@@ -153,43 +153,46 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
         LOG_S(ERROR) << "Can't found coverage.json at " << covJsonPath.string();
         throw CoverageGenerationException("Can't found coverage.json at " + covJsonPath.string());
     }
-    LOG_S(INFO) << "Reading coverage.json";
+    try {
+        LOG_S(INFO) << "Reading coverage.json";
+        nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
 
-    nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
-
-    // Parsing is based on LLVM coverage mapping format
-    ExecUtils::doWorkWithProgress(
-        coverageJson.at("data"), progressWriter, "Reading coverage.json",
-        [&coverageMap](const nlohmann::json &data) {
-            for (const nlohmann::json &function : data.at("functions")) {
-                std::string filename = function.at("filenames").at(0);
-                // no need to show coverage for gtest library
-                if (Paths::isGtest(filename)) {
-                    continue;
-                }
-                for (const nlohmann::json &region : function.at("regions")) {
-                    // In an LLVM coverage mapping format a region is an array with line and
-                    // character position
-                    FileCoverage::SourcePosition startPosition{ region.at(0).get<uint32_t>() - 1,
-                                                                region.at(1).get<uint32_t>() - 1 };
-                    FileCoverage::SourcePosition endPosition{ region.at(2).get<uint32_t>() - 1,
-                                                              region.at(3).get<uint32_t>() - 1 };
-                    FileCoverage::SourceRange sourceRange{ startPosition, endPosition };
-                    // The 4th element in LLVM coverage mapping format of a region
-                    if (region.at(4).get<int>() == 0) {
-                        coverageMap[filename].uncoveredRanges.push_back(sourceRange);
-                    } else if (region.at(4).get<int>() >= 1) {
-                        coverageMap[filename].coveredRanges.push_back(sourceRange);
+        // Parsing is based on LLVM coverage mapping format
+        ExecUtils::doWorkWithProgress(
+                coverageJson.at("data"), progressWriter, "Reading coverage.json",
+                [&coverageMap](const nlohmann::json &data) {
+                    for (const nlohmann::json &function: data.at("functions")) {
+                        std::string filename = function.at("filenames").at(0);
+                        // no need to show coverage for gtest library
+                        if (Paths::isGtest(filename)) {
+                            continue;
+                        }
+                        for (const nlohmann::json &region: function.at("regions")) {
+                            // In an LLVM coverage mapping format a region is an array with line and
+                            // character position
+                            FileCoverage::SourcePosition startPosition{region.at(0).get<uint32_t>() - 1,
+                                                                       region.at(1).get<uint32_t>() - 1};
+                            FileCoverage::SourcePosition endPosition{region.at(2).get<uint32_t>() - 1,
+                                                                     region.at(3).get<uint32_t>() - 1};
+                            FileCoverage::SourceRange sourceRange{startPosition, endPosition};
+                            // The 4th element in LLVM coverage mapping format of a region
+                            if (region.at(4).get<int>() == 0) {
+                                coverageMap[filename].uncoveredRanges.push_back(sourceRange);
+                            } else if (region.at(4).get<int>() >= 1) {
+                                coverageMap[filename].coveredRanges.push_back(sourceRange);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
-    for (const auto &item : coverageMap) {
-        countLineCoverage(coverageMap, item.first);
+        for (const auto &item: coverageMap) {
+            countLineCoverage(coverageMap, item.first);
+        }
+
+        return coverageMap;
+    } catch (const std::exception &e) {
+        throw CoverageGenerationException("Can't parse coverage.json at " + covJsonPath.string());
     }
-
-    return coverageMap;
 }
 
 void LlvmCoverageTool::countLineCoverage(Coverage::CoverageMap &coverageMap,
@@ -223,9 +226,18 @@ void LlvmCoverageTool::checkLineForPartial(Coverage::FileCoverage::SourceLine li
 }
 
 nlohmann::json LlvmCoverageTool::getTotals() const {
-    fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
-    nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
-    return coverageJson.at("data").back().at("totals");
+    try {
+        fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
+        nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
+        return coverageJson.at("data").back().at("totals");
+    } catch (const std::exception &e) {
+        return {{
+                        "lines", {
+                        {"count", 0},
+                        {"covered", 0},
+                        {"percent", (double) 0.0}
+                }}};
+    }
 }
 
 

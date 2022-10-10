@@ -248,7 +248,7 @@ namespace Commands {
         bool generateForStaticFunctions = true;
         bool verbose = false;
         int32_t timeoutPerFunction = 30;
-        int32_t timeoutPerTest = 0;
+        int32_t timeoutPerTest = 30;
         bool noDeterministicSearcher = false;
         bool noStubs = false;
     };
