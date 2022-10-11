@@ -31,8 +31,7 @@ class UTBotRequestProgressIndicator(
         super.start()
     }
 
-    override fun stop() {
-        requestJob?.cancel()
+    fun stopShowingProgressInUI() {
         finish()
         super.stop()
     }

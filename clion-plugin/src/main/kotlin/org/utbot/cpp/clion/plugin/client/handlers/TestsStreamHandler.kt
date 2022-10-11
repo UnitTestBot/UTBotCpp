@@ -28,7 +28,6 @@ class TestsStreamHandler(
     progressName: String,
     cancellationJob: Job,
     private val onSuccess: (List<Path>) -> Unit = {},
-    private val onError: (Throwable) -> Unit = {}
 ) : StreamHandlerWithProgress<Testgen.TestsResponse>(project, grpcStream, progressName, cancellationJob) {
 
     private val myGeneratedTestFilesLocalFS: MutableList<Path> = mutableListOf()
@@ -62,11 +61,10 @@ class TestsStreamHandler(
 
     override fun onCompletion(exception: Throwable?) {
         invokeOnEdt {
-            indicator.stop()
+            indicator.stopShowingProgressInUI()
         }
-        if (exception != null ) {
-            if (exception !is CancellationException)
-                onError(exception)
+        if (exception != null && exception !is CancellationException) {
+            throw exception
         } else {
             onSuccess(myGeneratedTestFilesLocalFS)
         }

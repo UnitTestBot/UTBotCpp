@@ -50,7 +50,7 @@ abstract class StreamHandlerWithProgress<T>(
 
     override fun onCompletion(exception: Throwable?) {
         invokeOnEdt {
-            indicator.stop()
+            indicator.stopShowingProgressInUI()
         }
         if (exception != null) {
             throw exception

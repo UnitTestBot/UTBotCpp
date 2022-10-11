@@ -31,7 +31,6 @@ abstract class BaseTestsRequest<R>(params: GrpcRequestBuilder<R>, project: Proje
                 progressName,
                 cancellationJob,
                 ::notifySuccess,
-                ::notifyError
             ).handle()
         }
     }
@@ -52,6 +51,4 @@ abstract class BaseTestsRequest<R>(params: GrpcRequestBuilder<R>, project: Proje
                 FocusAction(it)
             })
     }
-
-    open fun notifyError(cause: Throwable) {}
 }

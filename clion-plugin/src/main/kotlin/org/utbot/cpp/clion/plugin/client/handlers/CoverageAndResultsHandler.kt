@@ -102,8 +102,6 @@ class CoverageAndResultsHandler(
     }
 
     private fun notifyCoverageReceived() {
-        val actions = mutableListOf<AnAction>()
-        sourceFilePath?.let { actions.add(FocusAction(it)) }
         notifyInfo(
             UTBot.message("notify.coverage.received.title"),
             UTBot.message("notify.coverage.received"),
