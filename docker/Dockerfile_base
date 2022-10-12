@@ -120,7 +120,7 @@ RUN cd $UTBOT_ALL && rm -rf $UTBOT_ALL/llvm-project && rm -rf $UTBOT_ALL/llvm_go
 
 # Install GRPC
 FROM base_env
-RUN git clone --single-branch -b v1.29.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
+RUN git clone --single-branch -b v1.49.0 --depth=1 https://github.com/grpc/grpc $UTBOT_ALL/grpc
 RUN cd $UTBOT_ALL/grpc && git submodule update --init
 RUN cd $UTBOT_ALL/grpc \
   && mkdir -p cmake/build \
