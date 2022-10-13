@@ -111,12 +111,13 @@ public:
      * @param lineInfo Information about requested line in case of line generation scenarios.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    void
-    parseKTestsToFinalCode(tests::Tests &tests,
-                           const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-                           const std::vector<MethodKtests> &kleeOutput,
-                           const std::shared_ptr<LineInfo> &lineInfo = nullptr,
-                           bool verbose = false);
+    void parseKTestsToFinalCode(
+        const utbot::ProjectContext &projectContext,
+        tests::Tests &tests,
+        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+        const std::vector<MethodKtests> &kleeOutput,
+        const std::shared_ptr<LineInfo> &lineInfo = nullptr,
+        bool verbose = false);
 
     [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 

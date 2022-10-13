@@ -737,6 +737,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             std::swap(testCase.stubValuesTypes, testCaseDescription.stubValuesTypes);
             std::swap(testCase.stubValues, testCaseDescription.stubValues);
             std::swap(testCase.stdinValue, testCaseDescription.stdinValue);
+            std::swap(testCase.filesValues, testCaseDescription.filesValues);
             std::swap(testCase.objects, testCaseDescription.objects);
             std::swap(testCase.lazyAddressToName, testCaseDescription.lazyAddressToName);
             std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
@@ -811,11 +812,11 @@ KTestObjectParser::parseTestCaseParameters(const UTBotKTest &testCases,
     return parseTestCaseParams(testCases, methodDescription, methodNameToReturnTypeMap, traceStream);
 }
 
-Tests::TestCaseDescription
-KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
-                                       const Tests::MethodDescription &methodDescription,
-                                       const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-                                       const std::stringstream &traceStream) {
+Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
+    const UTBotKTest &ktest,
+    const Tests::MethodDescription &methodDescription,
+    const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+    const std::stringstream &traceStream) {
     std::vector<RawKleeParam> rawKleeParams;
     for (auto const &param : ktest.objects) {
         rawKleeParams.emplace_back(param.name, param.bytes);
@@ -826,7 +827,7 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
 
     for (const auto &obj : testCaseDescription.objects) {
         if (obj.name != LAZYNAME) {
-            testCaseDescription.lazyAddressToName.insert({obj.address, obj.name});
+            testCaseDescription.lazyAddressToName.insert({ obj.address, obj.name });
         }
     }
 
@@ -844,21 +845,26 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
         }
     }
 
-    const RawKleeParam emptyKleeParam = {"", {}};
+    const RawKleeParam emptyKleeParam = { "", {} };
 
     if (methodDescription.isClassMethod()) {
         auto methodParam = methodDescription.classObj.value();
         std::shared_ptr<AbstractValueView> testParamView;
-        getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription, methodParam,
-                         testParamView);
-        testCaseDescription.classPreValues = { methodParam.name, methodParam.alignment, testParamView };
+        getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription,
+                         methodParam, testParamView);
+        testCaseDescription.classPreValues = { methodParam.name, methodParam.alignment,
+                                               testParamView };
         processClassPostValue(testCaseDescription, methodParam, rawKleeParams);
     }
 
     for (auto &methodParam : methodDescription.params) {
         std::shared_ptr<AbstractValueView> testParamView;
-        getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription, methodParam,
-                         testParamView);
+        if (!methodParam.type.isFilePointer()) {
+            getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription,
+                             methodParam, testParamView);
+        } else {
+            testParamView = std::shared_ptr<AbstractValueView>(new JustValueView("FILE_PTR"));
+        }
         testCaseDescription.funcParamValues.emplace_back(methodParam.name, methodParam.alignment,
                                                          testParamView);
 
@@ -873,6 +879,7 @@ KTestObjectParser::parseTestCaseParams(const UTBotKTest &ktest,
 
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
         processSymbolicStdin(testCaseDescription, rawKleeParams);
+        processSymbolicFiles(testCaseDescription, rawKleeParams);
     }
 
     processStubParamValue(testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
@@ -939,7 +946,7 @@ void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseDescription &t
     testCaseDescription.globalPreValues.emplace_back( globalParam.name, globalParam.alignment, testParamView );
 }
 
-void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription, std::vector<RawKleeParam> &rawKleeParams) {
+void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription, const std::vector<RawKleeParam> &rawKleeParams) {
     auto &&read = getKleeParamOrThrow(rawKleeParams, "stdin-read");
     std::string &&view = testParameterView(read, {types::Type::longlongType(), "stdin-read"}, types::PointerUsage::PARAMETER,
                                       testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences)->getEntryValue(nullptr);
@@ -947,7 +954,7 @@ void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCas
         return;
     } else {
         long long usedStdinBytesCount = std::stoll(view);
-        if (usedStdinBytesCount > types::Type::symStdinSize) {
+        if (usedStdinBytesCount > types::Type::symInputSize) {
             std::string message = ".ktest has malformed stdin data";
             LOG_S(ERROR) << message;
             throw UnImplementedException(message);
@@ -957,6 +964,19 @@ void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCas
         testCaseDescription.stdinValue = Tests::TestCaseParamValue(types::Type::getStdinParamName(),
                                                                    std::nullopt, testParamView);
     }
+}
+
+void KTestObjectParser::processSymbolicFiles(Tests::TestCaseDescription &testCaseDescription,
+                                             const std::vector<RawKleeParam> &rawKleeParams) {
+    std::vector<Tests::TestCaseParamValue> filesValues(types::Type::symFilesCount);
+    for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount; fileName++) {
+        auto &&fileBuffer =
+            getKleeParamOrThrow(rawKleeParams, PrinterUtils::getFileParamKTestJSON(fileName));
+        auto &&testParamView = stringLiteralView(fileBuffer.rawData, types::Type::symInputSize);
+        filesValues[fileName - 'A'] = Tests::TestCaseParamValue(
+            types::Type::getFileParamName(fileName), std::nullopt, testParamView);
+    }
+    testCaseDescription.filesValues = filesValues;
 }
 
 void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseDescription &testCaseDescription,

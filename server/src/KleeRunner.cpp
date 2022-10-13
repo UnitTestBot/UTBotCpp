@@ -104,8 +104,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
             processBatchWithoutInteractive(batch, tests, ktests);
         }
         auto kleeStats = writeKleeStats(Paths::kleeOutDirForFilePath(projectContext, filePath));
-        generator->parseKTestsToFinalCode(tests, methodNameToReturnTypeMap, ktests, lineInfo,
-                                          settingsContext.verbose);
+        generator->parseKTestsToFinalCode(projectContext, tests, methodNameToReturnTypeMap, ktests,
+                                          lineInfo, settingsContext.verbose);
         generationStats.addFileStats(kleeStats, tests);
 
         sarif::sarifAddTestsToResults(projectContext, tests, sarifResults);
@@ -247,7 +247,10 @@ void KleeRunner::addTailKleeInitParams(std::vector<std::string> &argvData, const
 {
     argvData.emplace_back(bitcodeFilePath);
     argvData.emplace_back("--sym-stdin");
-    argvData.emplace_back(std::to_string(types::Type::symStdinSize));
+    argvData.emplace_back(std::to_string(types::Type::symInputSize));
+    argvData.emplace_back("--sym-files");
+    argvData.emplace_back(std::to_string(types::Type::symFilesCount));
+    argvData.emplace_back(std::to_string(types::Type::symInputSize));
 }
 
 void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,

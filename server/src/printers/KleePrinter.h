@@ -61,7 +61,8 @@ namespace printer {
 
         void genPostParamsVariables(const Tests::MethodDescription &testMethod);
 
-        void genParamsDeclarations(const Tests::MethodDescription &testMethod);
+        void genParamsDeclarations(const Tests::MethodDescription &testMethod,
+                                   std::function<bool(const tests::Tests::MethodParam &)> filter);
 
         bool genParamDeclaration(const Tests::MethodDescription &testMethod,
                                  const Tests::MethodParam &param);
@@ -77,7 +78,9 @@ namespace printer {
 
         void genGlobalsKleeAssumes(const Tests::MethodDescription &testMethod);
 
-        void genPostParamsKleeAssumes(const Tests::MethodDescription &testMethod);
+        void
+        genPostParamsKleeAssumes(const Tests::MethodDescription &testMethod,
+                                 std::function<bool(const tests::Tests::MethodParam &)> filter);
 
         /*
          * Functions for constraints generation.
@@ -114,7 +117,9 @@ namespace printer {
 
         void genPostGlobalSymbolicVariables(const Tests::MethodDescription &testMethod);
 
-        void genPostParamsSymbolicVariables(const Tests::MethodDescription &testMethod);
+        void genPostParamsSymbolicVariables(
+            const Tests::MethodDescription &testMethod,
+            std::function<bool(const tests::Tests::MethodParam &)> filter);
 
         void makeBracketsForStrPredicate(const std::optional<PredInfo> &info);
 
@@ -139,6 +144,8 @@ namespace printer {
                                  const std::string &testedMethod,
                                  bool onlyForOneEntity,
                                  bool isWrapped);
+
+        void genOpenFiles(const tests::Tests::MethodDescription &testMethod);
     };
 }
 

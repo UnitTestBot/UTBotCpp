@@ -318,19 +318,21 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
 }
 
 void KleeGenerator::parseKTestsToFinalCode(
-        tests::Tests &tests,
-        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-        const std::vector<MethodKtests> &kleeOutput,
-        const std::shared_ptr<LineInfo> &lineInfo,
-        bool verbose) {
-    for (const auto &batch: kleeOutput) {
+    const utbot::ProjectContext &projectContext,
+    tests::Tests &tests,
+    const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+    const std::vector<MethodKtests> &kleeOutput,
+    const std::shared_ptr<LineInfo> &lineInfo,
+    bool verbose) {
+    for (const auto &batch : kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());
         tests::KTestObjectParser KTestObjectParser(typesHandler);
         KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag,
                                      lineInfo);
     }
-    printer::TestsPrinter testsPrinter(&typesHandler, Paths::getSourceLanguage(tests.sourceFilePath));
+    printer::TestsPrinter testsPrinter(testGen->projectContext, &typesHandler,
+                                       Paths::getSourceLanguage(tests.sourceFilePath));
     for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
         const std::string &methodName = it.key();
         Tests::MethodDescription &methodDescription = it.value();
@@ -346,14 +348,13 @@ void KleeGenerator::parseKTestsToFinalCode(
             continue;
         }
         auto predicate =
-                lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
+            lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
 
         testsPrinter.genCode(methodDescription, predicate, verbose);
     }
 
-    printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath)).print(tests.testHeaderFilePath,
-                                                                                 tests.sourceFilePath,
-                                                                                 tests.headerCode);
+    printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath))
+        .print(tests.testHeaderFilePath, tests.sourceFilePath, tests.headerCode);
     testsPrinter.joinToFinalCode(tests, tests.testHeaderFilePath);
     LOG_S(DEBUG) << "Generated code for " << tests.methods.size() << " tests";
 }

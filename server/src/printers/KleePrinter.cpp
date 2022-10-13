@@ -46,26 +46,47 @@ void KleePrinter::writePosixWrapper(const Tests &tests,
     ss << NL;
 }
 
+void KleePrinter::genOpenFiles(const tests::Tests::MethodDescription &testMethod) {
+    char fileName = 'A';
+    for (const auto &param : testMethod.params) {
+        if (param.type.isFilePointer()) {
+            std::string strFileName(1, fileName++);
+            if (fileName > 'A' + types::Type::symFilesCount) {
+                throw UnImplementedException("Number of files is too much.");
+            }
+
+            strDeclareVar(param.type.typeName(), param.name,
+                          constrFunctionCall("fopen",
+                                             { StringUtils::wrapQuotations(strFileName), "\"r\"" },
+                                             "", std::nullopt, false));
+        }
+    }
+}
+
 void KleePrinter::writeTestedFunction(const Tests &tests,
                                       const tests::Tests::MethodDescription &testMethod,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                       const std::string &testedMethod,
                                       bool onlyForOneEntity,
                                       bool isWrapped) {
+    auto filterAllWithoutFile = [](const tests::Tests::MethodParam &param) {
+        return !param.type.isFilePointer();
+    };
+
     writeStubsForFunctionParams(typesHandler, testMethod, true);
     declTestEntryPoint(tests, testMethod, isWrapped);
+    genOpenFiles(testMethod);
     genGlobalParamsDeclarations(testMethod);
-    genParamsDeclarations(testMethod);
+    genParamsDeclarations(testMethod, filterAllWithoutFile);
     genPostGlobalSymbolicVariables(testMethod);
-    genPostParamsSymbolicVariables(testMethod);
+    genPostParamsSymbolicVariables(testMethod, filterAllWithoutFile);
     if (types::TypesHandler::skipTypeInReturn(testMethod.returnType)) {
         genVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
     } else {
-        genNonVoidFunctionAssumes(testMethod, predicateInfo, testedMethod,
-                                  onlyForOneEntity);
+        genNonVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
     }
     genGlobalsKleeAssumes(testMethod);
-    genPostParamsKleeAssumes(testMethod);
+    genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
     strReturn("0");
     closeBrackets(1);
     ss << NL;
@@ -195,11 +216,16 @@ void KleePrinter::genPostGlobalSymbolicVariables(const Tests::MethodDescription 
     }
 }
 
-void KleePrinter::genPostParamsSymbolicVariables(const Tests::MethodDescription &testMethod) {
+void KleePrinter::genPostParamsSymbolicVariables(
+    const Tests::MethodDescription &testMethod,
+    std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         genPostSymbolicVariable(testMethod, getKleePostParam(testMethod.classObj.value()));
     }
     for (const auto &param : testMethod.params) {
+        if (!filter(param)) {
+            continue;
+        }
         if (param.isChangeable()) {
             genPostSymbolicVariable(testMethod, getKleePostParam(param));
         }
@@ -217,11 +243,16 @@ void KleePrinter::genGlobalsKleeAssumes(const Tests::MethodDescription &testMeth
     }
 }
 
-void KleePrinter::genPostParamsKleeAssumes(const Tests::MethodDescription &testMethod) {
+void KleePrinter::genPostParamsKleeAssumes(
+    const Tests::MethodDescription &testMethod,
+    std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         genPostAssumes(testMethod.classObj.value());
     }
     for (auto &param : testMethod.params) {
+        if (!filter(param)) {
+            continue;
+        }
         if (param.isChangeable()) {
             genPostAssumes(param);
         }
@@ -326,24 +357,32 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
     }
 }
 
-void KleePrinter::genParamsDeclarations(const Tests::MethodDescription &testMethod) {
+void KleePrinter::genParamsDeclarations(
+    const Tests::MethodDescription &testMethod,
+    std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         strDeclareVar(testMethod.classObj->type.typeName(), testMethod.classObj->name);
-        strKleeMakeSymbolic(testMethod.classObj->type, testMethod.classObj->name, testMethod.classObj->name, true);
+        strKleeMakeSymbolic(testMethod.classObj->type, testMethod.classObj->name,
+                            testMethod.classObj->name, true);
 
         KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
         constraintsPrinter.setTabsDepth(tabsDepth);
-        const auto constraintsBlock = constraintsPrinter.genConstraints(testMethod.classObj->name,
-                                                                        testMethod.classObj->type).str();
+        const auto constraintsBlock =
+            constraintsPrinter.genConstraints(testMethod.classObj->name, testMethod.classObj->type)
+                .str();
         ss << constraintsBlock;
     }
     for (const auto &param : testMethod.params) {
+        if (!filter(param)) {
+            continue;
+        }
         tests::Tests::MethodParam kleeParam = getKleeMethodParam(param);
         bool isArray = genParamDeclaration(testMethod, kleeParam);
         if (CollectionUtils::containsKey(testMethod.functionPointers, param.name)) {
             continue;
         }
-        auto paramType = kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
+        auto paramType =
+            kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
         strKleeMakeSymbolic(paramType, kleeParam.name, param.name, !isArray);
         genConstraints(kleeParam, testMethod.name);
         genTwoDimPointers(param, true);

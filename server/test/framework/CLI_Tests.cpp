@@ -84,9 +84,10 @@ namespace {
 
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(getTestDirectory());
             for (auto &&it : directoryIterator) {
-                if (!it.is_regular_file() ||
-                it.path().extension() == Paths::MAKEFILE_EXTENSION ||
-                StringUtils::endsWith(Paths::removeExtension(it.path().filename()).string(), Paths::MAKE_WRAPPER_SUFFIX)) {
+                if (!it.is_regular_file() || it.path().extension() == Paths::MAKEFILE_EXTENSION ||
+                    Paths::testInputFile(it.path().filename()) ||
+                    StringUtils::endsWith(Paths::removeExtension(it.path().filename()).string(),
+                                          Paths::MAKE_WRAPPER_SUFFIX)) {
                     continue;
                 }
                 EXPECT_TRUE(Paths::isSubPathOf(getStubsDirectory(), it.path()) ||

@@ -228,6 +228,8 @@ namespace types {
 
         bool maybeJustPointer() const;
 
+        bool isFilePointer() const;
+
         bool maybeReturnArray() const;
 
         size_t countReturnPointers(bool decrementIfArray = false) const;
@@ -236,8 +238,11 @@ namespace types {
 
         bool maybeArray = false;
 
-        static const size_t symStdinSize = 64;
+        static const size_t symInputSize = 64;
+        static const size_t symFilesCount = 3;
+
         static const std::string &getStdinParamName();
+        static std::string getFileParamName(char fileName);
     private:
 
         explicit Type(const TypeName& type, size_t pointersNum=0);
@@ -560,7 +565,7 @@ namespace types {
 
         static size_t
         getElementsNumberInPointerOneDim(PointerUsage usage,
-                                         size_t def = types::Type::symStdinSize) noexcept {
+                                         size_t def = types::Type::symInputSize) noexcept {
             switch (usage) {
             case PointerUsage::PARAMETER:
                 return 10;
@@ -651,6 +656,8 @@ namespace types {
     static inline const std::string CONST_QUALIFIER = "const";
     static inline const std::string RESTRICT_QUALIFIER = "restrict";
     static inline const std::string VOLATILE_QUALIFIER = "volatile";
+
+    const std::string FILE_PTR_TYPE = "struct _IO_FILE *";
 
     static inline const std::vector<std::string> QUALIFIERS = { CONST_QUALIFIER, RESTRICT_QUALIFIER, VOLATILE_QUALIFIER };
 

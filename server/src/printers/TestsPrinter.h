@@ -20,12 +20,14 @@ using tests::Tests;
 namespace printer {
     class TestsPrinter : public Printer {
     public:
-        explicit TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage);
+        explicit TestsPrinter(const utbot::ProjectContext &projectContext,
+                              const types::TypesHandler *typesHandler,
+                              utbot::Language srcLanguage);
 
         utbot::Language getLanguage() const override;
 
         void genCode(Tests::MethodDescription &methodDescription,
-                     const std::optional<LineInfo::PredicateInfo>& predicateInfo = {},
+                     const std::optional<LineInfo::PredicateInfo> &predicateInfo = {},
                      bool verbose = false);
 
         void joinToFinalCode(Tests &tests, const fs::path &generatedHeaderPath);
@@ -113,6 +115,7 @@ namespace printer {
         };
 
     private:
+        utbot::ProjectContext const projectContext;
         types::TypesHandler const *typesHandler;
 
         static bool paramNeedsMathHeader(const Tests::TestCaseParamValue &paramValue);
@@ -129,6 +132,12 @@ namespace printer {
                                 const Tests::MethodTestCase &testCase,
                                 bool verbose);
 
+        void initializeFiles(const Tests::MethodDescription &methodDescription,
+                             const Tests::MethodTestCase &testCase);
+
+        void openFiles(const Tests::MethodDescription &methodDescription,
+                       const Tests::MethodTestCase &testCase);
+
         void printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
                                 const std::vector<Tests::TestCaseParamValue> &lazyValues);
 
@@ -143,7 +152,7 @@ namespace printer {
 
         void genCodeBySuiteName(const std::string &targetSuiteName,
                                 Tests::MethodDescription &methodDescription,
-                                const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                 bool verbose,
                                 int &testNum);
 

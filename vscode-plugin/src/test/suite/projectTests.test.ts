@@ -28,7 +28,7 @@ suite('"Generate Tests For Project" Test Suite', () => {
         async function checkAll(): Promise<void> {
                 assert.ok(checkDirectoryWithTestsExists(projectPath));
                     assert.ok(checkTestFilesGenerated(projectPath, [
-                        'basic_functions', 'main', 'simple_calc', 'libfunc', 'simple_structs']
+                        'basic_functions', 'main', 'simple_calc', 'libfunc', 'simple_structs', 'file', 'input_output']
                 ));
                 assert.ok(checkTestFileNotEmpty(projectPath));
                 await executeCommand(Commands.RunAllTestsAndShowCoverage);

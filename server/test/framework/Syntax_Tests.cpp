@@ -55,6 +55,7 @@ namespace {
         fs::path stubs_c = getTestFilePath("stubs.c");
         fs::path namespace_cpp = getTestFilePath("namespace.cpp");
         fs::path input_output_c = getTestFilePath("input_output.c");
+        fs::path file_c = getTestFilePath("file.c");
         fs::path bitfields_c = getTestFilePath("bitfields.c");
 
         void SetUp() override {
@@ -103,7 +104,7 @@ namespace {
     TEST_F(Syntax_Test, Struct_Parameter_Test_1) {
         auto [testGen, status] = createTestForFunction(simple_structs_c, 5);
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
                                 .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
@@ -166,7 +167,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_structs_c)
                 .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].returnValue.view->getEntryValue(&testsPrinter),
@@ -209,7 +210,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
@@ -241,7 +242,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
@@ -275,7 +276,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].returnValue.view->getEntryValue(&testsPrinter),
                                "[{]"
@@ -316,7 +317,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]([{]"
@@ -344,7 +345,7 @@ namespace {
     TEST_F(Syntax_Test, Union_With_Pointer_Test) {
         auto [testGen, status] = createTestForFunction(simple_unions_c, 112);
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(simple_unions_c).methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
@@ -1694,7 +1695,7 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::C);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(floats_special_c)
                                 .methods.begin().value().testCases;
         checkTestCasePredicates(
@@ -2448,7 +2449,7 @@ namespace {
         auto [testGen, status] = createTestForFunction(simple_class_cpp, 34);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
-        printer::TestsPrinter testsPrinter(nullptr, utbot::Language::CXX);
+        printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::CXX);
         const auto &tests = testGen.tests.at(simple_class_cpp)
                                 .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
@@ -3053,6 +3054,161 @@ namespace {
                 })
         );
     }
+
+    TEST_F(Syntax_Test, file_fgetc) {
+        auto [testGen, status] = createTestForFunction(file_c, 5);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 4;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 5;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, file_fgets) {
+        auto [testGen, status] = createTestForFunction(file_c, 29);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, file_fputc) {
+        auto [testGen, status] = createTestForFunction(file_c, 38);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'<'";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'>'";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'='";
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, file_fputs) {
+        auto [testGen, status] = createTestForFunction(file_c, 51);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'V'";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'C'";
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, sum_two_from_file) {
+        auto [testGen, status] = createTestForFunction(file_c, 63);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, file_fread) {
+        auto [testGen, status] = createTestForFunction(file_c, 76);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                    }
+                })
+        );
+    }
+
+    TEST_F(Syntax_Test, file_fwrite) {
+        auto [testGen, status] = createTestForFunction(file_c, 96);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(file_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'P'";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'N'";
+                    },
+                    [] (const tests::Tests::MethodTestCase& testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "'Z'";
+                    }
+                })
+        );
+    }
+
     template<typename T>
     bool checkBitfieldFit(const std::shared_ptr<tests::AbstractValueView> &fieldView, size_t size) {
         T val = StringUtils::stot<T>(fieldView->getEntryValue(nullptr));

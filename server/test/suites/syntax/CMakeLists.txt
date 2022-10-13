@@ -39,4 +39,5 @@ add_executable(syntax1
         stubs.c
         namespace.cpp
         input_output.c
+        file.c
         bitfields.c)
