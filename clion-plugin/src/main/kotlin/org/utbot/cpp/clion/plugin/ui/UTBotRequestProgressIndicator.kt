@@ -23,6 +23,7 @@ class UTBotRequestProgressIndicator(
     }
 
     override fun start() {
+        // start showing progress in the ui
         val frame = WindowManagerEx.getInstanceEx().findFrameFor(project) ?: return
         val statusBar = frame.statusBar as? StatusBarEx ?: return
         invokeOnEdt {
@@ -32,15 +33,21 @@ class UTBotRequestProgressIndicator(
     }
 
     fun stopShowingProgressInUI() {
-        finish()
-        super.stop()
+        // stop can be called only if progress was started (=running)
+        if (isRunning) {
+            finish()
+            super.stop()
+        }
     }
 
-    fun finish() = finish(requestTask)
+    fun finish() {
+        if (isRunning)
+            finish(requestTask)
+    }
 
     override fun cancel() {
         requestJob?.cancel()
-        finish(requestTask)
+        finish()
         super.cancel()
         notifyInfo(
             UTBot.message("notify.cancelled.request.title"),
