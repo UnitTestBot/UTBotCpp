@@ -28,6 +28,8 @@ namespace Paths {
         return (!fs::exists(p) || fs::is_directory(p));
     }
 
+    bool testInputFile(const std::string &fileName);
+
     /**
      * @brief Traverses all paths and removes all which parent directory is not any of `dirPaths`.
      * @param path Set of paths to files.
@@ -325,11 +327,17 @@ namespace Paths {
 
     fs::path getTestExecDir(const utbot::ProjectContext &projectContext);
 
-    fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getMakefileDir(const utbot::ProjectContext &projectContext,
+                            const fs::path &sourceFilePath);
 
-    fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext,
+                                   const fs::path &sourceFilePath);
 
-    fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
+    fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext,
+                                         const fs::path &sourceFilePath);
+
+    fs::path getPathDirRelativeToBuildDir(const utbot::ProjectContext &projectContext,
+                                          const fs::path &sourceFilePath);
 
     fs::path getRecompiledDir(const utbot::ProjectContext &projectContext);
 

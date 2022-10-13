@@ -32,6 +32,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         std::string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
+        methodDescription.sourceFilePath = sourceFilePath;
         if (onlyNames) {
             addMethod(sourceFilePath, methodDescription);
             return;

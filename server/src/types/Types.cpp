@@ -139,6 +139,10 @@ bool types::Type::maybeJustPointer() const {
         this->kinds().size() < 3;
 }
 
+bool types::Type::isFilePointer() const {
+    return typeName() == FILE_PTR_TYPE;
+}
+
 bool types::Type::maybeReturnArray() const {
     bool condition1 = types::TypesHandler::isObjectPointerType(*this);
     bool condition2 = maybeJustPointer();
@@ -278,6 +282,10 @@ types::Type types::Type::CStringType() {
 const std::string &types::Type::getStdinParamName() {
     static const std::string stdinParamName = "stdin_buf";
     return stdinParamName;
+}
+
+std::string types::Type::getFileParamName(char fileName) {
+    return StringUtils::stringFormat("%c_file_buf", fileName);
 }
 
 bool types::Type::isPointerToPointer() const {

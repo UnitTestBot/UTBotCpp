@@ -196,4 +196,8 @@ namespace StringUtils {
         throw std::invalid_argument("Wrong bool value: " + s);
     }
 
+    std::string wrapQuotations(const std::string &s) {
+        return "\"" + s + "\"";
+    }
+
 }

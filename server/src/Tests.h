@@ -359,9 +359,9 @@ namespace tests {
             }
 
             [[nodiscard]] bool isChangeable() const {
-                if((type.isObjectPointer() || type.isLValueReference()) &&
-                    !type.isTypeContainsFunctionPointer() &&
-                    !type.isConstQualifiedValue() && !types::TypesHandler::baseTypeIsVoid(type)) {
+                if ((type.isObjectPointer() || type.isLValueReference()) && !type.isFilePointer() &&
+                    !type.isTypeContainsFunctionPointer() && !type.isConstQualifiedValue() &&
+                    !types::TypesHandler::baseTypeIsVoid(type)) {
                     return true;
                 }
                 return false;
@@ -409,6 +409,7 @@ namespace tests {
             TestCaseParamValue functionReturnNotNullValue;
             TestCaseParamValue kleePathFlagSymbolicValue;
             std::optional <TestCaseParamValue> stdinValue = std::nullopt;
+            std::optional <std::vector<TestCaseParamValue>> filesValues = std::nullopt;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
         };
@@ -421,6 +422,7 @@ namespace tests {
             std::vector<TestCaseParamValue> globalPreValues;
             std::vector<TestCaseParamValue> globalPostValues;
             std::optional <TestCaseParamValue> stdinValue;
+            std::optional <std::vector<TestCaseParamValue>> filesValues = std::nullopt;
             std::vector<InitReference> lazyReferences;
             std::vector<UTBotKTestObject> objects;
 
@@ -458,6 +460,7 @@ namespace tests {
             types::Type returnType;
             bool hasIncompleteReturnType = false;
 
+            fs::path sourceFilePath;
             std::optional<std::string> sourceBody;
             Modifiers modifiers;
             bool isVariadic = false;
@@ -743,7 +746,10 @@ namespace tests {
                                         std::vector<RawKleeParam> &rawKleeParams);
 
         void processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription,
-                                  std::vector<RawKleeParam> &rawKleeParams);
+                                  const std::vector<RawKleeParam> &rawKleeParams);
+
+        void processSymbolicFiles(Tests::TestCaseDescription &testCaseDescription,
+                                  const std::vector<RawKleeParam> &rawKleeParams);
 
         void processGlobalParamPostValue(Tests::TestCaseDescription &testCaseDescription,
                                          const Tests::MethodParam &globalParam,

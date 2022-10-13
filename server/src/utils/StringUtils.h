@@ -85,6 +85,8 @@ namespace StringUtils {
     T stot(const std::string&) {
         return T();
     }
+
+    std::string wrapQuotations(const std::string &s);
 }
 
 #endif //UNITTESTBOT_STRINGUTIL_H

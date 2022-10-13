@@ -281,11 +281,13 @@ namespace printer {
         strTabIf(needTabs);
         std::vector<std::string> parameters;
         for (const auto &param : method.params) {
-            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
+            std::string maybeAmpersand =
+                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
             parameters.push_back(maybeAmpersand + param.name);
         }
         auto classObjName = method.getClassName();
-        return strFunctionCall(method.name, parameters, end, classObjName, needTabs, returnPointers);
+        return strFunctionCall(method.name, parameters, end, classObjName, needTabs,
+                               returnPointers);
     }
 
     Printer::Stream &Printer::strComment(const std::string &comment) {

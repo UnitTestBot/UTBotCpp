@@ -15,7 +15,10 @@
 using json = nlohmann::json;
 using printer::TestsPrinter;
 
-TestsPrinter::TestsPrinter(const types::TypesHandler *typesHandler, utbot::Language srcLanguage) : Printer(srcLanguage) , typesHandler(typesHandler) {
+TestsPrinter::TestsPrinter(const utbot::ProjectContext &projectContext,
+                           const types::TypesHandler *typesHandler,
+                           utbot::Language srcLanguage)
+    : Printer(srcLanguage), projectContext(projectContext), typesHandler(typesHandler) {
 }
 
 bool TestsPrinter::paramNeedsMathHeader(const Tests::TestCaseParamValue &paramValue) {
@@ -194,7 +197,7 @@ static std::string getTestName(const Tests::MethodDescription &methodDescription
 
 void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       Tests::MethodDescription &methodDescription,
-                                      const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                       bool verbose,
                                       int &testNum) {
     auto &testCases = methodDescription.suiteTestCases[targetSuiteName];
@@ -220,6 +223,9 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
+    initializeFiles(methodDescription, testCase);
+    openFiles(methodDescription, testCase);
+
     TestsPrinter::verboseParameters(methodDescription, testCase);
 
     printLazyVariables(methodDescription, testCase, true);
@@ -242,6 +248,48 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
     }
     ss << RB() << NL;
+}
+
+void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescription,
+                                   const Tests::MethodTestCase &testCase) {
+    if (!testCase.filesValues.has_value()) {
+        LOG_S(WARNING) << "There are not symbolic files in the test.";
+        return;
+    }
+    fs::path pathToSourceFile =
+        Paths::sourcePathToTestPath(projectContext, methodDescription.sourceFilePath);
+    fs::path pathToTestDir = Paths::getPathDirRelativeToBuildDir(projectContext, pathToSourceFile);
+    for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount; fileName++) {
+        std::string strFileName(1, fileName);
+        strFunctionCall("write_to_file",
+                        { StringUtils::wrapQuotations(pathToTestDir / strFileName),
+                          testCase.filesValues.value()[fileName - 'A'].view->getEntryValue(this) });
+    }
+    ss << NL;
+}
+
+void TestsPrinter::openFiles(const Tests::MethodDescription &methodDescription,
+                             const Tests::MethodTestCase &testCase) {
+    char fileName = 'A';
+    fs::path pathToSourceFile =
+        Paths::sourcePathToTestPath(projectContext, methodDescription.sourceFilePath);
+    fs::path pathToTestDir = Paths::getPathDirRelativeToBuildDir(projectContext, pathToSourceFile);
+
+    for (auto &param : methodDescription.params) {
+        if (!param.type.isFilePointer()) {
+            continue;
+        }
+
+        std::string strFileName(1, fileName++);
+        strDeclareVar(param.type.typeName(), param.name,
+                      constrFunctionCall(
+                          "(UTBot::FILE *) fopen",
+                          { StringUtils::wrapQuotations(pathToTestDir / strFileName), "\"r\"" }, "",
+                          std::nullopt, false));
+    }
+    if (fileName != 'A') {
+        ss << NL;
+    }
 }
 
 void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDescription,
@@ -296,6 +344,8 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
+    initializeFiles(methodDescription, testCase);
+    openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     parametrizedArrayParameters(methodDescription, testCase);
@@ -403,8 +453,10 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
                                            const Tests::MethodTestCase &testCase,
                                            bool all) {
     for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !methodDescription.params[i].isChangeable();
-        if (all || methodDescription.params[i].type.isLValueReference() || containsLazy) {
+        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() &&
+                            !methodDescription.params[i].isChangeable();
+        if (!methodDescription.params[i].type.isFilePointer() &&
+            (all || methodDescription.params[i].type.isLValueReference() || containsLazy)) {
             Tests::MethodParam param = methodDescription.params[i];
             auto value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
@@ -588,7 +640,7 @@ void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &m
             strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
         } else if (types::TypesHandler::isCStringType(param.type)) {
             strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER, value.view->getEntryValue(this), param.alignment);
-        } else if (param.type.isObjectPointer() || param.type.isArray()) {
+        } else if (!param.type.isFilePointer() && (param.type.isObjectPointer() || param.type.isArray())) {
             auto arrayType = types::TypesHandler::isVoid(param.type.baseTypeObj())
                 ? types::Type::minimalScalarPointerType(param.type.arraysSizes(types::PointerUsage::PARAMETER).size())
                 : param.type;
@@ -628,8 +680,9 @@ void TestsPrinter::markTestedFunctionCallIfNeed(const std::string &name,
     ss << sarif::PREFIX_FOR_JSON_PATH << name << "," << testCase.testIndex << NL;
 }
 
-std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,
-                                                                        const Tests::MethodTestCase &testCase) {
+std::vector<std::string>
+TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &methodDescription,
+                                               const Tests::MethodTestCase &testCase) {
     std::vector<std::string> args;
     for (size_t i = 0; i < methodDescription.params.size(); ++i) {
         Tests::MethodParam const &param = methodDescription.params[i];
@@ -639,7 +692,8 @@ std::vector<std::string> TestsPrinter::methodParametersListParametrized(const Te
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
         } else if (param.type.isObjectPointer() || param.type.isArray()) {
-            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
+            std::string maybeAmpersand =
+                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
             args.push_back(maybeAmpersand + param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
@@ -656,14 +710,15 @@ std::vector<std::string>
 TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &methodDescription,
                                           const Tests::MethodTestCase &testCase) {
     std::vector<std::string> args;
-    for (const auto & param : methodDescription.params) {
+    for (const auto &param : methodDescription.params) {
         if (param.type.isTwoDimensionalPointer() &&
-                types::TypesHandler::isVoid(param.type.baseTypeObj())) {
+            types::TypesHandler::isVoid(param.type.baseTypeObj())) {
             std::string qualifier = Printer::getConstQualifier(param.type);
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
         } else {
-            std::string maybeAmpersand = param.type.maybeJustPointer() ? "&" : "";
+            std::string maybeAmpersand =
+                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
             args.push_back(maybeAmpersand + param.name);
         }
     }
