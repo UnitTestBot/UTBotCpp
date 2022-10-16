@@ -65,7 +65,7 @@ class TestsStreamHandler(
         }
         if (exception != null && exception !is CancellationException) {
             throw exception
-        } else {
+        } else if (exception !is CancellationException) {
             onSuccess(myGeneratedTestFilesLocalFS)
         }
     }

@@ -10,6 +10,7 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyInfo
 
+// todo: remove this class and use new api for coroutines progress: TaskCancellation, withBackgroundProgressIndicator
 class UTBotRequestProgressIndicator(
     private val taskDisplayName: String,
     private val requestJob: Job? = null,
@@ -24,25 +25,22 @@ class UTBotRequestProgressIndicator(
 
     override fun start() {
         // start showing progress in the ui
+        super.start()
         val frame = WindowManagerEx.getInstanceEx().findFrameFor(project) ?: return
         val statusBar = frame.statusBar as? StatusBarEx ?: return
         invokeOnEdt {
             statusBar.addProgress(this, requestTask)
         }
-        super.start()
     }
 
     fun stopShowingProgressInUI() {
         // stop can be called only if progress was started (=running)
-        if (isRunning) {
-            finish()
-            super.stop()
-        }
+        finish()
+        super.stop()
     }
 
     fun finish() {
-        if (isRunning)
-            finish(requestTask)
+        finish(requestTask)
     }
 
     override fun cancel() {
