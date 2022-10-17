@@ -24,7 +24,7 @@ data class RemoteMapping(val localProjectPath: String, val remoteProjectPath: St
         val remoteProjectNioPath = try {
             Paths.get(remoteProjectPath)
         } catch (_: InvalidPathException) {
-            throw IllegalPathException(path, UTBot.message("settings.project.remotePath.wrong"))
+            throw IllegalPathException(remoteProjectPath, UTBot.message("settings.project.remotePath"))
         }
         val relativeToProjectNioPath = try {
             localProjectNioPath.relativize(Paths.get(path))
