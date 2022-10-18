@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "StubsPrinter.h"
 
 #include "Paths.h"
@@ -25,7 +21,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
     strComment("Please, do not change the line above") << NL;
     writeCopyrightHeader();
     ss << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
-    ss << TAB_N() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << NL;
+    ss << LINE_INDENT() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << NL;
     ss << "#endif" << NL;
     strInclude(Paths::sourcePathToHeaderInclude(tests.sourceFilePath));
     ss << NL;
@@ -57,7 +53,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
         }
 
         if (!typesHandler.omitMakeSymbolic(methodCopy.returnType)) {
-            string stubSymbolicVarName = getStubSymbolicVarName(method.name);
+            std::string stubSymbolicVarName = getStubSymbolicVarName(method.name);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -66,7 +62,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
             strFunctionDecl(methodCopy, " ");
             ss << methodCopy.sourceBody.value() << NL;
         } else {
-            strStubForMethod(methodCopy, typesHandler, "", "");
+            strStubForMethod(methodCopy, typesHandler, "", "", "", methodCopy.name);
         };
         ss << NL;
     }

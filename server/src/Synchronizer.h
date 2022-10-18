@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SYNCHRONIZER_H
 #define UNITTESTBOT_SYNCHRONIZER_H
 
@@ -25,11 +21,11 @@ private:
 
 class Synchronizer {
     BaseTestGen *const testGen;
-    StubGen const *const stubGen;
     types::TypesHandler::SizeContext *sizeContext;
-    CollectionUtils::FileSet allFiles;
 
-    CollectionUtils::FileSet getOutdatedSourcePaths() const;
+    [[nodiscard]] CollectionUtils::FileSet getOutdatedSourcePaths() const;
+
+    [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getOutdatedStubs() const;
 
     bool isProbablyOutdated(const fs::path &srcFilePath) const;
 
@@ -39,7 +35,7 @@ class Synchronizer {
                           const types::TypesHandler &typesHandler);
     void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const;
 
-    shared_ptr<clang::tooling::CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
         std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
         const fs::path &ccJsonStubDirPath) const;
@@ -47,18 +43,21 @@ class Synchronizer {
     void prepareDirectory(fs::path const& stubDirectory);
 
     static std::unordered_set<StubOperator, HashUtils::StubHash>
+
     getStubSetFromSources(const CollectionUtils::FileSet &paths);
 public:
     static std::unordered_set<StubOperator, HashUtils::StubHash>
+
     dropHeaders(const std::unordered_set<StubOperator, HashUtils::StubHash> &stubs);
 
     static CollectionUtils::FileSet dropHeaders(const CollectionUtils::FileSet &files);
 
-    Synchronizer(BaseTestGen *testGen, StubGen const *stubGen, types::TypesHandler::SizeContext *sizeContext);
+    Synchronizer(BaseTestGen *testGen, types::TypesHandler::SizeContext *sizeContext);
 
     void synchronize(const types::TypesHandler &typesHandler);
 
-    const CollectionUtils::FileSet &getAllFiles() const;
+    [[nodiscard]] const CollectionUtils::FileSet &getSourceFiles() const;
+    [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getStubsFiles() const;
 };
 
 

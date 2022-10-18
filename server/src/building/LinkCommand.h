@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_LINKCOMMAND_H
 #define UNITTESTBOT_LINKCOMMAND_H
 
@@ -14,8 +10,7 @@
 namespace utbot {
     class LinkCommand : public BaseCommand {
     private:
-        iterator linker;
-        iterator output;
+        void initOutput();
 
     public:
         LinkCommand() = default;
@@ -28,21 +23,14 @@ namespace utbot {
 
         LinkCommand &operator=(LinkCommand &&other) noexcept;
 
-        LinkCommand(std::list<std::string> commandLine, fs::path directory);
+        LinkCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        LinkCommand(std::vector<std::string> commandLine, fs::path directory);
+        LinkCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory);
+        LinkCommand(std::initializer_list<std::string> commandLine, fs::path directory,
+                    bool shouldChangeDirectory = false);
 
         friend void swap(LinkCommand &a, LinkCommand &b) noexcept;
-
-        [[nodiscard]] fs::path getLinker() const;
-
-        void setLinker(fs::path linker);
-
-        [[nodiscard]] fs::path getOutput() const override;
-
-        void setOutput(fs::path output);
 
         [[nodiscard]] bool isArchiveCommand() const override;
 

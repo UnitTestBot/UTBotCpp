@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vs from 'vscode';
@@ -19,15 +15,15 @@ import {
     setTarget} from '../helper';
 
 suite('"Generate Tests For Current Active Line" Test Suite', () => {
-    const projectName = 'c-example';
+    const projectName = 'c-example-mini';
     const projectPath = path.resolve(__dirname,
         '../../../../', 'integration-tests', projectName);
     const openedFile = path.resolve(projectPath, 'lib', 'basic_functions.c');
 
     const targetName = 'liblib.a';
 
-    const HeadOfMaxFunctionLineNumber = 6;
-    const IfInMaxFunctionLineNumber = 7;
+    const HeadOfMaxFunctionLineNumber = 2;
+    const IfInMaxFunctionLineNumber = 3;
 
     async function checkAll(): Promise<void> {
         //TODO: get rid of the sleep once SAT-100 is done

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TYPESRESOLVER_H
 #define UNITTESTBOT_TYPESRESOLVER_H
 
@@ -9,6 +5,7 @@
 
 #include <clang/AST/Decl.h>
 
+#include <cstddef>
 #include <string>
 #include <utility>
 
@@ -17,6 +14,7 @@ class Fetcher;
 class TypesResolver {
 private:
     const Fetcher *const parent;
+    std::map <uint64_t, std::string> fullname;
 public:
     explicit TypesResolver(Fetcher const *parent);
 
@@ -26,10 +24,17 @@ public:
 
     void resolveUnion(const clang::RecordDecl *D, const std::string &name);
 
+    void resolveStructEx(const clang::RecordDecl *D,
+                         const std::string &name,
+                         types::SubType subType);
+
     void resolve(const clang::QualType &type);
 
 private:
-    void updateMaximumAlignment(uint64_t alignment) const;
+    std::string getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
+                            uint64_t id, const fs::path &sourceFilePath);
+
+    void updateMaximumAlignment(size_t alignment) const;
 };
 
 

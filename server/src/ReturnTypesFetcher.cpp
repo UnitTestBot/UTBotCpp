@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ReturnTypesFetcher.h"
 
 #include "fetchers/Fetcher.h"
@@ -14,7 +10,7 @@ void ReturnTypesFetcher::fetch(ProgressWriter *const progressWriter,
         testsMap[filePath];
     }
     Fetcher(Fetcher::Options::Value::RETURN_TYPE_NAMES_ONLY,
-                 testGen->compilationDatabase, testsMap, nullptr, nullptr, nullptr,
+                 testGen->getTargetBuildDatabase()->compilationDatabase, testsMap, nullptr, nullptr,
                  testGen->compileCommandsJsonPath, false)
         .fetchWithProgress(progressWriter, "Fetching return types for functions", true);
     for (auto const &[sourceFilePath, test] : testsMap) {

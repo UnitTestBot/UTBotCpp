@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "linked_list.h"
 
 int length_of_linked_list3(struct Node *head) {
@@ -167,20 +163,27 @@ int sort_list_with_comparator(struct Node *head, int (*cmp) (int, int)) {
     return 0;
 }
 
-int find_maximum(int x, int y, int (*compare) (int, int)) {
-    int t = compare(x, y);
-    if (t) {
-        return x;
-    } else {
-        return y;
+int length_of_empty_list(struct EmptyNode *head) {
+    if (head == NULL) {
+        return 0;
     }
+    if (head->next == NULL) {
+        return 1;
+    }
+    if (head->next->next == NULL) {
+        return 2;
+    }
+    if (head->next->next->next == NULL) {
+        return 3;
+    }
+    return -1;
 }
 
-int vowel_consonant(char c, char (*vowel) (char)) {
-    char s = vowel(c);
-    if (s == 'a' || s == 'e' || s == 'i' || s == 'o' || s == 'u' || s == 'y') {
+int content_of_void_ptr(struct DataNode *node) {
+    if (node->flag == 1) {
         return 1;
     } else {
-        return -1;
+        int *data = (int *)(node->data);
+        return *data;
     }
 }

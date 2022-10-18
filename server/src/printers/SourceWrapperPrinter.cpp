@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SourceWrapperPrinter.h"
 
 #include "Paths.h"
@@ -19,11 +15,17 @@ namespace printer {
         writeCopyrightHeader();
 
         strDefine("main", "main__");
-        strInclude(Include(false, sourceFilePath));
+
+        fs::path wrapperFilePath = Paths::getWrapperFilePath(projectContext, sourceFilePath);
+
+        fs::path sourcePathRelativeToProjectDir = fs::relative(sourceFilePath, projectContext.projectPath);
+        fs::path projectDirRelativeToWrapperFile =
+                fs::relative(projectContext.projectPath, wrapperFilePath.parent_path());
+
+        strInclude(Include(false, projectDirRelativeToWrapperFile / sourcePathRelativeToProjectDir));
 
         ss << wrapperDefinitions;
 
-        fs::path wrapperFilePath = Paths::getWrapperFilePath(projectContext, sourceFilePath);
         FileSystemUtils::writeToFile(wrapperFilePath, ss.str());
     }
 }

@@ -1,13 +1,11 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COPMILATIONUTILS_H
 #define UNITTESTBOT_COPMILATIONUTILS_H
 
-#include <clang/Tooling/CompilationDatabase.h>
+#include "building/CompilationDatabase.h"
+
 #include "json.hpp"
 
+#include "ProjectContext.h"
 #include "utils/path/FileSystemPath.h"
 #include <memory>
 
@@ -29,22 +27,20 @@ namespace CompilationUtils {
     inline static const std::string CLANG_PATH = "clang";
     inline static const std::string CLANGXX_PATH = "clang++";
 
-    static inline const std::string MOUNTED_CC_JSON_DIR_NAME = "utbot_build";
+    static inline const std::string UTBOT_FILES_DIR_NAME = "utbot_files";
+    static inline const std::string UTBOT_BUILD_DIR_NAME = "utbot_build";
 
-    static inline const std::string FULL_COMMAND_PATTERN = R"(cd "%s" && mkdir -p %s && %s)";
+    static inline const std::string FULL_COMMAND_PATTERN_WITH_CD = R"(cd "%s" && mkdir -p %s && %s)";
+    static inline const std::string FULL_COMMAND_PATTERN = R"(mkdir -p %s && %s)";
 
     std::string getBuildDirectoryName(CompilerName compilerName);
 
-    std::shared_ptr<clang::tooling::CompilationDatabase>
+    std::shared_ptr<CompilationDatabase>
     getCompilationDatabase(const fs::path &buildCommandsJsonPath);
 
     CompilerName getCompilerName(fs::path const &compilerPath);
 
-    fs::path detectBuildCompilerPath(
-        const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase);
-
-    fs::path substituteRemotePathToCompileCommandsJsonPath(const fs::path &projectPath,
-                                                           const std::string &buildDirRelativePath);
+    fs::path substituteRemotePathToCompileCommandsJsonPath(const utbot::ProjectContext &projectContext);
 
     fs::path getClangCompileCommandsJsonPath(const fs::path &buildCommandsJsonPath);
 
@@ -55,6 +51,8 @@ namespace CompilationUtils {
     fs::path getBundledCompilerPath(CompilerName compilerName);
 
     std::optional<fs::path> getResourceDirectory(const fs::path& buildCompilerPath);
+
+    std::string getIncludePath(const fs::path &includePath);
 }
 
 #endif //UNITTESTBOT_COPMILATIONUTILS_H

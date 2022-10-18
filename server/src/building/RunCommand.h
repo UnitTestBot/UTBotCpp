@@ -1,28 +1,22 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_RUNCOMMAND_H
 #define UNITTESTBOT_RUNCOMMAND_H
 
 #include "BaseCommand.h"
 
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace utbot {
     class RunCommand : public BaseCommand {
     public:
-        RunCommand(std::vector<std::string> commandLine, fs::path directory);
-        fs::path getOutput() const override;
+        RunCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        std::string toStringWithChangingDirectory() const override;
-
-        static RunCommand forceRemoveFile(fs::path const &path, fs::path const &workingDir);
+        std::string toStringWithChangingDirectoryToNew(const fs::path &targetDirectory) const override;
 
         static RunCommand
-        copyFile(fs::path const &from, const fs::path &to, fs::path const &workingDir);
+        forceRemoveFile(fs::path const &path, fs::path const &workingDir, bool shouldChangeDirectory = false);
+
+        static RunCommand copyFile(fs::path const &from, const fs::path &to, fs::path const &workingDir);
 
         bool isArchiveCommand() const override;
     };

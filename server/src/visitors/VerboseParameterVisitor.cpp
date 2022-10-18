@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "VerboseParameterVisitor.h"
 
 #include "printers/TestsPrinter.h"
@@ -20,7 +16,7 @@ namespace visitor {
     static thread_local std::optional<uint64_t> parameterAlignment;
 
     void VerboseParameterVisitor::visit(const types::Type &type,
-                                        const string &name,
+                                        const std::string &name,
                                         const tests::AbstractValueView *view,
                                         const std::optional<uint64_t> alignment) {
 
@@ -29,53 +25,53 @@ namespace visitor {
     }
 
     void VerboseParameterVisitor::visitPointer(const types::Type &type,
-                                               const string &name,
+                                               const std::string &name,
                                                const tests::AbstractValueView *view,
-                                               const string &access,
+                                               const std::string &access,
                                                int depth) {
         if (depth == 0) {
             if (needDeclaration) {
-                printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(), parameterAlignment);
+                printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(printer), parameterAlignment);
             } else {
-                static const string bufferSuffix = "_buffer";
-                string buffer = name + bufferSuffix;
-                printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue());
+                static const std::string bufferSuffix = "_buffer";
+                std::string buffer = name + bufferSuffix;
+                printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer));
                 size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
-                string callocCall = StringUtils::stringFormat("(%s) calloc(%zu, sizeof(%s))",
+                std::string callocCall = StringUtils::stringFormat("(%s) calloc(%zu, sizeof(%s))",
                                                               type.usedType(), size, type.baseType());
                 printer->strAssignVar(name, callocCall);
                 printer->strMemcpy(name, buffer, false);
             }
         } else {
-            printer->strAssignVar(name, view->getEntryValue());
+            printer->strAssignVar(name, view->getEntryValue(printer));
         }
     }
 
     void VerboseParameterVisitor::visitArray(const types::Type &type,
-                                             const string &name,
+                                             const std::string &name,
                                              const tests::AbstractValueView *view,
-                                             const string &access,
+                                             const std::string &access,
                                              size_t size,
                                              int depth) {
         if (needDeclaration) {
-            printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(), parameterAlignment);
+            printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(printer), parameterAlignment);
         } else {
-            string bufferSuffix = "_buffer";
-            string buffer = name + bufferSuffix;
-            printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(), parameterAlignment);
+            std::string bufferSuffix = "_buffer";
+            std::string buffer = name + bufferSuffix;
+            printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer), parameterAlignment);
             printer->strMemcpy(name, buffer, false);
         }
 
     }
 
     void VerboseParameterVisitor::visitCString(const types::Type &type,
-                                               const string &name,
+                                               const std::string &name,
                                                const tests::AbstractValueView *view,
-                                               const string &access,
+                                               const std::string &access,
                                                int depth) {
-        string bufferSuffix = "_buffer";
-        string buffer = name + bufferSuffix;
-        printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(), parameterAlignment);
+        std::string bufferSuffix = "_buffer";
+        std::string buffer = name + bufferSuffix;
+        printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer), parameterAlignment);
         if (needDeclaration) {
             printer->strDeclareVar(type.usedType(), name, buffer);
         } else {
@@ -84,27 +80,11 @@ namespace visitor {
     }
 
     void VerboseParameterVisitor::visitStruct(const types::Type &type,
-                                              const string &name,
+                                              const std::string &name,
                                               const tests::AbstractValueView *view,
-                                              const string &access,
+                                              const std::string &access,
                                               int depth) {
-        if (depth == 0) {
-            auto value = view->getEntryValue();
-            if (needDeclaration) {
-                printer->strDeclareVar(type.usedType(), name, value, parameterAlignment);
-            } else {
-                printer->strAssignVar(name, value);
-            }
-        } else {
-            AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
-        }
-    }
-    void VerboseParameterVisitor::visitUnion(const types::Type &type,
-                                             const string &name,
-                                             const tests::AbstractValueView *view,
-                                             const string &access,
-                                             int depth) {
-        auto value = view->getEntryValue();
+        auto value = view->getEntryValue(printer);
         if (depth == 0) {
             if (needDeclaration) {
                 printer->strDeclareVar(type.usedType(), name, value, parameterAlignment);
@@ -112,16 +92,17 @@ namespace visitor {
                 printer->strAssignVar(name, value);
             }
         } else {
-            printer->strAssignVar(name, value);
+            printer->ss << value << NL;
         }
     }
+
     void VerboseParameterVisitor::visitPrimitive(const types::Type &type,
-                                                 const string &name,
+                                                 const std::string &name,
                                                  const tests::AbstractValueView *view,
-                                                 const string &access,
+                                                 const std::string &access,
                                                  int depth) {
         const auto typeName = types::TypesHandler::cBoolToCpp(type.usedType());
-        auto value = view->getEntryValue();
+        auto value = view->getEntryValue(printer);
         if (depth == 0) {
             if (needDeclaration) {
                 printer->strDeclareVar(typeName, name, value, parameterAlignment);

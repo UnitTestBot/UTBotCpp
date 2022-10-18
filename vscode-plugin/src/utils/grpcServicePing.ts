@@ -1,43 +1,42 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { ExtensionLogger } from '../logger';
 import { ITestsGenServiceClient } from '../proto-ts/testgen_grpc_pb';
-import { DummyRequest } from '../proto-ts/testgen_pb';
+import { VersionInfo } from '../proto-ts/testgen_pb';
 const { logger } = ExtensionLogger;
 
 export class GrpcServicePing {
 
-    constructor(public readonly service: ITestsGenServiceClient) {}
+    constructor(
+        public readonly clientVersion: string,
+        public readonly service: ITestsGenServiceClient) {}
 
     /**
      * Returns true if server responds in a given time (milliseconds).
      */ 
-    public async ping(timeout: number): Promise<boolean> {
-        let responded = true;
+    public async ping(timeout: number): Promise<string|null> {
+        let responded = null;
         await Promise.race([
             this.pingInner(),
             this.timeoutPromise(timeout)
         ])
-        .then(_value => {
-            responded = true;
+        .then(serverVer => {
+            logger.error(`Server version: ${serverVer}`);
+            responded = serverVer;
         })
         .catch(err => {
             logger.error(`Server failed to respond: ${err}`);
-            responded = false;
         });
         return responded;
     }
 
-    private async pingInner(): Promise<void> {
-        const dummyRequest = new DummyRequest();
-        return new Promise<void>((resolve, reject) => {
-           this.service.handshake(dummyRequest, (err, _response) => {
+    private async pingInner(): Promise<string> {
+        const versionInfo = new VersionInfo();
+        versionInfo.setVersion(this.clientVersion);
+        return new Promise<string>((resolve, reject) => {
+           this.service.handshake(versionInfo, (err, _response) => {
                 if (err) {
                     reject(`Error: ${err}`);
                 } else {
-                    resolve();
+                    resolve(_response.getVersion());
                 }
             });
         });

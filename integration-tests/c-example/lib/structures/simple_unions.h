@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SIMPLE_UNIONS_H
 #define UNITTESTBOT_SIMPLE_UNIONS_H
 
@@ -65,8 +61,13 @@ struct Variant {
 };
 
 union UnionWithPointer {
-    int * a;
+    int *a;
     long long b;
+};
+
+struct WithAnonymousUnion {
+    union { int i, j; };
+    int m;
 };
 
 int get_sign_union(union IntBytesUnion st);
@@ -76,6 +77,8 @@ int extract_bit(union ShortBytesUnion x);
 int calculate_something_union(union Heterogeneous str);
 
 int get_coordinate(union Vector2D vect, int i);
+
+int count_equal_members_anon_union(struct WithAnonymousUnion st);
 
 signed char operate_with_inner_unions(union MainUnion st);
 

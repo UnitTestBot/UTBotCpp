@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "Fetcher.h"
 
 #include "ArraySubscriptFetcherMatchCallback.h"
@@ -21,23 +17,20 @@
 
 using namespace clang;
 using namespace clang::ast_matchers;
-using namespace clang::tooling;
 using namespace llvm;
 using namespace Matchers;
 
 Fetcher::Fetcher(Options options,
-                 const shared_ptr<CompilationDatabase> &compilationDatabase,
+                 const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                  tests::TestsMap &tests,
                  types::TypeMaps *types,
-                 uint64_t *pointerSize,
-                 uint64_t *maximumAlignment,
+                 size_t *maximumAlignment,
                  const fs::path &compileCommandsJsonPath,
                  bool fetchFunctionBodies)
-    : options(options), projectTests(&tests), projectTypes(types),
-      pointerSize(pointerSize), maximumAlignment(maximumAlignment),
-      fetchFunctionBodies(fetchFunctionBodies), clangToolRunner(compilationDatabase) {
-    buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(),
-                                        CompilationUtils::MOUNTED_CC_JSON_DIR_NAME);
+        : options(options), projectTests(&tests), projectTypes(types),
+          maximumAlignment(maximumAlignment), fetchFunctionBodies(fetchFunctionBodies),
+          clangToolRunner(compilationDatabase) {
+    buildRootPath = Paths::subtractPath(compileCommandsJsonPath.string(), CompilationUtils::UTBOT_BUILD_DIR_NAME);
     if (options.has(Options::Value::TYPE)) {
         addMatcher<TypeDeclsMatchCallback>(anyTypeDeclarationMatcher);
         addMatcher<TypeDeclsMatchCallback>(structJustDeclMatcher);
@@ -89,6 +82,7 @@ void Fetcher::fetchWithProgress(const ProgressWriter *progressWriter,
 
 void Fetcher::postProcess() const {
     if (options.has(Options::Value::FUNCTION) && maximumAlignment != nullptr) {
+        // TODO maybe this is useless?
         for (auto projectTestsIterator = projectTests->begin();
              projectTestsIterator != projectTests->end(); projectTestsIterator++) {
             tests::Tests &tests = projectTestsIterator.value();

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -19,4 +15,5 @@ void variadic_function(const char* fmt, ...) {
         }
         ++fmt;
     }
+    va_end(args);
 }

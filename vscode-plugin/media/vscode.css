@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 :root {
 	--container-paddding: 20px;
 	--input-padding-vertical: 6px;
@@ -77,34 +73,39 @@ button.secondary:hover {
 	background: var(--vscode-button-secondaryHoverBackground);
 }
 
-button:disabled,
-button[disabled] {
-  color:  var(--vscode-debugIcon-breakpointDisabledForeground);
-  background: var(--vscode-button-secondaryBackground);
-}
-button:disabled:hover,
-button:hover[disabled] {
-	cursor: default;
-}
-
-
 input:not([type='checkbox']),
 textarea {
 	display: block;
 	width: 100%;
 	border: none;
+	outline-style: solid;
+	outline-width: thin;
+	outline-color: var(--vscode-input-border);
 	font-family: var(--vscode-font-family);
 	padding: var(--input-padding-vertical) var(--input-padding-horizontal);
 	color: var(--vscode-input-foreground);
-	outline-color: var(--vscode-input-border);
 	background-color: var(--vscode-input-background);
 }
 
 input::placeholder,
 textarea::placeholder {
-	color: var(--vscode-input-placeholderForeground);
+	color: var(--vscode-input-placeholderForeground, #cccccc);
 }
 
 label {
     font-family: var(--vscode-font-family);
+}
+
+input[type = "*"]:disabled,
+input[disabled] {
+	color:  var(--vscode-disabledForeground);
+	background: var(--vscode-disabledBackground);
+	cursor: default;
+}
+
+button:disabled,
+button[disabled] {
+	color:  var(--vscode-debugIcon-breakpointDisabledForeground);
+	background: var(--vscode-button-secondaryBackground);
+	cursor: default;
 }

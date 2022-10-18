@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "GcovCoverageTool.h"
 
 #include "Coverage.h"
@@ -17,6 +13,7 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 #include "json.hpp"
@@ -25,16 +22,14 @@
 
 using Coverage::CoverageMap;
 using Coverage::FileCoverage;
-using std::string;
-using std::vector;
 
 GcovCoverageTool::GcovCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
-    : CoverageTool(progressWriter), projectContext(std::move(projectContext)) {
+    : CoverageTool(std::move(projectContext), progressWriter) {
 }
 
 std::vector<BuildRunCommand>
-GcovCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, bool withCoverage) {
+GcovCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) {
     ExecUtils::throwIfCancelled();
 
     std::vector<BuildRunCommand> result;
@@ -44,12 +39,13 @@ GcovCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, boo
             auto makefile = Paths::getMakefilePathFromSourceFilePath(
                 projectContext,
                 Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath));
-            auto gtestFlags = getTestFilter(testToLaunch);
-            auto buildCommand =
-                MakefileUtils::makefileCommand(projectContext, makefile, "build", gtestFlags);
-            auto runCommand =
-                MakefileUtils::makefileCommand(projectContext, makefile, "run", gtestFlags);
-            result.push_back({ testToLaunch, buildCommand, runCommand });
+            auto gtestFlags = getGTestFlags(testToLaunch);
+            auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                               printer::DefaultMakefilePrinter::TARGET_BUILD,
+                                                               gtestFlags);
+            auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefile,
+                                                             printer::DefaultMakefilePrinter::TARGET_RUN, gtestFlags);
+            result.push_back({testToLaunch, buildCommand, runCommand});
         });
     return result;
 }
@@ -71,7 +67,7 @@ std::vector <std::string> GcovCoverageTool::getGcovArguments(bool jsonFormat) co
     return gcovArgs;
 }
 
-std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
+std::vector<ShellExecTask> GcovCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) {
     MEASURE_FUNCTION_EXECUTION_TIME
     fs::path gcovDir = Paths::getGccCoverageDir(projectContext);
     auto gcovArgs = getGcovArguments(true);
@@ -128,15 +124,19 @@ CoverageMap GcovCoverageTool::getCoverageInfo() const {
     ExecUtils::doWorkWithProgress(
         FileSystemUtils::DirectoryIterator(covJsonDirPath), progressWriter,
         "Reading coverage files", [&coverageMap](auto const &entry) {
-            auto jsonPath = entry.path();
-            auto coverageJson = JsonUtils::getJsonFromFile(jsonPath);
-            for (const nlohmann::json &jsonFile : coverageJson.at("files")) {
-                fs::path filePath(std::filesystem::path(jsonFile.at("file")));
-                if (Paths::isGtest(filePath)) {
-                    continue;
+            try {
+                auto jsonPath = entry.path();
+                auto coverageJson = JsonUtils::getJsonFromFile(jsonPath);
+                for (const nlohmann::json &jsonFile: coverageJson.at("files")) {
+                    fs::path filePath(std::filesystem::path(jsonFile.at("file")));
+                    if (Paths::isGtest(filePath)) {
+                        continue;
+                    }
+                    setLineNumbers(jsonFile, coverageMap[filePath]);
+                    setFunctionBorders(jsonFile, coverageMap[filePath]);
                 }
-                setLineNumbers(jsonFile, coverageMap[filePath]);
-                setFunctionBorders(jsonFile, coverageMap[filePath]);
+            } catch (const std::exception &e) {
+                return;
             }
         });
     return coverageMap;

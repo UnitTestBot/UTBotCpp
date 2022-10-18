@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "KleeAssumeVisitor.h"
 
 #include "KleeAssumeReturnValueVisitor.h"
@@ -14,19 +10,19 @@ namespace visitor {
     }
 
     void KleeAssumeVisitor::visitPointer(const types::Type &type,
-                                         const string &name,
+                                         const std::string &name,
                                          const tests::AbstractValueView *view,
-                                         const string &access,
+                                         const std::string &access,
                                          int depth) {
         if (depth == 0) {
             AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
         } else {
-            string assumption = PrinterUtils::getEqualString(name, PrinterUtils::C_NULL);
+            std::string assumption = PrinterUtils::getEqualString(name, PrinterUtils::C_NULL);
             kleeAssume(assumption);
         }
     }
 
-    void KleeAssumeVisitor::kleeAssume(const string &assumption) {
+    void KleeAssumeVisitor::kleeAssume(const std::string &assumption) {
         printer->strFunctionCall(PrinterUtils::KLEE_ASSUME, { assumption });
     }
 }

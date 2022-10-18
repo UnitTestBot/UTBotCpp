@@ -12,18 +12,19 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - name: Read config from matrix.json
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - id: set-matrix
+        name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
           echo "::set-output name=matrix::$TASKS"
 
-  build:
+  build-utbot-and-run-unit-tests:
     needs: matrix-prep
     strategy:
       matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
-    runs-on: ubuntu-${{ matrix.OPERATING_SYSTEM_TAG }}
+    runs-on: ubuntu-latest
     container:
       image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
       credentials:
@@ -38,20 +39,147 @@ jobs:
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
-      - name: build UTBot and run unit tests
+      - name: Build UTBot
         run: |
-          chmod +x docker/action-scripts/build-and-unit-tests.sh
-          ./docker/action-scripts/build-and-unit-tests.sh
-        shell: bash
-      - uses: actions/upload-artifact@v2
+          export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+          export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          echo $RUN_INFO
+          chmod +x docker/action-scripts/build-utbot.sh
+          ./docker/action-scripts/build-utbot.sh
+      - name: Run Unit Tests
+        run: |
+          chmod +x docker/action-scripts/unit-tests.sh
+          ./docker/action-scripts/unit-tests.sh
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: UTBot unit tests logs
           path: server/build/logs
-      - name: build VSCode plugin
+
+  build-utbot-and-run-integration-tests:
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        UTBOT_ALL: /utbot_distr
+        UTBOT_INSTALL_DIR: /utbot_distr/install
+        GRPC_PATH: /utbot_distr/install
+        CLI_PATH: /utbot_distr/cli
+        DOCKER_TAG: ${{ matrix.DOCKER_TAG }}
+        ARTIFACT_DIR: utbot-artifact
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: build UTBot
+        run: |
+          export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
+          export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
+          chmod +x docker/action-scripts/build-utbot.sh
+          ./docker/action-scripts/build-utbot.sh
+      - name: Run Integration Tests
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
           ./docker/action-scripts/build-vsix.sh
+          chmod +x docker/action-scripts/integration-tests.sh
+          ./docker/action-scripts/integration-tests.sh
+      - name: Setup Java for building CLion plugin
+        uses: actions/setup-java@v3
+        with:
+          distribution: zulu
+          java-version: 11
+      - name: Run CLion integration tests
+        run: |
+          chmod +x docker/action-scripts/runClionIntegrationTests.sh 
+          ./docker/action-scripts/runClionIntegrationTests.sh
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: test-report
+          path: |
+            /github/home/logs
+            clion-plugin/build/reports/tests/**/*
+
+  build-utbot-and-generate-test:
+    needs: matrix-prep
+    strategy:
+      matrix: ${{ fromJson(needs.matrix-prep.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/unittestbot/utbotcpp/base_env:${{ matrix.DOCKER_TAG }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+      env:
+        UTBOT_ALL: /utbot_distr
+        UTBOT_INSTALL_DIR: /utbot_distr/install
+        GRPC_PATH: /utbot_distr/install
+        CLI_PATH: /utbot_distr/cli
+        DOCKER_TAG: ${{ matrix.DOCKER_TAG }}
+        ARTIFACT_DIR: utbot-artifact
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Build UTBot
+        run: |
+          chmod +x docker/action-scripts/build-utbot.sh
+          ./docker/action-scripts/build-utbot.sh
+
+      - name: Generate tests
+        run: |
+          chmod +x docker/action-scripts/generate-tests.sh
+          ./docker/action-scripts/generate-tests.sh
+
+      - name: Upload generated tests for next job
+        uses: actions/upload-artifact@v3
+        with:
+          name: project
+          path: ./integration-tests/c-example
+
+  build-portable-container:
+    needs: build-utbot-and-generate-test
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_IMAGE_TAG: docker-image
+      PORTABLE_CONTAINER_NAME: Portable
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          chmod +x docker/action-scripts/install-dependencies-for-docker-image-without-utbot.sh
+          ./docker/action-scripts/install-dependencies-for-docker-image-without-utbot.sh
+          mkdir -p ./c-example
+
+      - name: Download generated test
+        uses: actions/download-artifact@v3
+        with:
+          name: project
+          path: ./c-example
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: ./c-example
+
+      - name: Check test portability
+        run: |
+          rm -r /home/runner/work/UTBotCpp/UTBotCpp/c-example/build
+          env make -f /home/runner/work/UTBotCpp/UTBotCpp/c-example/tests/makefiles/lib/floats/floating_point_plain.mk run GTEST_FLAGS="--gtest_filter=*.plain_isnan_test_1" CLANG="/usr/bin/clang-10" CLANGXX="/usr/bin/clang++-10" GTEST="/gtest"

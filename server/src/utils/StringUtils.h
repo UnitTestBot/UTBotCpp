@@ -1,17 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_STRINGUTIL_H
 #define UNITTESTBOT_STRINGUTIL_H
 
 #include "StringFormat.h"
 #include "CollectionUtils.h"
-
-#include <algorithm>
-#include <cstring>
 #include "utils/path/FileSystemPath.h"
-#include <iostream>
+
 #include <iterator>
 #include <memory>
 #include <sstream>
@@ -19,27 +12,22 @@
 #include <string_view>
 #include <type_traits>
 #include <vector>
-#include <limits>
 
 namespace StringUtils {
-    using std::string;
-    using std::string_view;
-    using std::vector;
+    bool isNumber(std::string_view s);
 
-    bool isNumber(string_view s);
+    bool startsWith(std::string_view str, std::string_view pattern);
 
-    bool startsWith(string_view str, string_view pattern);
+    bool endsWith(std::string_view str, std::string_view pattern);
 
-    bool endsWith(string_view str, string_view pattern);
+    std::string tolower(std::string_view data);
 
-    string tolower(string_view data);
+    std::string toupper(std::string_view data);
 
-    string toupper(string_view data);
-
-    vector<string> split(string_view str, char delim = ' ');
+    std::vector<std::string> split(std::string_view str, char delim = ' ');
 
     template <typename Container = std::initializer_list<std::string>>
-    string joinWith(Container &&items, string_view del) {
+    std::string joinWith(Container &&items, std::string_view del) {
         std::stringstream ss;
         for (auto it = items.begin(); it != items.end(); it++) {
             using T = std::decay_t<decltype(*it)>;
@@ -57,7 +45,9 @@ namespace StringUtils {
         return ss.str();
     }
 
-    bool replaceLast(string &str, const string &from, const string &to);
+    bool replaceLast(std::string &str, const std::string &from, const std::string &to);
+
+    bool replaceFirst(std::string &str, const std::string &from, const std::string &to);
 
     void replaceAll(std::string &str, char from, char to);
 
@@ -77,19 +67,26 @@ namespace StringUtils {
      */
     std::string charCodeToLiteral(int code);
 
-    std::vector<std::string> splitByWhitespaces(string_view input);
+    std::vector<std::string> splitByWhitespaces(std::string_view input);
 
-    void removeLineEndings(string& s);
+    void removeLineEndings(std::string &s);
 
-    void ltrim(string &s);
+    void ltrim(std::string &s);
 
-    void rtrim(string &s);
+    void rtrim(std::string &s);
 
-    void trim(string &s);
+    void trim(std::string &s);
 
-    string repeat(const string &s, int n);
+    std::string repeat(const std::string &s, int n);
 
-    bool contains(string_view s, string_view t);
+    bool contains(std::string_view s, std::string_view t);
+
+    template<typename T>
+    T stot(const std::string&) {
+        return T();
+    }
+
+    std::string wrapQuotations(const std::string &s);
 }
 
 #endif //UNITTESTBOT_STRINGUTIL_H

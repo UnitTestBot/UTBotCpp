@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_GLOBALVARIABLEUSAGEMATCHCALLBACK_H
 #define UNITTESTBOT_GLOBALVARIABLEUSAGEMATCHCALLBACK_H
 
@@ -36,7 +32,7 @@ private:
         std::string variableName;
         std::string functionName;
 
-        Usage(string variableName, string functionName);
+        Usage(std::string variableName, std::string functionName);
 
         bool operator==(const Usage &rhs) const;
         bool operator!=(const Usage &rhs) const;

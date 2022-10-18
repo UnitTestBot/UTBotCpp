@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -15,7 +11,7 @@ export enum Compiler { Clang, Gcc }
 
 export async function activate(projectPath: string): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const ext = vs.extensions.getExtension('huawei.unittestbot')!;
+    const ext = vs.extensions.getExtension('UnitTestBot.UTBotCpp')!;
     await ext.activate().then(api => api.setProjectPath(projectPath));
 }
 
@@ -134,9 +130,10 @@ export function checkTestFilesGenerated(dirPath: string, srcFiles: string[]): bo
     let checked = true;
     const srcFilesUsedMap = new Map<string, boolean>(srcFiles.map(file => [file, false]));
     walk(testDirPath).forEach(file => {
+        const fileExt = path.parse(file).ext;
         const testFileName = path.parse(file).name;
-        if (testFileName.search(/_stub$/) < 0) {
-            const fileName = checkForFirstMatch(testFileName, [/_test_error$/, /_test$/]);
+        if (testFileName.search(/_stub$/) < 0 && !(fileExt === ".mk") && !(testFileName.endsWith("_wrapper"))) {
+            const fileName = checkForFirstMatch(testFileName, [/_dot_c_test_error$/, /_dot_c_test$/]);
             if (!srcFilesUsedMap.has(fileName)) {
                 TestLogger.getLogger().error('Unable to find a corresponding source file for test: [%s]', testFileName);
                 checked = false;

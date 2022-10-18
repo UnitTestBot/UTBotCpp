@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SOURCETOHEADERREWRITER_H
 #define UNITTESTBOT_SOURCETOHEADERREWRITER_H
 
@@ -17,7 +13,6 @@
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Frontend/CompilerInstance.h>
 #include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Tooling/CompilationDatabase.h>
 #include <grpcpp/grpcpp.h>
 
 #include <utility>
@@ -33,7 +28,7 @@ class SourceToHeaderRewriter {
     std::unique_ptr<clang::ast_matchers::MatchFinder::MatchCallback> fetcherInstance;
     std::unique_ptr<clang::ast_matchers::MatchFinder> finder;
 
-    unique_ptr<clang::tooling::FrontendActionFactory>
+    std::unique_ptr<clang::tooling::FrontendActionFactory>
     createFactory(llvm::raw_ostream *externalStream,
                   llvm::raw_ostream *internalStream,
                   llvm::raw_ostream *wrapperStream,
@@ -50,7 +45,7 @@ public:
 
     SourceToHeaderRewriter(
         utbot::ProjectContext projectContext,
-        const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+        const std::shared_ptr<CompilationDatabase> &compilationDatabase,
         std::shared_ptr<Fetcher::FileToStringSet> structsToDeclare,
         fs::path serverBuildDir);
 

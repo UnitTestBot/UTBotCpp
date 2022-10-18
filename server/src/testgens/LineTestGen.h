@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_LineTESTGEN_H
 #define UNITTESTBOT_LineTESTGEN_H
 
@@ -16,12 +12,14 @@ public:
     
     ~LineTestGen() override = default;
 
-    string toString() override;
+    const fs::path &getSourcePath() const;
+
+    std::string toString() override;
 
     virtual bool needToAddPathFlag();
 
     fs::path filePath;
-    int line;
+    uint32_t line;
 };
 
 

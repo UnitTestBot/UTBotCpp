@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 
 
@@ -14,6 +10,11 @@ export const coverageGenerationFailedInfo = "UTBot failed to generate coverage."
 export const serverIsDeadError = "UTBot server doesn't respond. Check the connection, please.";
 export const grpcConnectionLostError = "No connection established";
 export const targetNotUsed = "There is no used target. Use any in UTBot Targets window, please.";
+
+// {SARIF 
+export const defaultSARIFViewer = "MS-SarifVSCode.sarif-viewer";
+export const intstallSARIFViewer = "Please, install MS Sarif Viewer from https://marketplace.visualstudio.com/items?itemName=" + defaultSARIFViewer;
+// }SARIF
 
 
 export function showErrorMessage(err: any): void {
@@ -43,4 +44,3 @@ function getErrorMessage(err: any): any {
     }
     return err;
 }
-

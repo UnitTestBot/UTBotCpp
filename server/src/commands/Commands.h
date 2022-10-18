@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COMMANDS_H
 #define UNITTESTBOT_COMMANDS_H
 
@@ -17,7 +13,8 @@
 
 
 namespace Commands {
-    static unsigned int threadsPerUser = 0;
+    extern uint32_t threadsPerUser;
+    extern uint32_t kleeProcessNumber;
 
     struct MainCommands {
         explicit MainCommands(CLI::App &app);
@@ -43,17 +40,16 @@ namespace Commands {
 
         fs::path getLogPath();
 
-        fs::path getTmpPath();
-
         loguru::NamedVerbosity getVerbosity();
 
         unsigned int getPort();
 
         unsigned int getThreadsPerUser();
 
+        unsigned int getKleeProcessNumber();
     private:
         unsigned int port = 0;
-        fs::path logPath, tmpPath;
+        fs::path logPath;
 
         loguru::NamedVerbosity verbosity;
         static const std::map<std::string, loguru::NamedVerbosity> verbosityMap;
@@ -223,14 +219,11 @@ namespace Commands {
 
         [[nodiscard]] std::string getBuildDirectory() const;
 
-        [[nodiscard]] std::string getResultsDirectory() const;
-
     private:
         CLI::Option_group *projectContextOptions;
         fs::path projectPath;
         std::string testDir = "tests";
         std::string buildDir = "build";
-        std::string resultsDir = "results";
     };
 
     struct SettingsContextOptionGroup {
@@ -255,7 +248,7 @@ namespace Commands {
         bool generateForStaticFunctions = true;
         bool verbose = false;
         int32_t timeoutPerFunction = 30;
-        int32_t timeoutPerTest = 0;
+        int32_t timeoutPerTest = 30;
         bool noDeterministicSearcher = false;
         bool noStubs = false;
     };

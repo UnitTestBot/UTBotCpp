@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_ABSTRACTVALUEVIEWVISITOR_H
 #define UNITTESTBOT_ABSTRACTVALUEVIEWVISITOR_H
 
@@ -60,12 +56,6 @@ namespace visitor {
                                  const std::string &access,
                                  int depth);
 
-        virtual void visitUnion(const types::Type &type,
-                                const std::string &name,
-                                const tests::AbstractValueView *view,
-                                const std::string &access,
-                                int depth);
-
         virtual void visitEnum(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,
@@ -85,7 +75,7 @@ namespace visitor {
                                             int depth);
 
         [[nodiscard]] static std::string
-        getDecoratedVarName(const string& varName, size_t pointersCount, const string& access);
+        getDecoratedVarName(const std::string &varName, size_t pointersCount, const std::string &access);
     };
 }
 

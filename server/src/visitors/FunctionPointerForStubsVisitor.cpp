@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "FunctionPointerForStubsVisitor.h"
 
 #include "printers/Printer.h"
@@ -32,9 +28,9 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitStruct(const types::Type &type,
-                                             const string &name,
+                                             const std::string &name,
                                              const tests::AbstractValueView *view,
-                                             const string &access,
+                                             const std::string &access,
                                              int depth) {
         auto [_, inserted] = used.insert(type.getId());
         if (!inserted) {
@@ -55,29 +51,29 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitPointer(const types::Type &type,
-                                              const string &name,
-                                              const tests::AbstractValueView *view,
-                                              const string &access,
-                                              int depth) {
+                                                      const std::string &name,
+                                                      const tests::AbstractValueView *view,
+                                                      const std::string &access,
+                                                      int depth) {
         if (depth == 0) {
             AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
         }
     }
 
     void FunctionPointerForStubsVisitor::visitArray(const types::Type &type,
-                                            const string &name,
-                                            const tests::AbstractValueView *view,
-                                            const string &access,
-                                            size_t size,
-                                            int depth) {
+                                                    const std::string &name,
+                                                    const tests::AbstractValueView *view,
+                                                    const std::string &access,
+                                                    size_t size,
+                                                    int depth) {
         AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth + type.getDimension());
     }
 
     void FunctionPointerForStubsVisitor::visitPrimitive(const types::Type &type,
-                                                const string &name,
-                                                const tests::AbstractValueView *view,
-                                                const string &access,
-                                                int depth) {
+                                                        const std::string &name,
+                                                        const tests::AbstractValueView *view,
+                                                        const std::string &access,
+                                                        int depth) {
         // need to be implemented
     }
 }

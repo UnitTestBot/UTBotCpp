@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_ENVIRONMENT_PATHS_H
 #define UNITTESTBOT_ENVIRONMENT_PATHS_H
 
@@ -43,6 +39,8 @@ namespace Paths {
     fs::path getLdGold();
 
     fs::path getLd();
+
+    fs::path getAsanLibraryPath();
 
   // Gcc is used only in tests
     fs::path getGcc();

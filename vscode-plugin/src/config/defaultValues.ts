@@ -1,16 +1,13 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import * as vs from 'vscode';
 import * as vsUtils from '../utils/vscodeUtils';
 import { Prefs } from './prefs';
 import * as pathUtils from '../utils/pathUtils';
 import { isIP } from 'net';
+import {isWin32} from "../utils/utils";
 
 export class DefaultConfigValues {
-    public static readonly DEFAULT_HOST = "127.0.0.1";
+    public static readonly DEFAULT_HOST = "localhost";
     public static readonly DEFAULT_PORT = 2121;
 
     public static readonly POSSIBLE_BUILD_DIR_NAMES = ['out', 'build'];
@@ -18,11 +15,26 @@ export class DefaultConfigValues {
 
     public static readonly DEFAULT_CMAKE_OPTIONS = ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DCMAKE_EXPORT_LINK_COMMANDS=ON'];
 
+    public static toWSLPathOnWindows(path: string): string {
+        if (!isWin32()) {
+            return path;
+        }
+        return path
+            .replace(/^(\w):|\\+/g,'/$1')
+            .replace(/^\//g,'/mnt/');
+    }
+
+    public static hasConfiguredRemotePath(): boolean {
+        return Prefs.getRemotePath().length !== 0;
+    }
+
     public static getDefaultHost(): string {
         let host = Prefs.getGlobalHost();
-        const sftHost = vsUtils.getFromSftpConfig("host");
-        if (sftHost && isIP(sftHost)) {
-            host = sftHost;
+        if (!DefaultConfigValues.hasConfiguredRemotePath()) {
+            const sftHost = vsUtils.getFromSftpConfig("host");
+            if (sftHost && isIP(sftHost)) {
+                host = sftHost;
+            }
         }
         return host;
     }
@@ -32,14 +44,17 @@ export class DefaultConfigValues {
     }
 
     public static getDefaultRemotePath(): string {
-        let remotePath = "";
-        if (Prefs.isRemoteScenario()) {
-            const sftpRemotePath = vsUtils.getFromSftpConfig("remotePath");
-            if (sftpRemotePath) {
-                remotePath = sftpRemotePath;
+        let remotePath = Prefs.getRemotePath();
+        if (remotePath.length === 0) {
+            if (DefaultConfigValues.getDefaultHost() === vsUtils.getFromSftpConfig("host")) {
+                // if `host` is the same as SFTP host, inherit the remote path from SFTP plugin
+                const sftpRemotePath = vsUtils.getFromSftpConfig("remotePath");
+                if (sftpRemotePath) {
+                    remotePath = sftpRemotePath;
+                }
+            } else {
+                remotePath = DefaultConfigValues.toWSLPathOnWindows(vsUtils.getProjectDirByOpenedFile().fsPath);
             }
-        } else {
-            remotePath = vsUtils.getProjectDirByOpenedFile().fsPath;
         }
         return remotePath;
     }
@@ -51,10 +66,10 @@ export class DefaultConfigValues {
         if (!rootPath) {
             return buildDirName;
         }
-        await vs.workspace.fs.readDirectory(vs.Uri.parse(rootPath))
+        await vs.workspace.fs.readDirectory(vs.Uri.file(rootPath))
             .then(resultArray => {
                 resultArray.forEach(([name, type]) => {
-                    // add only non hidden directories and not a build directory by default
+                    // add only non-hidden directories and not a build directory by default
                     if (type === vs.FileType.Directory
                         && DefaultConfigValues.looksLikeBuildDirectory(name)) {
                         buildDirName = name;

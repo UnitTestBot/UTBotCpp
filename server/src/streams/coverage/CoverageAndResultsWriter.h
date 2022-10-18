@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COVERAGEJSONWRITER_H
 #define UNITTESTBOT_COVERAGEJSONWRITER_H
 
@@ -19,10 +15,11 @@ public:
 
     explicit CoverageAndResultsWriter(grpc::ServerWriter<testsgen::CoverageAndResultsResponse> *writer);
 
-    virtual void writeResponse(const Coverage::TestStatusMap &testsStatusMap,
+    virtual void writeResponse(const utbot::ProjectContext &projectContext,
+                               const Coverage::TestResultMap &testsResultMap,
                                const Coverage::CoverageMap &coverageMap,
                                const nlohmann::json &totals,
-                               std::optional<string> errorMessage) = 0;
+                               std::optional<std::string> errorMessage) = 0;
 };
 
 

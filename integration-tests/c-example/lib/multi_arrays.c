@@ -1,35 +1,33 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "multi_arrays.h"
 
-#include <string.h>
-
-struct MyStructMult {
-    int a[2][3][2];
-};
-
-struct IntArray {
-    int ints[2][5];
-};
-
-struct PointStruct {
-    int x;
-    int y;
-};
-
-
-int kek(int a[1][2]) {
-    return 1;
+int get_elem(int a[1][2]) {
+    return a[0][0];
 }
 
-
-int sumSign(int a[2][2]) {
+int sum_sign(int a[2][2]) {
     int sum = 0;
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             sum += a[i][j];
+        }
+    }
+    if (sum == 0) {
+        return 0;
+    } else if (sum > 0) {
+        return 1;
+    } else {
+        return -1;
+    }
+}
+
+int sum_sign_1d_small(const int a[9]) {
+    int sum = 0;
+    for (int i = 0; i < 9; i++) {
+        sum += a[i];
+        if (i % 2 == 0) {
+            sum++;
+        } else {
+            sum--;
         }
     }
     if (sum == 0) {
@@ -52,7 +50,7 @@ int value(int a[2][3]) {
     return -1;
 }
 
-int value2(int (* a)[3]) {
+int value2(int (*a)[3]) {
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 3; j++) {
             if (a[i][j] > 0) {
@@ -64,8 +62,7 @@ int value2(int (* a)[3]) {
 }
 
 
-int some_method(int ** pointer2d) {
-    int x = 2;
+int some_method(int **pointer2d) {
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if (pointer2d[i][j] > 0) {
@@ -79,13 +76,13 @@ int some_method(int ** pointer2d) {
 int return_sign_sum(struct MyStructMult st) {
     int res = 0;
     for (int i = 0; i < 2; i++) {
-        for(int j = 0; j < 3; j++) {
+        for (int j = 0; j < 3; j++) {
             for (int k = 0; k < 2; k++) {
                 res += st.a[i][j][k];
             }
-        }  
+        }
     }
-    
+
     if (res > 0) {
         return 1;
     } else if (res == 0) {
@@ -102,7 +99,7 @@ long long return_sign_sum_of_struct_array(struct PointStruct arr[2][2]) {
             if (arr[i][j].x > 0) {
                 sumDiffs += arr[i][j].x;
             } else {
-                 sumDiffs += -arr[i][j].x;
+                sumDiffs += -arr[i][j].x;
             }
 
             if (arr[i][j].y > 0) {
@@ -115,31 +112,31 @@ long long return_sign_sum_of_struct_array(struct PointStruct arr[2][2]) {
     return sumDiffs;
 }
 
-int point_quart(struct PointStruct ** point) {
+int point_quart(struct PointStruct **point) {
     if ((**point).x > 0) {
-         if ((**point).y > 0) {
-             return 1;
-         } else {
-             return 4;
-         }
+        if ((**point).y > 0) {
+            return 1;
+        } else {
+            return 4;
+        }
     } else {
-         if ((**point).y > 0) {
-             return 2;
-         } else {
-             return 3;
-         }
+        if ((**point).y > 0) {
+            return 2;
+        } else {
+            return 3;
+        }
     }
 }
 
 struct IntArray return_struct_with_2d_array(int a) {
     if (a > 0) {
-        struct IntArray st = {{{1,2,3,4,5}, {1,2,3,4,5}}};
+        struct IntArray st = {{{ 1, 2, 3, 4, 5 }, { 1, 2, 3, 4, 5 }}};
         return st;
     } else if (a < 0) {
-        struct IntArray st = {{{-1,-2,-3,-4,-5}, {-1,-2,-3,-4,-5}}};
+        struct IntArray st = {{{ -1, -2, -3, -4, -5 }, { -1, -2, -3, -4, -5 }}};
         return st;
     } else {
-        struct IntArray st = {{{0,0,0,0,0}, {0,0,0,0,0}}};
+        struct IntArray st = {{{ 0, 0, 0, 0, 0 }, { 0, 0, 0, 0, 0 }}};
         return st;
     }
 }

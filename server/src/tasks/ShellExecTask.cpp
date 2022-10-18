@@ -1,11 +1,11 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ShellExecTask.h"
 
-#include <building/BaseCommand.h>
-#include <utils/ExecUtils.h>
+#include "building/BaseCommand.h"
+#include "utils/ExecUtils.h"
+
+#include "loguru.h"
+
+#include <fstream>
 
 namespace utbot {
     ShellExecTask::ExecutionParameters BaseCommand::toExecutionParameters() const {

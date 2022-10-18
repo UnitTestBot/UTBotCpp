@@ -17,10 +17,36 @@ add_executable(
         SAT-777.c
         main.c)
 
+add_subdirectory(ISSUE-140)
+target_link_libraries(regression issue-140)
+
 add_library(
         SAT-760
         SAT-760/SAT-760_1.c
         SAT-760/SAT-760_2.c
 )
+
+add_library(
+        PR-200
+        PR-200/pair.c
+        PR-200/PR-200.c
+)
+
+add_library(PR120 PR120.c)
+set_property(TARGET PR120 PROPERTY C_STANDARD 90)
+
+add_library(PR123 PR123.c)
+
+add_library(PR153 PR153.c)
+
+add_library(GH215 GH215.c)
+
+add_library(issue-276 issue-276.c)
+target_compile_definitions(issue-276 PUBLIC EXPORT1=)
+target_compile_definitions(issue-276 PUBLIC EXPORT2="")
+target_compile_definitions(issue-276 PUBLIC EXPORT3=4)
+target_compile_definitions(issue-276 PUBLIC EXPORT4="4")
+
+add_library(issue-195 issue-195.c)
 
 set_target_properties(regression PROPERTIES LINK_WHAT_YOU_USE TRUE)

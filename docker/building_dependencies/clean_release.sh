@@ -1,7 +1,3 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script clears out all the unnecessary files from the release build
 
 # Need just clang-10, llvm-cov, llvm-profdata and cmake in $UTBOT_INSTALL_DIR/bin
@@ -20,7 +16,7 @@ cd $UTBOT_INSTALL_DIR/lib && find -maxdepth 1 -type f \( -name "*" ! -name "LLVM
 rm -rf $UTBOT_ALL/klee/bin
 
 # There should be just some klee libraries in klee/lib
-cd $UTBOT_ALL/klee/lib && find -type f \( -name "*" ! -name "libkleeRuntimeFp64_Debug+Asserts.bca" ! -name "libkleeRuntimeFp64_Debug+Asserts.bca" ! -name "libkleeRuntimeKLEELibc64_Debug+Asserts.bca" ! -name "libkleeRuntimeKLEELibc64_Debug+Asserts.bca" ! -name "libkleeRuntimeFreestanding64_Debug+Asserts.bca" ! -name "libkleeRuntimeIntrinsic64_Debug+Asserts.bca" ! -name "libkleeRuntimePOSIX64_Debug+Asserts.bca" ! -name "klee-uclibc.bca" \) -delete
+cd $UTBOT_ALL/klee/lib && find -type f \( ! -name '*_Debug+Asserts.bca' ! -name 'klee-uclibc.bca' \) -delete
 
 # Previous command removed only regular files, need to remove also symlincs and then empty directories
 find $UTBOT_ALL/klee -type l -delete

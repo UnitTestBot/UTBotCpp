@@ -1,18 +1,12 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-
 #include "CLICoverageAndResultsWriter.h"
 
+#include "utils/FileSystemUtils.h"
+
 #include "loguru.h"
+#include "Paths.h"
 
-#include <fstream>
-#include <utils/FileSystemUtils.h>
-#include <utils/TimeUtils.h>
-
-CLICoverageAndResultsWriter::CLICoverageAndResultsWriter(const fs::path &resultsDirectory)
-    : resultsDirectory(resultsDirectory), CoverageAndResultsWriter(nullptr) {
+CLICoverageAndResultsWriter::CLICoverageAndResultsWriter()
+    : CoverageAndResultsWriter(nullptr) {
 }
 
 std::string statusToString(testsgen::TestStatus status) {
@@ -26,17 +20,18 @@ std::string statusToString(testsgen::TestStatus status) {
     return it == description.end() ? "UNKNOWN" : it->second;
 }
 
-void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &testsStatusMap,
+void CLICoverageAndResultsWriter::writeResponse(const utbot::ProjectContext &projectContext,
+                                                const Coverage::TestResultMap &testsResultMap,
                                                 const Coverage::CoverageMap &coverageMap,
                                                 const nlohmann::json &totals,
-                                                std::optional<string> errorMessage) {
+                                                std::optional<std::string> errorMessage) {
     std::stringstream ss;
 
     ss << "Test results summary." << std::endl;
-    for (const auto &[filepath, fileTestsStatus] : testsStatusMap) {
+    for (const auto &[filepath, fileTestsResult] : testsResultMap) {
         ss << "==== Tests in " << filepath << std::endl;
-        for (const auto &[testName, status] : fileTestsStatus) {
-            ss << "======== " << testName << " -> " << statusToString(status) << std::endl;
+        for (const auto &[testName, result] : fileTestsResult) {
+            ss << "======== " << testName << " -> " << statusToString(result.status()) << std::endl;
         }
     }
 
@@ -56,7 +51,7 @@ void CLICoverageAndResultsWriter::writeResponse(const Coverage::TestStatusMap &t
     }
     ss << "Totals:\n";
     ss << totals;
-    fs::path resultsFilePath = resultsDirectory / (TimeUtils::getDate() + ".log");
+    fs::path resultsFilePath = Paths::getUTBotReportDir(projectContext) / "tests-result.log";
     FileSystemUtils::writeToFile(resultsFilePath, ss.str());
     LOG_S(INFO) << ss.str();
 }

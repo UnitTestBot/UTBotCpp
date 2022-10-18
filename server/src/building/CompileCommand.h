@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COMPILECOMMAND_H
 #define UNITTESTBOT_COMPILECOMMAND_H
 
@@ -19,8 +15,8 @@ namespace utbot {
     class CompileCommand : public BaseCommand {
     private:
         iterator sourcePath;
-        iterator compiler;
-        iterator output;
+
+        void initOutput();
 
     public:
         CompileCommand() = default;
@@ -33,6 +29,8 @@ namespace utbot {
 
         CompileCommand &operator=(CompileCommand &&other) noexcept;
 
+        CompileCommand(const CompileCommand &other, bool shouldChangeDirectory);
+
         CompileCommand(std::vector<std::string> arguments, fs::path directory, fs::path sourcePath);
 
         friend void swap(CompileCommand &a, CompileCommand &b) noexcept;
@@ -41,19 +39,9 @@ namespace utbot {
 
         void setSourcePath(fs::path sourcePath);
 
-        [[nodiscard]] fs::path getCompiler() const;
-
-        void setCompiler(fs::path compiler);
-
-        [[nodiscard]] fs::path getOutput() const override;
-
         [[nodiscard]] bool isArchiveCommand() const override;
 
-        void setOutput(fs::path output);
-
-        void removeGccFlags();
-
-        void filterCFlags();
+        void removeCompilerFlagsAndOptions(const std::unordered_set<std::string> &switchesToRemove);
 
         void removeIncludeFlags();
 

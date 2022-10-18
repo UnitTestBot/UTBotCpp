@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BASECOMMAND_H
 #define UNITTESTBOT_BASECOMMAND_H
 
@@ -18,13 +14,19 @@
 
 namespace utbot {
     class BaseCommand {
+    private:
+        void initOutput();
+
     protected:
+        bool shouldChangeDirectory = false;
         fs::path directory;
         std::list<std::string> commandLine{};
         tsl::ordered_map<std::string, std::string> environmentVariables{};
 
         using iterator = decltype(commandLine)::iterator;
         using const_iterator = decltype(commandLine)::const_iterator;
+
+        iterator output;
 
         std::optional<iterator> optimizationLevel;
 
@@ -34,16 +36,18 @@ namespace utbot {
 
         iterator findOptimizationLevelFlag();
 
-    public:
+
         BaseCommand() = default;
 
-        BaseCommand(std::list<std::string> commandLine, fs::path directory);
+        BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
-        BaseCommand(std::vector<std::string> commandLine, fs::path directory);
+        BaseCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory = false);
 
         BaseCommand(BaseCommand const &other);
 
         BaseCommand(BaseCommand &&other) noexcept;
+
+    public:
 
         [[nodiscard]] std::list<std::string> &getCommandLine();
 
@@ -51,7 +55,9 @@ namespace utbot {
 
         [[nodiscard]] const fs::path &getDirectory() const;
 
-        [[nodiscard]] virtual fs::path getOutput() const = 0;
+        [[nodiscard]] fs::path getOutput() const;
+
+        void setOutput(fs::path output);
 
         [[nodiscard]] virtual bool isArchiveCommand() const = 0;
 
@@ -81,7 +87,9 @@ namespace utbot {
 
         [[nodiscard]] ShellExecTask::ExecutionParameters toExecutionParameters() const;
 
-        [[nodiscard]] virtual std::string toStringWithChangingDirectory() const;
+        [[nodiscard]] std::string toStringWithChangingDirectory() const;
+
+        [[nodiscard]] virtual std::string toStringWithChangingDirectoryToNew(const fs::path &targetDirectory) const;
 
         bool replace(fs::path const &from, fs::path const &to);
 
@@ -90,6 +98,10 @@ namespace utbot {
         size_t erase_if(std::function<bool(std::string)> f);
 
         void setOptimizationLevel(const std::string &flag);
+
+        [[nodiscard]] fs::path getBuildTool() const;
+
+        void setBuildTool(fs::path buildTool);
     };
 }
 

@@ -1,48 +1,11 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "PrinterUtils.h"
 
-#include "Tests.h"
 #include "Paths.h"
+#include "Tests.h"
+
 #include "loguru.h"
 
 namespace PrinterUtils {
-    const std::string fromBytes = "template<typename T, size_t N>\n"
-                                  "T from_bytes(const char (&bytes)[N]) {\n"
-                                  "    T result;\n"
-                                  "    std::memcpy(&result, bytes, sizeof(result));\n"
-                                  "    return result;\n"
-                                  "}";
-
-    const std::string redirectStdin = "void utbot_redirect_stdin(const char* buf, int &res) {\n"
-                                      "    int fds[2];\n"
-                                      "    if (pipe(fds) == -1) {\n"
-                                      "        res = -1;\n"
-                                      "        return;\n"
-                                      "    }\n"
-                                      "    close(STDIN_FILENO);\n"
-                                      "    dup2(fds[0], STDIN_FILENO);\n"
-                                      "    write(fds[1], buf, " + std::to_string(types::Type::symStdinSize) + ");\n"
-                                      "    close(fds[1]);\n"
-                                      "}";
-
-
-    const std::string DEFAULT_ACCESS = "%s";
-    const std::string KLEE_PREFER_CEX = "klee_prefer_cex";
-    const std::string KLEE_ASSUME = "klee_assume";
-    const std::string KLEE_PATH_FLAG = "kleePathFlag";
-    const std::string KLEE_PATH_FLAG_SYMBOLIC = "kleePathFlagSymbolic";
-    const std::string EQ_OPERATOR = " == ";
-    const std::string ASSIGN_OPERATOR = " = ";
-    const std::string TAB = "    ";
-
-    const std::string EXPECTED = "expected";
-    const std::string ACTUAL = "actual";
-    const std::string ABS_ERROR = "utbot_abs_error";
-    const std::string EXPECT_ = "EXPECT_";
-    const std::string EQ = "EQ";
 
     std::string convertToBytesFunctionName(const std::string &typeName) {
         return StringUtils::stringFormat("from_bytes<%s>", typeName);
@@ -59,34 +22,40 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("%s_%s", declName, mangledPath);
     }
 
-    std::string getFieldAccess (std::string const& objectName, types::Field const &field) {
+    std::string getFieldAccess(const std::string &objectName, const types::Field &field) {
         if (field.name.empty()) {
             return objectName;
         }
+        const std::string &fieldName = field.name;
         if (field.accessSpecifier == types::Field::AS_pubic) {
-            return getFieldAccess(objectName, field.name);
+            if (fieldName.empty()) {
+                return objectName;
+            }
+            return objectName + "." + fieldName;
         }
-        return StringUtils::stringFormat("access_private::%s(%s)", field.name, objectName);
-    }
-
-    std::string getFieldAccess(std::string const& objectName, std::string const& fieldName) {
-        if (fieldName.empty()) {
-            return objectName;
-        }
-        return objectName + "." + fieldName;
+        return StringUtils::stringFormat("access_private::%s(%s)", fieldName, objectName);
     }
 
     std::string fillVarName(std::string const &access, std::string const &varName) {
         return StringUtils::stringFormat(access, varName);
     }
 
-    std::string initializePointer(const std::string &type, const std::string &value) {
-        if (value == C_NULL || value == "0") {
+    std::string initializePointer(const std::string &type,
+                                  const std::string &value,
+                                  size_t additionalPointersCount) {
+        if (value == C_NULL || std::stoull(value) == 0) {
             return C_NULL;
         } else {
-            return "(" + type + ") " + value;
+            std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
+            return StringUtils::stringFormat("(%s%s) 0x%x", type, additionalPointers, std::stoull(value));
         }
+    }
 
+    std::string initializePointerToVar(const std::string &type,
+                                       const std::string &varName,
+                                       size_t additionalPointersCount) {
+        std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
+        return StringUtils::stringFormat("(%s%s) &%s", type, additionalPointers, varName);
     }
 
     std::string generateNewVar(int cnt) {
@@ -121,51 +90,6 @@ namespace PrinterUtils {
     std::string getKleePrefix(bool forKlee) {
         return forKlee ? "klee_" : "";
     }
-
-    const std::string TEST_NAMESPACE = "UTBot";
-    const std::string DEFINES_FOR_C_KEYWORDS =
-        /* Currently Clang tool transforms RecordDecl for
-         * @code
-         * struct data {
-         * char x;
-         * _Alignas(64) char cacheline[64];
-         * };
-         * to
-         * @code
-         * struct data {
-         * char x;
-         * char cacheline[64] _Alignas(64);
-         * };
-         * which is not valid code even for C, I suppose
-         * */
-        "#define _Alignas(x)\n"
-        // can't be a part of function declaration, only typedef
-        "#define _Atomic(x) x\n"
-        "#define _Bool bool\n"
-        // ignore for function declaration
-        "#define _Noreturn\n"
-        // can't be a part of function declaration, only typedef
-        "#define _Thread_local thread_local\n"
-        "";
-    const std::string C_NULL = "NULL";
-
-    const std::unordered_map <int, std::string> escapeSequences = {
-            {10, "\\n"},
-            {9, "\\t"},
-            {11, "\\v"},
-            {8, "\\b"},
-            {13, "\\r"},
-            {12, "\\f"},
-            {7, "\\a"},
-            {92, "\\\\"},
-            {63, "\\?"},
-            {39, "\\\'"},
-            {34, "\\\""},
-            {0, "\\0"}
-    };
-
-    const std::string KLEE_MODE = "KLEE_MODE";
-    const std::string KLEE_SYMBOLIC_SUFFIX = "_symbolic";
 
     std::string wrapUserValue(const testsgen::ValidationType &type, const std::string &value) {
         switch(type) {
@@ -207,5 +131,9 @@ namespace PrinterUtils {
 
     std::string getExpectedVarName(const std::string& varName) {
         return "expected_" + varName;
+    }
+
+    std::string getFileParamKTestJSON(char fileName) {
+        return StringUtils::stringFormat("%c-data", fileName);
     }
 }

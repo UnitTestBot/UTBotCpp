@@ -1,7 +1,3 @@
-#
-# Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
-#
-
 # This script is used to set environment variables inside developer environment
 
 # Common env
@@ -37,4 +33,9 @@ export CXX=$UTBOT_INSTALL_DIR/bin/clang++
 export CPATH=$CPATH:$UTBOT_ALL/klee/include
 export LD_LIBRARY_PATH=$UTBOT_INSTALL_DIR/lib
 export LDFLAGS='-fuse-ld=gold'
-export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin
+export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH
+
+if [ -z "${VERSION}" ]
+then
+    export VERSION=$(date '+%Y.%-m').0
+fi

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SIMPLETYPE_H
 #define UNITTESTBOT_SIMPLETYPE_H
 
@@ -29,7 +25,7 @@ public:
           referenceType(referenceType) {
     }
 
-    Kind getKind() override {
+    [[nodiscard]] Kind getKind() const override {
         return SIMPLE;
     }
 

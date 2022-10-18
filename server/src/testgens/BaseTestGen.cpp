@@ -1,23 +1,21 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BaseTestGen.h"
 
+#include "exceptions/CompilationDatabaseException.h"
 #include "FileTestGen.h"
 #include "FolderTestGen.h"
 #include "LineTestGen.h"
 #include "utils/ExecUtils.h"
 #include "utils/ServerUtils.h"
 #include "utils/TypeUtils.h"
+#include "loguru.h"
 
 BaseTestGen::BaseTestGen(const testsgen::ProjectContext &projectContext,
                          const testsgen::SettingsContext &settingsContext,
                          ProgressWriter *progressWriter,
                          bool testMode)
-    : projectContext(projectContext),
-      settingsContext(settingsContext), progressWriter(progressWriter) {
-    serverBuildDir = Paths::getTmpDir(this->projectContext.projectName);
+        : projectContext(projectContext),
+          settingsContext(settingsContext), progressWriter(progressWriter) {
+    serverBuildDir = Paths::getUTBotBuildDir(this->projectContext);
 }
 
 bool BaseTestGen::needToBeMocked() const {
@@ -33,46 +31,60 @@ bool BaseTestGen::isBatched() const {
 
 void BaseTestGen::setInitializedTestsMap() {
     tests.clear();
-    for (fs::path &sourcePath : testingMethodsSourcePaths) {
+    for (const fs::path &sourcePath: testingMethodsSourcePaths) {
         tests::Tests testsSuite;
-        sourcePath = fs::weakly_canonical(sourcePath);
         testsSuite.sourceFilePath = sourcePath;
-        testsSuite.sourceFileNameNoExt = sourcePath.stem().string();
+        testsSuite.sourceFileNameNoExt = testsSuite.sourceFilePath.stem().string();
         testsSuite.relativeFileDir =
-            Paths::getRelativeDirPath(projectContext, testsSuite.sourceFilePath);
+                Paths::getRelativeDirPath(projectContext, testsSuite.sourceFilePath);
         testsSuite.testFilename = Paths::sourcePathToTestName(testsSuite.sourceFilePath);
         testsSuite.testHeaderFilePath =
-            Paths::getGeneratedHeaderPath(projectContext, testsSuite.sourceFilePath);
+                Paths::getGeneratedHeaderPath(projectContext, testsSuite.sourceFilePath);
         testsSuite.testSourceFilePath =
-            Paths::sourcePathToTestPath(projectContext, testsSuite.sourceFilePath);
+                Paths::sourcePathToTestPath(projectContext, testsSuite.sourceFilePath);
         tests[testsSuite.sourceFilePath] = testsSuite;
     }
 }
 
 void BaseTestGen::setTargetPath(fs::path _targetPath) {
-    if (targetPath != _targetPath) {
-        targetPath = std::move(_targetPath);
-        if (!hasAutoTarget()) {
-            updateTargetSources();
-        }
+    if (targetBuildDatabase->hasAutoTarget() && targetBuildDatabase->getTargetPath() != _targetPath) {
+        targetBuildDatabase = std::make_shared<TargetBuildDatabase>(projectBuildDatabase.get(), _targetPath);
+        updateTargetSources(_targetPath);
     }
 }
 
-void BaseTestGen::updateTargetSources() {
-    targetSources = CollectionUtils::transformTo<CollectionUtils::FileSet>(
-            buildDatabase->getArchiveObjectFiles(getTargetPath()), [this](fs::path const &objectPath) {
-            return buildDatabase->getClientCompilationUnitInfo(objectPath)->getSourcePath();
-        });
+void BaseTestGen::updateTargetSources(fs::path _targetPath) {
+    targetSources = targetBuildDatabase->getSourceFilesForTarget(_targetPath);
     for (auto it = tests.begin(); it != tests.end(); it++) {
         tests::Tests &test = it.value();
         test.isFilePresentedInCommands = CollectionUtils::contains(targetSources, test.sourceFilePath);
     }
 }
 
-fs::path const &BaseTestGen::getTargetPath() const {
-    return targetPath.value();
+std::shared_ptr<const ProjectBuildDatabase> BaseTestGen::getProjectBuildDatabase() const {
+    return projectBuildDatabase;
 }
 
-bool BaseTestGen::hasAutoTarget() const {
-    return getTargetPath() == GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+std::shared_ptr<const TargetBuildDatabase> BaseTestGen::getTargetBuildDatabase() const {
+    return targetBuildDatabase;
+}
+
+std::shared_ptr<ProjectBuildDatabase> BaseTestGen::getProjectBuildDatabase() {
+    return projectBuildDatabase;
+}
+
+std::shared_ptr<TargetBuildDatabase> BaseTestGen::getTargetBuildDatabase() {
+    return targetBuildDatabase;
+}
+
+std::shared_ptr<const BuildDatabase::ObjectFileInfo>
+BaseTestGen::getClientCompilationUnitInfo(const fs::path &path, bool fullProject) const {
+    std::shared_ptr<const BuildDatabase::ObjectFileInfo> objectFileInfo;
+    if (targetBuildDatabase->hasUnitInfo(path) || !fullProject) {
+        objectFileInfo = targetBuildDatabase->getClientCompilationUnitInfo(path);
+    } else {
+        objectFileInfo = projectBuildDatabase->getClientCompilationUnitInfo(path);
+        LOG_S(WARNING) << "Can't find in target: " << path;
+    }
+    return objectFileInfo;
 }

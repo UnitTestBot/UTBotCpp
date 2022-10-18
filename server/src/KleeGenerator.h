@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEEGENERATOR_H
 #define UNITTESTBOT_KLEEGENERATOR_H
 
@@ -9,7 +5,6 @@
 #include "ProjectContext.h"
 #include "Result.h"
 #include "SettingsContext.h"
-#include "BordersFinder.h"
 #include "Tests.h"
 #include "building/BuildDatabase.h"
 #include "exceptions/CompilationDatabaseException.h"
@@ -20,15 +15,13 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
-
-#include <clang/Tooling/CommonOptionsParser.h>
-
 #include "utils/path/FileSystemPath.h"
+#include "testgens/BaseTestGen.h"
+
 #include <optional>
 #include <sstream>
 #include <string>
 
-using std::string;
 
 using json = nlohmann::json;
 
@@ -42,13 +35,7 @@ class KleeGenerator {
 public:
     /**
      * @brief Also creates tmp directories for build files.
-     * @param projectContext contains context about current project.
-     * @param settingsContext contains context about settings applied for current request.
-     * @param serverBuildDir Path to folder on server machine where project build dirs are located.
-     * @param sourcesFilePaths Paths to project files. Files which are listed in
-     * [compile_commands.json](https://clang.llvm.org/docs/JSONCompilationDatabase.html), filtered
-     * by them.
-     * @param compilationDatabase Pointer to compile_commands.json object.
+     * @param testGen contains request and build information.
      * @param typesHandler provides additional information about types.
      * @param filePathsSubstitution Mapping from source file path to modified file. Required for
      * line test generation requests.
@@ -56,15 +43,8 @@ public:
      * @throws fs::filesystem_error Thrown if it can't create tmp folder for some
      * reasons.
      */
-    KleeGenerator(utbot::ProjectContext projectContext,
-                  utbot::SettingsContext settingsContext,
-                  fs::path serverBuildDir,
-                  vector<fs::path> sourcesFilePaths,
-                  std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase,
-                  types::TypesHandler &typesHandler,
-                  PathSubstitution filePathsSubstitution,
-                  std::shared_ptr<BuildDatabase> buildDatabase = nullptr,
-                  const ProgressWriter *progressWriter = DummyStreamWriter::getInstance());
+    KleeGenerator(BaseTestGen *testGen, types::TypesHandler &typesHandler,
+                  PathSubstitution filePathsSubstitution);
 
     struct BuildFileInfo {
         fs::path outFilePath;
@@ -80,10 +60,10 @@ public:
      * @return Vector of paths to output files "*.bc".
      * @throws ExecutionProcessException if any of Clang calls returns non-zero code.
      */
-    vector<BuildFileInfo> buildByCDb(const CollectionUtils::MapFileTo<fs::path> &compileCommand,
-                                     const CollectionUtils::FileSet &stubSources = {});
+    std::vector<BuildFileInfo> buildByCDb(const CollectionUtils::MapFileTo<fs::path> &compileCommand,
+                                          const CollectionUtils::FileSet &stubSources = {});
 
-    vector<KleeGenerator::BuildFileInfo>
+    std::vector<KleeGenerator::BuildFileInfo>
     buildByCDb(const CollectionUtils::FileSet &filesToBuild,
                const CollectionUtils::FileSet &stubSources = {});
 
@@ -91,7 +71,7 @@ public:
     Result<fs::path> defaultBuild(const fs::path &hintPath,
                                   const fs::path &sourceFilePath,
                                   const fs::path &buildDirPath = "",
-                                  const vector<string> &flags = {});
+                                  const std::vector<std::string> &flags = {});
 
     /**
      * @brief Builds source file with default compilation flags.
@@ -105,7 +85,7 @@ public:
      */
     Result<fs::path> defaultBuild(const fs::path &sourceFilePath,
                                   const fs::path &buildDirPath = "",
-                                  const vector<string> &flags = {});
+                                  const std::vector<std::string> &flags = {});
 
     /**
      * @brief Writes temporary Klee files and builds them.
@@ -119,8 +99,8 @@ public:
      * @return Vector of paths to built binary files.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    vector<fs::path> buildKleeFiles(const TestsMap &testsMap,
-                                    const std::shared_ptr<LineInfo> &lineInfo);
+    std::vector<fs::path> buildKleeFiles(const TestsMap &testsMap,
+                                         const std::shared_ptr<LineInfo> &lineInfo);
 
     /**
      * @brief Parse JSON chunks into final tests code.
@@ -131,14 +111,15 @@ public:
      * @param lineInfo Information about requested line in case of line generation scenarios.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    void
-    parseKTestsToFinalCode(tests::Tests &tests,
-                           const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
-                           const vector<MethodKtests> &kleeOutput,
-                           const std::shared_ptr<LineInfo> &lineInfo = nullptr,
-                           bool verbose = false);
+    void parseKTestsToFinalCode(
+        const utbot::ProjectContext &projectContext,
+        tests::Tests &tests,
+        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+        const std::vector<MethodKtests> &kleeOutput,
+        const std::shared_ptr<LineInfo> &lineInfo = nullptr,
+        bool verbose = false);
 
-    [[nodiscard]] shared_ptr<BuildDatabase> getBuildDatabase() const;
+    [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 
     void handleFailedFunctions(tests::TestsMap &testsMap);
 
@@ -156,30 +137,25 @@ public:
     std::optional<utbot::CompileCommand>
     getCompileCommandForKlee(const fs::path &hintPath,
                              const CollectionUtils::FileSet &stubSources,
-                             const vector<string> &flags) const;
+                             const std::vector<std::string> &flags,
+                             bool forStub) const;
 
-    vector<utbot::CompileCommand>
+    std::vector<utbot::CompileCommand>
     getCompileCommandsForKlee(const CollectionUtils::MapFileTo<fs::path> &filesToBuild,
                               const CollectionUtils::FileSet &stubSources) const;
 
 private:
-    const utbot::ProjectContext projectContext;
-    const utbot::SettingsContext settingsContext;
-    fs::path projectTmpPath;
-    vector<fs::path> srcFiles;
-    std::shared_ptr<clang::tooling::CompilationDatabase> compilationDatabase;
+    BaseTestGen *testGen;
     types::TypesHandler typesHandler;
     PathSubstitution pathSubstitution;
-    std::shared_ptr<BuildDatabase> buildDatabase;
-    const ProgressWriter *progressWriter;
 
     CollectionUtils::MapFileTo<std::vector<std::string>> failedFunctions;
 
     fs::path writeKleeFile(
-        printer::KleePrinter &kleePrinter,
-        Tests const &tests,
-        const std::shared_ptr<LineInfo> &lineInfo,
-        const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
+            printer::KleePrinter &kleePrinter,
+            Tests const &tests,
+            const std::shared_ptr<LineInfo> &lineInfo,
+            const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter =
             [](tests::Tests::MethodDescription const &) { return true; });
 };
 

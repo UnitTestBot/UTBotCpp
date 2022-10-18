@@ -1,13 +1,9 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SNIPPETTESTGEN_H
 #define UNITTESTBOT_SNIPPETTESTGEN_H
 
 #include "BaseTestGen.h"
 
-class SnippetTestGen : public BaseTestGen {
+class SnippetTestGen final : public BaseTestGen {
 public:
     SnippetTestGen(const testsgen::SnippetRequest &request,
                    ProgressWriter *progressWriter,
@@ -15,7 +11,7 @@ public:
 
     ~SnippetTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     fs::path filePath;
 

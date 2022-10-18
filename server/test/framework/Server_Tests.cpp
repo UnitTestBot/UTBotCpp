@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -11,7 +7,7 @@
 #include "clang-utils/SourceToHeaderRewriter.h"
 #include "coverage/CoverageAndResultsGenerator.h"
 #include "printers/HeaderPrinter.h"
-#include "printers/NativeMakefilePrinter.h"
+#include "printers/TestMakefilesPrinter.h"
 #include "printers/SourceWrapperPrinter.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/ServerUtils.h"
@@ -21,7 +17,6 @@
 #include <tuple>
 
 namespace {
-    using namespace std::literals;
     using CompilationUtils::CompilerName;
     using CompilationUtils::getBuildDirectoryName;
     using grpc::Channel;
@@ -56,39 +51,44 @@ namespace {
         fs::path multiple_classes_cpp = getTestFilePath("multiple_classes.cpp");
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
         }
 
         void generateFiles(const fs::path &sourceFile, const fs::path &testsRelativeDir) {
             fs::path testsDirPath = getTestFilePath(testsRelativeDir);
-            utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
-                                                  buildDirRelativePath };
-            generateFiles(sourceFile, projectContext);
+
+            auto projectContext = GrpcUtils::createProjectContext(
+                    projectName, suitePath, testsDirPath, buildDirRelativePath);
+
+            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false);
+
+            auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
+                                                           std::move(settingsContext),
+                                                           srcPaths,
+                                                           sourceFile);
+
+            auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+
+            generateFiles(sourceFile, testGen);
         }
 
-        void generateFiles(const fs::path &sourceFile,
-                           const utbot::ProjectContext &projectContext) {
+        void generateFiles(const fs::path &sourceFile, const BaseTestGen& testGen) {
             fs::path serverBuildDir = buildPath / "temp";
-            auto buildDatabase =
-                std::make_shared<BuildDatabase>(buildPath, serverBuildDir, projectContext);
             fs::path compilerPath = CompilationUtils::getBundledCompilerPath(compilerName);
             CollectionUtils::FileSet stubsSources;
-            fs::path root = buildDatabase->getRootForSource(sourceFile);
-            printer::NativeMakefilePrinter nativeMakefilePrinter(projectContext, buildDatabase,
-                                                                 root, compilerPath, &stubsSources);
-            nativeMakefilePrinter.addLinkTargetRecursively(root, "");
-            string makefileContent =
-                printer::NativeMakefilePrinter{ nativeMakefilePrinter, sourceFile }.ss.str();
-            fs::path makefilePath =
-                Paths::getMakefilePathFromSourceFilePath(projectContext, sourceFile);
-            FileSystemUtils::writeToFile(makefilePath, makefileContent);
+            fs::path root = testGen.getTargetBuildDatabase()->getTargetPath();
+            printer::TestMakefilesPrinter testMakefilePrinter(&testGen, root, compilerPath, &stubsSources);
+            testMakefilePrinter.addLinkTargetRecursively(root, "");
+
+            testMakefilePrinter.GetMakefiles(sourceFile).write();
 
             auto compilationDatabase = CompilationUtils::getCompilationDatabase(buildPath);
             auto structsToDeclare = std::make_shared<Fetcher::FileToStringSet>();
-            SourceToHeaderRewriter sourceToHeaderRewriter(projectContext, compilationDatabase,
+            SourceToHeaderRewriter sourceToHeaderRewriter(testGen.projectContext, compilationDatabase,
                                                           structsToDeclare, serverBuildDir);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFile);
-            printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFile)).print(projectContext, sourceFile, wrapper);
+            printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFile)).print(testGen.projectContext,
+                                                                                      sourceFile, wrapper);
         }
 
 
@@ -124,12 +124,12 @@ namespace {
         void checkAssertionFailures_C(BaseTestGen &testGen) {
             testUtils::checkTestCasePredicates(
                 testGen.tests.at(assertion_failures_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                     { [](tests::Tests::MethodTestCase const &testCase) {
-                         return stoi(testCase.paramValues[0].view->getEntryValue()) < 7;
+                         return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) < 7;
                      },
                       [](tests::Tests::MethodTestCase const &testCase) {
-                          return stoi(testCase.paramValues[0].view->getEntryValue()) == 7;
+                          return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 7;
                       } }),
                 "buggy_function2");
         }
@@ -142,54 +142,54 @@ namespace {
                 if (methodName == "max_") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return stoi(testCase.paramValues[0].view->getEntryValue()) >
-                                            stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                        stoi(testCase.returnValueView->getEntryValue()) ==
-                                            stoi(testCase.paramValues[0].view->getEntryValue()) &&
+                                 return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                                            stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                        stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                            stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return stoi(testCase.paramValues[0].view->getEntryValue()) <=
-                                             stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                         stoi(testCase.returnValueView->getEntryValue()) ==
-                                             stoi(testCase.paramValues[1].view->getEntryValue()) &&
+                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <=
+                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                         stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                                          testCase.stdinValue == std::nullopt;
                               } }),
                         methodName);
                 } else if (methodName == "sqr_positive") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
-                                        stoi(testCase.returnValueView->getEntryValue()) == -1 &&
+                                 return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) < 0 &&
+                                        stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1 &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return stoi(testCase.paramValues[0].view->getEntryValue()) >= 0 &&
-                                         stoi(testCase.returnValueView->getEntryValue()) ==
-                                             stoi(testCase.paramValues[0].view->getEntryValue()) *
+                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >= 0 &&
+                                         stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                             stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) *
                                                  stoi(testCase.paramValues[0]
-                                                          .view->getEntryValue()) &&
+                                                          .view->getEntryValue(nullptr)) &&
                                          testCase.stdinValue == std::nullopt;
                               } }),
                         methodName);
                 } else if (methodName == "simple_loop") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return testCase.returnValueView->getEntryValue() == "0" &&
+                                 return testCase.returnValue.view->getEntryValue(nullptr) == "0" &&
                                         testCase.stdinValue == std::nullopt;
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() == "1" &&
+                                  return testCase.returnValue.view->getEntryValue(nullptr) == "1" &&
                                          testCase.stdinValue == std::nullopt;
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() == "2" &&
+                                  return testCase.returnValue.view->getEntryValue(nullptr) == "2" &&
                                          testCase.stdinValue == std::nullopt;
                               } }),
                         methodName);
@@ -200,18 +200,18 @@ namespace {
         void checkDependentFunctions_C(BaseTestGen &testGen) {
             checkTestCasePredicates(
                 testGen.tests.at(dependent_functions_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>(
+                std::vector<TestCasePredicate>(
                     { [](tests::Tests::MethodTestCase const &testCase) {
-                         return stoi(testCase.paramValues[0].view->getEntryValue()) >
-                                    stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                stoi(testCase.returnValueView->getEntryValue()) ==
-                                    stoi(testCase.paramValues[0].view->getEntryValue()) * 2;
+                         return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                                    stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                    stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) * 2;
                      },
                       [](tests::Tests::MethodTestCase const &testCase) {
-                          return stoi(testCase.paramValues[0].view->getEntryValue()) <=
-                                     stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                                 stoi(testCase.returnValueView->getEntryValue()) ==
-                                     stoi(testCase.paramValues[1].view->getEntryValue()) * 2;
+                          return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <=
+                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                 stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) * 2;
                       } }),
                 "double_max");
         }
@@ -222,15 +222,15 @@ namespace {
                 if (methodName == "get_sign_struct") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "1";
                             },
                         }),
                         methodName);
@@ -239,47 +239,47 @@ namespace {
                 } else if (methodName == "get_symbol_by_struct") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), 'a');
+                                     testCase.returnValue.view->getEntryValue(nullptr), 'a');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'c');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'c');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'u');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'u');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '1');
+                                      testCase.returnValue.view->getEntryValue(nullptr), '1');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '0');
+                                      testCase.returnValue.view->getEntryValue(nullptr), '0');
                               } }),
                         methodName);
                 } else if (methodName == "operate_with_inner_structs") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), '5');
+                                     testCase.returnValue.view->getEntryValue(nullptr), '5');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'e');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'e');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'g');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'g');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'o');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'o');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) { return true; } }),
                         methodName);
@@ -295,15 +295,15 @@ namespace {
                 if (methodName == "get_sign_union") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "1";
                             },
                         }),
                         methodName);
@@ -311,15 +311,15 @@ namespace {
                 if (methodName == "extract_bit") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>({
+                        std::vector<TestCasePredicate>({
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "0";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "0";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "-1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
                             },
                             [](tests::Tests::MethodTestCase const &testCase) {
-                                return testCase.returnValueView->getEntryValue() == "1";
+                                return testCase.returnValue.view->getEntryValue(nullptr) == "1";
                             },
                         }),
                         methodName);
@@ -330,9 +330,9 @@ namespace {
                 if (methodName == "get_coordinate") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                int i = stoi(testCase.paramValues[1].view->getEntryValue());
+                                int i = stoi(testCase.paramValues[1].view->getEntryValue(nullptr));
                                 return i >= 0 && i < 2;
                             } }),
                         methodName);
@@ -340,38 +340,38 @@ namespace {
                 if (methodName == "operate_with_inner_unions") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
                                  return testUtils::cmpChars(
-                                     testCase.returnValueView->getEntryValue(), '5');
+                                     testCase.returnValue.view->getEntryValue(nullptr), '5');
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '5');
+                                      testCase.returnValue.view->getEntryValue(nullptr), '5');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '5');
+                                      testCase.returnValue.view->getEntryValue(nullptr), '5');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'e');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'e');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'f');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'f');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'g');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'g');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), 'o');
+                                      testCase.returnValue.view->getEntryValue(nullptr), 'o');
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
                                   return testUtils::cmpChars(
-                                      testCase.returnValueView->getEntryValue(), '\x0f');
+                                      testCase.returnValue.view->getEntryValue(nullptr), '\x0f');
                               } }),
                         methodName);
                 }
@@ -392,18 +392,18 @@ namespace {
                 } else if (methodName == "median") {
                     checkTestCasePredicates(
                         methodDescription.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return testCase.returnValueView->getEntryValue() ==
-                                        testCase.paramValues[0].view->getEntryValue();
+                                 return testCase.returnValue.view->getEntryValue(nullptr) ==
+                                        testCase.paramValues[0].view->getEntryValue(nullptr);
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() ==
-                                         testCase.paramValues[2].view->getEntryValue();
+                                  return testCase.returnValue.view->getEntryValue(nullptr) ==
+                                         testCase.paramValues[2].view->getEntryValue(nullptr);
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValueView->getEntryValue() ==
-                                         testCase.paramValues[1].view->getEntryValue();
+                                  return testCase.returnValue.view->getEntryValue(nullptr) ==
+                                         testCase.paramValues[1].view->getEntryValue(nullptr);
                               } }),
                         methodName);
                 }
@@ -470,7 +470,7 @@ namespace {
                  testGen.tests.at(floating_point_c).methods) {
                 std::unordered_set<std::string> completeness;
                 for (const auto &testCase : methodDescription.testCases) {
-                    completeness.insert(testCase.returnValueView->getEntryValue());
+                    completeness.insert(testCase.returnValue.view->getEntryValue(nullptr));
                 }
                 if (methodName == "get_double_sign") {
                     EXPECT_GE(methodDescription.testCases.size(), 3);
@@ -499,7 +499,7 @@ namespace {
                 if (methodName == "plain_isnan") {
                     std::unordered_set<std::string> completeness;
                     for (const auto &testCase : methodDescription.testCases) {
-                        completeness.insert(testCase.returnValueView->getEntryValue());
+                        completeness.insert(testCase.returnValue.view->getEntryValue(nullptr));
                     }
                     EXPECT_GE(methodDescription.testCases.size(), 2);
                     EXPECT_GE(completeness.size(), 2);
@@ -525,11 +525,11 @@ namespace {
                 if (md.name == "increment") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                auto returnValue = testCase.returnValueView->getEntryValue();
-                                auto preValue = testCase.globalPreValues[0].view->getEntryValue();
-                                auto postValue = testCase.globalPostValues[0].view->getEntryValue();
+                                auto returnValue = testCase.returnValue.view->getEntryValue(nullptr);
+                                auto preValue = testCase.globalPreValues[0].view->getEntryValue(nullptr);
+                                auto postValue = testCase.globalPostValues[0].view->getEntryValue(nullptr);
                                 return returnValue == postValue &&
                                        stoi(preValue) + 1 == stoi(postValue);
                             } }));
@@ -558,32 +558,32 @@ namespace {
             for (const auto &[_, md] : methods) {
                 if (md.name == "get_size_of_data") {
                     checkTestCasePredicates(md.testCases,
-                                            vector<TestCasePredicate>(
+                                            std::vector<TestCasePredicate>(
                                                 { [](tests::Tests::MethodTestCase const &testCase) {
                                                     auto returnValue =
-                                                        testCase.returnValueView->getEntryValue();
+                                                        testCase.returnValue.view->getEntryValue(nullptr);
                                                     return returnValue == "256";
                                                 } }));
                 } else if (md.name == "stop_now") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 auto i = testCase.paramValues[0].view->getEntryValue();
+                                 auto i = testCase.paramValues[0].view->getEntryValue(nullptr);
                                  return i == "0";
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  auto i = testCase.paramValues[0].view->getEntryValue();
+                                  auto i = testCase.paramValues[0].view->getEntryValue(nullptr);
                                   return stoi(i) > 0;
                               } }));
                 } else if (md.name == "and") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                auto x = testCase.paramValues[0].view->getEntryValue();
-                                auto y = testCase.paramValues[1].view->getEntryValue();
-                                auto z = testCase.returnValueView->getEntryValue();
+                                auto x = testCase.paramValues[0].view->getEntryValue(nullptr);
+                                auto y = testCase.paramValues[1].view->getEntryValue(nullptr);
+                                auto z = testCase.returnValue.view->getEntryValue(nullptr);
                                 return (stoi(x) & stoi(y)) == stoi(z);
                             } }));
                 } else if (md.name == "using") {
@@ -603,17 +603,17 @@ namespace {
                 } else if (md.name == "access_to_int") {
                     checkTestCasePredicates(
                         md.testCases,
-                        vector<TestCasePredicate>(
+                        std::vector<TestCasePredicate>(
                             { [](tests::Tests::MethodTestCase const &testCase) {
-                                 auto i = testCase.paramValues[0].view->getEntryValue();
+                                 auto i = testCase.paramValues[0].view->getEntryValue(nullptr);
                                  return i == "private_";
                              },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  auto i = testCase.paramValues[0].view->getEntryValue();
+                                  auto i = testCase.paramValues[0].view->getEntryValue(nullptr);
                                   return i == "protected_";
                               },
                               [](tests::Tests::MethodTestCase const &testCase) {
-                                  auto i = testCase.paramValues[0].view->getEntryValue();
+                                  auto i = testCase.paramValues[0].view->getEntryValue(nullptr);
                                   return i == "public_";
                               } }));
                 }
@@ -626,7 +626,7 @@ namespace {
             for (const auto &[_, md] : methods) {
                 if (md.name == "passthrough") {
                     checkTestCasePredicates(
-                        md.testCases, vector<TestCasePredicate>(
+                        md.testCases, std::vector<TestCasePredicate>(
                                           { [](tests::Tests::MethodTestCase const &testCase) {
                                               auto alignment = testCase.paramValues[0].alignment;
                                               return alignment == decltype(alignment){ 32768 };
@@ -639,9 +639,9 @@ namespace {
     TEST_F(Server_Test, Char_Literals_Test) {
         std::string suite = "char";
         setSuite(suite);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -662,10 +662,8 @@ namespace {
         fs::path b_c = getTestFilePath("b.c");
         fs::path main_c = getTestFilePath("main.c");
         {
-            auto request =
-                createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+            auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "ex");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -676,43 +674,38 @@ namespace {
 
             checkTestCasePredicates(
                 testGen.tests.at(main_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return stoi(testCase.paramValues[0].view->getEntryValue()) - 2 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) - 2 ==
+                           stoi(testCase.returnValue.view->getEntryValue(nullptr));
                 } }));
         }
         {
-            auto request =
-                createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+            auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "one");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-            fs::path one = testGen.buildDatabase->getClientLinkUnitInfo(a_c)->getOutput();
-            testGen.setTargetPath(one);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
 
             checkTestCasePredicates(
                 testGen.tests.at(a_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return stoi(testCase.paramValues[0].view->getEntryValue()) + 1 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) + 1 ==
+                           stoi(testCase.returnValue.view->getEntryValue(nullptr));
                 } }));
         }
         {
             auto request =
-                createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+                createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "two");
             auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-            fs::path two = testGen.buildDatabase->getClientLinkUnitInfo(b_c)->getOutput();
-            testGen.setTargetPath(two);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
 
             checkTestCasePredicates(
                 testGen.tests.at(b_c).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return stoi(testCase.paramValues[0].view->getEntryValue()) - 1 ==
-                           stoi(testCase.returnValueView->getEntryValue());
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) - 1 ==
+                           stoi(testCase.returnValue.view->getEntryValue(nullptr));
                 } }));
         }
 
@@ -722,9 +715,9 @@ namespace {
     TEST_F(Server_Test, Datacom_Test) {
         std::string suite = "datacom";
         setSuite(suite);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -736,16 +729,16 @@ namespace {
                 EXPECT_EQ(md.testCases.size(), 1);
             } else if (md.name == "FOO_FUNCTION_1") {
                 auto inBounds = [](tests::Tests::MethodTestCase const &testCase) {
-                    auto type = testCase.paramValues[0].view->getEntryValue();
+                    auto type = testCase.paramValues[0].view->getEntryValue(nullptr);
                     return stoi(type) >= 0 && stoi(type) < 3;
                 };
                 auto hasGlobalParameter = [](tests::Tests::MethodTestCase const &testCase) {
                     return testCase.globalPreValues.size() == 1;
                 };
                 checkTestCasePredicates(
-                    md.testCases, vector<TestCasePredicate>({ inBounds, std::not_fn(inBounds) }));
+                    md.testCases, std::vector<TestCasePredicate>({ inBounds, std::not_fn(inBounds) }));
                 checkTestCasePredicates(md.testCases,
-                                        vector<TestCasePredicate>{ 2, hasGlobalParameter });
+                                        std::vector<TestCasePredicate>{ 2, hasGlobalParameter });
             } else if (md.name == "FOO_FUNCTION_2") {
                 EXPECT_GE(md.testCases.size(), 3);
             } else if (md.name == "FOO_FUNCTION_3") {
@@ -830,10 +823,10 @@ namespace {
 
     TEST_F(Server_Test, Correct_CodeText_For_Regression) {
         auto [testGen, status] = performFeatureFileTestsRequest(floating_point_plain_c);
-        const string code = testGen.tests.begin()->second.code;
-        const string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
-        const string endRegion = std::string("#pragma endregion") + NL;
-        const string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        const std::string code = testGen.tests.begin()->second.code;
+        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
+        const std::string endRegion = std::string("#pragma endregion") + NL;
+        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
         ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
         ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
     }
@@ -875,7 +868,7 @@ namespace {
                                       public testing::WithParamInterface<std::tuple<CompilerName>> {
     protected:
         void SetUp() override {
-            Server_Test::SetUp();
+            clearEnv(std::get<0>(GetParam()));
             setCompiler(std::get<0>(GetParam()));
         }
     };
@@ -917,9 +910,9 @@ namespace {
         std::string suite = "small-project";
         setSuite(suite);
         srcPaths = {suitePath, suitePath / "lib", suitePath / "src"};
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -938,9 +931,9 @@ namespace {
         std::string suite = "small-project";
         setSuite(suite);
         srcPaths = {};
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -962,9 +955,9 @@ namespace {
         std::string suite = "small-project";
         setSuite(suite);
         srcPaths = { suitePath / "lib"};
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -996,11 +989,10 @@ namespace {
     }
 
     TEST_P(Parameterized_Server_Test, Folder_Test) {
-        auto projectRequest =
-            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), suitePath / "inner");
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1010,7 +1002,7 @@ namespace {
 
     TEST_P(Parameterized_Server_Test, Line_Test1) {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         basic_functions_c, 17);
+                                         basic_functions_c, 17, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1018,16 +1010,16 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return stoi(testCase.paramValues[0].view->getEntryValue()) < 0 &&
-                       stoi(testCase.returnValueView->getEntryValue()) == -1;
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) < 0 &&
+                       stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 } }),
             "sqr_positive");
     }
 
     TEST_P(Parameterized_Server_Test, Line_Test2) {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         basic_functions_c, 21);
+                                         basic_functions_c, 17, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1035,17 +1027,17 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return stoi(testCase.returnValueView->getEntryValue()) ==
-                       stoi(testCase.paramValues[0].view->getEntryValue()) *
-                           stoi(testCase.paramValues[0].view->getEntryValue());
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                return stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                       stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) *
+                           stoi(testCase.paramValues[0].view->getEntryValue(nullptr));
             } }),
             "sqr_positive");
     }
 
     TEST_P(Parameterized_Server_Test, Class_test1) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 10);
+                                          multiple_classes_h, 6);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1053,14 +1045,14 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "1";} }),
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValue.view->getEntryValue(nullptr) == "1";} }),
                 "get1");
     }
 
     TEST_P(Parameterized_Server_Test, Class_test2) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 15);
+                                          multiple_classes_h, 11);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1068,14 +1060,14 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValue.view->getEntryValue(nullptr) == "2";} }),
                 "get2");
     }
 
     TEST_P(Parameterized_Server_Test, DISABLED_Class_test3) {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                          multiple_classes_h, 18);
+                                          multiple_classes_h, 14);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -1083,14 +1075,14 @@ namespace {
 
         checkTestCasePredicates(
                 testGen.tests.at(multiple_classes_cpp).methods.begin().value().testCases,
-                vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                    return testCase.returnValueView->getEntryValue() == "2";} }),
+                std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                    return testCase.returnValue.view->getEntryValue(nullptr) == "2";} }),
                 "get3");
     }
 
     TEST_P(Parameterized_Server_Test, Function_Test) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 10);
+                                             basic_functions_c, 6, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(basic_functions_c);
@@ -1100,25 +1092,25 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) {
-                     return stoi(testCase.paramValues[0].view->getEntryValue()) >
-                                stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                            stoi(testCase.returnValueView->getEntryValue()) ==
-                                stoi(testCase.paramValues[0].view->getEntryValue());
+                     return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                                stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                            stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                stoi(testCase.paramValues[0].view->getEntryValue(nullptr));
                  },
                   [](tests::Tests::MethodTestCase const &testCase) {
-                      return stoi(testCase.paramValues[0].view->getEntryValue()) <=
-                                 stoi(testCase.paramValues[1].view->getEntryValue()) &&
-                             stoi(testCase.returnValueView->getEntryValue()) ==
-                                 stoi(testCase.paramValues[1].view->getEntryValue());
+                      return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <=
+                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                             stoi(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr));
                   } }),
             "max_");
     }
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Integer) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 21);
+                                             basic_functions_c, 17, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("36");
@@ -1133,15 +1125,15 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return testCase.paramValues[0].view->getEntryValue() == "6";
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                return testCase.paramValues[0].view->getEntryValue(nullptr) == "6";
             } }),
             "sqr_positive");
     }
 
     TEST_P(Parameterized_Server_Test, Predicate_Test_Str) {
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             basic_functions_c, 36);
+                                             basic_functions_c, 32, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto predicateInfo = std::make_unique<testsgen::PredicateInfo>();
         predicateInfo->set_predicate("==");
         predicateInfo->set_returnvalue("abacaba");
@@ -1156,8 +1148,8 @@ namespace {
 
         checkTestCasePredicates(
             testGen.tests.at(basic_functions_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
-                return testCase.returnValueView->getEntryValue() == "\"abacaba\"";
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+                return testCase.returnValue.view->getEntryValue(nullptr) == "\"abacaba\"";
             } }),
             "const_str");
     }
@@ -1165,7 +1157,7 @@ namespace {
     TEST_P(Parameterized_Server_Test, Symbolic_Stdin_Test) {
         auto request = std::make_unique<FunctionRequest>();
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             symbolic_stdin_c, 8);
+                                             symbolic_stdin_c, 8, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(symbolic_stdin_c);
@@ -1176,7 +1168,7 @@ namespace {
         bool foundPath = false;
         for (const auto &testCase :
             testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases) {
-            foundPath |= (testCase.returnValueView->getEntryValue() == "1");
+            foundPath |= (testCase.returnValue.view->getEntryValue(nullptr) == "1");
             if (foundPath) {
                 break;
             }
@@ -1187,16 +1179,17 @@ namespace {
     TEST_P(Parameterized_Server_Test, Symbolic_Stdin_Long_Read) {
         auto request = std::make_unique<FunctionRequest>();
         auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             symbolic_stdin_c, 19);
+                                             symbolic_stdin_c, 19, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(symbolic_stdin_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_EQ(1, testUtils::getNumberOfTests(testGen.tests));
-        ASSERT_FALSE(
-            testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases[0].isError());
+        ASSERT_EQ(1, testUtils::getNumberOfTests(testGen.tests));
+        const auto testCases = testGen.tests.at(symbolic_stdin_c).methods.begin().value().testCases;
+        ASSERT_FALSE(testCases.empty());
+        ASSERT_FALSE(testCases[0].isError());
     }
 
 
@@ -1259,19 +1252,19 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = {6, 7, 8, 11, 17, 20, 22};
+        linesCovered[basic_functions_c] = {2, 3, 4, 7, 13, 16, 18};
         linesUncovered[basic_functions_c] = {};
-        linesNone[basic_functions_c] = { 4, 5, 14, 23 };
+        linesNone[basic_functions_c] = { 0, 1, 10, 19 };
 
-        linesCovered[simple_loop_uncovered_c] = {6, 7, 8, 9, 10, 11, 16, 17};
-        linesUncovered[simple_loop_uncovered_c] = { 13 };
-        linesNone[simple_loop_uncovered_c] = { 4, 5 };
+        linesCovered[simple_loop_uncovered_c] = {2, 3, 4, 5, 6, 7, 12, 13};
+        linesUncovered[simple_loop_uncovered_c] = { 9 };
+        linesNone[simple_loop_uncovered_c] = { 0, 1 };
 
-        linesCovered[simple_class_cpp] = {15, 19, 23, 27, 28, 60, 63, 66, 69};
+        linesCovered[simple_class_cpp] = {10, 14, 18, 22, 23, 55, 58, 61, 64};
         linesUncovered[simple_class_cpp] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForProject();
         CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), true);
@@ -1287,16 +1280,16 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = {6, 7, 8, 11};
-        linesUncovered[basic_functions_c] =  {15, 16, 17, 20, 24, 25, 26, 29};
-        linesNone[basic_functions_c] = {4, 5, 14, 23};
+        linesCovered[basic_functions_c] = {2, 3, 4, 7};
+        linesUncovered[basic_functions_c] =  {11, 12, 13, 16, 20, 21, 22, 25};
+        linesNone[basic_functions_c] = {0, 1, 10, 19};
 
         linesCovered[simple_loop_uncovered_c] = {};
         linesUncovered[simple_loop_uncovered_c] = {};
         linesNone[simple_loop_uncovered_c] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForFile(dependent_functions_test_cpp);
         CoverageAndResultsGenerator coverageGenerator = generate(std::move(testFilter), true);
@@ -1311,16 +1304,16 @@ namespace {
         CoverageLines linesNone;
 
         // These are not all the lines
-        linesCovered[basic_functions_c] = { 6, 7, 8 };
-        linesUncovered[basic_functions_c] = {11, 15, 16, 17, 20, 24, 25, 26, 29};
-        linesNone[basic_functions_c] =  {4, 5, 14, 23};
+        linesCovered[basic_functions_c] = { 2, 3, 4 };
+        linesUncovered[basic_functions_c] = {7, 11, 12, 13, 16, 20, 21, 22, 25};
+        linesNone[basic_functions_c] =  {0, 1, 10, 19};
 
         linesCovered[simple_loop_uncovered_c] = {};
         linesUncovered[simple_loop_uncovered_c] = {};
         linesNone[simple_loop_uncovered_c] = {};
 
-        linesCovered[dependent_functions_c] = { 6, 7 };
-        linesNone[dependent_functions_c] = { 4, 5 };
+        linesCovered[dependent_functions_c] = { 2, 3 };
+        linesNone[dependent_functions_c] = { 0, 1 };
 
         auto testFilter = GrpcUtils::createTestFilterForTest(dependent_functions_test_cpp,
                                                              "regression", "double_max_test_2");
@@ -1336,12 +1329,15 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
+        ASSERT_FALSE(resultMap.empty());
 
-        testUtils::checkStatuses(statusMap, tests);
+        testUtils::checkStatuses(resultMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 25}};
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
 
@@ -1373,7 +1369,7 @@ namespace {
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        EXPECT_EQ(0, testUtils::getNumberOfTests(testGen.tests));
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
 
     TEST_F(Server_Test, Memory_Test) {
@@ -1401,7 +1397,7 @@ namespace {
         */
         checkTestCasePredicates(
             methods.at("out_of_bound_access_to_stack").testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) { return testCase.isError(); },
                   [](tests::Tests::MethodTestCase const &testCase) {
                       return !testCase.isError();
@@ -1409,7 +1405,7 @@ namespace {
             "out_of_bound_access_to_stack");
         checkTestCasePredicates(
             methods.at("out_of_bound_access_to_globals").testCases,
-            vector<TestCasePredicate>(
+            std::vector<TestCasePredicate>(
                 { [](tests::Tests::MethodTestCase const &testCase) { return testCase.isError(); },
                   [](tests::Tests::MethodTestCase const &testCase) {
                       return !testCase.isError();
@@ -1417,19 +1413,19 @@ namespace {
             "out_of_bound_access_to_globals");
         checkTestCasePredicates(
             methods.at("use_after_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "use_after_free");
         checkTestCasePredicates(
             methods.at("leak_stack").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "leak_stack");
         checkTestCasePredicates(
             methods.at("use_after_return").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "use_after_return");
@@ -1443,13 +1439,13 @@ namespace {
         */
         checkTestCasePredicates(
             methods.at("double_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "double_free");
         checkTestCasePredicates(
             methods.at("invalid_free").testCases,
-            vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
+            std::vector<TestCasePredicate>({ [](tests::Tests::MethodTestCase const &testCase) {
                 return testCase.isError();
             } }),
             "invalid_free");
@@ -1459,11 +1455,10 @@ namespace {
         std::string suite = "object-file";
         setSuite(suite);
         static const std::string source2_c = getTestFilePath("source2.c");
-            auto projectRequest =
-        createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1476,17 +1471,21 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false };
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
-        EXPECT_GT(statusMap.getNumberOfTests(), 2);
-        testUtils::checkStatuses(statusMap, tests);
+        ASSERT_FALSE(resultMap.empty());
+        EXPECT_GT(resultMap.getNumberOfTests(), 2);
+
+        testUtils::checkStatuses(resultMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
     struct ProjectInfo {
@@ -1503,7 +1502,7 @@ namespace {
         fs::path testsDirPath;
 
         void SetUp() override {
-            Server_Test::SetUp();
+            clearEnv(std::get<0>(GetParam()));
             setCompiler(std::get<0>(GetParam()));
             setSuite("run");
             const auto &[subProjectName, numberOfTests] = std::get<1>(GetParam());
@@ -1550,29 +1549,63 @@ namespace {
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
 
-        auto statusMap = coverageGenerator.getTestStatusMap();
+        auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        ASSERT_FALSE(statusMap.empty());
-        EXPECT_EQ(this->numberOfTests, statusMap.getNumberOfTests());
+        ASSERT_FALSE(resultMap.empty());
+        EXPECT_EQ(this->numberOfTests, resultMap.getNumberOfTests());
         if (timeout) {
             EXPECT_EQ(testsgen::TestStatus::TEST_INTERRUPTED,
-                      statusMap.begin()->second.begin()->second);
+                      resultMap.begin()->second.begin()->second.status());
         } else {
-            testUtils::checkStatuses(statusMap, tests);
+            testUtils::checkStatuses(resultMap, tests);
+
+            StatusCountMap expectedStatusCountMap{
+                {testsgen::TEST_PASSED, 3}};
+            testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
         }
     }
 
     TEST_P(Parameterized_Server_Test, Clang_Resources_Directory_Test) {
         std::string suite = "stddef";
         setSuite(suite);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(testGen.testingMethodsSourcePaths[0]);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
-        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
+    }
+
+    TEST_P(Parameterized_Server_Test, Installed_Dependency_Test) {
+        std::string suite = "installed";
+        setSuite(suite);
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
+        auto const& cases = testGen.tests.begin().value().methods["display_version"].testCases;
+        ASSERT_EQ(1, cases.size());
+        ASSERT_FALSE(cases[0].isError());
+    }
+
+    TEST_P(Parameterized_Server_Test, Stats_Test) {
+        std::string suite = "small-project";
+        setSuite(suite);
+        srcPaths = {};
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                            GrpcUtils::UTBOT_AUTO_TARGET_PATH);
+        auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+
     }
 }

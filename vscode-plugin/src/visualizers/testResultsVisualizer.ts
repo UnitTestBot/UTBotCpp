@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from "vscode";
 import { GTestInfo, TestsCache } from "../cache/testsCache";
 import { Prefs } from '../config/prefs';
@@ -39,14 +35,14 @@ export class TestResultsVisualizer implements Visualizer, DataLoader<TestResultO
         });
         vs.workspace.onDidDeleteFiles((event) => {
             event.files.forEach(fileUri => {
-                this.clearTestsByTestFileName(fileUri.fsPath);
+                this.removeFileFromData(fileUri.fsPath);
             });
         });
         vs.workspace.onDidChangeTextDocument((event) => {
             this.editors.forEach((editor) => {
                 if (editor.document.uri === event.document.uri) {
                     this.hide(editor);
-                    this.clearEditorTests(editor);
+                    this.removeFileFromData(editor.document.fileName, false);
                 }
             });
         });
@@ -84,15 +80,11 @@ export class TestResultsVisualizer implements Visualizer, DataLoader<TestResultO
         this.testsWithStatuses = [];
     }
 
-    public clearEditorTests(editor: vs.TextEditor): void {
-        this.clearTestsByTestFileName(editor.document.fileName, false);
-    }
+    public removeFileFromData(localFileName: string, canBeFolder: boolean = true): void {
+        const serverFileName = Prefs.isRemoteScenario()
+           ? pathUtils.substituteRemotePath(localFileName)
+           : localFileName;
 
-    public clearTestsByTestFileName(filename: string, canBeFolder: boolean = true): void {
-        let serverFileName = filename;
-        if (Prefs.isRemoteScenario()) {
-            serverFileName = pathUtils.substituteRemotePath(serverFileName);
-        }
         if (canBeFolder) {
             this.testsWithStatuses = this.testsWithStatuses.filter(test => !test.testInfo.filePath.startsWith(serverFileName));
         } else {

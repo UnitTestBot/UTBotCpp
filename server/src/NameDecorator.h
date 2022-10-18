@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_NAMEDECORATOR_H
 #define UNITTESTBOT_NAMEDECORATOR_H
 
@@ -13,6 +9,10 @@
 class NameDecorator {
 public:
     static std::string decorate(std::string_view name);
+
+    static std::string defineWcharT(std::string_view canonicalName);
+
+    static const std::string UNDEF_WCHAR_T;
 
     static const std::unordered_set<std::string> C_KEYWORDS;
 

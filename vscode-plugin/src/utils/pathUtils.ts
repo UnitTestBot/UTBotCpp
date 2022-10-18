@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import * as vs from 'vscode';
 import { Prefs } from '../config/prefs';
@@ -52,7 +48,7 @@ export function getRealFilePath(editorPath: string, optionalClickedPath: vs.Uri 
 }
 
 export function getRootPath(): string | undefined {
-    return vs.workspace.workspaceFolders?.[0].uri.path;
+    return vs.workspace.workspaceFolders?.[0].uri.fsPath;
 }
 
 export function fsJoin(...paths: string[]): string {

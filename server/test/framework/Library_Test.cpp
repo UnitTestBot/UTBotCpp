@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "gtest/gtest.h"
 
 #include "BaseTest.h"
@@ -17,52 +13,52 @@ namespace {
         fs::path test_c = test / "test.c";
 
         void SetUp() override {
-            clearEnv();
+            clearEnv(CompilationUtils::CompilerName::CLANG);
             srcPaths = { suitePath, test, sum };
         }
 
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, int kleeTimeout = 60) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, false, kleeTimeout);
+                                                            srcPaths, pathToFile, lineNum,
+                                                            pathToFile, true, false,
+                                                            kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(pathToFile);
-            Status status =
-                Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+            Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return { testGen, status };
         }
     };
 
     TEST_F(Library_Test, sum) {
-        auto [testGen, status] = createTestForFunction(test_c, 7);
+        auto [testGen, status] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         testUtils::checkTestCasePredicates(
             testGen.tests.at(test_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                     return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                  },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );
 
-        auto [testGen2, status2] = createTestForFunction(test_c, 7);
+        auto [testGen2, status2] = createTestForFunction(test_c, 3);
 
         ASSERT_TRUE(status2.ok()) << status2.error_message();
 
         testUtils::checkTestCasePredicates(
             testGen2.tests.at(test_c).methods.begin().value().testCases,
-            vector<TestCasePredicate>({
+            std::vector<TestCasePredicate>({
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValueView->getEntryValue()) == 1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                 [](const tests::Tests::MethodTestCase &testCase) {
-                    return stoi(testCase.returnValueView->getEntryValue()) == -1;
+                    return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
                 }
             })
         );

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TYPES_H
 #define UNITTESTBOT_TYPES_H
 
@@ -16,6 +12,7 @@
 #include <protobuf/util.pb.h>
 #include <tsl/ordered_set.h>
 
+#include <cstddef>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -231,6 +228,8 @@ namespace types {
 
         bool maybeJustPointer() const;
 
+        bool isFilePointer() const;
+
         bool maybeReturnArray() const;
 
         size_t countReturnPointers(bool decrementIfArray = false) const;
@@ -239,8 +238,11 @@ namespace types {
 
         bool maybeArray = false;
 
-        static const size_t symStdinSize = 64;
+        static const size_t symInputSize = 64;
+        static const size_t symFilesCount = 3;
+
         static const std::string &getStdinParamName();
+        static std::string getFileParamName(char fileName);
     private:
 
         explicit Type(const TypeName& type, size_t pointersNum=0);
@@ -261,10 +263,12 @@ namespace types {
 
     struct Field {
         types::Type type;
+        bool anonymous;
         std::string name;
-        unsigned int size;
-        // reassigned in structFields
-        unsigned int offset = 0;
+        /// size in @b bits
+        size_t size;
+        /// offset in @b bits, reassigned in structFields
+        size_t offset = 0;
         enum AccessSpecifier {
             AS_pubic,
             AS_protected,
@@ -278,22 +282,25 @@ namespace types {
         fs::path filePath;
         std::string name;
         std::string definition;
-        uint64_t size;
-        uint64_t alignment;
+        /// size in @b bits
+        size_t size;
+        /// alignment in @b bytes
+        size_t alignment;
     };
 
-    typedef std::unordered_map<string, std::shared_ptr<FunctionInfo>> FPointerMap;
+    typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
+
+    enum class SubType {
+        Struct,
+        Union
+    };
 
     struct StructInfo: TypeInfo {
         std::vector<Field> fields{};
-
         FPointerMap functionFields{};
-        bool hasUnnamedFields;
-    };
-
-    struct UnionInfo: TypeInfo {
-        std::vector<Field> fields{};
-        bool hasUnnamedFields;
+        bool hasAnonymousStructOrUnion;
+        bool isCLike;
+        SubType subType;
     };
 
     struct EnumInfo: TypeInfo {
@@ -306,7 +313,7 @@ namespace types {
 
         std::optional<std::string> access;
 
-        std::string getEntryName(std::string const& value, utbot::Language language);
+        std::string getEntryName(std::string const& value, utbot::Language language) const;
     };
 
     struct TypeSupport {
@@ -317,35 +324,38 @@ namespace types {
 
     using StructsMap = std::unordered_map<uint64_t, StructInfo>;
     using EnumsMap = std::unordered_map<uint64_t, EnumInfo>;
-    using UnionsMap = std::unordered_map<uint64_t, UnionInfo>;
 
     struct TypeMaps {
         StructsMap structs;
         EnumsMap enums;
-        UnionsMap unions;
     };
 
     // Looking for a better name
-    enum class TypeKind { PRIMITIVE, STRUCT, OBJECT_POINTER,
-            FUNCTION_POINTER, ARRAY, ENUM, UNION, UNKNOWN };
+    enum class TypeKind {
+        PRIMITIVE,
+        STRUCT_LIKE,
+        ENUM,
+        OBJECT_POINTER,
+        FUNCTION_POINTER,
+        ARRAY,
+        UNKNOWN };
 
     enum class TypeUsage { PARAMETER, RETURN, ALL };
-    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE };
+    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
 
     class TypesHandler {
     public:
         struct SizeContext {
-            uint64_t pointerSize = 8;
-            uint64_t maximumAlignment = 16;
+            size_t pointerSize = 8; /// pointerSize in @b bytes
+            size_t maximumAlignment = 16; /// maximumAlignment in @b bytes
         };
 
         explicit TypesHandler(TypeMaps &types, SizeContext sizeContext)
             : typeMaps(types), sizeContext(sizeContext){};
 
         /**
-         * This functions calculates size of a given type. For structs in it calculates sum of sizes of its fields,
-         * ignoring alignment.
-         * @return size of given type.
+         * Calculates size of a given type.
+         * @return size of given type in @b bits.
          */
         size_t typeSize(const types::Type &type) const;
 
@@ -436,7 +446,7 @@ namespace types {
          * Returns true if given type is a struct, otherwise false.
          * @return whether given type is a struct
          */
-        bool isStruct(const Type&) const;
+        bool isStructLike(const Type&) const;
 
 
         /**
@@ -447,17 +457,16 @@ namespace types {
 
 
         /**
-         * Returns true if given type is a union, otherwise false.
-         * @return whether given type is a union
-         */
-        bool isUnion(const Type&) const;
-
-
-        /**
          * Returns true if given type is void, otherwise false.
          * @return whether given type is void
          */
         static bool isVoid(const Type&);
+
+        /**
+         * Returns true if given type is void, void*, void** etc, otherwise false.
+         * @return whether void is base type
+         */
+        static bool baseTypeIsVoid(const Type &type);
 
         /**
          * Returns true if given type is a pointer to function, otherwise false.
@@ -508,7 +517,7 @@ namespace types {
 
         /**
          * Returns StructInfo by given struct name.
-         * For safe usage, please use isStruct(..) before calling getStructInfo(..).
+         * For safe usage, please use isStructLike(..) before calling getStructInfo(..).
          * @return StructInfo for given struct.
          */
         StructInfo getStructInfo(const Type&) const;
@@ -520,47 +529,49 @@ namespace types {
          */
         EnumInfo getEnumInfo(const Type&) const;
 
-        /**
-         * Returns UnionInfo by given union name.
-         * For safe usage, please use isUnion(..) before calling getUnionInfo(..).
-         * @return UnionInfo for given union.
-         */
-        UnionInfo getUnionInfo(const Type&) const;
-
-        bool isStruct(uint64_t id) const;
+        bool isStructLike(uint64_t id) const;
         bool isEnum(uint64_t id) const;
-        bool isUnion(uint64_t id) const;
 
         [[nodiscard]] StructInfo getStructInfo(uint64_t id) const;
         [[nodiscard]] EnumInfo getEnumInfo(uint64_t id) const;
-        [[nodiscard]] UnionInfo getUnionInfo(uint64_t id) const;
 
         /**
          * Returns map of constraints for every supported primitive type, that might be used in
          * 'klee_prefer_cex' function.
          * @return map type -> constraints.
          */
-        static std::unordered_map<TypeName, std::vector<std::string>> preferredConstraints() noexcept;
+        static const std::unordered_map<TypeName, std::vector<std::string>> &preferredConstraints() noexcept;
 
         size_t getPointerSize() const noexcept {
             return sizeContext.pointerSize;
         }
 
-        uint64_t getMaximumAlignment() const noexcept {
+        size_t getMaximumAlignment() const noexcept {
             return sizeContext.maximumAlignment;
         }
 
-        static size_t getElementsNumberInPointerMultiDim(size_t def = 2) noexcept {
-            return def;
+        static size_t getElementsNumberInPointerMultiDim(PointerUsage usage, size_t def = 2) noexcept {
+            switch (usage) {
+            case PointerUsage::PARAMETER:
+                return 2;
+            case PointerUsage::RETURN:
+                return 2;
+            case PointerUsage::LAZY:
+                return 1;
+            case PointerUsage::KNOWN_SIZE:
+                return def;
+            }
         }
 
         static size_t
         getElementsNumberInPointerOneDim(PointerUsage usage,
-                                         size_t def = types::Type::symStdinSize) noexcept {
+                                         size_t def = types::Type::symInputSize) noexcept {
             switch (usage) {
             case PointerUsage::PARAMETER:
                 return 10;
             case PointerUsage::RETURN:
+                return 1;
+            case PointerUsage::LAZY:
                 return 1;
             case PointerUsage::KNOWN_SIZE:
                 return def;
@@ -625,11 +636,6 @@ namespace types {
                                    IsSupportedTypeArgumentsHash>
             isSupportedTypeHash{};
 
-        static std::unordered_map<TypeName, size_t> integerTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> floatingPointTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> characterTypesToSizes() noexcept;
-        static std::unordered_map<TypeName, size_t> boolTypesToSizes() noexcept;
-
         template<typename T>
         bool typeIsInMap(uint64_t id, const std::unordered_map<uint64_t, T>& someMap) const {
             if (CollectionUtils::containsKey(someMap, id)) {
@@ -651,16 +657,18 @@ namespace types {
     static inline const std::string RESTRICT_QUALIFIER = "restrict";
     static inline const std::string VOLATILE_QUALIFIER = "volatile";
 
+    const std::string FILE_PTR_TYPE = "struct _IO_FILE *";
+
     static inline const std::vector<std::string> QUALIFIERS = { CONST_QUALIFIER, RESTRICT_QUALIFIER, VOLATILE_QUALIFIER };
 
     struct FunctionInfo {
-        string name;
+        std::string name;
         bool isArray;
         types::Type returnType;
 
         struct FunctionParamInfo {
             types::Type type;
-            string name;
+            std::string name;
         };
         std::vector<FunctionParamInfo> params;
     };

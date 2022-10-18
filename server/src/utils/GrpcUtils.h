@@ -1,17 +1,12 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_GRPCUTILS_H
 #define UNITTESTBOT_GRPCUTILS_H
 
 #include "ProjectContext.h"
-#include "ProjectTarget.h"
+#include "utils/path/FileSystemPath.h"
 
 #include <protobuf/testgen.grpc.pb.h>
 
 #include <experimental/type_traits>
-#include "utils/path/FileSystemPath.h"
 #include <memory>
 #include <utility>
 

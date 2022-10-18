@@ -1,33 +1,23 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_BORDERSFINDER_H
 #define UNITTESTBOT_BORDERSFINDER_H
 
 #include "fetchers/FetcherUtils.h"
 #include "LineInfo.h"
+#include "building/CompilationDatabase.h"
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
-#include <clang/Rewrite/Core/Rewriter.h>
-#include <clang/Rewrite/Frontend/Rewriters.h>
-#include <clang/Tooling/CommonOptionsParser.h>
 #include <clang/Tooling/Tooling.h>
 
 #include "utils/path/FileSystemPath.h"
 #include <string>
 #include <utility>
 
-using std::string;
-using std::unique_ptr;
-using std::shared_ptr;
-
 class BordersFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
     BordersFinder(const fs::path &filePath,
                   unsigned line,
-                  const shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+                  const std::shared_ptr<CompilationDatabase> &compilationDatabase,
                   const fs::path &compileCommandsJsonPath);
 
     void run(const clang::ast_matchers::MatchFinder::MatchResult &Result) override;
@@ -41,7 +31,6 @@ public:
 private:
     unsigned line;
     LineInfo lineInfo{};
-    fs::path buildRootPath;
     struct Borders {
         struct Position {
             unsigned line;
@@ -61,7 +50,6 @@ private:
     ClangToolRunner clangToolRunner;
 
     // TODO: use rewriter for insertion
-    clang::Rewriter rewrt;
 
     Borders getStmtBordersLines(const clang::SourceManager &srcMng, const clang::Stmt *st);
 

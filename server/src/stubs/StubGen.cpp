@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "StubGen.h"
 
 #include "FeaturesFilter.h"
@@ -12,7 +8,8 @@
 #include "clang-utils/SourceToHeaderRewriter.h"
 #include "printers/CCJsonPrinter.h"
 #include "streams/stubs/StubsWriter.h"
-
+#include "loguru.h"
+#include "environment/EnvironmentPaths.h"
 
 StubGen::StubGen(BaseTestGen &testGen) : testGen(testGen) {
 }
@@ -21,17 +18,16 @@ CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
     if (!testGen.needToBeMocked() || !testGen.settingsContext.useStubs) {
         return {};
     }
-    fs::path testedFilePath = testGen.testingMethodsSourcePaths[0];
-    auto stubSources = StubSourcesFinder(testGen.buildDatabase).excludeFind(testedFilePath, target);
-    return CollectionUtils::FileSet(stubSources.begin(), stubSources.end());
+    fs::path testedFilePath = *testGen.testingMethodsSourcePaths.begin();
+    auto stubSources = StubSourcesFinder(testGen.getProjectBuildDatabase()).excludeFind(testedFilePath, target);
+    return { stubSources.begin(), stubSources.end() };
 }
 
 CollectionUtils::FileSet
-StubGen::findStubFilesBySignatures(const vector<tests::Tests::MethodDescription> &signatures) {
+StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescription> &signatures) {
     fs::path ccJsonDirPath =
-        Paths::getTmpDir(testGen.projectContext.projectName) / "stubs_build_files";
-    auto stubFiles =
-        Paths::findFilesInFolder(Paths::getStubsDirPath(testGen.projectContext));
+            Paths::getUTBotBuildDir(testGen.projectContext) / "stubs_build_files";
+    auto stubFiles = Paths::findFilesInFolder(Paths::getStubsDirPath(testGen.projectContext));
     stubFiles = Synchronizer::dropHeaders(stubFiles);
     CollectionUtils::erase_if(stubFiles, [this](fs::path const &stubPath) {
         fs::path sourcePath = Paths::stubPathToSourcePath(testGen.projectContext, stubPath);
@@ -40,16 +36,14 @@ StubGen::findStubFilesBySignatures(const vector<tests::Tests::MethodDescription>
     if (stubFiles.empty()) {
         return {};
     }
-    printer::CCJsonPrinter::createDummyBuildDB(
-        std::vector<fs::path>(stubFiles.begin(), stubFiles.end()), ccJsonDirPath);
+    printer::CCJsonPrinter::createDummyBuildDB(stubFiles, ccJsonDirPath);
     auto stubsCdb = CompilationUtils::getCompilationDatabase(ccJsonDirPath);
     tests::TestsMap stubFilesMap;
     for (const auto &file : stubFiles) {
         stubFilesMap[file].sourceFilePath = file;
     }
     Fetcher::Options::Value options = Fetcher::Options::Value::FUNCTION_NAMES_ONLY;
-    Fetcher fetcher(options, stubsCdb, stubFilesMap, nullptr,
-                              nullptr, nullptr, ccJsonDirPath, true);
+    Fetcher fetcher(options, stubsCdb, stubFilesMap, nullptr, nullptr, ccJsonDirPath, true);
     fetcher.fetchWithProgress(testGen.progressWriter, "Finding stub files", true);
     CollectionUtils::FileSet stubFilesSet;
     auto signatureNamesSet = CollectionUtils::transformTo<std::unordered_set<std::string>>(
@@ -104,4 +98,31 @@ bool StubGen::cmpMethodsDecl(const Tests::MethodDescription &decl1,
         }
     }
     return true;
+}
+
+Result<CollectionUtils::FileSet> StubGen::getStubSetForObject(const fs::path &objectFilePath) {
+    ShellExecTask::ExecutionParameters nmCommand(
+            Paths::getLLVMnm(),
+            { "--print-file-name", "--undefined-only", "--just-symbol-name", objectFilePath });
+    auto [out, status, _] = ShellExecTask::runShellCommandTask(nmCommand, testGen.serverBuildDir);
+    if (status != 0) {
+        std::string errorMessage =
+                StringUtils::stringFormat("llvm-nm on %s failed: %s", objectFilePath, out);
+        LOG_S(ERROR) << errorMessage;
+        return errorMessage;
+    }
+    auto symbols =
+            CollectionUtils::transform(StringUtils::split(out, '\n'), [](std::string const &line) {
+                return StringUtils::splitByWhitespaces(line).back();
+            });
+    CollectionUtils::erase_if(symbols, [](std::string const &symbol) {
+        return StringUtils::startsWith(symbol, "__ubsan") ||
+               StringUtils::startsWith(symbol, "klee_");
+    });
+    auto signatures = CollectionUtils::transform(symbols, [](std::string const &symbol) {
+        Tests::MethodDescription methodDescription;
+        methodDescription.name = symbol;
+        return methodDescription;
+    });
+    return findStubFilesBySignatures(signatures);
 }

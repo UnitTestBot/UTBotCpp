@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_COVERAGEGENERATOR_H
 #define UNITTESTBOT_COVERAGEGENERATOR_H
 
@@ -10,10 +6,10 @@
 #include "SettingsContext.h"
 #include "TestRunner.h"
 #include "streams/WriterUtils.h"
+#include "streams/coverage/CoverageAndResultsWriter.h"
 
 #include <protobuf/testgen.pb.h>
 
-#include <streams/coverage/CoverageAndResultsWriter.h>
 #include <utility>
 
 class CoverageAndResultsGenerator : public TestRunner {
@@ -38,4 +34,4 @@ private:
 };
 
 
-#endif // UNITTESTBOT_COVERAGEANDRESULTSGENERATOR_H
+#endif // UNITTESTBOT_COVERAGEGENERATOR_H

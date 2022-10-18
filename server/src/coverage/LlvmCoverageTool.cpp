@@ -1,8 +1,6 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "LlvmCoverageTool.h"
+
+#include <utility>
 
 #include "Coverage.h"
 #include "Paths.h"
@@ -16,43 +14,45 @@
 #include "utils/MakefileUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 
 using Coverage::CoverageMap;
 using Coverage::FileCoverage;
-using std::vector;
 
 LlvmCoverageTool::LlvmCoverageTool(utbot::ProjectContext projectContext,
                                    ProgressWriter const *progressWriter)
-    : CoverageTool(progressWriter), projectContext(projectContext) {
+    : CoverageTool(std::move(projectContext), progressWriter) {
 }
 
 std::vector<BuildRunCommand>
-LlvmCoverageTool::getBuildRunCommands(const vector<UnitTest> &testsToLaunch, bool withCoverage) {
+LlvmCoverageTool::getBuildRunCommands(const std::vector<UnitTest> &testsToLaunch, bool withCoverage) {
     return CollectionUtils::transform(testsToLaunch, [&](UnitTest const &testToLaunch) {
         fs::path sourcePath =
             Paths::testPathToSourcePath(projectContext, testToLaunch.testFilePath);
         auto makefilePath = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
         auto testName = testToLaunch.testname;
-        auto gtestFlags = getTestFilter(testToLaunch);
-        vector<string> profileEnv;
+        auto gtestFlags = getGTestFlags(testToLaunch);
+        std::vector<std::string> profileEnv;
         if (withCoverage) {
             auto profrawFilePath = Paths::getProfrawFilePath(projectContext, testName);
-            profileEnv = { StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath) };
+            profileEnv = {StringUtils::stringFormat("LLVM_PROFILE_FILE=%s", profrawFilePath)};
         }
-        auto buildCommand = MakefileUtils::makefileCommand(projectContext, makefilePath, "build",
+        auto buildCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath,
+                                                           printer::DefaultMakefilePrinter::TARGET_BUILD,
                                                            gtestFlags, profileEnv);
-        auto runCommand = MakefileUtils::makefileCommand(projectContext, makefilePath, "run",
+        auto runCommand = MakefileUtils::MakefileCommand(projectContext, makefilePath,
+                                                         printer::DefaultMakefilePrinter::TARGET_RUN,
                                                          gtestFlags, profileEnv);
-        return BuildRunCommand{ testToLaunch, buildCommand, runCommand };
+        return BuildRunCommand{testToLaunch, buildCommand, runCommand};
     });
 }
 
 std::vector<ShellExecTask>
-LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
+LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch) {
     MEASURE_FUNCTION_EXECUTION_TIME
-    vector<string> coverageCommands;
+    std::vector<std::string> coverageCommands;
     auto profrawFilePaths =
         CollectionUtils::transform(testsToLaunch, [&](UnitTest const &testToLaunch) {
             return Paths::getProfrawFilePath(projectContext, testToLaunch.testname);
@@ -73,14 +73,18 @@ LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
 
     auto testFilenames = CollectionUtils::transformTo<CollectionUtils::FileSet>(
         testsToLaunch, [](UnitTest const &test) { return test.testFilePath; });
-    auto objectFiles = CollectionUtils::transformTo<std::vector<fs::path>>(
+    auto objectFiles = CollectionUtils::transformTo<std::unordered_set<std::string>>(
         testFilenames, [this](fs::path const &testFilePath) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
             fs::path makefile =
                 Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-            auto makefileCommand = MakefileUtils::makefileCommand(projectContext, makefile, "bin");
+            auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "bin");
             auto res = makefileCommand.run();
             if (res.status == 0) {
+                if (res.output.empty()) {
+                    throw CoverageGenerationException(
+                            "Coverage result empty. See logs for more information.");
+                }
                 return StringUtils::split(res.output, '\n').back();
             }
             throw CoverageGenerationException(
@@ -98,11 +102,44 @@ LlvmCoverageTool::getCoverageCommands(const vector<UnitTest> &testsToLaunch) {
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = { "export" };
-    for (const fs::path &objectFile : objectFiles) {
-        exportArguments.emplace_back("-object");
-        exportArguments.emplace_back(objectFile.string());
+
+    // From documentation:
+    //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
+    bool firstBIN = true; // the first BIN need to be mentioned without `-object`
+    for (const std::string &objectFile : objectFiles) {
+        if (firstBIN) {
+            firstBIN = false;
+        }
+        else {
+            exportArguments.emplace_back("-object");
+        }
+        exportArguments.emplace_back(objectFile);
     }
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+
+    try {
+        auto sourcePaths = CollectionUtils::transformTo<
+            std::unordered_set<std::string>>(testFilenames, [this](fs::path const &testFilePath) {
+            fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+            if (!fs::exists(sourcePath)) {
+                throw CoverageGenerationException(
+                    "Coverage generation: Source file `"
+                    + sourcePath.string()
+                    + "` does not exist. Wrongly restored from test file `"
+                    + testFilePath.string()
+                    + "`.");
+            }
+            return sourcePath.string();
+        });
+        for (const std::string &sourcePath : sourcePaths) {
+            exportArguments.emplace_back(sourcePath);
+        }
+    }
+    catch (const CoverageGenerationException &ce) {
+        LOG_S(WARNING) << "Skip Coverage filtering for tested source files: "
+                       << ce.what();
+    }
+
     auto exportTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), exportArguments);
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
@@ -116,47 +153,50 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
         LOG_S(ERROR) << "Can't found coverage.json at " << covJsonPath.string();
         throw CoverageGenerationException("Can't found coverage.json at " + covJsonPath.string());
     }
-    LOG_S(INFO) << "Reading coverage.json";
+    try {
+        LOG_S(INFO) << "Reading coverage.json";
+        nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
 
-    nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
-
-    // Parsing is based on LLVM coverage mapping format
-    ExecUtils::doWorkWithProgress(
-        coverageJson.at("data"), progressWriter, "Reading coverage.json",
-        [&coverageMap](const nlohmann::json &data) {
-            for (const nlohmann::json &function : data.at("functions")) {
-                string filename = function.at("filenames").at(0);
-                // no need to show coverage for gtest library
-                if (Paths::isGtest(filename)) {
-                    continue;
-                }
-                for (const nlohmann::json &region : function.at("regions")) {
-                    // In an LLVM coverage mapping format a region is an array with line and
-                    // character position
-                    FileCoverage::SourcePosition startPosition{ region.at(0).get<uint32_t>() - 1,
-                                                                region.at(1).get<uint32_t>() - 1 };
-                    FileCoverage::SourcePosition endPosition{ region.at(2).get<uint32_t>() - 1,
-                                                              region.at(3).get<uint32_t>() - 1 };
-                    FileCoverage::SourceRange sourceRange{ startPosition, endPosition };
-                    // The 4th element in LLVM coverage mapping format of a region
-                    if (region.at(4).get<int>() == 0) {
-                        coverageMap[filename].uncoveredRanges.push_back(sourceRange);
-                    } else if (region.at(4).get<int>() >= 1) {
-                        coverageMap[filename].coveredRanges.push_back(sourceRange);
+        // Parsing is based on LLVM coverage mapping format
+        ExecUtils::doWorkWithProgress(
+                coverageJson.at("data"), progressWriter, "Reading coverage.json",
+                [&coverageMap](const nlohmann::json &data) {
+                    for (const nlohmann::json &function: data.at("functions")) {
+                        std::string filename = function.at("filenames").at(0);
+                        // no need to show coverage for gtest library
+                        if (Paths::isGtest(filename)) {
+                            continue;
+                        }
+                        for (const nlohmann::json &region: function.at("regions")) {
+                            // In an LLVM coverage mapping format a region is an array with line and
+                            // character position
+                            FileCoverage::SourcePosition startPosition{region.at(0).get<uint32_t>() - 1,
+                                                                       region.at(1).get<uint32_t>() - 1};
+                            FileCoverage::SourcePosition endPosition{region.at(2).get<uint32_t>() - 1,
+                                                                     region.at(3).get<uint32_t>() - 1};
+                            FileCoverage::SourceRange sourceRange{startPosition, endPosition};
+                            // The 4th element in LLVM coverage mapping format of a region
+                            if (region.at(4).get<int>() == 0) {
+                                coverageMap[filename].uncoveredRanges.push_back(sourceRange);
+                            } else if (region.at(4).get<int>() >= 1) {
+                                coverageMap[filename].coveredRanges.push_back(sourceRange);
+                            }
+                        }
                     }
-                }
-            }
-        });
+                });
 
-    for (const auto &item : coverageMap) {
-        countLineCoverage(coverageMap, item.first);
+        for (const auto &item: coverageMap) {
+            countLineCoverage(coverageMap, item.first);
+        }
+
+        return coverageMap;
+    } catch (const std::exception &e) {
+        throw CoverageGenerationException("Can't parse coverage.json at " + covJsonPath.string());
     }
-
-    return coverageMap;
 }
 
 void LlvmCoverageTool::countLineCoverage(Coverage::CoverageMap &coverageMap,
-                                         const string &filename) const {
+                                         const std::string &filename) const {
     for (auto range : coverageMap[filename].uncoveredRanges) {
         coverageMap[filename].noCoverageLinesBorders.insert({ range.start.line });
         coverageMap[filename].noCoverageLinesBorders.insert({ range.end.line });
@@ -186,9 +226,18 @@ void LlvmCoverageTool::checkLineForPartial(Coverage::FileCoverage::SourceLine li
 }
 
 nlohmann::json LlvmCoverageTool::getTotals() const {
-    fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
-    nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
-    return coverageJson.at("data").back().at("totals");
+    try {
+        fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
+        nlohmann::json coverageJson = JsonUtils::getJsonFromFile(covJsonPath);
+        return coverageJson.at("data").back().at("totals");
+    } catch (const std::exception &e) {
+        return {{
+                        "lines", {
+                        {"count", 0},
+                        {"covered", 0},
+                        {"percent", (double) 0.0}
+                }}};
+    }
 }
 
 

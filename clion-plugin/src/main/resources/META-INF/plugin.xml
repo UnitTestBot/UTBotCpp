@@ -1,0 +1,207 @@
+<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
+<idea-plugin>
+    <id>org.utbot.cpp.clion.plugin</id>
+    <name>UTBotCppClion</name>
+    <vendor>utbot.org</vendor>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.clion.ide</depends>
+    <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.cidr.lang</depends>
+    <depends>com.intellij.modules.clion</depends>
+
+
+    <extensions defaultExtensionNs="com.intellij">
+        <codeInsight.lineMarkerProvider language="ObjectiveC"
+                                        implementationClass="org.utbot.cpp.clion.plugin.ui.testsResults.UTBotTestRunLineMarkerProvider"/>
+        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.settings.UTBotAllProjectSettings"/>
+        <projectService serviceImplementation="org.utbot.cpp.clion.plugin.client.ManagedClient"/>
+        <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
+        <postStartupActivity implementation="org.utbot.cpp.clion.plugin.UTBotStartupActivity"/>
+        <projectConfigurable parentId="tools" instance="org.utbot.cpp.clion.plugin.settings.UTBotConfigurable"
+                             id="org.utbot.cpp.clion.plugin.ui.UTBotConfigurable"
+                             displayName="UTBot Settings"
+                             nonDefaultProject="true"/>
+        <notificationGroup id="UTBot events" displayType="BALLOON"/>
+
+        <coverageEngine implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine"/>
+        <coverageRunner implementation="org.utbot.cpp.clion.plugin.coverage.UTBotCoverageRunner"/>
+
+        <statusBarWidgetFactory implementation="org.utbot.cpp.clion.plugin.ui.statusBar.ConnectionStatusBarWidgetFactory"/>
+        <toolWindow id="UTBot"
+                    secondary="false"
+                    anchor="bottom"
+                    factoryClass="org.utbot.cpp.clion.plugin.ui.utbotToolWindow.UTBotToolWindowFactory"/>
+        <projectViewPane implementation="org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPane"/>
+    </extensions>
+
+
+    <actions>
+
+        <group id="actions.UTBot.editor" text="UTBot Generate Tests..." popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </group>
+
+        <group id="actions.UTBot.projectTree" text="UTBot Generate Tests..." popup="false">
+            <add-to-group group-id="ProjectViewPopupMenuModifyGroup" anchor="first"/>
+        </group>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.MarkSourceFolderAction"
+                class="org.utbot.cpp.clion.plugin.actions.mark.MarkSourceFolderAction" text="UTBot: Mark As UTBot Folders"
+                description="Marks selected folders as UTBot folders">
+            <add-to-group group-id="actions.UTBot.projectTree" anchor="first"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.UnmarkSourceFolderAction"
+                class="org.utbot.cpp.clion.plugin.actions.mark.UnmarkSourceFolderAction" text="UTBot: Unmark UTBot Folders"
+                description="Unmarks selected folders as UTBot folders">
+            <add-to-group group-id="actions.UTBot.projectTree" relative-to-action="org.utbot.cpp.clion.plugin.actions.MarkSourceFolderAction"
+                          anchor="after"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir"
+                class="org.utbot.cpp.clion.plugin.actions.AskServerToGenerateBuildDir"
+                text="Generate Build Directory" description="Ask server to generate build dir">
+            <override-text place="GoToAction" text="UTBot: Generate Build Directory"/>
+        </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.ConfigureProjectAction"
+                class="org.utbot.cpp.clion.plugin.actions.configure.ConfigureProjectAction" text="Configure Project"
+                description="Configure project so that server can generate tests">
+            <override-text place="GoToAction" text="UTBot: Configure Project"/>
+        </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration"
+                class="org.utbot.cpp.clion.plugin.actions.AskServerToGenerateJsonForProjectConfiguration"
+                text="Generate Missing Json Files"
+                description="Ask server to generate missing json files">
+            <override-text place="GoToAction" text="UTBot: Generate compile_commands.json and link_commands.json"/>
+        </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.ShowWizardAction"
+                class="org.utbot.cpp.clion.plugin.actions.ShowWizardAction" text="Quickstart Wizard"
+                description="Show quickstart wizard">
+            <override-text place="GoToAction" text="UTBot: Quickstart Wizard"/>
+        </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.ReconfigureProjectAction"
+                class="org.utbot.cpp.clion.plugin.actions.configure.ReconfigureProjectAction"
+                text="Reset Cache and Configure Project"
+                description="UTBot: Reset cache and configure project">
+            <override-text place="GoToAction" text="UTBot: Reset Cache and Configure Project"/>
+        </action>
+
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForFileAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForFileAction"
+                text="UTBot: Generate Tests For Current File"
+        >
+            <override-text place="EditorPopup" text="for Current File"/>
+            <synonym text="UF"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="first"/>
+            <add-to-group
+                    group-id="actions.UTBot.projectTree"
+                    anchor="first"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForLineAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForLineAction"
+                text="UTBot: Generate Tests For Current Line">
+            <override-text place="EditorPopup" text="for Current Line"/>
+            <synonym text="UL"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="after"
+                    relative-to-action="org.utbot.cpp.clion.plugin.actions.GenerateForFileAction"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForFunctionAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForFunctionAction"
+                text="UTBot: Generate Tests For Current Function">
+            <override-text place="EditorPopup" text="for Current Function"/>
+            <synonym text="UF"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="after"
+                    relative-to-action="org.utbot.cpp.clion.plugin.actions.GenerateForLineAction"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForClassAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForClassAction"
+                text="UTBot: Generate Tests For Current Class">
+            <override-text place="EditorPopup" text="for Current Class"/>
+            <synonym text="UC"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="after"
+                    relative-to-action="org.utbot.cpp.clion.plugin.actions.GenerateForFunctionAction"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForPredicateAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForPredicateAction"
+                text="UTBot: Generate Tests With Prompted Result">
+            <override-text place="EditorPopup" text="with Prompted Result"/>
+            <synonym text="UR"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="after"
+                    relative-to-action="org.utbot.cpp.clion.plugin.actions.GenerateForClassAction"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForAssertionAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForAssertionAction"
+                text="UTBot: Generate Tests That Fail Current Assertion">
+            <override-text place="EditorPopup" text="That Fail Current Assertion"/>
+            <synonym text="UA"/>
+            <add-to-group
+                    group-id="actions.UTBot.editor"
+                    anchor="after"
+                    relative-to-action="org.utbot.cpp.clion.plugin.actions.GenerateForClassAction"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForProjectAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForProjectAction"
+                text="UTBot: Generate Tests For Project" description="Generate tests for whole project">
+            <override-text place="EditorPopup" text="For Project"/>
+            <synonym text="Projgen"/>
+            <add-to-group
+                    group-id="actions.UTBot.projectTree"
+                    anchor="last"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForFolderAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForFolderAction"
+                text="UTBot: Generate Tests For Folder">
+            <synonym text="UF"/>
+            <add-to-group
+                    group-id="actions.UTBot.projectTree"
+                    anchor="last"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.GenerateForSnippetAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.GenerateForSnippetAction"
+                text="UTBot: Generate Tests For Code Snippet"
+                description="Generates tests for file without context of a project">
+            <synonym text="US"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
+                class="org.utbot.cpp.clion.plugin.actions.generate.RunAllTestsWithCoverageAction"
+                text="UTBot: Run All Tests and Show Coverage"/>
+        <action id="org.utbot.cpp.clion.plugin.actions.TogglePluginAction"
+                class="org.utbot.cpp.clion.plugin.actions.TogglePluginAction"
+                text="UTBot: Turn On/Off Plugin">
+            <override-text place="GoToAction" text="UTBot: Enable Plugin"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.ReconnectAction"
+                class="org.utbot.cpp.clion.plugin.actions.ReconnectAction" text="Reconnect to Server"
+                description="Recreates connection to server, useful when you launch the server and plugin don&#39;t connect immedeately">
+            <override-text place="GoToAction" text="UTBot: Reconnect to Server"/>
+        </action>
+
+        <action id="org.utbot.cpp.clion.plugin.actions.ChangeVerboseModeAction"
+                class="org.utbot.cpp.clion.plugin.actions.ChangeVerboseModeAction" text="UTBot: Turn On/Off Verbose Mode"
+                description="Turns on/off verbose formatting for tests">
+            <override-text place="GoToAction" text="UTBot: Enable Verbose Mode"/>
+        </action>
+    </actions>
+</idea-plugin>

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as pathlib from 'path';
 import * as vs from 'vscode';
 import * as vsUtils from '../utils/vscodeUtils';
@@ -22,7 +18,7 @@ export class UTBotExplorerFolder extends vs.TreeItem {
     ) {
         super(label, collapsibleState);
         this.tooltip = `${this.path}`;
-        this.description = pathlib.relative(vsUtils.getProjectDirByOpenedFile().fsPath, vs.Uri.parse(this.path).fsPath);
+        this.description = pathlib.relative(vsUtils.getProjectDirByOpenedFile().fsPath, vs.Uri.file(this.path).fsPath);
     }
 
     contextValue = this.isUsed ? UTBotExplorerFolder.UTBOT_FOLDER_USED : UTBotExplorerFolder.UTBOT_FOLDER_NOT_USED;

@@ -1,14 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FileTESTGEN_H
 #define UNITTESTBOT_FileTESTGEN_H
 
 #include "ProjectTestGen.h"
 
 
-class FileTestGen : public ProjectTestGen {
+class FileTestGen final : public ProjectTestGen {
 public:
     fs::path filepath;
 
@@ -18,9 +14,7 @@ public:
 
     ~FileTestGen() override = default;
 
-    string toString() override;
-
-    void setModuleTestingSources(const vector<fs::path> &moduleFiles);
+    std::string toString() override;
 };
 
 

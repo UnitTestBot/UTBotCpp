@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "floats_special.h"
 #include "math.h"
 
@@ -13,7 +9,7 @@ int is_nanf(float x) {
     }
 }
 
-int is_nan(double x) {
+int is_nan(long double x) {
     if (x != x) {
         return 1;
     } else {

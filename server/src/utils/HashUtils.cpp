@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "HashUtils.h"
 
 #include "Tests.h"
@@ -21,7 +17,10 @@ namespace HashUtils {
 
     std::size_t TestMethodHash::operator()(const tests::TestMethod &testMethod) const {
         size_t seed = 0;
-        hashCombine(seed, testMethod.methodName, testMethod.bitcodeFilePath, testMethod.sourceFilePath);
+        hashCombine(seed, testMethod.methodName,
+                    testMethod.bitcodeFilePath,
+                    testMethod.sourceFilePath,
+                    testMethod.is32bits);
         return seed;
     }
 }

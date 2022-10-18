@@ -1,14 +1,10 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_ClassTESTGEN_H
 #define UNITTESTBOT_ClassTESTGEN_H
 
 #include "LineTestGen.h"
 #include "ProjectTestGen.h"
 
-class ClassTestGen : public LineTestGen {
+class ClassTestGen final : public LineTestGen {
 public:
     ClassTestGen(const testsgen::ClassRequest &request,
                  ProgressWriter *progressWriter,
@@ -16,7 +12,7 @@ public:
 
     ~ClassTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     bool needToAddPathFlag() override;
 };

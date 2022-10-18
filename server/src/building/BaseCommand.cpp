@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BaseCommand.h"
 
 #include "CompileCommand.h"
@@ -11,39 +7,46 @@
 #include "tasks/ShellExecTask.h"
 #include "utils/CollectionUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/path/FileSystemPath.h"
 
 #include "loguru.h"
 
 #include <algorithm>
-#include "utils/path/FileSystemPath.h"
 #include <iterator>
 #include <set>
 #include <utility>
 
 namespace utbot {
-    BaseCommand::BaseCommand(std::list<std::string> commandLine, fs::path directory)
-        : commandLine(std::move(commandLine)), directory(std::move(directory)) {
+    BaseCommand::BaseCommand(std::list<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
+        : commandLine(std::move(commandLine)), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
+        initOutput();
     }
-    BaseCommand::BaseCommand(std::vector<std::string> commandLine, fs::path directory)
-        : commandLine(commandLine.begin(), commandLine.end()), directory(std::move(directory)) {
+
+    BaseCommand::BaseCommand(std::vector<std::string> commandLine, fs::path directory, bool shouldChangeDirectory)
+        : commandLine(commandLine.begin(), commandLine.end()), directory(std::move(directory)), shouldChangeDirectory{shouldChangeDirectory} {
         initOptimizationLevel();
+        initOutput();
     }
 
     BaseCommand::BaseCommand(BaseCommand const &other)
-        : directory(other.directory), commandLine(other.commandLine),
-          environmentVariables(other.environmentVariables) {
+            : directory(other.directory), commandLine(other.commandLine),
+              environmentVariables(other.environmentVariables), shouldChangeDirectory(other.shouldChangeDirectory),
+              output(other.output) {
         if (other.optimizationLevel.has_value()) {
             optimizationLevel =
-                std::next(commandLine.begin(),
-                          std::distance<const_iterator>(other.commandLine.begin(),
-                                                        other.optimizationLevel.value()));
+                    std::next(commandLine.begin(),
+                              std::distance<const_iterator>(other.commandLine.begin(),
+                                                            other.optimizationLevel.value()));
         }
     }
+
     BaseCommand::BaseCommand(BaseCommand &&other) noexcept
         : directory(std::move(other.directory)), commandLine(std::move(other.commandLine)),
           environmentVariables(std::move(other.environmentVariables)),
-          optimizationLevel(other.optimizationLevel) {
+          optimizationLevel(other.optimizationLevel),
+          output(other.output),
+          shouldChangeDirectory(other.shouldChangeDirectory) {
     }
 
     void BaseCommand::initOptimizationLevel() {
@@ -52,6 +55,14 @@ namespace utbot {
             optimizationLevel = it;
         }
     }
+
+    void BaseCommand::initOutput() {
+        auto it = findOutput();
+        if (it != commandLine.end()) {
+            output = it;
+        }
+    }
+
     BaseCommand::iterator BaseCommand::findOutput() {
         auto it = std::find(commandLine.begin(), commandLine.end(), "-o");
         if (it != commandLine.end()) {
@@ -112,9 +123,16 @@ namespace utbot {
         return CollectionUtils::erase_if(commandLine, f);
     }
     std::string BaseCommand::toStringWithChangingDirectory() const {
+        return toStringWithChangingDirectoryToNew(directory);
+    }
+
+    std::string BaseCommand::toStringWithChangingDirectoryToNew(const fs::path& targetDirectory) const {
         std::string baseCommand = toString();
-        return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN, directory,
-                                         getOutput().parent_path(), baseCommand);
+        if (shouldChangeDirectory) {
+            return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN_WITH_CD, targetDirectory,
+                                             getOutput().parent_path(), baseCommand);
+        }
+        return StringUtils::stringFormat(CompilationUtils::FULL_COMMAND_PATTERN, getOutput().parent_path(), baseCommand);
     }
 
     void BaseCommand::setOptimizationLevel(const std::string &flag) {
@@ -123,5 +141,21 @@ namespace utbot {
         } else {
             optimizationLevel = addFlagToBegin(flag);
         }
+    }
+
+    fs::path BaseCommand::getBuildTool() const {
+        return *commandLine.begin();
+    }
+
+    void BaseCommand::setBuildTool(fs::path buildTool) {
+        *(commandLine.begin()) = std::move(buildTool);
+    }
+
+    fs::path BaseCommand::getOutput() const {
+        return *output;
+    }
+
+    void BaseCommand::setOutput(fs::path output) {
+        *(this->output) = std::move(output);
     }
 }

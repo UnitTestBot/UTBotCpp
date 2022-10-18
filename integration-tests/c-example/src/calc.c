@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "calc.h"
 #include "module/libfunc.h"
 
@@ -30,7 +26,7 @@ int other_module_call(int a) {
 int calc_two_numbers_f(char a, char b) {
     typedef int (*f_arr_type)(int);
     f_arr_type f_arr[10];
-    f_arr[0] = *f;
+    f_arr[0] = f;
     if (pointerToPointer(f_arr, a) == b) {
         return 1;
     }

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as path from 'path';
 import * as vs from 'vscode';
 import { UTBotFoldersStorage } from "../explorer/utbotFoldersStorage";
@@ -32,7 +28,7 @@ export class Prefs {
     public static TESTS_DIR_PREF = 'unittestbot.paths.testsDirectory';
     public static SOURCE_DIRS_PREF = 'unittestbot.paths.sourceDirectories';
 
-    public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.applyHuawei'sFiveStepRuleStandard";
+    public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.verboseFormatting";
 
     public static USE_STUBS_PREF = 'unittestbot.stubs.useStubs';
 
@@ -47,9 +43,14 @@ export class Prefs {
     public static SHOW_TEST_RESULTS_PREF = 'unittestbot.visual.showTestResults';
 
 
-    public static isRemoteScenario(): boolean {
+    public static isLocalHost(): boolean {
         const host = Prefs.getAsset(Prefs.HOST_PREF);
-        return !(host === '127.0.0.1' || host === 'localhost') || isWin32();
+        return host === '127.0.0.1' || host === 'localhost';
+    }
+
+    public static isRemoteScenario(): boolean {
+        return !(this.isLocalHost() && this.getRemotePath() === vsUtils.getProjectDirByOpenedFile().fsPath)
+            || isWin32();
     }
 
     /**

@@ -1,12 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_PROJECTTESTGEN_H
 #define UNITTESTBOT_PROJECTTESTGEN_H
 
 #include "BaseTestGen.h"
-#include "ProjectTarget.h"
 
 #include <optional>
 
@@ -19,18 +14,16 @@ public:
 
     ~ProjectTestGen() override = default;
 
-    string toString() override;
+    std::string toString() override;
 
     const testsgen::ProjectRequest *getRequest() const;
-    
+
     void setTargetForSource(fs::path const &sourcePath) override;
 
 private:
     testsgen::ProjectRequest const *const request;
 
-    vector<fs::path> getSourcePathCandidates() const;
-
-    vector<fs::path> getRequestSourcePaths() const;
+    std::vector<fs::path> getRequestSourcePaths() const;
 
     void autoDetectSourcePathsIfNotEmpty();
 };

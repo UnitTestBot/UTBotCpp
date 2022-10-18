@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_FILESYSTEMPATH_H
 #define UNITTESTBOT_FILESYSTEMPATH_H
 
@@ -17,17 +13,13 @@ namespace fs {
 
     class path {
     public:
-        path(const std::filesystem::path& p) : path_(normalizedTrimmed(p)) {
-        }
+        path(const std::filesystem::path &p) : path_(normalizedTrimmed(p)) {}
 
         path() {}
 
-        path(const std::string& s) : path_(normalizedTrimmed(s)) {
-        }
+        path(const std::string &s) : path_(normalizedTrimmed(s)) {}
 
-        path(const char *s) : path_(normalizedTrimmed(s)) {
-
-        }
+        path(const char *s) : path_(normalizedTrimmed(s)) {}
 
         path root_path() const {
             return path(path_.root_path());
@@ -153,6 +145,7 @@ namespace fs {
         friend bool create_directories( const path& p );
         friend void copy( const path& from, const path& to);
         friend void copy( const path& from, const path& to, std::filesystem::copy_options options );
+        friend void rename( const path& from, const path& to);
         friend bool copy_file( const path& from,
                                const path& to,
                                copy_options options );
@@ -223,6 +216,11 @@ namespace fs {
     inline void copy( const path& from,
                       const path& to, std::filesystem::copy_options options ) {
         copy(from.path_, to.path_, options);
+    }
+
+    inline void rename( const path& from,
+                        const path& to) {
+        rename(from.path_, to.path_);
     }
 
     inline std::filesystem::file_time_type last_write_time(const path& p) {

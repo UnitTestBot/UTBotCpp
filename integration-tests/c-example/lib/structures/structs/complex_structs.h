@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef SIMPLE_TEST_PROJECT_COMPLEX_STRUCTS_H
 #define SIMPLE_TEST_PROJECT_COMPLEX_STRUCTS_H
 
@@ -15,15 +11,22 @@ struct Two {
 };
 
 struct Three {
-    char chs [2];
+    char chs[2];
     int b;
     struct Two in;
 };
 
-int struct_has_alphabet(struct One st);
+struct WithAnonymousStruct {
+    struct { int x, y; };
+    int m;
+};
 
+int struct_has_alphabet(struct One st);
 
 char arrays_in_inner_structs(struct Three st);
 
+int count_equal_members_anon_structure(struct WithAnonymousStruct st);
+
 struct One alphabet(int a);
+
 #endif // SIMPLE_TEST_PROJECT_COMPLEX_STRUCTS_H

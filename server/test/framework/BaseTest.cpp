@@ -1,17 +1,13 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "BaseTest.h"
 
 #include "utils/FileSystemUtils.h"
 #include "utils/ServerUtils.h"
 
-BaseTest::BaseTest(const string &suiteName) {
+BaseTest::BaseTest(const std::string &suiteName) {
     setSuite(suiteName);
 }
 
-void BaseTest::setSuite(const string &suite) {
+void BaseTest::setSuite(const std::string &suite) {
     suiteName = suite;
     suitePath = baseSuitePath / suiteName;
     srcPaths = { suitePath, suitePath / "inner" };
@@ -23,17 +19,17 @@ void BaseTest::setCompiler(CompilationUtils::CompilerName name) {
     setBuildDirectory(getBuildDirectoryName(compilerName));
 }
 
-void BaseTest::setBuildDirectory(const string &buildDirectoryName) {
+void BaseTest::setBuildDirectory(const std::string &buildDirectoryName) {
     buildDirRelativePath = buildDirectoryName;
     buildPath = suitePath / buildDirRelativePath;
 }
 
-fs::path BaseTest::getTestFilePath(const string &fileName) {
+fs::path BaseTest::getTestFilePath(const std::string &fileName) {
     return suitePath / fileName;
 }
 
-void BaseTest::clearEnv() {
-    compilerName = CompilerName::CLANG;
+void BaseTest::clearEnv(const CompilationUtils::CompilerName& compiler) {
+    compilerName = compiler;
     setSuite(suiteName);
 
     ctx = std::make_unique<ServerContext>();
@@ -41,9 +37,8 @@ void BaseTest::clearEnv() {
 
     ServerUtils::setThreadOptions(ctx.get(), TESTMODE);
 
-    fs::path tmpDir = Paths::getTmpDir(projectName);
-    clearDirectory(tmpDir);
-    fs::create_directories(tmpDir);
+    fs::path utbotBuildDir = buildPath / CompilationUtils::UTBOT_FILES_DIR_NAME;
+    clearDirectory(utbotBuildDir);
 }
 
 void BaseTest::clearTestDirectory() {
@@ -58,14 +53,20 @@ fs::path BaseTest::getTestDirectory() {
     return suitePath / "tests";
 }
 
-fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const string &fileName) {
+fs::path BaseTest::getPathToGeneratedTestFileByTestedFile(const std::string &fileName) {
     return getTestDirectory() /
-           (Paths::addExtension(Paths::addTestSuffix(Paths::removeExtension(fileName)), ".cpp"));
+           (Paths::addExtension(
+               Paths::addTestSuffix(
+                   Paths::addSuffix(Paths::removeExtension(fileName), "_dot_c")),
+               ".cpp"));
 }
 
-fs::path BaseTest::getPathToGeneratedTestHeaderFileByTestedFile(const string &fileName) {
+fs::path BaseTest::getPathToGeneratedTestHeaderFileByTestedFile(const std::string &fileName) {
     return getTestDirectory() /
-           (Paths::addExtension(Paths::addTestSuffix(Paths::removeExtension(fileName)), ".h"));
+           (Paths::addExtension(
+               Paths::addTestSuffix(
+                   Paths::addSuffix(Paths::removeExtension(fileName), "_dot_c")),
+               ".h"));
 }
 
 fs::path BaseTest::getStubsDirectory() {

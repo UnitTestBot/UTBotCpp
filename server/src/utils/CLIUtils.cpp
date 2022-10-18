@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "CLIUtils.h"
 
 #include "GenerationUtils.h"
@@ -9,7 +5,7 @@
 #include "commands/Commands.h"
 
 #include "loguru.h"
-
+#include "config.h"
 
 using namespace GenerationUtils;
 using namespace Commands;
@@ -36,7 +32,14 @@ void CLIUtils::setupLogger(const std::string &logPath,
     if (!threadView) {
         loguru::g_preamble_thread = false;
     }
-    setOptPath(logPath, Paths::logPath);
+
+    CLIUtils::setOptPath(logPath, Paths::logPath);
+    const fs::path symLink = Paths::getSymLinkPathToLogLatest();
+    const std::string logfile_path_string = std::string(Paths::getUtbotLogAllFilePath());
+    loguru::add_file(logfile_path_string.data(), loguru::Append, loguru::Verbosity_MAX);
+    std::filesystem::remove(symLink.string());
+    std::filesystem::create_symlink(logfile_path_string, symLink.string());
+
     setStderrVerbosity(verbosity);
 }
 
@@ -48,7 +51,6 @@ createProjectContextByOptions(const ProjectContextOptionGroup &projectContextOpt
     auto projectContext =
         GrpcUtils::createProjectContext(projectContextOptions.getProjectName(), projectPath,
                                         testDir, projectContextOptions.getBuildDirectory());
-    projectContext->set_resultsdirrelativepath(projectContextOptions.getResultsDirectory());
     return projectContext;
 }
 
@@ -66,7 +68,7 @@ std::vector<fs::path> getSourcePaths(const ProjectContextOptionGroup &projectCon
                                      const std::string &sourcePathsString) {
     if (!sourcePathsString.empty()) {
         return CollectionUtils::transformTo<std::vector<fs::path>>(
-            StringUtils::split(sourcePathsString, ','), [](string const &file) {
+            StringUtils::split(sourcePathsString, ','), [](std::string const &file) {
                 return Paths::normalizedTrimmed(fs::absolute(fs::path(file)));
             });
     } else if (!projectContextOptions.getProjectPath().empty()) {
@@ -241,8 +243,6 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
     } else {
         CLIUtils::setupLogger(serverCommandOptions.getLogPath(),
                               serverCommandOptions.getVerbosity());
-        CLIUtils::setOptPath(serverCommandOptions.getLogPath(), Paths::logPath);
-        CLIUtils::setOptPath(serverCommandOptions.getTmpPath(), Paths::tmpPath);
         Server server;
         if (serverCommandOptions.getPort() != 0) {
             server.run(serverCommandOptions.getPort());
@@ -274,7 +274,7 @@ char *CLIUtils::getCmdOption(char **begin, char **end, const std::string &option
 }
 
 
-void CLIUtils::setOptPath(int argc, char **argv, const string &option, fs::path &var) {
+void CLIUtils::setOptPath(int argc, char **argv, const std::string &option, fs::path &var) {
     auto optPath = getCmdOption(argv, argv + argc, option);
     if (optPath != nullptr) {
         if (Paths::isValidDir(std::string(optPath))) {

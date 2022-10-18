@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_SERVERWRITER_H
 #define UNITTESTBOT_SERVERWRITER_H
 
@@ -17,7 +13,7 @@ namespace utbot {
             : BaseWriter<Response, grpc::ServerWriter<Response>>(writer) {
         }
 
-        void writeProgress(const std::optional<string> &message,
+        void writeProgress(const std::optional<std::string> &message,
                            double percent = 0.0,
                            bool completed = false) const override {
             if (!this->hasStream()) {

@@ -1,15 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
-:root {
-    --custom-shaded-backgroud: rgba(0, 0, 0, 0.3);
-}
-
 .utbot-form {
     background-color: var(--vscode-welcomePage-background);
-    margin: 150px auto;
-    margin-top: 75px;
+    margin: auto auto;
+    margin-top: 15px;
     vertical-align: middle;
     padding: 40px;
     width: 70%;
@@ -20,6 +12,7 @@
 /* Hide all steps by default: */
 .utbot-form__tab {
     display: none;
+    min-height: 280px;
 }
 
 .utbot-form__tab.active {
@@ -36,17 +29,26 @@
     height: 10px;
     width: 10px;
     margin: 0 2px;
-    /* background-color: #bbbbbb; */
+
     background-color: var(--vscode-titleBar-activeForeground);
+    /* background-color: #bbbbbb; */
     border: none;
     border-radius: 50%;
     display: inline-block;
-    opacity: 0.5;
+
+    opacity: 50%;
 }
 
 /* Mark the active step: */
 .utbot-form__steps_step.active {
-    opacity: 1;
+    opacity: 100%;
+}
+
+.utbot-form__tab_label {
+    text-align: right;
+    margin-top: 10px;
+    margin-right: 15px;
+    float:left;
 }
 
 .utbot-form__tab_input {
@@ -54,34 +56,27 @@
 }
 
 .utbot-form__tab_item {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
-.utbot-form__tab_connection_test-button {
-   max-width: 30%;
-   display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 5px;
 }
 
 /* By default turn off connection status */
-.utbot-form__tab_connection_loader,
-.utbot-form__tab_connection_success,
-.utbot-form__tab_connection_failure {
+#connection_loader,
+#connection_success,
+#connection_warning,
+#connection_failure {
     display: none;
 }
 
-.utbot-form__tab_connection_loader.active,
-.utbot-form__tab_connection_success.active,
-.utbot-form__tab_connection_failure.active {
+#connection_loader.active,
+#connection_success.active,
+#connection_warning.active,
+#connection_failure.active {
     display: inline-block;
 }
 
 .utbot-form__steps_step.finish {
     background-color: var(--vscode-editorInfo-foreground);
-}
-
-.utbot-form__tab_input {
-    box-sizing: border-box;
 }
 
 .utbot-form__navigation {
@@ -121,44 +116,6 @@
     margin-right: 0;
 }
 
-.utbot-form__tab {
-    min-height: 190px;
-}
-
-/** Connection loader **/
-.utbot-form__tab_connection_loader.active {
-    top: 5px;
-    position: relative;
-    height: 100%;
-}
-
-.utbot-form__tab_connection_loader.active:after {
-    content: " ";
-    display: block;
-    border-radius: 50%;
-    width: 0;
-    height: 0;
-    margin: 0px;
-    box-sizing: border-box;
-    border: 10px solid #fff;
-    border-color: #fff transparent #fff transparent;
-    animation: lds-hourglass 1.2s infinite;
-}
-
-@keyframes lds-hourglass {
-    0% {
-        transform: rotate(0);
-        animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-    }
-    50% {
-        transform: rotate(900deg);
-        animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
-    }
-    100% {
-        transform: rotate(1800deg);
-    }
-}
-
 .utbot-modal {
     position: fixed;
     top: 0;
@@ -166,7 +123,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 0vh;
+    height: 0;
     overflow: hidden;
     transition: background-color 0.25s ease;
     z-index: 9999;
@@ -287,7 +244,7 @@
     background: var(--vscode-diffEditor-diagonalFill);
 }
 
-.utbot-modal__close-button::before, 
+.utbot-modal__close-button::before,
 .utbot-modal__close-button::after {
     content: "";
     position: absolute;
@@ -315,7 +272,7 @@
     transform: rotate(-45deg);
 }
 
-.utbot-modal__close-button.thick::before, 
+.utbot-modal__close-button.thick::before,
 .utbot-modal__close-button.thick::after {
     height: 4px;
     margin-top: -2px;

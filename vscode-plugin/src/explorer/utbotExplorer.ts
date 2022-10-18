@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as vs from 'vscode';
 import { Commands } from '../config/commands';
 import { DefaultConfigValues } from "../config/defaultValues";
@@ -125,7 +121,7 @@ export class UTBotExplorer {
             }
             const initSourceDirectoriesNames: Array<string> = [];
             await clearSourceDirectories();
-            await vs.workspace.fs.readDirectory(vs.Uri.parse(rootPath))
+            await vs.workspace.fs.readDirectory(vs.Uri.file(rootPath))
                 .then(resultArray => {
                     resultArray.forEach(([name, type]) => {
                         // add only non hidden directories and not a build directory by default
@@ -165,5 +161,4 @@ export class UTBotExplorer {
             UTBotFoldersStorage.instance.setFoldersFromConfiguration();
         }
     }
-
 }

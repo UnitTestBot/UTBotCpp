@@ -3,9 +3,10 @@ syntax = "proto3";
 package testsgen;
 
 import "util.proto";
+import "google/protobuf/duration.proto";
 
 service TestsGenService {
-    rpc Handshake(DummyRequest) returns(DummyResponse) {}
+    rpc Handshake(VersionInfo) returns(VersionInfo) {}
 
     rpc Heartbeat(DummyRequest) returns(HeartbeatResponse) {}
 
@@ -58,6 +59,10 @@ message DummyRequest {}
 
 message DummyResponse {}
 
+message VersionInfo {
+    string version = 1;
+}
+
 message RegisterClientRequest {
     string clientId = 1;
 }
@@ -83,7 +88,6 @@ message ProjectContext {
     string projectPath = 2;
     string testDirPath = 3;
     string buildDirRelativePath = 4;
-    string resultsDirRelativePath = 5;
 }
 
 message SettingsContext {
@@ -188,6 +192,7 @@ message TestResultObject {
     string testname = 2;
     TestStatus status = 3;
     string output = 4;
+    google.protobuf.Duration executionTime = 5;
 }
 
 message CoverageAndResultsResponse {
@@ -205,6 +210,7 @@ enum ConfigMode {
     CHECK = 0;
     CREATE_BUILD_DIR = 1;
     GENERATE_JSON_FILES = 2;
+    ALL = 3;
 }
 
 enum ProjectConfigStatus {
@@ -214,6 +220,7 @@ enum ProjectConfigStatus {
     LINK_COMMANDS_JSON_NOT_FOUND = 3;
     BUILD_DIR_CREATION_FAILED = 4;
     RUN_JSON_GENERATION_FAILED = 5;
+    BUILD_DIR_SAME_AS_PROJECT = 6;
 }
 
 message ProjectConfigRequest {

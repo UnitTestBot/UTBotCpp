@@ -1,51 +1,41 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "ServerTestsWriter.h"
 
-#include <utils/FileSystemUtils.h>
+#include "utils/FileSystemUtils.h"
 
+#include "loguru.h"
+
+#include <fstream>
+#include <iostream>
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
-                                               std::string const &message,
+                                               const std::string &message,
                                                const fs::path &testDirPath,
-                                               std::function<void(tests::Tests &)> &&functor) {
-
+                                               std::function<void(tests::Tests &)> &&prepareTests,
+                                               std::function<void()> &&prepareTotal) {
     size_t size = testMap.size();
     writeProgress(message);
     int totalTestsCounter = 0;
-    for (auto it = testMap.begin(); it != testMap.end(); it++) {
+    for (auto it = testMap.begin(); it != testMap.end(); ++it) {
         tests::Tests &tests = it.value();
         ExecUtils::throwIfCancelled();
-        functor(tests);
-        if (writeFileAndSendResponse(tests, testDirPath, message, 100.0 / size, false)) {
-            totalTestsCounter += 1;
+        prepareTests(tests);
+        if (writeFileAndSendResponse(tests, testDirPath, message, (100.0 * totalTestsCounter) / size, false)) {
+            ++totalTestsCounter;
         }
     }
+    prepareTotal();
     writeCompleted(testMap, totalTestsCounter);
-}
-
-void ServerTestsWriter::writeStubs(const vector<Stubs> &synchronizedStubs) {
-    testsgen::TestsResponse response;
-    auto stubsResponse = std::make_unique<testsgen::StubsResponse>();
-    for (auto const &synchronizedStub : synchronizedStubs) {
-        auto sData = stubsResponse->add_stubsources();
-        sData->set_filepath(synchronizedStub.filePath);
-        if (synchronizeCode) {
-            sData->set_code(synchronizedStub.code);
-        }
-    }
-    response.set_allocated_stubs(stubsResponse.release());
 }
 
 bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
                                                  const fs::path &testDirPath,
-                                                 const string &message,
+                                                 const std::string &message,
                                                  double percent,
                                                  bool isCompleted) const {
     fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;
-    FileSystemUtils::writeToFile(testFilePath, tests.code);
+    if (!tests.code.empty()) {
+        FileSystemUtils::writeToFile(testFilePath, tests.code);
+    }
     if (!hasStream()) {
         return false;
     }
@@ -58,9 +48,9 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
         testSource->set_filepath(tests.testSourceFilePath);
         if (synchronizeCode) {
             testSource->set_code(tests.code);
-            testSource->set_errormethodsnumber(tests.errorMethodsNumber);
-            testSource->set_regressionmethodsnumber(tests.regressionMethodsNumber);
         }
+        testSource->set_errormethodsnumber(tests.errorMethodsNumber);
+        testSource->set_regressionmethodsnumber(tests.regressionMethodsNumber);
 
         auto testHeader = response.add_testsources();
         testHeader->set_filepath(tests.testHeaderFilePath);
@@ -73,4 +63,24 @@ bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
     response.set_allocated_progress(progress.release());
     writeMessage(response);
     return isAnyTestsGenerated;
+}
+
+void ServerTestsWriter::writeReport(const std::string &content,
+                                    const std::string &message,
+                                    const fs::path &pathToStore) const
+{
+    testsgen::TestsResponse response;
+    TestsWriter::writeReport(content, message, pathToStore);
+
+    auto testSource = response.add_testsources();
+    testSource->set_filepath(pathToStore);
+    if (synchronizeCode) {
+        // write the content only for real data transfer
+        // `synchronizeCode` is false if client and server share the same FS
+        testSource->set_code(content);
+    }
+    LOG_S(INFO) << message;
+    auto progress = GrpcUtils::createProgress(message, 100, false);
+    response.set_allocated_progress(progress.release());
+    writeMessage(response);
 }

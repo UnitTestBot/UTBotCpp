@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_KLEERUNNER_H
 #define UNITTESTBOT_KLEERUNNER_H
 
@@ -10,6 +6,8 @@
 #include "SettingsContext.h"
 #include "Tests.h"
 #include "streams/tests/TestsWriter.h"
+#include "utils/stats/KleeStats.h"
+#include "utils/stats/TestsGenerationStats.h"
 
 #include <grpcpp/grpcpp.h>
 
@@ -18,8 +16,7 @@
 class KleeRunner {
 public:
     KleeRunner(utbot::ProjectContext projectContext,
-               utbot::SettingsContext settingsContext,
-               fs::path serverBuildDir);
+               utbot::SettingsContext settingsContext);
     /**
      * @brief Passes arguments to `run_klee.cpp` and executes it.
      *
@@ -31,23 +28,32 @@ public:
      * generated unit tests for each batch.
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
-    void runKlee(const std::vector<tests::TestMethod> &testMethods,
-                 tests::TestsMap &testsMap,
-                 const std::shared_ptr<KleeGenerator>& generator,
-                 const std::unordered_map<string, types::Type> &methodNameToReturnTypeMap,
-                 const std::shared_ptr<LineInfo> &lineInfo,
-                 TestsWriter *testsWriter,
-                 bool isBatched);
+    void runKlee(const std::vector<tests::TestMethod> &testMethods, tests::TestsMap &testsMap,
+                 const std::shared_ptr<KleeGenerator> &generator,
+                 const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+                 const std::shared_ptr<LineInfo> &lineInfo, TestsWriter *testsWriter, bool isBatched,
+                 bool interactiveMode,
+                 StatsUtils::TestsGenerationStatsFileMap &generationStats);
 
 private:
     const utbot::ProjectContext projectContext;
     const utbot::SettingsContext settingsContext;
-    fs::path projectTmpPath;
-    const ProgressWriter *progressWriter;
-    void processBatch(tests::MethodKtests &ktestChunk,
-                      const tests::TestMethod &testMethod,
-                      tests::Tests &tests);
-    fs::path getKleeMethodOutFile(const tests::TestMethod &method);
+
+    void processBatchWithoutInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                        tests::Tests &tests,
+                                        std::vector<tests::MethodKtests> &ktests);
+
+    void processBatchWithInteractive(const std::vector<tests::TestMethod> &testMethods,
+                                     tests::Tests &tests,
+                                     std::vector<tests::MethodKtests> &ktests);
+
+    std::pair<std::vector<std::string>, fs::path>
+    createKleeParams(const tests::TestMethod &testMethod,
+                     const tests::Tests &tests,
+                     const std::string &methodNameOrEmptyForFolder);
+
+    void addTailKleeInitParams(std::vector<std::string> &argvData,
+                               const std::string &bitcodeFilePath);
 };
 
 

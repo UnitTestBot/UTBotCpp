@@ -1,13 +1,7 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_TYPEDECLSMATCHCALLBACK_H
 #define UNITTESTBOT_TYPEDECLSMATCHCALLBACK_H
 
 #include "types/TypesResolver.h"
-
-#include "loguru.h"
 
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 

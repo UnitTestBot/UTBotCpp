@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 import * as assert from 'assert';
 import * as path from 'path';
 import * as vs from 'vscode';
@@ -23,17 +19,17 @@ import {
 } from '../helper';
 
 suite('"Generate Tests For Current File" Test Suite', () => {
-    const projectName = 'c-example';
+    const projectName = 'c-example-mini';
     const projectPath = path.resolve(__dirname,
         '../../../../', 'integration-tests', projectName);
 
-    const fileName = 'simple_structs';
+    const fileName = 'basic_functions';
     const fileNameToTest = `${fileName}.c`;
-    const openedFile = path.resolve(projectPath, 'lib', 'structures', 'structs', fileNameToTest);
+    const openedFile = path.resolve(projectPath, 'lib', fileNameToTest);
 
     const targetName = 'liblib.a';
 
-    const lineNumber = 2;
+    const lineNumber = 3;
 
     async function checkAll(): Promise<void> {
         //TODO: get rid of the sleep once SAT-100 is done

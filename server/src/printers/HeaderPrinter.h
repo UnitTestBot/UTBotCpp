@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #ifndef UNITTESTBOT_HEADERPRINTER_H
 #define UNITTESTBOT_HEADERPRINTER_H
 
@@ -19,7 +15,7 @@ namespace printer {
 
         void print(const fs::path &testHeaderFilePath,
                    const fs::path &sourceFilePath,
-                   string &headerCode);
+                   std::string &headerCode);
 
         void processHeader(const Include &relatedHeader);
     };

@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "NameDecorator.h"
 
 #include "utils/CollectionUtils.h"
@@ -16,6 +12,15 @@ std::string NameDecorator::decorate(std::string_view name) {
     // add underscore at the end of name
     return result;
 }
+
+std::string NameDecorator::defineWcharT(std::string_view canonicalName) {
+    return StringUtils::stringFormat("#define wchar_t %.*s", canonicalName.length(),
+                                     canonicalName.data());
+}
+
+const std::string NameDecorator::UNDEF_WCHAR_T = "#ifdef wchar_t\n"
+                                                 "#undef wchar_t\n"
+                                                 "#endif\n";
 
 // https://en.cppreference.com/w/c/keyword
 const std::unordered_set<std::string> NameDecorator::C_KEYWORDS = {
@@ -70,7 +75,7 @@ const std::unordered_set<std::string> NameDecorator::CPP_KEYWORDS = {
     "explicit",
     "export",
     "extern",
-    "false",
+//    "false",
     "float",
     "for",
     "friend",
@@ -110,7 +115,7 @@ const std::unordered_set<std::string> NameDecorator::CPP_KEYWORDS = {
     "this",
     "thread_local",
     "throw",
-    "true",
+//    "true",
     "try",
     "typedef",
     "typeid",

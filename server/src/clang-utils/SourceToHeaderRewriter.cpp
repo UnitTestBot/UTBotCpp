@@ -1,7 +1,3 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "SourceToHeaderRewriter.h"
 
 #include "NameDecorator.h"
@@ -13,10 +9,11 @@
 #include "loguru.h"
 
 #include <utility>
+#include <fstream>
 
 SourceToHeaderRewriter::SourceToHeaderRewriter(
     utbot::ProjectContext projectContext,
-    const std::shared_ptr<clang::tooling::CompilationDatabase> &compilationDatabase,
+    const std::shared_ptr<CompilationDatabase> &compilationDatabase,
     std::shared_ptr<Fetcher::FileToStringSet> structsToDeclare,
     fs::path serverBuildDir)
     : projectContext(std::move(projectContext)),
@@ -24,7 +21,7 @@ SourceToHeaderRewriter::SourceToHeaderRewriter(
       serverBuildDir(std::move(serverBuildDir)) {
 }
 
-unique_ptr<clang::tooling::FrontendActionFactory>
+std::unique_ptr<clang::tooling::FrontendActionFactory>
 SourceToHeaderRewriter::createFactory(llvm::raw_ostream *externalStream,
                                       llvm::raw_ostream *internalStream,
                                       llvm::raw_ostream *wrapperStream,
@@ -39,16 +36,16 @@ SourceToHeaderRewriter::createFactory(llvm::raw_ostream *externalStream,
 
 SourceToHeaderRewriter::SourceDeclarations
 SourceToHeaderRewriter::generateSourceDeclarations(const fs::path &sourceFilePath, bool forStubHeader) {
-    string externalDeclarations;
+    std::string externalDeclarations;
     llvm::raw_string_ostream externalStream(externalDeclarations);
-    string internalDeclarations;
+    std::string internalDeclarations;
     llvm::raw_string_ostream internalStream(internalDeclarations);
 
     auto factory = createFactory(&externalStream, &internalStream, nullptr, sourceFilePath, forStubHeader);
 
     if (CollectionUtils::containsKey(*structsToDeclare, sourceFilePath)) {
         std::stringstream newContentStream;
-        for (string const &structName : structsToDeclare->at(sourceFilePath)) {
+        for (std::string const &structName : structsToDeclare->at(sourceFilePath)) {
             newContentStream << StringUtils::stringFormat("struct %s;\n", structName);
         }
         std::ifstream oldFileStream(sourceFilePath);
@@ -74,6 +71,7 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
             sourceFileToInclude =
                 fs::canonical(test.sourceFilePath.parent_path() / test.mainHeader.value().path);
         }
+        sourceFileToInclude = fs::relative(sourceFilePath, test.testHeaderFilePath.parent_path());
         return StringUtils::stringFormat("#define main main__\n\n"
                                          "#include \"%s\"\n\n",
                                          sourceFileToInclude);
@@ -88,12 +86,15 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
         "%s\n"
         "%s\n"
         "%s\n"
+        "%s\n"
+        "%s\n"
         "}\n"
         "%s\n",
         Copyright::GENERATED_C_CPP_FILE_HEADER, PrinterUtils::TEST_NAMESPACE,
         NameDecorator::DEFINES_CODE, PrinterUtils::DEFINES_FOR_C_KEYWORDS,
+        PrinterUtils::KNOWN_IMPLICIT_RECORD_DECLS_CODE,
         sourceDeclarations.externalDeclarations, sourceDeclarations.internalDeclarations,
-        NameDecorator::UNDEFS_CODE);
+        NameDecorator::UNDEF_WCHAR_T, NameDecorator::UNDEFS_CODE);
 }
 
 std::string SourceToHeaderRewriter::generateStubHeader(const fs::path &sourceFilePath) {
@@ -129,7 +130,7 @@ std::string SourceToHeaderRewriter::generateWrapper(const fs::path &sourceFilePa
 
 void SourceToHeaderRewriter::generateTestHeaders(tests::TestsMap &tests,
                                              ProgressWriter const *progressWriter) {
-    string logMessage = "Generating headers for tests";
+    std::string logMessage = "Generating headers for tests";
     LOG_S(DEBUG) << logMessage;
     ExecUtils::doWorkWithProgress(tests, progressWriter, logMessage, [this](auto &it) {
         fs::path const &sourceFilePath = it.first;

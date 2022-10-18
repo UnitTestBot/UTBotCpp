@@ -1,9 +1,6 @@
-/*
- * Copyright (c) Huawei Technologies Co., Ltd. 2012-2021. All rights reserved.
- */
-
 #include "TestUtils.h"
 #include "utils/CLIUtils.h"
+#include "printers/DefaultMakefilePrinter.h"
 
 #include "loguru.h"
 
@@ -55,7 +52,9 @@ int main(int argc, char **argv) {
 
         for (auto const &subproject : { "executable", "static_library", "shared_library", "timeout" }) {
             for (auto const &compiler : { clang, gcc }) {
-                testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("run") / subproject, compiler);
+                testUtils::tryExecGetBuildCommands(
+                        testUtils::getRelativeTestSuitePath(printer::DefaultMakefilePrinter::TARGET_RUN) / subproject,
+                        compiler);
             }
         }
 
@@ -78,6 +77,10 @@ int main(int argc, char **argv) {
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("stddef"), gcc);
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("stddef"), clang);
+
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("installed"), gcc);
+
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("installed"), clang);
 
     } catch (std::runtime_error const &e) {
         return 1;
