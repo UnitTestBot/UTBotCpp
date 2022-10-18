@@ -39,7 +39,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var useStubs: Boolean = true,
         var useDeterministicSearcher: Boolean = false,
         var verbose: Boolean = false,
-        var timeoutPerFunction: Int = 0,
+        var timeoutPerFunction: Int = 30,
         var timeoutPerTest: Int = 0,
         var isPluginEnabled: Boolean = false
     ) {

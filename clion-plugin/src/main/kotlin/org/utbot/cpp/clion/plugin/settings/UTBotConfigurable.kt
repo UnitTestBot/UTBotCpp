@@ -130,9 +130,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
     private fun Panel.createPathsSettings() {
         row(UTBot.message("settings.project.buildDir")) {
-            val validator: (JBTextField) -> Boolean = {
-                it.text.isNotEmpty()
-            }
             textField().bindText(settings::buildDirRelativePath).columns(COLUMNS_LARGE)
                 .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
         }.rowComment(UTBot.message("paths.buildDirectory.description"))
