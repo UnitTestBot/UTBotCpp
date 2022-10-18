@@ -13,12 +13,12 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - id: set-matrix
         name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
-          echo "::set-output name=matrix::$TASKS"
+          echo "matrix=$TASKS" >> $GITHUB_OUTPUT
 
   build-utbot-and-run-unit-tests:
     needs: matrix-prep
@@ -39,7 +39,7 @@ jobs:
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: Build UTBot
@@ -53,7 +53,7 @@ jobs:
         run: |
           chmod +x docker/action-scripts/unit-tests.sh
           ./docker/action-scripts/unit-tests.sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: UTBot unit tests logs
@@ -78,7 +78,7 @@ jobs:
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -104,7 +104,7 @@ jobs:
           chmod +x docker/action-scripts/runClionIntegrationTests.sh 
           ./docker/action-scripts/runClionIntegrationTests.sh
       - name: Upload logs
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: failure()
         with:
           name: test-report
@@ -131,7 +131,7 @@ jobs:
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -159,7 +159,7 @@ jobs:
       PORTABLE_CONTAINER_NAME: Portable
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
