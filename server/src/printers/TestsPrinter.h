@@ -83,11 +83,7 @@ namespace printer {
 
         void globalParamsAsserts(const Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase);
-
-        void parametrizedArrayParameters(const tests::Tests::MethodDescription &methodDescription,
-                                         const Tests::MethodTestCase &testCase,
-                                         int param_num);
-
+        
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
                                  const std::optional<LineInfo::PredicateInfo>& predicateInfo);
@@ -148,6 +144,10 @@ namespace printer {
 
         void printStubVariables(const Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase);
+
+        void printPointerParameter(const tests::Tests::MethodDescription &methodDescription,
+                                   const Tests::MethodTestCase &testCase,
+                                   int param_num);
 
         static Tests::MethodParam getValueParam(const Tests::MethodParam &param);
 

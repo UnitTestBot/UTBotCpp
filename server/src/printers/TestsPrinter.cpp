@@ -452,7 +452,7 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
                                            const Tests::MethodTestCase &testCase,
                                            bool all) {
     for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        parametrizedArrayParameters(methodDescription, testCase, i);
+        printPointerParameter(methodDescription, testCase, i);
         const Tests::MethodParam &param = methodDescription.params[i];
         bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !param.isChangeable();
         if (all || param.type.isLValueReference() || param.type.isSimple() && containsLazy) {
@@ -622,9 +622,9 @@ void TestsPrinter::globalParamsAsserts(const Tests::MethodDescription &methodDes
     }
 }
 
-void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &methodDescription,
-                                               const Tests::MethodTestCase &testCase,
-                                               int param_num) {
+void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodDescription,
+                                         const Tests::MethodTestCase &testCase,
+                                         int param_num) {
     const auto &param = methodDescription.params[param_num];
     const auto &value = testCase.paramValues[param_num];
     if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
