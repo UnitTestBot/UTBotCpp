@@ -85,7 +85,8 @@ namespace printer {
                             const Tests::MethodTestCase &testCase);
 
         void parametrizedArrayParameters(const tests::Tests::MethodDescription &methodDescription,
-                                         const Tests::MethodTestCase &testCase);
+                                         const Tests::MethodTestCase &testCase,
+                                         int param_num);
 
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
