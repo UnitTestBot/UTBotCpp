@@ -14,12 +14,12 @@ jobs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - id: set-matrix
         name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
-          echo "::set-output name=matrix::$TASKS"
+          echo "::setOutput name=matrix::$TASKS"
 
   publish:
     needs: matrix-prep
@@ -41,7 +41,7 @@ jobs:
         ARTIFACT_DIR: utbot-artifact
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
       - name: set version
@@ -83,7 +83,7 @@ jobs:
         run: |
           chmod +x docker/action-scripts/prepare-ubuntu-release.sh
           ./docker/action-scripts/prepare-ubuntu-release.sh
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: utbot-${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_DIR }}
@@ -93,9 +93,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Download a single artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Installation check
         run: |
           cd $(find . -name utbot-* -type d -print | head -n1)
