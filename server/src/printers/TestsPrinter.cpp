@@ -348,7 +348,6 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
-    parametrizedArrayParameters(methodDescription, testCase);
     printClassObject(methodDescription, testCase);
     printStubVariables(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, false);
@@ -453,20 +452,16 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
                                            const Tests::MethodTestCase &testCase,
                                            bool all) {
     for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() &&
-                            !methodDescription.params[i].isChangeable();
-        if (!methodDescription.params[i].type.isFilePointer() &&
-            (all || methodDescription.params[i].type.isLValueReference() || containsLazy)) {
-            Tests::MethodParam param = methodDescription.params[i];
-            auto value = testCase.paramValues[i];
+        parametrizedArrayParameters(methodDescription, testCase, i);
+        const Tests::MethodParam &param = methodDescription.params[i];
+        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !param.isChangeable();
+        if (!param.type.isFilePointer() &&
+            (all || param.type.isLValueReference() || param.type.isSimple() && containsLazy)) {
+            Tests::TestCaseParamValue value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
-            if (methodDescription.params[i].type.maybeJustPointer()) {
-                valueParam.type = valueParam.type.baseTypeObj();
-            }
             value.name = valueParam.name;
-            verboseParameter(methodDescription, valueParam, value, true);
-            if (param.type.isTwoDimensionalPointer()) {
-                gen2DPointer(param, true);
+            if (param.type.isLValueReference() || param.type.isSimple()) {
+                verboseParameter(methodDescription, valueParam, value, true);
             }
         }
     }
@@ -629,32 +624,36 @@ void TestsPrinter::globalParamsAsserts(const Tests::MethodDescription &methodDes
 }
 
 void TestsPrinter::parametrizedArrayParameters(const Tests::MethodDescription &methodDescription,
-                                               const Tests::MethodTestCase &testCase) {
-    for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        const auto &param = methodDescription.params[i];
-        const auto &value = testCase.paramValues[i];
-        if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
-            auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
-            std::string stubName = PrinterUtils::getFunctionPointerStubName(
-                methodDescription.getClassTypeName(), methodDescription.name, param.name);
-            strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
-        } else if (types::TypesHandler::isCStringType(param.type)) {
-            strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER, value.view->getEntryValue(this), param.alignment);
-        } else if (!param.type.isFilePointer() && (param.type.isObjectPointer() || param.type.isArray())) {
-            auto arrayType = types::TypesHandler::isVoid(param.type.baseTypeObj())
-                ? types::Type::minimalScalarPointerType(param.type.arraysSizes(types::PointerUsage::PARAMETER).size())
-                : param.type;
-            if (param.type.maybeJustPointer()) {
-                strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(this), param.alignment);
-            } else {
-                auto paramName = param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
-                strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
-                                   value.view->getEntryValue(this), param.alignment, true);
-            }
+                                               const Tests::MethodTestCase &testCase,
+                                               int param_num) {
+    const auto &param = methodDescription.params[param_num];
+    const auto &value = testCase.paramValues[param_num];
+    if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
+        auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
+        std::string stubName = PrinterUtils::getFunctionPointerStubName(
+            methodDescription.getClassTypeName(), methodDescription.name, param.name);
+        strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
+    } else if (types::TypesHandler::isCStringType(param.type)) {
+        strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER,
+                           value.view->getEntryValue(this), param.alignment);
+    } else if (!param.type.isFilePointer() &&
+               (param.type.isObjectPointer() || param.type.isArray())) {
+        auto arrayType = types::TypesHandler::isVoid(param.type.baseTypeObj())
+                             ? types::Type::minimalScalarPointerType(
+                                   param.type.arraysSizes(types::PointerUsage::PARAMETER).size())
+                             : param.type;
+        if (param.type.maybeJustPointer()) {
+            strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(this),
+                          param.alignment);
+        } else {
+            auto paramName =
+                param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
+            strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
+                               value.view->getEntryValue(this), param.alignment, true);
         }
-        if (param.type.isTwoDimensionalPointer()) {
-            gen2DPointer(param, true);
-        }
+    }
+    if (param.type.isTwoDimensionalPointer()) {
+        gen2DPointer(param, true);
     }
 }
 
