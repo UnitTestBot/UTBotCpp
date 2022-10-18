@@ -19,7 +19,7 @@ jobs:
         name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
-          echo "::set-output name=matrix::$TASKS"
+          echo "::setOutput name=matrix::$TASKS"
 
   publish:
     needs: matrix-prep
