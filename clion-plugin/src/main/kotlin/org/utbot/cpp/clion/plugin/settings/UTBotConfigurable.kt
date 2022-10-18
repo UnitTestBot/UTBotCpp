@@ -137,15 +137,6 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
         }.rowComment(UTBot.message("paths.buildDirectory.description"))
 
-        row(UTBot.message("settings.project.target")) {
-            textField().bindText(
-                getter = {
-                    settings.uiTargetPath
-                },
-                setter = {}
-            ).columns(COLUMNS_LARGE).enabled(false)
-        }.rowComment(UTBot.message("paths.target.description"))
-
         row(UTBot.message("settings.project.testsDir")) {
             textField().bindText(settings::testDirRelativePath).columns(COLUMNS_LARGE)
                 .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
