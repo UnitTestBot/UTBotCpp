@@ -18,7 +18,7 @@ jobs:
         name: Read config from matrix.json
         run: |
           TASKS=$(echo $(cat .github/workflows/matrix.json) | sed 's/ //g' )
-          echo "name=matrix::$TASKS" >> $GITHUB_OUTPUT
+          echo "matrix=$TASKS" >> $GITHUB_OUTPUT
 
   build-utbot-and-run-unit-tests:
     needs: matrix-prep
