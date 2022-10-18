@@ -22,4 +22,4 @@ val AnActionEvent.client: ManagedClient
 val Project.client: ManagedClient get() = this.service<ManagedClient>()
 
 fun AnActionEvent.activeProject() = this.project
-    ?: error("A project related to action event $this not found")
+    ?: error("Project is missing for event: $this")

@@ -1,16 +1,12 @@
-package org.utbot.cpp.clion.plugin.tests
+package org.utbot.cpp.clion.plugin.tests.integrationTests
 
-import com.intellij.openapi.editor.Editor
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.tinylog.kotlin.Logger
-import org.utbot.cpp.clion.plugin.BaseGenerationTestCase
-import org.utbot.cpp.clion.plugin.Clang
-import org.utbot.cpp.clion.plugin.CppCompiler
-import org.utbot.cpp.clion.plugin.Gcc
 import org.utbot.cpp.clion.plugin.assertAllFilesNotEmptyRecursively
 import org.utbot.cpp.clion.plugin.assertFileOrDirExists
 import org.utbot.cpp.clion.plugin.assertTestFilesExist
+import org.utbot.cpp.clion.plugin.moveCursorToLine
 import org.utbot.cpp.clion.plugin.settings.settings
 
 @Disabled("Disabled as a flaky test until #483 is fixed")
@@ -48,14 +44,9 @@ class GenerateForLineTest: BaseGenerationTestCase() {
         doTest(IF_IN_MAX_FUNCTION_LINE, compiler = Gcc)
     }
 
-    private fun Editor.moveCursorToLine(lineNumber: Int) {
-        this.caretModel.moveToOffset(this.document.getLineStartOffset(lineNumber))
-    }
-
     companion object {
-        // line numbers are assumed to start from 0
-        const val HEAD_OF_MAX_LINE = 2
-        const val IF_IN_MAX_FUNCTION_LINE = 3
+        // line numbers are assumed to start from 1
+        const val HEAD_OF_MAX_LINE = 3
+        const val IF_IN_MAX_FUNCTION_LINE = 2
     }
 }
-

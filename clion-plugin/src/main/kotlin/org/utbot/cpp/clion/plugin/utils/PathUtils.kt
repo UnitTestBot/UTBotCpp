@@ -13,6 +13,8 @@ import java.nio.file.SimpleFileVisitor
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.*
 import kotlin.io.path.div
+import java.net.URI
+import java.net.URISyntaxException
 
 val Project.path get() = this.basePath ?: error("Project path can't be null!")
 val Project.nioPath: Path get() = Paths.get(this.path)
@@ -60,6 +62,19 @@ fun String.fileNameOrNull(): String? {
     } catch (e: InvalidPathException) {
         null
     }
+}
+
+fun String.isLookLikeUnixPath(): Boolean {
+    return this.startsWith("/") && !this.contains("\\")
+}
+
+fun String.isValidHostName(): Boolean {
+    try {
+        URI(null, null, this, 2121, null, null, null).authority
+    } catch (_: URISyntaxException) {
+        return false
+    }
+    return true
 }
 
 fun testFilePathToSourceFilePath(path: Path, project: Project): Path {
@@ -115,11 +130,14 @@ fun String.convertFromRemotePathIfNeeded(project: Project): Path {
 
 private fun String.convertToRemotePath(project: Project): String {
     val relativeToProjectPath = relativize(project.path, this)
-    return FilenameUtils.separatorsToUnix(Paths.get(project.settings.storedSettings.remotePath, relativeToProjectPath).toString())
+    return FilenameUtils.separatorsToUnix(
+        Paths.get(project.settings.storedSettings.remotePath, relativeToProjectPath).toString()
+    )
 }
 
 private fun String.convertFromRemotePath(project: Project): String {
-    val relativeToProjectPath = FilenameUtils.separatorsToSystem(relativize(project.settings.storedSettings.remotePath, this))
+    val relativeToProjectPath =
+        FilenameUtils.separatorsToSystem(relativize(project.settings.storedSettings.remotePath, this))
     return FilenameUtils.separatorsToSystem(Paths.get(project.path, relativeToProjectPath).toString())
 }
 
@@ -166,7 +184,10 @@ private fun removeSuffix(path: Path, suffix: String): Path {
     )
 }
 
-val VirtualFile.localPath: Path get() = this.fileSystem.getNioPath(this) ?: error("Could not get filesystem path from $this")
+fun String.stripLeadingSlashes() = this.replace("""^[\\/]+""".toRegex(), "")
+
+val VirtualFile.localPath: Path
+    get() = this.fileSystem.getNioPath(this) ?: error("Could not get filesystem path from $this")
 
 
 private const val DOT_SEP = "_dot_"

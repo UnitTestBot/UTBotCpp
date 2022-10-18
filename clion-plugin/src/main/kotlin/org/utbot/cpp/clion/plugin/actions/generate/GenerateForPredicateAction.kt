@@ -9,12 +9,14 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.components.fields.ExtendableTextField
 import javax.swing.ListSelectionModel
 import javax.swing.event.DocumentEvent
-import org.utbot.cpp.clion.plugin.grpc.getFunctionGrpcRequest
-import org.utbot.cpp.clion.plugin.grpc.getPredicateGrpcRequest
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.client.requests.test.FunctionReturnTypeRequest
 import org.utbot.cpp.clion.plugin.client.requests.test.PredicateRequest
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
+import org.utbot.cpp.clion.plugin.utils.getFilePathUnsafe
+import org.utbot.cpp.clion.plugin.utils.getLineNumberUnsafe
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.notifyError
 import testsgen.Util.ValidationType
@@ -46,7 +48,13 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         // when we gathered all needed information for predicate request, assemble it and execute it.
         fun sendPredicateToServer(validationType: ValidationType, valueToCompare: String, comparisonOperator: String) =
             PredicateRequest(
-                getPredicateGrpcRequest(e, comparisonOperator, validationType, valueToCompare),
+                GrpcRequestBuilderFactory(e.activeProject()).createPredicateRequestBuilder(
+                    comparisonOperator,
+                    validationType,
+                    valueToCompare,
+                    e.getLineNumberUnsafe(),
+                    e.getFilePathUnsafe()
+                ),
                 e.activeProject()
             ).apply {
                 e.client.executeRequest(this)
@@ -65,6 +73,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
                 ValidationType.UNSUPPORTED -> {
                     notifyError(
+                        UTBot.message("notify.title.error"),
                         "Unsupported return type for \'Generate Tests With Prompted Result\' feature: \n" +
                                 "supported types are integers, booleans, characters, floats and strings"
                     )
@@ -72,6 +81,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
                 }
                 ValidationType.UNRECOGNIZED -> {
                     notifyError(
+                        UTBot.message("notify.title.error"),
                         "Could not recognise return type for 'Generate Tests With Prompted Result' feature: \n" +
                                 "supported types are integers, booleans, characters, floats and strings"
                     )
@@ -101,7 +111,7 @@ class GenerateForPredicateAction : BaseGenerateTestsAction() {
         }
         //ask server for return type
         FunctionReturnTypeRequest(
-            getFunctionGrpcRequest(e),
+            GrpcRequestBuilderFactory(e.activeProject()).createFunctionRequestBuilder(e.getFilePathUnsafe(), e.getLineNumberUnsafe()),
             e.activeProject(),
         ) { functionReturnType ->
             val validationType = functionReturnType.validationType

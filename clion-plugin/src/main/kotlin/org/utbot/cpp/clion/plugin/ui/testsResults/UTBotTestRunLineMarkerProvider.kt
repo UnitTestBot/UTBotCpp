@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement
 import javax.swing.Icon
 import kotlin.io.path.name
 import org.utbot.cpp.clion.plugin.actions.generate.RunWithCoverageAction
+import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
 import org.utbot.cpp.clion.plugin.settings.settings
 import org.utbot.cpp.clion.plugin.ui.services.TestsResultsStorage
 import org.utbot.cpp.clion.plugin.utils.localPath
@@ -57,9 +58,14 @@ class UTBotTestRunLineMarkerProvider : LineMarkerProvider {
 
             private fun isElementInTestFileGeneratedByUTBot(element: PsiElement) =
                 element.containingFile.virtualFile.localPath.let {
-                    it.toString().startsWith(element.project.settings.testsDirPath.toString()) &&
-                            it.name.contains("test")
+                    try {
+                        it.toString().startsWith(element.project.settings.testsDirPath.toString()) &&
+                                it.name.contains("test")
+                    } catch (e: IllegalPathException) {
+                        return false
+                    }
                 }
+
 
             fun getStatusIcon(element: PsiElement): Icon {
                 // return icon for Running All Tests

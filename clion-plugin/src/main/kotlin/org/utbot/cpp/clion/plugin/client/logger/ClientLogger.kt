@@ -5,27 +5,31 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 
 interface Logger {
-    fun info(message: String, depth: Int = 3) = log({ message }, LogLevel.INFO, depth)
+    fun info(message: String, depth: Int = DEFAULT_LOG_DEPTH) = log({ message }, LogLevel.INFO, depth)
 
-    fun warn(message: String, depth: Int = 3) = log({ message }, LogLevel.WARN, depth)
+    fun warn(message: String, depth: Int = DEFAULT_LOG_DEPTH) = log({ message }, LogLevel.WARN, depth)
 
-    fun error(message: String, depth: Int = 3) = log({ message }, LogLevel.ERROR, depth)
+    fun error(message: String, depth: Int = DEFAULT_LOG_DEPTH) = log({ message }, LogLevel.ERROR, depth)
 
-    fun debug(message: String, depth: Int = 3) = log({ message }, LogLevel.DEBUG, depth)
+    fun debug(message: String, depth: Int = DEFAULT_LOG_DEPTH) = log({ message }, LogLevel.DEBUG, depth)
 
-    fun trace(message: String, depth: Int = 3) = log({ message }, LogLevel.TRACE, depth)
+    fun trace(message: String, depth: Int = DEFAULT_LOG_DEPTH) = log({ message }, LogLevel.TRACE, depth)
 
-    fun info(depth: Int = 3, message: () -> String) = log(message, LogLevel.INFO, depth)
+    fun info(depth: Int = DEFAULT_LOG_DEPTH, message: () -> String) = log(message, LogLevel.INFO, depth)
 
-    fun warn(depth: Int = 3, message: () -> String) = log(message, LogLevel.WARN, depth)
+    fun warn(depth: Int = DEFAULT_LOG_DEPTH, message: () -> String) = log(message, LogLevel.WARN, depth)
 
-    fun error(depth: Int = 3, message: () -> String) = log(message, LogLevel.ERROR, depth)
+    fun error(depth: Int = DEFAULT_LOG_DEPTH, message: () -> String) = log(message, LogLevel.ERROR, depth)
 
-    fun debug(depth: Int = 3, message: () -> String) = log(message, LogLevel.DEBUG, depth)
+    fun debug(depth: Int = DEFAULT_LOG_DEPTH, message: () -> String) = log(message, LogLevel.DEBUG, depth)
 
-    fun trace(depth: Int = 3, message: () -> String) = log(message, LogLevel.TRACE, depth)
+    fun trace(depth: Int = DEFAULT_LOG_DEPTH, message: () -> String) = log(message, LogLevel.TRACE, depth)
 
-    fun log(messageSupplier: () -> (String), level: LogLevel, depth: Int = 3)
+    fun log(messageSupplier: () -> (String), level: LogLevel, depth: Int = DEFAULT_LOG_DEPTH)
+
+    companion object {
+        const val DEFAULT_LOG_DEPTH = 4
+    }
 }
 
 @Service

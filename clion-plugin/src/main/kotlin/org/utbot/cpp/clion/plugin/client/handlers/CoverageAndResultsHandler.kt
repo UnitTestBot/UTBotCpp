@@ -3,11 +3,13 @@ package org.utbot.cpp.clion.plugin.client.handlers
 import com.intellij.coverage.CoverageDataManager
 import com.intellij.coverage.CoverageEngine
 import com.intellij.coverage.CoverageRunner
+import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.project.Project
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.actions.FocusAction
 import org.utbot.cpp.clion.plugin.coverage.Coverage
 import org.utbot.cpp.clion.plugin.coverage.UTBotCoverageEngine
@@ -44,7 +46,11 @@ class CoverageAndResultsHandler(
             return
         }
         if (response.errorMessage.isNotEmpty()) {
-            notifyError(response.errorMessage, project)
+            notifyError(
+                UTBot.message("notify.title.error"),
+                response.errorMessage,
+                project
+            )
         }
 
         data class CoverageCollector(
@@ -96,6 +102,11 @@ class CoverageAndResultsHandler(
     }
 
     private fun notifyCoverageReceived() {
-        notifyInfo("Coverage received!", project, sourceFilePath?.let { FocusAction(it) })
+        notifyInfo(
+            UTBot.message("notify.coverage.received.title"),
+            UTBot.message("notify.coverage.received"),
+            project,
+            sourceFilePath?.let { FocusAction(it) }
+        )
     }
 }

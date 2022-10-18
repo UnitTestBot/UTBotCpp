@@ -5,6 +5,7 @@ package org.utbot.cpp.clion.plugin.settings
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.ui.JBIntSpinner
@@ -12,6 +13,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.BottomGap
 import com.intellij.ui.dsl.builder.COLUMNS_LARGE
+import com.intellij.ui.dsl.builder.Cell
 import com.intellij.ui.dsl.builder.LabelPosition
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.bindIntValue
@@ -25,7 +27,12 @@ import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.listeners.UTBotSettingsChangedListener
 import org.utbot.cpp.clion.plugin.ui.ObservableValue
 import org.utbot.cpp.clion.plugin.ui.sourceFoldersView.UTBotProjectViewPaneForSettings
+import org.utbot.cpp.clion.plugin.utils.ComponentValidationInfo
+import org.utbot.cpp.clion.plugin.utils.ValidationCondition
+import org.utbot.cpp.clion.plugin.utils.addValidation
 import org.utbot.cpp.clion.plugin.utils.commandLineEditor
+import org.utbot.cpp.clion.plugin.utils.isLookLikeUnixPath
+import org.utbot.cpp.clion.plugin.utils.isValidHostName
 import org.utbot.cpp.clion.plugin.utils.projectLifetimeDisposable
 import java.awt.Dimension
 import java.awt.event.ItemEvent
@@ -37,6 +44,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     private val panel by lazy { createMainPanel() }
 
     private val settings: UTBotProjectStoredSettings = myProject.service()
+    private val validationInfos: MutableList<ComponentValidationInfo> = mutableListOf()
     private lateinit var portComponent: JBIntSpinner
     private lateinit var serverNameTextField: JBTextField
     private lateinit var pluginEnabledCheckBox: JBCheckBox
@@ -48,6 +56,13 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
                 reset()
             })
     }
+
+    private fun <T : JBTextField> Cell<T>.validateInput(vararg conditions: ValidationCondition): Cell<T> {
+        return this.apply {
+            validationInfos.add(this.addValidation(*conditions))
+        }
+    }
+
 
     override fun createPanel() = panel
 
@@ -93,22 +108,33 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
             ).bindIntValue(projectIndependentSettings::port).applyToComponent {
                 portComponent = this
             }
-        }.rowComment(UTBot.message("deployment.utbotPort.description"))
+        }.rowComment(UTBot.message("deployment.utbot.port.description"))
 
         row(UTBot.message("settings.project.serverName")) {
             textField().bindText(projectIndependentSettings::serverName).applyToComponent {
                 serverNameTextField = this
-            }
-        }.rowComment(UTBot.message("deployment.utbotHost.description"))
+            }.validateInput(
+                ValidationCondition(
+                    UTBot.message("validation.invalid.host")
+                ) { it.text.isValidHostName() }
+            )
+        }.rowComment(UTBot.message("deployment.utbot.host.description"))
 
         row(UTBot.message("settings.project.remotePath")) {
-            textField().bindText(settings::remotePath).columns(COLUMNS_LARGE)
+            textField().bindText(settings::remotePath).columns(COLUMNS_LARGE).validateInput(
+                ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() },
+                ValidationCondition(UTBot.message("validation.not.unix.path")) { it.text.isLookLikeUnixPath() }
+            )
         }.rowComment(UTBot.message("deployment.remotePath.description"))
     }
 
     private fun Panel.createPathsSettings() {
         row(UTBot.message("settings.project.buildDir")) {
+            val validator: (JBTextField) -> Boolean = {
+                it.text.isNotEmpty()
+            }
             textField().bindText(settings::buildDirRelativePath).columns(COLUMNS_LARGE)
+                .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
         }.rowComment(UTBot.message("paths.buildDirectory.description"))
 
         row(UTBot.message("settings.project.target")) {
@@ -122,6 +148,7 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
 
         row(UTBot.message("settings.project.testsDir")) {
             textField().bindText(settings::testDirRelativePath).columns(COLUMNS_LARGE)
+                .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
         }.rowComment(UTBot.message("paths.testsDir.description"))
 
         row {
@@ -208,6 +235,12 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     }
 
     override fun apply() {
+        val invalidComponentValidationInfo = validationInfos.find { !it.isValid() }
+        if (invalidComponentValidationInfo != null) {
+            panel.scrollRectToVisible(invalidComponentValidationInfo.component.visibleRect)
+            invalidComponentValidationInfo.component.requestFocus()
+            throw ConfigurationException("Some fields have invalid values")
+        }
         val wereConnectionSettingsModified =
             portComponent.number != projectIndependentSettings.port || serverNameTextField.text != projectIndependentSettings.serverName
         val wasPluginEnabledChanged = pluginEnabledCheckBox.isSelected != settings.isPluginEnabled

@@ -5,7 +5,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.utbot.cpp.clion.plugin.utils.convertPathToWslFormat
-import org.utbot.cpp.clion.plugin.utils.toWslFormatIfNeeded
 
 class ToWslFormatTest {
     @MethodSource("inputData")

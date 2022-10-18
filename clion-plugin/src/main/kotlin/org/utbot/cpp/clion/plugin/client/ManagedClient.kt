@@ -2,6 +2,7 @@ package org.utbot.cpp.clion.plugin.client
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.serviceIfCreated
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Disposer
 import org.utbot.cpp.clion.plugin.client.channels.GTestLogChannelImpl
@@ -12,7 +13,7 @@ import kotlinx.coroutines.Job
 import org.jetbrains.annotations.TestOnly
 import org.utbot.cpp.clion.plugin.client.Client.Companion.SERVER_TIMEOUT
 import org.utbot.cpp.clion.plugin.client.requests.CheckProjectConfigurationRequest
-import org.utbot.cpp.clion.plugin.grpc.getProjectConfigGrpcRequest
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.listeners.ConnectionSettingsListener
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.PluginActivationListener
@@ -26,6 +27,7 @@ class ManagedClient(val project: Project) : Disposable {
     private val clientId = generateClientID()
     private val loggingChannels = listOf<LogChannel>(GTestLogChannelImpl(project), ServerLogChannelImpl(project))
     val isPluginEnabled: Boolean get() = project.settings.storedSettings.isPluginEnabled
+
     // if plugin is disabled then Client is null
     private var client: Client? =
         if (isPluginEnabled) createNewClient() else null
@@ -76,7 +78,7 @@ class ManagedClient(val project: Project) : Disposable {
 
     fun configureProject() {
         CheckProjectConfigurationRequest(
-            getProjectConfigGrpcRequest(project, Testgen.ConfigMode.CHECK),
+            GrpcRequestBuilderFactory(project).createProjectConfigRequestBuilder(Testgen.ConfigMode.CHECK),
             project,
         ).also { request ->
             client?.executeRequestIfNotDisposed(request)
@@ -88,7 +90,7 @@ class ManagedClient(val project: Project) : Disposable {
         client = null
     }
 
-    private fun createNewClient(): Client = Client(clientId, project.logger, loggingChannels, project.messageBus)
+    private fun createNewClient(): Client = Client(clientId, project.logger, loggingChannels, project)
 
     private fun generateClientID(): String {
         fun createRandomSequence() = (1..RANDOM_SEQUENCE_LENGTH)
@@ -107,6 +109,8 @@ class ManagedClient(val project: Project) : Disposable {
     }
 
     companion object {
+        fun isConnectedToServer(project: Project) =
+            project.serviceIfCreated<ManagedClient>()?.isServerAvailable() ?: false
         const val RANDOM_SEQUENCE_MAX_VALUE = 10
         const val RANDOM_SEQUENCE_LENGTH = 5
     }

@@ -35,7 +35,7 @@ plugins {
     // Java support
     id("java")
     // Kotlin support
-    id("org.jetbrains.kotlin.jvm") version "1.6.10"
+    id("org.jetbrains.kotlin.jvm") version "1.7.20"
     // Gradle IntelliJ Plugin
     id("org.jetbrains.intellij") version "1.5.2"
     // Gradle Changelog Plugin
@@ -91,11 +91,11 @@ detekt {
     allRules = false // activate all available (even unstable) rules.
 }
 
-//kotlin {
-//    jvmToolchain {
-//        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
-//    }
-//}
+kotlin {
+    jvmToolchain {
+        (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
 
 protobuf {
     protoc {
@@ -194,7 +194,7 @@ tasks {
         setScanForTestClasses(false)
         // Only run tests from classes that end with "Test"
         include("**/*Test.class")
-        exclude("**/*BaseGenerationTestCaseTest.class")
+        exclude("**/*BaseGenerationTestCaseTest.class", "**/*BaseBuildingTest.class")
         systemProperty("idea.log.debug.categories", true)
         systemProperty("idea.log.trace.categories", true)
 

@@ -21,5 +21,7 @@ data class UTBotTarget(val path: String, val name: String, val description: Stri
             name = "UTBot: auto",
             description = "Finds any target that contains the code under test"
         )
+
+        fun isAutoTargetPath(path: String): Boolean = autoTarget.path == path
     }
 }

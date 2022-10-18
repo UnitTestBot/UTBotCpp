@@ -3,15 +3,16 @@ package org.utbot.cpp.clion.plugin.actions.generate
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import org.utbot.cpp.clion.plugin.client.requests.test.LineRequest
-import org.utbot.cpp.clion.plugin.grpc.getLineGrpcRequest
 import org.utbot.cpp.clion.plugin.utils.activeProject
+import org.utbot.cpp.clion.plugin.utils.getBuilderForLineRequest
 
 class GenerateForLineAction : BaseGenerateTestsAction() {
-    override fun actionPerformed(e: AnActionEvent) =
+    override fun actionPerformed(e: AnActionEvent) {
         LineRequest(
-            getLineGrpcRequest(e),
+            e.getBuilderForLineRequest(),
             e.activeProject(),
         ).execute()
+    }
 
     override fun isDefined(e: AnActionEvent): Boolean {
         val project = e.project

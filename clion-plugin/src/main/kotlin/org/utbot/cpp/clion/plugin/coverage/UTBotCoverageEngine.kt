@@ -10,7 +10,6 @@ import com.intellij.coverage.SimpleCoverageAnnotator
 import com.intellij.execution.configurations.RunConfigurationBase
 import com.intellij.execution.configurations.coverage.CoverageEnabledConfiguration
 import com.intellij.execution.testframework.AbstractTestProxy
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
@@ -25,8 +24,6 @@ import java.io.File
  * for additional docs @see [CoverageEngine] in IntelliJ Platform source code
  */
 class UTBotCoverageEngine : CoverageEngine() {
-    private val log = Logger.getInstance(this::class.java)
-
     /**
      * This method is not called, when the coverage is processed in CoverageDataManager#coverageGathered(suite).
      *

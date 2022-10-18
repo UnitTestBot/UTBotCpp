@@ -9,6 +9,7 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import org.utbot.cpp.clion.plugin.UTBot
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.logsToolWindow.ConsoleToolWindow
 import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTargetsController
+import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 
 class UTBotToolWindowFactory : ToolWindowFactory, DumbAware {
     private val logger = Logger.getInstance(this::class.java)

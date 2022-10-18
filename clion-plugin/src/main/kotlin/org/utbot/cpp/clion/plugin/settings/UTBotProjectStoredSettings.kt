@@ -13,6 +13,7 @@ import org.utbot.cpp.clion.plugin.ui.utbotToolWindow.targetToolWindow.UTBotTarge
 import org.utbot.cpp.clion.plugin.ui.wizard.UTBotWizard
 import org.utbot.cpp.clion.plugin.utils.invokeOnEdt
 import org.utbot.cpp.clion.plugin.utils.path
+import org.utbot.cpp.clion.plugin.utils.stripLeadingSlashes
 import java.nio.file.Paths
 
 /**
@@ -101,7 +102,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         }
 
     var testDirRelativePath: String
-        get() = myState.testsDirRelativePath
+        get() = myState.testsDirRelativePath.stripLeadingSlashes()
         set(value) {
             myState.testsDirRelativePath = value
         }
@@ -129,7 +130,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
             Paths.get(project.path).relativize(Paths.get(targetPath)).toString()
 
     var buildDirRelativePath: String
-        get() = myState.buildDirRelativePath
+        get() = myState.buildDirRelativePath.stripLeadingSlashes()
         set(value) {
             myState.buildDirRelativePath = value
         }
