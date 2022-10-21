@@ -106,3 +106,11 @@ int sumStructComplex(struct StructComplex par) {
     int ssmp = sumStructManyPointers(par.smp);
     return par.x + *par.y + **par.z + sswp + sswdp + ssmp;
 }
+
+int sumStructWithOnePointer(struct StructWithPointer *par) {
+    return par->x + *par->y;
+}
+
+int sumConstStructWithOnePointer(const struct StructWithPointer *par) {
+    return par->x + *par->y;
+}

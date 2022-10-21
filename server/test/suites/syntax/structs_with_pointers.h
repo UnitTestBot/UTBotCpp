@@ -75,4 +75,6 @@ int sumStructWithArrayOfPointer(struct StructWithArrayOfPointer par);
 int sumStructWithStructWithPointer(struct StructWithStructWithPointer par);
 int sumStructManyPointers(struct StructManyPointers par);
 int sumStructComplex(struct StructComplex par);
+int sumStructWithOnePointer(struct StructWithPointer *par);
+int sumConstStructWithOnePointer(const struct StructWithPointer *par);
 #endif // SIMPLE_TEST_PROJECT_STRUCTS_WITH_POINTERS_H
