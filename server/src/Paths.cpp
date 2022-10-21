@@ -145,13 +145,11 @@ namespace Paths {
             "assert",
             "bad_vector_access",
             "free",
-            "model",
             "overflow",
             "undefined_behavior",
             "ptr",
             "readonly",
             "reporterror",
-            "user",
             "uncaught_exception",
             "unexpected_exception"
         };
