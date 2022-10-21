@@ -1331,6 +1331,18 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, Pass_Pointer_To_Struct_With_Pointer) {
+        auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 111);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+    }
+
+    TEST_F(Syntax_Test, Pass_Pointer_To_Const_Struct_With_Pointer) {
+        auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 115);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+    }
+
     TEST_F(Syntax_Test, Check_Lazy_Pointers_In_Struct) {
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 78);
 
