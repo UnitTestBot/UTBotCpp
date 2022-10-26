@@ -56,7 +56,8 @@ public:
 
     void synchronize(const types::TypesHandler &typesHandler);
 
-    [[nodiscard]] const CollectionUtils::FileSet &getSourceFiles() const;
+    [[nodiscard]] const CollectionUtils::FileSet &getTargetSourceFiles() const;
+    [[nodiscard]] const CollectionUtils::FileSet &getProjectSourceFiles() const;
     [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getStubsFiles() const;
 };
 
