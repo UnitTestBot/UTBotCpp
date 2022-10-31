@@ -64,7 +64,7 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
     const std::string usedParamTypeString = varDecl->getType().getAsString();
     types::Type paramType = types::Type(realParamType, usedParamTypeString, sourceManager);
     method.globalParams.emplace_back(paramType, usage.variableName, AlignmentFetcher::fetch(varDecl));
-    if (varDecl->hasExternalStorage()) {
+    if (varDecl->isKnownToBeDefined()) {
         tests.externVariables.insert({paramType, usage.variableName});
     }
 }
