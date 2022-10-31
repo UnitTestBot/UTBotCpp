@@ -57,6 +57,10 @@ class ManagedClient(val project: Project) : Disposable {
             })
             subscribe(ConnectionSettingsListener.TOPIC, object : ConnectionSettingsListener {
                 override fun connectionSettingsChanged(newPort: Int, newServerName: String) {
+                    // Connection settings are global for all projects, so when they are changed in one project
+                    // we should not start the client
+                    if (!project.settings.storedSettings.isPluginEnabled)
+                        return
                     if (newPort != client?.port || newServerName != client?.serverName) {
                         project.logger.trace { "Connection settings changed. Setting up new client." }
                         client?.dispose()
