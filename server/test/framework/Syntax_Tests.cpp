@@ -4,13 +4,14 @@
 #include "KleeGenerator.h"
 #include "Server.h"
 #include "TestUtils.h"
-#include "streams/coverage/ServerCoverageAndResultsWriter.h"
-#include "coverage/CoverageAndResultsGenerator.h"
-
-#include "utils/path/FileSystemPath.h"
-#include "utils/StringUtils.h"
-#include "utils/SizeUtils.h"
 #include "Tests.h"
+#include "coverage/CoverageAndResultsGenerator.h"
+#include "gmock/gmock.h"
+#include "streams/coverage/ServerCoverageAndResultsWriter.h"
+#include "utils/SizeUtils.h"
+#include "utils/StringUtils.h"
+#include "utils/path/FileSystemPath.h"
+
 #include <functional>
 
 namespace {
@@ -1335,6 +1336,18 @@ namespace {
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 111);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
+    }
+
+    TEST_F(Syntax_Test, Check_Error_Tests_Have_Fail_Assertion) {
+        auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 111);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        for (const auto &[source_file_path, tests] : testGen.tests) {
+            EXPECT_THAT(tests.code,
+                        ::testing::HasSubstr(
+                            "FAIL() << \"Unreachable point or the function was supposed to fail"));
+        }
     }
 
     TEST_F(Syntax_Test, Pass_Pointer_To_Const_Struct_With_Pointer) {
