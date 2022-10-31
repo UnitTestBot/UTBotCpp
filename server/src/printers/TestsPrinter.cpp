@@ -238,13 +238,10 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     TestsPrinter::verboseFunctionCall(methodDescription, testCase);
     markTestedFunctionCallIfNeed(methodDescription.name, testCase);
 
-    ss << NL;
     if (testCase.isError()) {
-        ss << LINE_INDENT()
-           << "FAIL() << \"Unreachable point. "
-              "Function was supposed to fail, but actually completed successfully.\""
-           << SCNL;
+        printFailAssertion();
     } else {
+        ss << NL;
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
     }
     ss << RB() << NL;
@@ -667,6 +664,8 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
         changeableParamsAsserts(methodDescription, testCase);
+    } else {
+        printFailAssertion();
     }
 }
 
@@ -761,6 +760,15 @@ void printer::TestsPrinter::parametrizedInitializeSymbolicStubs(const Tests::Met
         const auto &value = testCase.stubValues[i];
         verboseParameter(methodDescription, param, value, false);
     }
+}
+
+void TestsPrinter::printFailAssertion() {
+    ss << NL;
+    ss << LINE_INDENT()
+       << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
+       << LINE_INDENT() << LINE_INDENT()
+       << "\"actually completed successfully. See the SARIF report for details.\"";
+    ss << SCNL;
 }
 
 std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
