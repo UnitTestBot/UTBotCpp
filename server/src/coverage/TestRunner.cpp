@@ -1,3 +1,4 @@
+#include <utils/stats/TestsExecutionStats.h>
 #include "TestRunner.h"
 
 #include "printers/DefaultMakefilePrinter.h"
@@ -152,6 +153,13 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
                                       exceptions.emplace_back(e);
                                   }
                               });
+    fs::remove(Paths::getGTestResultsJsonPath(projectContext));
+//    StatsUtils::TestsExecutionStatsFileMap testsExecutionStats(projectContext, coverageGenerator.getTestResultMap(),
+//                                                               coverageGenerator.getCoverageMap());
+//    printer::CSVPrinter printer = testsExecutionStats.toCSV();
+//    FileSystemUtils::writeToFile(Paths::getExecutionStatsCSVPath(projectContext), printer.getStream().str());
+//    LOG_S(INFO) << StringUtils::stringFormat("See execution stats here: %s",
+//                                             Paths::getExecutionStatsCSVPath(projectContext));
     LOG_S(DEBUG) << "All run commands were executed";
     return Status::OK;
 }

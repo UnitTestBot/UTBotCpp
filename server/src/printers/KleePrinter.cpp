@@ -113,7 +113,7 @@ fs::path KleePrinter::writeTmpKleeFile(
     LOG_S(DEBUG) << "Writing tmpKleeFile for " << testedMethod << " inside " << tests.sourceFilePath;
 
     bool hasMethod = false;
-    for (const auto &[methodName,testMethod ]: tests.methods) {
+    for (const auto &[methodName, testMethod]: tests.methods) {
         if (methodFilter(testMethod)) {
             hasMethod = true;
         }
@@ -142,6 +142,15 @@ fs::path KleePrinter::writeTmpKleeFile(
     writeStubsForStructureFields(tests);
 
     writeAccessPrivateMacros(typesHandler, tests, false);
+
+    CollectionUtils::apply(tests.externVariables, [this](const Tests::TypeAndVarName &var) {
+        if (var.type.isArray()) {
+            strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
+        } else {
+            strDeclareVar(var.type.mTypeName(), var.varName);
+        }
+    });
+    ss << NL;
 
     for (const auto &[methodName, testMethod] : tests.methods) {
         if (!methodFilter(testMethod)) {

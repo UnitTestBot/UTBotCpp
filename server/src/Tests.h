@@ -336,6 +336,8 @@ namespace tests {
             TypeAndVarName(types::Type type, std::string varName)
                 : type(std::move(type)), varName(std::move(varName)) {
             }
+
+            bool operator<(const TypeAndVarName &) const;
         };
 
         struct MethodParam {
@@ -558,6 +560,7 @@ namespace tests {
         fs::path testHeaderFilePath;
         fs::path testSourceFilePath;
 
+        std::set<TypeAndVarName> externVariables;
         std::vector<Include> srcFileHeaders;
         std::vector<Include> headersBeforeMainHeader;
         std::optional<Include> mainHeader;

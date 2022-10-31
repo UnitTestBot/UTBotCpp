@@ -61,6 +61,16 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     resetStream();
     writeCopyrightHeader();
     genHeaders(tests, generatedHeaderPath);
+    ss << NL;
+
+    CollectionUtils::apply(tests.externVariables, [this](const Tests::TypeAndVarName &var) {
+        if (var.type.isArray()) {
+            strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
+        } else {
+            strDeclareVar(var.type.mTypeName(), var.varName);
+        }
+    });
+
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 
     for (const auto &commentBlock : tests.commentBlocks) {
