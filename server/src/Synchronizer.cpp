@@ -65,7 +65,7 @@ bool Synchronizer::isProbablyOutdated(const fs::path &srcFilePath) const {
 }
 
 CollectionUtils::FileSet Synchronizer::getOutdatedSourcePaths() const {
-    return CollectionUtils::filterOut(getSourceFiles(), [this](fs::path const &sourcePath) {
+    return CollectionUtils::filterOut(getTargetSourceFiles(), [this](fs::path const &sourcePath) {
         return !isProbablyOutdated(sourcePath);
     });
 }
@@ -161,6 +161,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
 
     fs::path ccJsonStubDirPath =
             Paths::getUTBotBuildDir(testGen->projectContext) / "stubs_build_files";
+    // todo: is it needed?
     auto stubsCdb = createStubsCompilationDatabase(stubFiles, ccJsonStubDirPath);
 
     auto sourceToHeaderRewriter =
@@ -197,7 +198,7 @@ Synchronizer::createStubsCompilationDatabase(StubSet &stubFiles,
 
 void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const {
     auto sourceFilesNeedToRegenerateWrappers = outdatedSourcePaths;
-    for (fs::path const &sourceFilePath : getSourceFiles()) {
+    for (fs::path const &sourceFilePath : getTargetSourceFiles()) {
         if (!CollectionUtils::contains(sourceFilesNeedToRegenerateWrappers, sourceFilePath)) {
             auto wrapperFilePath =
                 Paths::getWrapperFilePath(testGen->projectContext, sourceFilePath);
@@ -217,8 +218,12 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
         });
 }
 
-const CollectionUtils::FileSet &Synchronizer::getSourceFiles() const {
+const CollectionUtils::FileSet &Synchronizer::getTargetSourceFiles() const {
     return testGen->getTargetBuildDatabase()->compilationDatabase->getAllFiles();
+}
+
+const CollectionUtils::FileSet &Synchronizer::getProjectSourceFiles() const {
+    return testGen->getProjectBuildDatabase()->compilationDatabase->getAllFiles();
 }
 
 StubSet Synchronizer::getStubsFiles() const {
@@ -233,7 +238,7 @@ void Synchronizer::prepareDirectory(const fs::path &stubDirectory) {
             if (!Paths::isHeaderFile(stubPath)) {
                 fs::path sourcePath =
                     Paths::stubPathToSourcePath(testGen->projectContext, stubPath);
-                if (!CollectionUtils::contains(getSourceFiles(), sourcePath)) {
+                if (!CollectionUtils::contains(getProjectSourceFiles(), sourcePath)) {
                     LOG_S(DEBUG) << "Found extra file in stub directory: " << stubPath
                                  << ". Removing it.";
                     fs::remove(stubPath);

@@ -257,7 +257,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto generator = std::make_shared<KleeGenerator>(&testGen, typesHandler, pathSubstitution);
 
         ReturnTypesFetcher returnTypesFetcher{&testGen};
-        returnTypesFetcher.fetch(testGen.progressWriter, synchronizer.getSourceFiles());
+        returnTypesFetcher.fetch(testGen.progressWriter, synchronizer.getTargetSourceFiles());
         LOG_S(DEBUG) << "Temporary build directory path: " << testGen.serverBuildDir;
         generator->buildKleeFiles(testGen.tests, lineInfo);
         generator->handleFailedFunctions(testGen.tests);
