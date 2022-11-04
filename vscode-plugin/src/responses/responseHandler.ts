@@ -93,7 +93,7 @@ export class TestsResponseHandler implements ResponseHandler<TestsResponse> {
                 const sarifExt = vs.extensions.getExtension(messages.defaultSARIFViewer);
                 // eslint-disable-next-line eqeqeq
                 if (sarifExt == null) {
-                    messages.showWarningMessage(messages.intstallSARIFViewer);
+                    messages.showWarningMessage(messages.installSARIFViewer);
                 } else {
                     if (!sarifExt.isActive) {
                         await sarifExt.activate();

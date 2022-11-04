@@ -61,19 +61,43 @@
 }
 
 /* By default turn off connection status */
-#connection_loader,
-#connection_success,
-#connection_warning,
-#connection_failure {
+#GRPC_connection_loader,
+#GRPC_connection_success,
+#GRPC_connection_warning,
+#GRPC_connection_failure,
+#SFTP_connection_loader,
+#SFTP_connection_success,
+#SFTP_connection_warning,
+#SFTP_connection_failure {
     display: none;
 }
 
-#connection_loader.active,
-#connection_success.active,
-#connection_warning.active,
-#connection_failure.active {
+#GRPC_connection_loader.active,
+#GRPC_connection_success.active,
+#GRPC_connection_warning.active,
+#GRPC_connection_failure.active,
+#SFTP_connection_loader.active,
+#SFTP_connection_success.active,
+#SFTP_connection_warning.active,
+#SFTP_connection_failure.active {
     display: inline-block;
 }
+
+/* plugin status */
+#SFTP_installed,
+#SFTP_not_installed,
+#SARIF_installed,
+#SARIF_not_installed {
+    display: none;
+}
+
+#SFTP_installed.active,
+#SFTP_not_installed.active,
+#SARIF_installed.active,
+#SARIF_not_installed.active {
+    display: inline-block;
+}
+
 
 .utbot-form__steps_step.finish {
     background-color: var(--vscode-editorInfo-foreground);
@@ -286,7 +310,14 @@
     display: block;
 }
 
-
 .utbot-vars {
     display: none;
+}
+
+a.invalid,
+input.invalid,
+textarea.invalid{
+    outline-style: solid;
+    outline-width: thin;
+    outline-color: #FF4136
 }

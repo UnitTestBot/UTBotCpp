@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        const GRPC_TIMEOUT = 500;
+        const SFTP_TIMEOUT = 500;
+        const GRPC_PREFIX = "GRPC_";
+        const SFTP_PREFIX = "SFTP_";
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -13,47 +20,45 @@
 <div class="utbot-vars"
      os="{{os}}"
      projectDir="{{projectDir}}"
-     defaultPort="{{defaultPort}}"
-     sftpHost="{{sftpHost}}"
-     sftpDir="{{sftpDir}}"
-></div>
-<div class="utbot-modal">
-    <article class="content-wrapper">
-        <span class="utbot-modal__close-button" onclick="closeModal()"></span>
-        <header class="utbot-modal__header modal-header">
-            <h2>❌ Server is unreachable!</h2>
-        </header>
-        <div class="utbot-modal__content content">
-            <p>
-                UTBot failed to establish connection with specified server.
-                If you wish to continue anyway, press "Continue" button.
-            </p>
-            <p> In any case, you will need to specify correct port and host of UTBot server to use the extension.
-                You can do it via Visual Studio Code Settings. </p>
-        </div>
-        <footer class="utbot-modal__footer modal-footer">
-            <button
-                    class="utbot-modal__footer_action-button cancel-button"
-                    onclick="closeModal();this.blur();">Cancel
-            </button>
-            <button
-                    class="utbot-modal__footer_action-button continue-button"
-                    onclick="closeModalAndGoToNextStep();this.blur();">Continue
-            </button>
-        </footer>
-    </article>
+     defaultGRPCPort="{{defaultGRPCPort}}"
+     defaultSFTPPort="{{defaultSFTPPort}}"
+     serverHost="{{serverHost}}"
+     serverDir="{{serverDir}}">
 </div>
 
 <form id="utbotForm" class="utbot-form" action="">
     <h1>UTBot: Quickstart</h1>
 
-    <div class="utbot-form__tab">
+    <div class="utbot-form__tab start-tab">
         <h2>👋 Welcome to "UTBot: Quickstart" Wizard! </h2>
         <p> UTBot discovered that this is the first time you use it with this project.
-            The Wizard will help you to configure the extension appropriatly.
+            The Wizard will help you to configure the extension appropriately.
             In case you don't wish to proceed, you can close this wizard at any time. </p>
         <p> In order to learn more about UTBot C/C++, please, refer to this
-            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>. </p>
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki">manual</a>.</p>
+        <p> To work correctly, UTBot need the external plugins
+            <table>
+                <tr style="display: grid; grid-template-columns: auto 1fr">
+                    <td>
+                        <a id="SFTP_ref" href="https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp">SFTP </a>
+                    </td>
+                    <td>
+                        <span id="SFTP_installed"> ✔️SFTP plugin is configured</span>
+                        <span id="SFTP_not_installed"> ❌ Please, install or enable the SFTP plugin and restart the wizard!</span>
+                    </td>
+                </tr>
+                <tr style="display: grid; grid-template-columns: auto 1fr">
+                    <td>
+                        <a id="SARIF_ref" href="https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer">Sarif Viewer </a>
+                    </td>
+                    <td>
+                        <span id="SARIF_installed"> ✔️SARIF plugin is configured</span>
+                        <span id="SARIF_not_installed"> ❌ Please, install or enable the SARIF plugin and restart the wizard!</span>
+                    </td>
+                </tr>
+            </table>
+            Please, install or activate the plugins before continuing.
+        </p>
     </div>
 
     <div class="utbot-form__tab installer-tab">
@@ -86,18 +91,10 @@
 
         <span style="display: grid; grid-template-columns: auto auto">
             <b>📶  Connection</b>
-            <span>
-                <span id="connection_loader">⏳ Connecting...</span>
-                <span id="connection_success">✔️ Successfully pinged server! </span>
-                <span id="connection_warning" format="⚠️ Warning! Versions are different: "></span>
-                <span id="connection_failure">❌ Failed to establish connection! </span>
-             </span>
         </span>
         <div>
             Fill the parameters below accordingly to the ones specified during the
-            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">UTBot Server installation</a>.
-            Please make sure that in case of remote host the SFTP plugin
-            has a consistent <a href="about:SFTP host" onclick="openSFTPSettings('host');">host</a>.
+            <a href="https://github.com/UnitTestBot/UTBotCpp/wiki/install-server">UTBot Server installation</a>. <br/>
         </div>
         <div class="utbot-form__tab_item" style="display: grid; grid-template-columns: auto 1fr">
             <label class="utbot-form__tab_label"
@@ -106,47 +103,75 @@
                    id="hostInput"
                    value="{{predictedHost}}"
                    placeholder="Ex. localhost"
-                   oninput="restartCheckingConnection();"
-                   onchange="restartCheckingConnection();">
+                   oninput="restartCheckingConnection(GRPC_PREFIX, GRPC_TIMEOUT);restartCheckingConnection(SFTP_PREFIX, SFTP_TIMEOUT);"
+                   onchange="restartCheckingConnection(GRPC_PREFIX, GRPC_TIMEOUT);restartCheckingConnection(SFTP_PREFIX, SFTP_TIMEOUT);"/>
         </div>
-        <div class="utbot-form__tab_item">
-            <label class="utbot-form__tab_label"
-                   for="portInput">GRPC port</label>
-            <input class="utbot-form__tab_input"
-                   style="width: auto; display: inline;"
-                   type="number"
-                   width="5"
-                   min="0" max="65535"
-                   id="portInput"
-                   value="{{predictedPort}}"
-                   placeholder="Ex. 2121"
-                   oninput="restartCheckingConnection();"
-                   onchange="restartCheckingConnection();">
+        <table>
+            <tr style="display: grid; grid-template-columns: auto 1fr">
+                <td>
+                    <label
+                        class="utbot-form__tab_label"
+                        style="width: auto; display: inline;"
+                        for="portGRPCInput">GRPC port</label>
+                    <input class="utbot-form__tab_input"
+                        style="width: auto; display: inline;"
+                        type="number"
+                        width="5"
+                        min="0" max="65535"
+                        id="portGRPCInput"
+                        value="{{predictedGRPCPort}}"
+                        placeholder="Ex. 2121"
+                        oninput="restartCheckingConnection(GRPC_PREFIX, GRPC_TIMEOUT);"
+                        onchange="restartCheckingConnection(GRPC_PREFIX, GRPC_TIMEOUT);"/>
+                </td>
+                <td>
+                    <span id="GRPC_connection_loader">⏳ Connecting...</span>
+                    <span id="GRPC_connection_success">✔️ Successfully pinged GRPC server! </span>
+                    <span id="GRPC_connection_warning" format="⚠️ Warning! Versions are different: "></span>
+                    <span id="GRPC_connection_failure">❌ Failed to establish GRPC connection! </span>
+                </td>
+            </tr>
+            <tr style="display: grid; grid-template-columns: auto 1fr">
+                <td>
+                    <label class="utbot-form__tab_label"
+                        style="width: auto; display: inline;"
+                        for="portSFTPInput">SFTP port</label>
+                    <input class="utbot-form__tab_input"
+                        style="width: auto; display: inline;"
+                        type="number"
+                        width="5"
+                        min="0" max="65535"
+                        id="portSFTPInput"
+                        value="{{predictedSFTPPort}}"
+                        placeholder="Ex. 2020"
+                        oninput="restartCheckingConnection(SFTP_PREFIX, SFTP_TIMEOUT);"
+                        onchange="restartCheckingConnection(SFTP_PREFIX, SFTP_TIMEOUT);"/>
+                </td>
+                <td>
+                    <span id="SFTP_connection_loader">⏳ Connecting SFTP...</span>
+                    <span id="SFTP_connection_success">✔️ Successfully pinged SFTP server! </span>
+                    <span id="SFTP_connection_warning">SFTP synchronization is not used.</span>
+                    <span id="SFTP_connection_failure">❌ Failed to establish SFTP connection! </span>
+                </td>
+            </tr>
+        </table>
+        <div>
+            <b>ATTENTION!</b>  Please leave the <b>SFTP port field empty</b> if you do not want to synchronize
+            the project file system between client and server. By clicking the <b>"Next"</b> button with
+            the SFTP port field filled in, you will start the synchronization of the project file system
+            between the client and the server.
         </div>
         <br>
 
-        <span style="display: grid; grid-template-columns: auto auto">
-            <span><b>📁 Project Path On Server</b></span>
-            <span>
-                <!--                <span class="utbot-form__tab_connection_loader">Checking...</span>-->
-                <!--                <span class="utbot-form__tab_connection_success">🟢️ The path contains CMakeList.txt</span>-->
-                <!--                <span class="utbot-form__tab_connection_failure">🟡 The path does not contain CMakeList.txt</span>-->
-                <!--                <span class="utbot-form__tab_connection_failure">🔴 The path does not exists</span>-->
-             </span>
-        </span>
         <div>
-            Project path on server specifies the path to the project on a server host.
-            <b>On the remote server</b> the path need to be synchronized with the project path on the client (local) by
-            <a href="https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp">SFTP plugin</a>.
-            Please make sure that the SFTP plugin has a consistent <a href="about:SFTP remote path" onclick="openSFTPSettings('remotePath');">remotePath</a>.
-            <b>The <code>localhost</code> server</b> don't need the synchronization.
-        </div>
-        <div>
-            <label class="utbot-form__tab_label" for="mappingInput">Project Path On Server</label>
+            <label class="utbot-form__tab_label" for="serverPath">Project Path On Server</label>
             <input class="utbot-form__tab_input"
-                   id="mappingInput"
+                   id="serverPath"
                    value="{{predictedRemotePath}}"
              placeholder="/tmp/XXXX">
+            Project path on server specifies the path to the project's copy on the server host.
+            May point to a directory shared by the client and server. In this case, SFTP synchronization
+            must be disabled by leaving the <b>SFTP port field empty</b>.
         </div>
     </div>
 
@@ -186,12 +211,12 @@
         <button type="button"
                 class="button_previous utbot-form__navigation_button"
                 id="prevBtn"
-                onclick="prevButtonHandler();this.blur();">Previous
+                onclick="prevStep();this.blur();">Previous
         </button>
         <button type="button"
                 class="button_next utbot-form__navigation_button"
                 id="nextBtn"
-                onclick="nextButtonHandler();this.blur();">Next
+                onclick="nextStep();this.blur();">Next
         </button>
     </div>
 

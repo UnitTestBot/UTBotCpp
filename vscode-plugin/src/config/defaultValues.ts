@@ -8,7 +8,8 @@ import {isWin32} from "../utils/utils";
 
 export class DefaultConfigValues {
     public static readonly DEFAULT_HOST = "localhost";
-    public static readonly DEFAULT_PORT = 2121;
+    public static readonly DEFAULT_GRPC_PORT = 2121;
+    public static readonly DEFAULT_SFTP_PORT = 2020;
 
     public static readonly POSSIBLE_BUILD_DIR_NAMES = ['out', 'build'];
     public static readonly POSSIBLE_TEST_DIR_NAMES = ['test'];
@@ -39,8 +40,16 @@ export class DefaultConfigValues {
         return host;
     }
 
-    public static getDefaultPort(): number {
-        return parseInt(Prefs.getGlobalPort());
+    public static getDefaultGRPCPort(): number {
+        return parseInt(Prefs.getGlobalGRPCPort());
+    }
+
+    public static getDefaultSFTPPort(): number {
+        const sftpPort = vsUtils.getFromSftpConfig("port");
+        if (sftpPort !== undefined) {
+            return parseInt(sftpPort);
+        }
+        return DefaultConfigValues.DEFAULT_SFTP_PORT;
     }
 
     public static getDefaultRemotePath(): string {

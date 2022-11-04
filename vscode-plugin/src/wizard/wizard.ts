@@ -12,6 +12,7 @@ import * as pathUtils from '../utils/pathUtils';
 import {WizardEventsEmitter} from './wizardEventsEmitter';
 import * as fs from "fs";
 import * as vsUtils from "../utils/vscodeUtils";
+import {NodeSSH} from "node-ssh";
 
 const { logger } = ExtensionLogger;
 
@@ -55,61 +56,25 @@ export class UtbotWizardPanel {
     constructor(private readonly panel: vs.WebviewPanel, private readonly context: vs.ExtensionContext) {
         void this.update();
         this.panel.onDidDispose(() => this.dispose(), null, this.disposables);
-
-        this.panel.onDidChangeViewState(
-            _event => {
-                if (this.panel.visible) {
-                    void this.update();
-                }
-            },
-            null,
-            this.disposables
-        );
-
         this.panel.webview.onDidReceiveMessage(
             async message => {
                 switch (message.command) {
-                    case 'openSFTPSettings':
-                        if (message.key !== undefined) {
-                            const keyName = message.key;
-                            //await vs.commands.executeCommand('workbench.action.openSettings', 'Natizyskunk.sftp.remotePath');
-                            await vs.commands.getCommands(true).then(
-                                async (commands: string[]) => {
-                                    if (commands.includes("sftp.config")) {
-                                        await vs.commands.executeCommand("sftp.config").then(
-                                            async () => {
-                                                // TODO: positioning at keyname/value line
-                                                // await vs.commands.executeCommand('actions.find', `${keyName}`).then(
-                                                //     () => messages.showErrorMessage(`query: @${keyName}`)
-                                                // );
-                                            }
-                                        );
-                                    } else {
-                                        messages.showErrorMessage("SFTP plugin isn't installed!");
-                                    }
-                                }
-                            );
-                        }
-                        break;
                     case 'run_installer':
                         this.runInstallationScript();
                         break;
                     case 'set_server_setup':
                         await Prefs.setHost(message.host);
-                        await Prefs.setPort(message.port);
-                        await Prefs.setRemotePath(message.mappingPath);
+                        await Prefs.setGRPCPort(message.portGRPC);
+                        await Prefs.setRemotePath(message.serverPath);
+                        await this.setupSFTP(
+                            !!message.portSFTP,
+                            message.host,
+                            message.portSFTP,
+                            message.serverPath);
                         break;
                     case 'set_build_info':
                         await Prefs.setBuildDirectory(message.buildDirectory);
                         await Prefs.setCmakeOptions(message.cmakeOptions);
-                        break;
-                    case 'check_connection':
-                    case 'test_connection':
-                        this.pingAction(
-                            message.host,
-                            message.port,
-                            message.command + '_success',
-                            message.command + '_failure');
                         break;
                     case 'close_wizard':
                         this.panel.dispose();
@@ -117,14 +82,121 @@ export class UtbotWizardPanel {
                     case 'dbg_message':
                         logger.info(`dbg_message: ${message.message}`);
                         break;
-                    default:
+                    case 'check_plugins':
+                        //logger.info(`check_plugins`);
+                        this.checkPlugins();
+                        break;
+                    default: {
+                        if (message.command.endsWith('test_connection')) {
+                            //messages.showErrorMessage(`!!!!!! message (${message.command}) from WizardWebView: ${message}`);
+                            if (message.command.startsWith(`GRPC_`)) {
+                                this.pingAction(
+                                    message.host,
+                                    message.port,
+                                    message.command + '_success',
+                                    message.command + '_failure');
+                                break;
+                            }
+                            else if (message.command.startsWith(`SFTP_`)) {
+                                this.pingSFTPAction(
+                                    message.host,
+                                    message.port,
+                                    message.command + '_success',
+                                    message.command + '_failure');
+                                break;
+                            }
+                        }
                         messages.showErrorMessage(`Unknown message (${message.command}) from WizardWebView: ${message}`);
                         break;
+                    }
                 }
             },
             null,
             this.disposables
         );
+    }
+
+    private checkPlugins(): void  {
+        void this.panel.webview.postMessage({
+            command: "checkPlugins",
+            sftpPluginInstalled: !!vs.extensions.getExtension(messages.defaultSFTP),
+            sarifPluginInstalled: !!vs.extensions.getExtension(messages.defaultSARIFViewer)
+        });
+    }
+
+    private async setupSFTP(
+        activate: boolean,
+        host: string,
+        portSFTP: string,
+        remotePath: string
+    ): Promise<void> {
+        const sftpExt = vs.extensions.getExtension(messages.defaultSFTP);
+        if (!sftpExt) {
+            messages.showWarningMessage(messages.installSFTP);
+        } else {
+            if (!sftpExt.isActive) {
+                await sftpExt.activate();
+            }
+            const workspaceFolderUrl = vs.workspace.workspaceFolders?.[0].uri;
+            if (workspaceFolderUrl) {
+                const workspaceFolder = workspaceFolderUrl.fsPath;
+                const sftpConfigPath = pathUtils.fsJoin(workspaceFolder, '.vscode', 'sftp.json');
+                try {
+                    if (activate) {
+                        const configContent = 
+`{
+    "name": "UTBot Server",
+    "host": "${host}",
+    "protocol": "sftp",
+    "port": ${portSFTP},
+    "username": "utbot",
+    "password": "utbot",
+    "remotePath": "${remotePath}",
+    "uploadOnSave": true,
+    "useTempFile": false,
+    "openSsh": false
+}`;
+                        if (!fs.existsSync(sftpConfigPath)) {
+                           fs.writeFileSync(sftpConfigPath, ' ');
+                        }
+                        const doc = await vs.workspace.openTextDocument(sftpConfigPath);
+                        const editor = await vs.window.showTextDocument(doc, {preview: true, preserveFocus: false});
+                        // we need to generate the `onDidSaveTextDocument` event 
+                        // it is the only event that is processed by SFTP pluging to change the preload configuration
+                        void editor.edit( builder => {
+                            builder.delete(new vs.Range(0, 0, 10000, 10000));
+                            builder.insert(new vs.Position(0, 0), configContent);
+                        })
+                        .then( () => {
+                            void editor.document.save().then( saved => {
+                                if (saved) {
+                                    messages.showWarningMessage(`New configuration ".vscode/sftp.json" was saved!`);
+                                }
+                                void vs.commands.executeCommand('workbench.action.closeActiveEditor');
+                                const postponedSync = (): void => {
+                                    void vs.commands.executeCommand("sftp.sync.localToRemote", workspaceFolderUrl).then(
+                                        () => messages.showWarningMessage(`Project copy was created on UTBot Server at "${remotePath}"`),
+                                        (err) => messages.showWarningMessage(`Project copy was not created on UTBot Server at "${remotePath}" with error ` + err)
+                                    );
+                                };
+                                setTimeout(postponedSync, 300);
+                            });
+                        });
+                    } else {
+                        fs.unlink(sftpConfigPath, function (err) {
+                            if (err) {
+                                console.error(err);
+                                console.log('File ".vscode/sftp.json" not found');
+                            }else{
+                                console.log('File ".vscode/sftp.json" was deleted successfully');
+                            }
+                        });
+                    }
+                } catch (error) {
+                    messages.showWarningMessage("Error while SFTP configuration: "  + error);
+                }    
+            }
+        }
     }
 
     private runInstallationScript(): void {
@@ -134,7 +206,7 @@ export class UtbotWizardPanel {
         terminal.sendText(onDiskPath.fsPath, true);
     }
 
-    private lastRequest: Promise<string|null> | null = null;
+    private lastRequest: Promise<any> | null = null;
     private pingAction(host: string, port: number, successCmd: string, failureCmd: string): void {
         const servicePing = new GrpcServicePing(
             this.context.extension.packageJSON.version,
@@ -156,15 +228,43 @@ export class UtbotWizardPanel {
                     command: successCmd,
                     clientVersion: this.context.extension.packageJSON.version,
                     serverVersion: (serverVer.length === 0
-                       ? "undefined"
-                       : serverVer)});
+                        ? "undefined"
+                        : serverVer)});
             } else {
-                await this.panel.webview.postMessage({ command: failureCmd });
+                await this.panel.webview.postMessage({ command: failureCmd});
             }
         }).catch(async err => {
             logger.error(`Error! ${err}`);
             if (this.lastRequest === capturedPingPromiseForLambda) {
                 await this.panel.webview.postMessage({command: failureCmd});
+            }
+        });
+        return;
+    }
+
+    private lastSFTPRequest: Promise<any> | null = null;
+    private pingSFTPAction(host: string, port: number, successCmd: string, failureCmd: string): void {
+        const ssh = new NodeSSH();
+        const capturedPingPromiseForLambda = ssh.connect({
+            host: host,
+            port: port,
+            username: 'utbot',
+            password: 'utbot'
+        });
+        this.lastSFTPRequest = capturedPingPromiseForLambda;
+        capturedPingPromiseForLambda.then( async () => {
+            ssh.dispose();
+            if (this.lastSFTPRequest !== capturedPingPromiseForLambda) {
+                return;
+            }
+            await this.panel.webview.postMessage({
+                command: successCmd,
+                clientVersion: "1",
+                serverVersion: "1"});
+        }, async (error) => {
+            ssh.dispose();
+            if (this.lastSFTPRequest === capturedPingPromiseForLambda) {
+                await this.panel.webview.postMessage({ command: failureCmd});
             }
         });
         return;
@@ -223,7 +323,7 @@ export class UtbotWizardPanel {
         const predictedBuildDirectory = await defcfg.DefaultConfigValues.getDefaultBuildDirectoryPath();
         const initVars: {param: string; value: string|undefined}[] = [
             // UI javascript
-            {param: 'scriptUri', value: mediaPath('wizard.js').toString()},
+            {param: 'scriptUri', value: mediaPath('wizardHTML.js').toString()},
 
             // Security (switched off)
             //{param: 'wvscriptUri', value: webview.cspSource},
@@ -231,18 +331,20 @@ export class UtbotWizardPanel {
 
             // CSS in header
             {param: 'vscodeUri', value: mediaPath('vscode.css').toString()},
-            {param: 'stylesUri', value: mediaPath('wizard.css').toString()},
+            {param: 'stylesUri', value: mediaPath('wizardHTML.css').toString()},
 
             // vars
             {param: 'os', value: os.platform()},
             {param: 'projectDir', value: defcfg.DefaultConfigValues.toWSLPathOnWindows(vsUtils.getProjectDirByOpenedFile().fsPath)},
-            {param: 'defaultPort', value: defcfg.DefaultConfigValues.DEFAULT_PORT.toString()},
-            {param: 'sftpHost', value: vsUtils.getFromSftpConfig("host")},
-            {param: 'sftpDir', value: vsUtils.getFromSftpConfig("remotePath")},
+            {param: 'defaultGRPCPort', value: defcfg.DefaultConfigValues.DEFAULT_GRPC_PORT.toString()},
+            {param: 'defaultSFTPPort', value: defcfg.DefaultConfigValues.DEFAULT_SFTP_PORT.toString()},
+            {param: 'serverHost', value: vsUtils.getFromSftpConfig("host")},
+            {param: 'serverDir', value: vsUtils.getFromSftpConfig("remotePath")},
 
             // connection tab
             {param: 'predictedHost', value: defcfg.DefaultConfigValues.getDefaultHost()},
-            {param: 'predictedPort', value: Prefs.getGlobalPort()},
+            {param: 'predictedGRPCPort', value: Prefs.getGlobalGRPCPort()},
+            {param: 'predictedSFTPPort', value: defcfg.DefaultConfigValues.getDefaultSFTPPort().toString()},
             {param: 'predictedRemotePath', value: defcfg.DefaultConfigValues.getDefaultRemotePath()},
 
             // project tab
@@ -257,8 +359,8 @@ export class UtbotWizardPanel {
             // @ts-ignore
             content = content.replaceAll(`{{${p2v.param}}}`,
                 `${p2v.value === undefined
-                ? '' 
-                : p2v.value}`);
+                    ? ''
+                    : p2v.value}`);
         }
 
         const uninitVars = UtbotWizardPanel.checkNonInitializedVars.exec(content);

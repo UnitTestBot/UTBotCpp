@@ -116,24 +116,6 @@ export class Prefs {
         return !this.isInitialized(context);
     }
 
-    public static async setPredictedSettings(): Promise<void> {
-        logger.debug("Setting default settings");
-        await this.setPredictedHost();
-        await this.setPredictedPort();
-    }
-
-    public static async setPredictedHost(): Promise<void> {
-        const predictedHost = defcfg.DefaultConfigValues.getDefaultHost();
-        await Prefs.setHost(predictedHost);
-        logger.debug(`Host is automatically set to '${predictedHost}'`);
-    }
-
-    public static async setPredictedPort(): Promise<void> {
-        const predictedPort = defcfg.DefaultConfigValues.getDefaultPort();
-        await Prefs.setPort(predictedPort);
-        logger.debug(`Port is automatically set to '${predictedPort}'`);
-    }
-
     /**
      * Marks current workspace as unconfigured for UTBot.
      * @param context extension's context
@@ -334,15 +316,15 @@ export class Prefs {
         return this.getAsset(Prefs.HOST_PREF);
     }
 
-    public static async setPort(port: number): Promise<void> {
+    public static async setGRPCPort(port: number): Promise<void> {
         await this.setGlobalAsset(Prefs.PORT_PREF, port, false);
     }
 
-    public static getGlobalPort(): string {
-        return this.getGlobalAsset(Prefs.PORT_PREF, `${defcfg.DefaultConfigValues.DEFAULT_PORT}`);
+    public static getGlobalGRPCPort(): string {
+        return this.getGlobalAsset(Prefs.PORT_PREF, `${defcfg.DefaultConfigValues.DEFAULT_GRPC_PORT}`);
     }
 
-    public static getPort(): string {
+    public static getGRPCPort(): string {
         return this.getAsset(Prefs.PORT_PREF);
     }
 

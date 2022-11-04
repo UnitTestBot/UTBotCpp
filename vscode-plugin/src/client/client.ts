@@ -101,7 +101,7 @@ export class Client {
         }
 
         this.host = Prefs.getHost();
-        this.port = +Prefs.getPort();
+        this.port = parseInt(Prefs.getGRPCPort());
 
 
         this.logLevel = this.DEFAULT_LOG_LEVEL;
@@ -395,7 +395,7 @@ export class Client {
                 const response = this.testsService.configureProject(projectConfigRequest, this.metadata);
                 await this.handleServerResponse(response, progressKey, token, resolve, reject, responseHandler);
             } catch (err) {
-                messages.showErrorMessage(err.message);
+                messages.showErrorMessage(err);
                 utbotUI.channels().outputServerLogChannel.show(true);
                 reject(err);
             }
