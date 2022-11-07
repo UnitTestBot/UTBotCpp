@@ -11,9 +11,14 @@ export const serverIsDeadError = "UTBot server doesn't respond. Check the connec
 export const grpcConnectionLostError = "No connection established";
 export const targetNotUsed = "There is no used target. Use any in UTBot Targets window, please.";
 
-// {SARIF 
+// {SFTP
+export const defaultSFTP = "Natizyskunk.sftp";
+export const installSFTP = "Please, install Natizyskunk SFTP from https://marketplace.visualstudio.com/items?itemName=" + defaultSFTP;
+// }SFTP
+
+// {SARIF
 export const defaultSARIFViewer = "MS-SarifVSCode.sarif-viewer";
-export const intstallSARIFViewer = "Please, install MS Sarif Viewer from https://marketplace.visualstudio.com/items?itemName=" + defaultSARIFViewer;
+export const installSARIFViewer = "Please, install MS Sarif Viewer from https://marketplace.visualstudio.com/items?itemName=" + defaultSARIFViewer;
 // }SARIF
 
 

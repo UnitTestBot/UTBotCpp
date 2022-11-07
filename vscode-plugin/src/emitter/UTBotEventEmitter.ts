@@ -1,4 +1,4 @@
-import * as Emittery from "emittery";
+import Emittery from "emittery";
 
 export class UTBotEventEmitter<T>  {
     private emittery: Emittery<Record<string, T>> = new Emittery();
