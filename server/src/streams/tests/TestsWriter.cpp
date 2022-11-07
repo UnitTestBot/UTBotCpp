@@ -54,3 +54,7 @@ void TestsWriter::backupIfExists(const fs::path &filePath) {
         fs::rename(filePath, filePath.parent_path() / nfn.str());
     }
 }
+
+void TestsWriter::writeFile(const std::string& content, const std::string& message, const std::string& filePath) const {
+    FileSystemUtils::writeToFile(filePath, content);
+}

@@ -99,6 +99,8 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
             fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
             if (fs::exists(cmakeListsPath)) {
                 LOG_S(INFO) << "Configure cmake project";
+                // remove sections that are not needed to be analyzed for project building by utbot
+                prepareCMakeListsFile(cmakeListsPath);
                 RunProjectConfigurationCommand(buildDirPath, cmakeParams, projectContext, writer);
             } else {
                 LOG_S(INFO) << "CMakeLists.txt not found in root project directory: "
@@ -114,6 +116,22 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
         writer.writeResponse(ProjectConfigStatus::RUN_JSON_GENERATION_FAILED, e.what());
     }
     return Status::OK;
+}
+
+void UserProjectConfiguration::prepareCMakeListsFile(const fs::path &path) {
+    std::ifstream ifs(path);
+    std::stringstream ss;
+    auto ignoreText = false;
+    for(std::string line; std::getline(ifs, line); ) {
+        if (StringUtils::contains(line, "utbot_section_start"))
+            ignoreText = true;
+        else if (ignoreText && StringUtils::contains(line, "utbot_section_end"))
+            ignoreText = false;
+        if (ignoreText)
+            continue;
+        ss << line << "\n";
+    }
+    FileSystemUtils::writeToFile(path, ss.str());
 }
 
 void UserProjectConfiguration::RunProjectConfigurationCommand(const fs::path &buildDirPath,

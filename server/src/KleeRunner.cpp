@@ -54,7 +54,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          TestsWriter *testsWriter,
                          bool isBatched,
                          bool interactiveMode,
-                         StatsUtils::TestsGenerationStatsFileMap &generationStats) {
+                         StatsUtils::TestsGenerationStatsFileMap &generationStats,
+                         const FileInfoForTransfer &generatedCMake) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectContext);
@@ -115,6 +116,10 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         testsWriter->writeReport(sarif::sarifPackResults(sarifResults),
                                  "Sarif Report was created",
                                  Paths::getUTBotReportDir(projectContext) / sarif::SARIF_FILE_NAME);
+        testsWriter->writeFile(generatedCMake.code,
+                               "CMake file was created",
+                               generatedCMake.filePath
+                );
     };
 
     testsWriter->writeTestsWithProgress(

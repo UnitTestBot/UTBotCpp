@@ -207,15 +207,19 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
             }
         }
     }
-    ExecUtils::doWorkWithProgress(
-        sourceFilesNeedToRegenerateWrappers, testGen->progressWriter,
-        "Generating wrappers", [this](fs::path const &sourceFilePath) {
-            SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
-                                                          testGen->getProjectBuildDatabase()->compilationDatabase, nullptr,
-                                                          testGen->serverBuildDir);
-            std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
-            printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFilePath)).print(testGen->projectContext, sourceFilePath, wrapper);
-        });
+
+    for (auto &sourceFileForWrapper : sourceFilesNeedToRegenerateWrappers) {
+        SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
+                                                      testGen->getProjectBuildDatabase()->compilationDatabase, nullptr,
+                                                      testGen->serverBuildDir);
+        std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFileForWrapper);
+        if (!Paths::isCXXFile(sourceFileForWrapper)) {
+            auto content = printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFileForWrapper))
+                    .getFinalContent(testGen->projectContext, sourceFileForWrapper, wrapper);
+            FileSystemUtils::writeToFile(Paths::getWrapperFilePath(testGen->projectContext, sourceFileForWrapper), content);
+            testGen->synchronizedWrappers.emplace_back(Paths::getWrapperFilePath(testGen->projectContext, sourceFileForWrapper), content);
+        }
+    }
 }
 
 const CollectionUtils::FileSet &Synchronizer::getTargetSourceFiles() const {

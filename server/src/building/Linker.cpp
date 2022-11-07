@@ -5,12 +5,10 @@
 #include "Synchronizer.h"
 #include "RunCommand.h"
 #include "environment/EnvironmentPaths.h"
-#include "exceptions/ExecutionProcessException.h"
 #include "exceptions/FileNotPresentedInCommandsException.h"
 #include "exceptions/FileNotPresentedInArtifactException.h"
 #include "exceptions/NoTestGeneratedException.h"
 #include "printers/DefaultMakefilePrinter.h"
-#include "printers/NativeMakefilePrinter.h"
 #include "stubs/StubGen.h"
 #include "testgens/FileTestGen.h"
 #include "testgens/FolderTestGen.h"
@@ -25,6 +23,7 @@
 #include "utils/path/FileSystemPath.h"
 
 #include "loguru.h"
+#include "CMakeGenerator.h"
 
 #include <unordered_set>
 #include <utility>
@@ -103,9 +102,15 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
         LOG_S(DEBUG) << "Trying target: " << target.filename();
         auto result = linkForTarget(target, sourceFilePath, compilationUnitInfo, objectFile);
         if (result.isSuccess()) {
-            auto [targetBitcode, stubsSet, _] = result.getOpt().value();
+            auto [targetBitcode, stubsSet, _, stubSources] = result.getOpt().value();
             addToGenerated({ objectFile }, targetBitcode);
+            auto cmakeGen = CMakeGenerator(&testGen);
+            CollectionUtils::FileSet presented;
+            presented.insert(sourceFilePath);
+            cmakeGen.generate(target, stubsSet, presented, stubSources);
+            generatedCMakeFile = cmakeGen.getResult();
             auto&& targetUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(target);
+            addToGenerated({ objectFile }, targetBitcode);
             return;
         } else {
             LOG_S(DEBUG) << "Linkage for target " << target.filename() << " failed: " << result.getError()->c_str();
@@ -193,6 +198,9 @@ void Linker::linkForProject() {
                                         return compilationUnitInfo->getOutputFile();
                                     });
                             addToGenerated(objectFiles, linkres.bitcodeOutput);
+                            auto cmakeGen = CMakeGenerator(&testGen);
+                            cmakeGen.generate(target, linkres.stubsSet, linkres.presentedFiles, linkres.stubSources);
+                            generatedCMakeFile = cmakeGen.getResult();
                             break;
                         } else {
                             std::stringstream ss;
@@ -407,7 +415,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
             testMakefilesPrinter.GetMakefiles(sourcePath).write();
         }
     }
-    return LinkResult{ targetBitcode, stubsSet, presentedFiles };
+    return LinkResult{ targetBitcode, stubsSet, presentedFiles, stubSources };
 };
 
 static const std::string STUB_BITCODE_FILES_NAME = "STUB_BITCODE_FILES";
@@ -705,7 +713,6 @@ Linker::declareRootLibraryTarget(printer::DefaultMakefilePrinter &bitcodeLinkMak
     return rootOutput;
 }
 
-
 BuildResult
 Linker::addLinkTargetRecursively(const fs::path &fileToBuild,
                                  printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
@@ -785,4 +792,8 @@ fs::path Linker::getPrefixPath(const std::vector<fs::path> &dependencies, fs::pa
     fs::path prefixPath = std::accumulate(dependencies.begin(), dependencies.end(), init,
                                           Paths::longestCommonPrefixPath);
     return std::max(prefixPath, defaultPath);
+}
+
+FileInfoForTransfer Linker::getGeneratedCMakeFile() {
+    return generatedCMakeFile;
 }

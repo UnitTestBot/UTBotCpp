@@ -21,6 +21,7 @@ fun notifyWarning(title: String, warningText: String, project: Project? = null, 
 fun notifyUnknownResponse(response: Testgen.ProjectConfigResponse, project: Project) =
     notifyError(UTBot.message("notify.title.error"), "Unknown server response: ${response.message}", project)
 
+// can be called from background thread
 private fun notify(
     type: NotificationType,
     title: String,

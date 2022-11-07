@@ -19,6 +19,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <utils/FileInfoForTransfer.h>
 
 class Linker {
 public:
@@ -41,10 +42,13 @@ public:
                              const std::optional<fs::path> &testedFilePath,
                              bool shouldChangeDirectory = false);
 
+    FileInfoForTransfer getGeneratedCMakeFile();
+
     struct LinkResult {
         fs::path bitcodeOutput;
         CollectionUtils::FileSet stubsSet;
         CollectionUtils::FileSet presentedFiles;
+        CollectionUtils::FileSet stubSources;
     };
 private:
     BaseTestGen &testGen;
@@ -57,6 +61,8 @@ private:
     CollectionUtils::FileSet brokenLinkFiles;
 
     IRParser irParser;
+
+    FileInfoForTransfer generatedCMakeFile;
 
     fs::path getSourceFilePath();
 
@@ -76,7 +82,6 @@ private:
                                     const CollectionUtils::FileSet &stubSources,
                                     bool errorOnMissingBitcode = true);
 
-    void checkSiblingsExist(const CollectionUtils::FileSet &archivedFiles) const;
     void addToGenerated(const CollectionUtils::FileSet &objectFiles, const fs::path &output);
     fs::path getPrefixPath(const std::vector<fs::path> &dependencies, fs::path defaultPath) const;
 

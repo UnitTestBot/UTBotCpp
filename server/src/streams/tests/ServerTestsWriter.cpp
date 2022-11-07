@@ -84,3 +84,16 @@ void ServerTestsWriter::writeReport(const std::string &content,
     response.set_allocated_progress(progress.release());
     writeMessage(response);
 }
+
+void ServerTestsWriter::writeFile(const std::string& content, const std::string& message, const std::string& filePath) const {
+    TestsWriter::writeFile(content, message, filePath);
+
+    testsgen::TestsResponse response;
+    auto testSource = response.add_testsources();
+    testSource->set_code(content);
+    testSource->set_filepath(filePath);
+    LOG_S(INFO) << message;
+    auto progress = GrpcUtils::createProgress(message, 100, false);
+    response.set_allocated_progress(progress.release());
+    writeMessage(response);
+}

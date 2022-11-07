@@ -91,7 +91,7 @@ namespace {
                     continue;
                 }
                 EXPECT_TRUE(Paths::isSubPathOf(getStubsDirectory(), it.path()) ||
-                            fileSet.count(it.path()))
+                            fileSet.count(it.path()) || Paths::isCMakeListsFile(it.path()))
                     << testUtils::unexpectedFileMessage(it.path());
             }
         }

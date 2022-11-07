@@ -203,5 +203,8 @@
                 description="Turns on/off verbose formatting for tests">
             <override-text place="GoToAction" text="UTBot: Enable Verbose Mode"/>
         </action>
+        <action id="org.utbot.cpp.clion.plugin.actions.SyncWrappersAndStubsAction"
+                class="org.utbot.cpp.clion.plugin.actions.SyncWrappersAndStubsAction"
+                text="Synchronize wrappers and stubs" description="Requests stubs and wrappers from server"/>
     </actions>
 </idea-plugin>

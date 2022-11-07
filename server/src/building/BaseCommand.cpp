@@ -1,18 +1,12 @@
 #include "BaseCommand.h"
 
-#include "CompileCommand.h"
-#include "LinkCommand.h"
 #include "Paths.h"
 #include "printers/CCJsonPrinter.h"
-#include "tasks/ShellExecTask.h"
 #include "utils/CollectionUtils.h"
 #include "utils/StringUtils.h"
 #include "utils/path/FileSystemPath.h"
 
-#include "loguru.h"
-
 #include <algorithm>
-#include <iterator>
 #include <set>
 #include <utility>
 

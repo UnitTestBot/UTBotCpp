@@ -125,7 +125,7 @@ namespace {
 
     TEST_F(Stub_Test, Implicit_Stubs_Test) {
         auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                         literals_foo_c, "libliterals", true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         testGen.setTargetForSource(literals_foo_c);
 
@@ -138,9 +138,9 @@ namespace {
     TEST_F(Stub_Test, Pregenerated_Stubs_Test) {
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                             literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                             literals_foo_c, "libliterals" /*GrpcUtils::UTBOT_AUTO_TARGET_PATH */, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(literals_foo_c);
+//            testGen.setTargetForSource(literals_foo_c);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -149,9 +149,9 @@ namespace {
 
         {
             auto request = createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                              srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                              srcPaths, literals_foo_c, "libliterals"/*GrpcUtils::UTBOT_AUTO_TARGET_PATH*/, true);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(literals_foo_c);
+//            testGen.setTargetForSource(literals_foo_c);
 
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             ASSERT_TRUE(status.ok()) << status.error_message();
@@ -216,9 +216,9 @@ namespace {
 
     TEST_F(Stub_Test, Run_Tests_For_Unused_Function) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                   srcPaths, calc_sum_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
+                                                   srcPaths, calc_sum_c, "libcalc"/*GrpcUtils::UTBOT_AUTO_TARGET_PATH*/, true);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(calc_sum_c);
+//        testGen.setTargetForSource(calc_sum_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
@@ -237,9 +237,9 @@ namespace {
 
     TEST_F(Stub_Test, File_Tests_Without_Stubs) {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, literals_foo_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false);
+                                                    srcPaths, literals_foo_c, "exe"/*GrpcUtils::UTBOT_AUTO_TARGET_PATH*/, false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(literals_foo_c);
+        // testGen.setTargetForSource(literals_foo_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();

@@ -14,6 +14,10 @@ namespace printer {
         void print(const utbot::ProjectContext &projectContext,
                       const fs::path &sourceFilePath,
                       const std::string &wrapperDefinitions);
+
+        std::string getFinalContent(const utbot::ProjectContext &projectContext,
+                                     const fs::path &sourceFilePath,
+                                     const std::string &wrapperDefinitions);
     };
 }
 

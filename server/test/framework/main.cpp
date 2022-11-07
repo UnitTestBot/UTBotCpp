@@ -50,6 +50,11 @@ int main(int argc, char **argv) {
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("library-project"));
 
+        for (auto const &subproject : { "simple", "shared", "stubs" }) {
+            testUtils::tryExecGetBuildCommands(
+                    testUtils::getRelativeTestSuitePath("cmake") / subproject);
+        }
+
         for (auto const &subproject : { "executable", "static_library", "shared_library", "timeout" }) {
             for (auto const &compiler : { clang, gcc }) {
                 testUtils::tryExecGetBuildCommands(

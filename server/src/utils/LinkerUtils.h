@@ -10,8 +10,6 @@ namespace LinkerUtils {
     fs::path applySuffix(const fs::path &output,
                          BuildResult::Type unitType,
                          const std::string &suffixForParentOfStubs);
-
 };
-
 
 #endif // UNITTESTBOT_LINKERUTILS_H

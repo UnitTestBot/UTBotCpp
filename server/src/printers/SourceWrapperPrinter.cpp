@@ -12,12 +12,21 @@ namespace printer {
                                      const std::string &wrapperDefinitions) {
         if (Paths::isCXXFile(sourceFilePath))
             return;
-        writeCopyrightHeader();
+        fs::path wrapperFilePath = Paths::getWrapperFilePath(projectContext, sourceFilePath);
+        auto content = getFinalContent(projectContext, sourceFilePath, wrapperDefinitions);
+        FileSystemUtils::writeToFile(wrapperFilePath, content);
+    }
 
+    std::string SourceWrapperPrinter::getFinalContent(const utbot::ProjectContext &projectContext,
+                                     const fs::path &sourceFilePath,
+                                     const std::string &wrapperDefinitions) {
+        if (Paths::isCXXFile(sourceFilePath))
+            throw std::invalid_argument(StringUtils::stringFormat("Tried to get wrapper for cpp file: %s", sourceFilePath));
+
+        writeCopyrightHeader();
         strDefine("main", "main__");
 
         fs::path wrapperFilePath = Paths::getWrapperFilePath(projectContext, sourceFilePath);
-
         fs::path sourcePathRelativeToProjectDir = fs::relative(sourceFilePath, projectContext.projectPath);
         fs::path projectDirRelativeToWrapperFile =
                 fs::relative(projectContext.projectPath, wrapperFilePath.parent_path());
@@ -26,6 +35,6 @@ namespace printer {
 
         ss << wrapperDefinitions;
 
-        FileSystemUtils::writeToFile(wrapperFilePath, ss.str());
+        return ss.str();
     }
 }

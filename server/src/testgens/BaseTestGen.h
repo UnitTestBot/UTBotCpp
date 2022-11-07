@@ -10,6 +10,7 @@
 #include "streams/tests/TestsWriter.h"
 #include "stubs/Stubs.h"
 #include "types/Types.h"
+#include "utils/FileInfoForTransfer.h"
 
 #include <grpcpp/grpcpp.h>
 #include <protobuf/testgen.grpc.pb.h>
@@ -29,6 +30,7 @@ public:
     tests::TestsMap tests;
     std::unordered_map<std::string, types::Type> methodNameToReturnTypeMap;
     std::vector<Stubs> synchronizedStubs;
+    std::vector<Stubs> synchronizedWrappers;
     types::TypeMaps types;
 
     CollectionUtils::FileSet targetSources;

@@ -268,6 +268,10 @@ namespace Paths {
         return CollectionUtils::contains(CFileSourceExtensions, path.extension());
     }
 
+    static inline bool isCMakeListsFile(const fs::path &path) {
+        return path.filename() == "CMakeLists.txt";
+    }
+
     extern const std::vector<std::string> CXXFileExtensions;
 
     static inline bool isCXXFile(const fs::path &path) {

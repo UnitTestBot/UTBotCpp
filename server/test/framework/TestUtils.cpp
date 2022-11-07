@@ -430,4 +430,12 @@ namespace testUtils {
                                            "Total Lines Number", "Covered Lines Number", "Line Coverage Ratio (%)"};
         checkStatsCSV(statsPath, header, containedFiles);
     }
+
+    void checkCMakeGenerated(const fs::path &suitePath, const fs::path &testsDirPath, const std::optional<fs::path>& expectedCMakePath) {
+        auto expectedPath = (expectedCMakePath.has_value() ? expectedCMakePath.value() : suitePath / "expected_cmake.txt");
+        auto generatedCMakePath = testsDirPath / "CMakeLists.txt";
+        EXPECT_TRUE(fs::exists(generatedCMakePath)) << "CMakeLists.txt file not generated!";
+        auto expected = FileSystemUtils::read(expectedPath), actual = FileSystemUtils::read(generatedCMakePath);
+        EXPECT_EQ(actual, expected);
+    }
 }

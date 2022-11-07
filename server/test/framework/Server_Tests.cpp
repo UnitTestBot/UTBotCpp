@@ -11,10 +11,13 @@
 #include "printers/SourceWrapperPrinter.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/ServerUtils.h"
+#include "building/CMakeGenerator.h"
 
 #include "utils/path/FileSystemPath.h"
 #include <functional>
 #include <tuple>
+#include <fstream>
+#include <iostream>
 
 namespace {
     using CompilationUtils::CompilerName;
@@ -465,6 +468,7 @@ namespace {
                 }
             }
         }
+
         void checkFloatingPoint_C(BaseTestGen &testGen) {
             for (const auto &[methodName, methodDescription] :
                  testGen.tests.at(floating_point_c).methods) {
@@ -1233,11 +1237,11 @@ namespace {
         CoverageAndResultsGenerator generate(std::unique_ptr<testsgen::TestFilter> testFilter,
                                              bool withCoverage) {
             auto request = createCoverageAndResultsRequest(
-                projectName, suitePath, testDirPath, buildDirRelativePath, std::move(testFilter));
+                    projectName, suitePath, testDirPath, buildDirRelativePath, std::move(testFilter));
             static auto coverageAndResultsWriter =
-                std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-            CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 15, 0, true, false };
+                    std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+            CoverageAndResultsGenerator coverageGenerator{request.get(), coverageAndResultsWriter.get()};
+            utbot::SettingsContext settingsContext{true, true, 15, 0, true, false};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1605,7 +1609,6 @@ namespace {
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-
-
+        checkCMakeGenerated(suitePath, getTestDirectory());
     }
 }

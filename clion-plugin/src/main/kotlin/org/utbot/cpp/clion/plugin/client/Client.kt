@@ -22,6 +22,8 @@ import org.utbot.cpp.clion.plugin.actions.ShowSettingsAction
 import org.utbot.cpp.clion.plugin.client.channels.LogChannel
 import org.utbot.cpp.clion.plugin.grpc.IllegalPathException
 import org.utbot.cpp.clion.plugin.client.logger.ClientLogger
+import org.utbot.cpp.clion.plugin.client.requests.SyncProjectStubsAndWrappers
+import org.utbot.cpp.clion.plugin.grpc.GrpcRequestBuilderFactory
 import org.utbot.cpp.clion.plugin.listeners.ConnectionStatus
 import org.utbot.cpp.clion.plugin.listeners.UTBotEventsListener
 import org.utbot.cpp.clion.plugin.settings.projectIndependentSettings
@@ -83,46 +85,46 @@ class Client(
             )
             return
         }
-        executeRequestImpl(request)
+        requestsCS.launch(CoroutineName(request.toString())) {
+            executeRequestImpl(request, coroutineContext[Job])
+        }
     }
 
-    private fun executeRequestImpl(request: Request) {
-        requestsCS.launch(CoroutineName(request.toString())) {
-            try {
-                request.execute(stub, coroutineContext[Job])
-            } catch (e: io.grpc.StatusException) {
-                val id = request.id
-                when (e.status.code) {
-                    Status.UNAVAILABLE.code -> notifyNotConnected(project, port, serverName)
-                    Status.UNKNOWN.code -> notifyError(
-                        UTBot.message("notify.title.unknown.server.error"), // unknown server error
-                        UTBot.message("notify.unknown.server.error"),
-                        project
-                    )
-                    Status.CANCELLED.code -> notifyError(
-                        UTBot.message("notify.title.cancelled"),
-                        UTBot.message("notify.cancelled", id, e.message ?: ""),
-                        project
-                    )
-                    Status.FAILED_PRECONDITION.code, Status.INTERNAL.code, Status.UNIMPLEMENTED.code, Status.INVALID_ARGUMENT.code -> notifyError(
-                        UTBot.message("notify.title.error"),
-                        UTBot.message("notify.request.failed", e.message ?: "", id),
-                        project
-                    )
-                    else -> notifyError(
-                        UTBot.message("notify.title.error"),
-                        e.message ?: "Corresponding exception's message is missing",
-                        project
-                    )
-                }
-            } catch (e: IllegalPathException) {
-                notifyError(
-                    UTBot.message("notify.bad.settings.title"),
-                    UTBot.message("notify.bad.path", e.message ?: ""),
-                    project,
-                    ShowSettingsAction()
+    private suspend fun executeRequestImpl(request: Request, job: Job?) {
+        try {
+            request.execute(stub, job)
+        } catch (e: io.grpc.StatusException) {
+            val id = request.id
+            when (e.status.code) {
+                Status.UNAVAILABLE.code -> notifyNotConnected(project, port, serverName)
+                Status.UNKNOWN.code -> notifyError(
+                    UTBot.message("notify.title.unknown.server.error"), // unknown server error
+                    UTBot.message("notify.unknown.server.error"),
+                    project
+                )
+                Status.CANCELLED.code -> notifyError(
+                    UTBot.message("notify.title.cancelled"),
+                    UTBot.message("notify.cancelled", id, e.message ?: ""),
+                    project
+                )
+                Status.FAILED_PRECONDITION.code, Status.INTERNAL.code, Status.UNIMPLEMENTED.code, Status.INVALID_ARGUMENT.code -> notifyError(
+                    UTBot.message("notify.title.error"),
+                    UTBot.message("notify.request.failed", e.message ?: "", id),
+                    project
+                )
+                else -> notifyError(
+                    UTBot.message("notify.title.error"),
+                    e.message ?: "Corresponding exception's message is missing",
+                    project
                 )
             }
+        } catch (e: IllegalPathException) {
+            notifyError(
+                UTBot.message("notify.bad.settings.title"),
+                UTBot.message("notify.bad.path", e.message ?: ""),
+                project,
+                ShowSettingsAction()
+            )
         }
     }
 
@@ -134,16 +136,26 @@ class Client(
         }
     }
 
-    private fun registerClient() {
-        requestsCS.launch {
-            try {
-                logger.info { "Sending REGISTER CLIENT request, clientID == $clientId" }
-                stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientId).build())
-            } catch (e: io.grpc.StatusException) {
-                logger.error { "${e.status}: ${e.message}" }
-            }
+    private suspend fun registerClient() {
+        try {
+            logger.info { "Sending REGISTER CLIENT request, clientID == $clientId" }
+            stub.registerClient(Testgen.RegisterClientRequest.newBuilder().setClientId(clientId).build())
+        } catch (e: io.grpc.StatusException) {
+            logger.error { "Exception on registering client: ${e.status}: ${e.message}" }
         }
     }
+
+    fun syncWrappersAndStubs() {
+        createRequestForSync().also {
+            executeRequestIfNotDisposed(it)
+        }
+    }
+
+    private fun createRequestForSync(): SyncProjectStubsAndWrappers =
+        SyncProjectStubsAndWrappers(
+            GrpcRequestBuilderFactory(project).createProjectRequestBuilder(),
+            project
+        )
 
     private fun startPeriodicHeartBeat() {
         logger.info { "The heartbeat started with interval: $HEARTBEAT_INTERVAL ms" }
@@ -167,6 +179,7 @@ class Client(
                 notifyInfo(UTBot.message("notify.connected.title"), UTBot.message("notify.connected", port, serverName))
                 logger.info { "Successfully connected to server!" }
                 registerClient()
+                executeRequestIfNotDisposed(createRequestForSync())
             }
 
             if (newClient || !response.linked) {
