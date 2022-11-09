@@ -923,14 +923,17 @@ void KTestObjectParser::getTestParamView(const Tests::MethodDescription &methodD
                                          Tests::TestCaseDescription &testCaseDescription,
                                          const Tests::MethodParam& methodParam,
                                          std::shared_ptr<AbstractValueView> &testParamView) {
-    auto paramType = methodParam.type.maybeJustPointer() ? methodParam.type.baseTypeObj() : methodParam.type;
+    const auto usage = types::PointerUsage::PARAMETER;
+    types::Type paramType = methodParam.type.arrayCloneMultiDim(usage);
+    auto type = typesHandler.getReturnTypeToCheck(paramType);
+
     if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
         testParamView = testParameterView(
-                emptyKleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
+                emptyKleeParam, { type, methodParam.name }, PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
                 testCaseDescription.lazyReferences, methodDescription);
     } else {
         const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
-        testParamView = testParameterView(kleeParam, { paramType, methodParam.name }, PointerUsage::PARAMETER,
+        testParamView = testParameterView(kleeParam, { type, methodParam.name }, PointerUsage::PARAMETER,
                                           testCaseDescription.lazyAddressToName, testCaseDescription.lazyReferences,
                                           methodDescription);
     }
@@ -1061,7 +1064,7 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
                 std::string res = readBytesAsValueForType(rawData, PointerWidthType, 0, PointerWidthSizeInBits);
                 return getLazyPointerView(fromAddressToName, initReferences, param.varName, res, paramType);
             } else if (types::TypesHandler::isCStringType(paramType)) {
-                return stringLiteralView(rawData);
+                return stringLiteralView(rawData, rawData.size());
             } else if (paramType.kinds().size() > 2) {
                 return multiArrayView(rawData, paramType, SizeUtils::bytesToBits(rawData.size()), 0, usage);
             } else {

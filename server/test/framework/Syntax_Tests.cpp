@@ -1187,10 +1187,12 @@ namespace {
             testGen.tests.at(qualifiers_c).methods.begin().value().testCases,
             std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return testCase.paramValues[0].view->getEntryValue(nullptr) == "\"hello\"" && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                  auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
+                  return param_values == ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31, 22))  && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                  [] (const tests::Tests::MethodTestCase& testCase) {
-                   return testCase.paramValues[0].view->getEntryValue(nullptr) !=  "\"hello\"" && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                      auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
+                      return param_values != ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31, 22)) && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
                  }
                 })
         );
