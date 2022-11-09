@@ -1064,7 +1064,7 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
                 std::string res = readBytesAsValueForType(rawData, PointerWidthType, 0, PointerWidthSizeInBits);
                 return getLazyPointerView(fromAddressToName, initReferences, param.varName, res, paramType);
             } else if (types::TypesHandler::isCStringType(paramType)) {
-                return stringLiteralView(rawData, rawData.size());
+                return stringLiteralView(rawData);
             } else if (paramType.kinds().size() > 2) {
                 return multiArrayView(rawData, paramType, SizeUtils::bytesToBits(rawData.size()), 0, usage);
             } else {
