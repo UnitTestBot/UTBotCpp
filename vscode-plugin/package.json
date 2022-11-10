@@ -508,7 +508,7 @@
 					"default": true,
 					"markdownDescription": "%unittestbot.testsGeneration.generateForStaticFunctions.description%"
 				},
-				"unittestbot.testsGeneration.errorMode" : {
+				"unittestbot.testsGeneration.errorMode": {
 					"type": "string",
 					"enum": [
 						"Failing",

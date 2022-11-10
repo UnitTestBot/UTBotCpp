@@ -17,8 +17,7 @@ namespace visitor {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;
-        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
-                                                          false);
+        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false, errorMode);
         if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(

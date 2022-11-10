@@ -57,8 +57,6 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                          TestsWriter *testsWriter,
                          bool isBatched,
                          bool interactiveMode,
-                         ErrorMode errorMode) {
-                         bool interactiveMode,
                          StatsUtils::TestsGenerationStatsFileMap &generationStats) {
     LOG_SCOPE_FUNCTION(DEBUG);
 
@@ -110,7 +108,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         }
         auto kleeStats = writeKleeStats(Paths::kleeOutDirForFilePath(projectContext, filePath));
         generator->parseKTestsToFinalCode(projectContext, tests, methodNameToReturnTypeMap, ktests,
-                                          lineInfo, settingsContext.verbose);
+                                          lineInfo, settingsContext.verbose, settingsContext.errorMode);
         generationStats.addFileStats(kleeStats, tests);
 
         sarif::sarifAddTestsToResults(projectContext, tests, sarifResults);

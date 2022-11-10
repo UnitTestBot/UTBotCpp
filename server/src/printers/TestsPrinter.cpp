@@ -202,8 +202,6 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       Tests::MethodDescription &methodDescription,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                       bool verbose,
-                                      int &testNum) {
-    auto &testCases = methodDescription.suiteTestCases[targetSuiteName];
                                       int &testNum,
                                       ErrorMode errorMode) {
     const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
@@ -242,10 +240,11 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
     }
     if (testCase.errorInfo.errorType == ErrorType::ASSERTION_FAILURE) {
-        ss << TAB_N() << "/*" << NL << TAB_N() << testCase.errorInfo.failureBody << NL;
-        ss << TAB_N() << "FILE: " << testCase.errorInfo.fileWithFailure.string() << NL;
-        ss << TAB_N() << "LINE: " << testCase.errorInfo.lineWithFailure << NL;
-        ss << TAB_N() << "*/" << NL;
+        ss << LINE_INDENT() << "/*"
+           << LINE_INDENT() << testCase.errorInfo.failureBody << NL
+           << LINE_INDENT() << "FILE: " << testCase.errorInfo.fileWithFailure.string() << NL
+           << LINE_INDENT() << "LINE: " << testCase.errorInfo.lineWithFailure << NL
+           << LINE_INDENT() << "*/" << NL;
     }
 
     TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
@@ -355,7 +354,6 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
                                            const Tests::MethodTestCase &testCase,
                                            const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                            ErrorMode errorMode) {
-                                           const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
@@ -365,7 +363,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printFunctionParameters(methodDescription, testCase, false);
     printLazyVariables(methodDescription, testCase, false);
     printLazyReferences(methodDescription, testCase, false);
-    parametrizedAsserts(methodDescription, testCase, predicateInfo);
+    parametrizedAsserts(methodDescription, testCase, predicateInfo, errorMode);
     ss << RB() << NL;
 }
 

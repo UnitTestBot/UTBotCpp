@@ -352,9 +352,6 @@ void KleeGenerator::parseKTestsToFinalCode(
         auto predicate =
             lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
         testsPrinter.genCode(methodDescription, predicate, verbose, errorMode);
-
-
-        testsPrinter.genCode(methodDescription, predicate, verbose);
     }
 
     printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath))

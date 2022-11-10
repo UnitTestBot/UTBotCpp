@@ -44,7 +44,7 @@ namespace Paths {
                           const std::vector<fs::path> &dirNames,
                           const std::function<bool(const fs::path &path)> &filter);
 
-    bool errorFileExists(const fs::path &path, std::string const& suffix);
+    static bool errorFileExists(const fs::path &path, std::string const& suffix);
 
     static inline void setOptPath(fs::path &path, const std::string &value) {
         path = fs::path(value);
@@ -432,10 +432,7 @@ namespace Paths {
     }
 
     bool hasUncaughtException(const fs::path &path);
-
-    AssertInfo hasFailedAssert(const fs::path &path);
-
-        //endregion
+    //endregion
 
     //region utbot_report
 

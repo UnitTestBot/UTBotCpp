@@ -236,12 +236,10 @@ namespace testUtils {
                                                    const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
-                                                   int kleeTimeout
-                                                   bool verbose,
+                                                   int kleeTimeout,
                                                    ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout);
-                                                   srcPaths, useStubs, verbose, errorMode);
+                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
@@ -271,8 +269,8 @@ namespace testUtils {
                                                      const std::string &targetOrSourcePath,
                                                      bool useStubs,
                                                      bool verbose,
-                                                   int kleeTimeout,
-                                                   ErrorMode errorMode) {
+                                                     int kleeTimeout,
+                                                     ErrorMode errorMode) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
                                              srcPaths, filePath, line, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createClassRequest(std::move(lineRequest));

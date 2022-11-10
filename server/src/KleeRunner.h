@@ -33,7 +33,7 @@ public:
                  const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                  const std::shared_ptr<LineInfo> &lineInfo, TestsWriter *testsWriter, bool isBatched,
                  bool interactiveMode,
-                 ErrorMode::ErrorMode errorMode);
+                 StatsUtils::TestsGenerationStatsFileMap &generationStats);
 
 private:
     const utbot::ProjectContext projectContext;

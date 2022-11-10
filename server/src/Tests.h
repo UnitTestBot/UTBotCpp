@@ -81,7 +81,6 @@ namespace tests {
         std::vector<UTBotKTestObject> objects;
         Status status;
         std::vector<std::string> errorDescriptors;
-        AssertInfo assertInfo;
         ErrorInfo errorInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects,
@@ -91,10 +90,6 @@ namespace tests {
                 status(status),
                 errorDescriptors(errorDescriptors) {}
 
-        UTBotKTest(std::vector<UTBotKTestObject> objects, Status status,
-                    ErrorInfo errorInfo_)
-            : objects(std::move(objects)), status(status),
-            errorInfo(std::move(errorInfo_)) {
         [[nodiscard]] bool isError() const {
             return !errorDescriptors.empty();
         }
@@ -449,7 +444,6 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             std::vector<std::string> errorDescriptors;
-            AssertInfo assertInfo;
             ErrorInfo errorInfo;
 
             [[nodiscard]] bool isError() const;

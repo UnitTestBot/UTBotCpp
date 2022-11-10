@@ -33,7 +33,6 @@
 #include "utils/stats/TestsExecutionStats.h"
 #include "utils/TypeUtils.h"
 #include "building/ProjectBuildDatabase.h"
-#include "utils/ErrorMode.h"
 
 #include <thread>
 #include <fstream>

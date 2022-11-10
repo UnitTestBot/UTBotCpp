@@ -61,7 +61,7 @@ namespace {
             auto projectContext = GrpcUtils::createProjectContext(
                     projectName, suitePath, testsDirPath, buildDirRelativePath);
 
-            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false);
+            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false, ErrorMode::FAILING);
 
             auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
                                                            std::move(settingsContext),
