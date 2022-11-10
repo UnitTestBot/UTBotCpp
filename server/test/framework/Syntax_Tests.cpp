@@ -1188,11 +1188,13 @@ namespace {
             std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
-                  return param_values == ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31))  && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                  const int word_end = 31; //End of word "hello" in param_values string
+                  return param_values == ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(word_end))  && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                  [] (const tests::Tests::MethodTestCase& testCase) {
                       auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
-                      return param_values != ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31)) && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                      const int word_end = 31; //End of word "hello" in param_values string
+                      return param_values != ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(word_end)) && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
                  }
                 })
         );

@@ -246,9 +246,10 @@ namespace {
             s = s.substr(1, s.length() - 2);
             size_t i = 0;
             unsigned int sum = 0;
+            //Hash count of word`s letters
             while (s.substr(i, 4) != "'\\0'"){
                 sum += s[i + 1];
-                i += 5;
+                i += 5;// Go to next letter
             }
 
             auto actual = testCase.returnValue.view->getEntryValue(nullptr);
