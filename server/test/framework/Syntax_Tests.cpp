@@ -416,7 +416,7 @@ namespace {
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                 auto entryValue = testCase.paramValues[0].view->getEntryValue(nullptr);
                 auto returnValue = stoll(testCase.returnValue.view->getEntryValue(nullptr));
-                return static_cast<unsigned char>(entryValue[1]) ==
+                return static_cast<unsigned char>(entryValue[2]) ==
                        static_cast<unsigned char>(returnValue);
             }
                 }),
@@ -1188,11 +1188,11 @@ namespace {
             std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                   auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
-                  return param_values == ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31, 22))  && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                  return param_values == ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31))  && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
                 },
                  [] (const tests::Tests::MethodTestCase& testCase) {
                       auto param_values = testCase.paramValues[0].view->getEntryValue(nullptr);
-                      return param_values != ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31, 22)) && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
+                      return param_values != ("{'h', 'e', 'l', 'l', 'o', '\\0'," + param_values.substr(31)) && stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
                  }
                 })
         );

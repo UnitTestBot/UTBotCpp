@@ -244,8 +244,15 @@ namespace {
         auto predicate = [](const tests::Tests::MethodTestCase &testCase) {
             auto s = testCase.paramValues[0].view->getEntryValue(nullptr);
             s = s.substr(1, s.length() - 2);
+            size_t i = 0;
+            unsigned int sum = 0;
+            while (s.substr(i, 4) != "'\\0'"){
+                sum += s[i + 1];
+                i += 5;
+            }
+
             auto actual = testCase.returnValue.view->getEntryValue(nullptr);
-            auto expected = std::to_string(std::accumulate(s.begin(), s.end(), 0));
+            auto expected = std::to_string(sum);
             return actual == expected;
         };
 
@@ -254,12 +261,14 @@ namespace {
             std::vector<TestCasePredicate>(
                 { [&predicate](const tests::Tests::MethodTestCase &testCase) {
                      // empty string
-                     return testCase.paramValues[0].view->getEntryValue(nullptr).length() == 2 &&
+                     auto length = testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2);
+                     return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2) == "\\0" &&
                             predicate(testCase);
                  },
                   [&predicate](const tests::Tests::MethodTestCase &testCase) {
                       // non-empty string
-                      return testCase.paramValues[0].view->getEntryValue(nullptr).length() > 2 &&
+                      auto length = testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2);
+                      return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2) != "\\0" &&
                              predicate(testCase);
                   } }),
             "hash");
