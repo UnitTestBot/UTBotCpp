@@ -111,7 +111,7 @@
                 <td>
                     <label
                         class="utbot-form__tab_label"
-                        style="width: auto; display: inline;"
+                        style="width: 10ex; display: inline;"
                         for="portGRPCInput">GRPC port</label>
                     <input class="utbot-form__tab_input"
                         style="width: auto; display: inline;"
@@ -126,15 +126,15 @@
                 </td>
                 <td>
                     <span id="GRPC_connection_loader">⏳ Connecting...</span>
-                    <span id="GRPC_connection_success">✔️ Successfully pinged GRPC server! </span>
+                    <span id="GRPC_connection_success">✔️ Successfully pinged GRPC server!</span>
                     <span id="GRPC_connection_warning" format="⚠️ Warning! Versions are different: "></span>
-                    <span id="GRPC_connection_failure">❌ Failed to establish GRPC connection! </span>
+                    <span id="GRPC_connection_failure">❌ Failed to establish GRPC connection!</span>
                 </td>
             </tr>
             <tr style="display: grid; grid-template-columns: auto 1fr">
                 <td>
                     <label class="utbot-form__tab_label"
-                        style="width: auto; display: inline;"
+                        style="width: 10ex; display: inline;"
                         for="portSFTPInput">SFTP port</label>
                     <input class="utbot-form__tab_input"
                         style="width: auto; display: inline;"
@@ -149,9 +149,9 @@
                 </td>
                 <td>
                     <span id="SFTP_connection_loader">⏳ Connecting SFTP...</span>
-                    <span id="SFTP_connection_success">✔️ Successfully pinged SFTP server! </span>
-                    <span id="SFTP_connection_warning">SFTP synchronization is not used.</span>
-                    <span id="SFTP_connection_failure">❌ Failed to establish SFTP connection! </span>
+                    <span id="SFTP_connection_success">✔️ Successfully pinged SFTP server!</span>
+                    <span id="SFTP_connection_warning">ⓘ SFTP synchronization is not used.</span>
+                    <span id="SFTP_connection_failure">❌ Failed to establish SFTP connection!</span>
                 </td>
             </tr>
         </table>
@@ -168,7 +168,7 @@
             <input class="utbot-form__tab_input"
                    id="serverPath"
                    value="{{predictedRemotePath}}"
-             placeholder="/tmp/XXXX">
+                   placeholder="Ex. /tmp/XXXX">
             Project path on server specifies the path to the project's copy on the server host.
             May point to a directory shared by the client and server. In this case, SFTP synchronization
             must be disabled by leaving the <b>SFTP port field empty</b>.
