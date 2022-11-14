@@ -262,12 +262,12 @@ namespace {
             std::vector<TestCasePredicate>(
                 { [&predicate](const tests::Tests::MethodTestCase &testCase) {
                      // empty string
-                     return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2) == "\\0" &&
+                     return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2, 2) == "\\0" &&
                             predicate(testCase);
                  },
                   [&predicate](const tests::Tests::MethodTestCase &testCase) {
                       // non-empty string
-                      return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2,2) != "\\0" &&
+                      return testCase.paramValues[0].view->getEntryValue(nullptr).substr(2, 2) != "\\0" &&
                              predicate(testCase);
                   } }),
             "hash");
