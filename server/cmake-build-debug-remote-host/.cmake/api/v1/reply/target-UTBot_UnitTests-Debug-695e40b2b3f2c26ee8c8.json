@@ -1,0 +1,1237 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "UTBot_UnitTests"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_link_libraries",
+			"add_compile_options",
+			"add_definitions",
+			"add_compile_definitions",
+			"include_directories",
+			"target_include_directories",
+			"target_precompile_headers"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 201,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 207,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 44,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 68,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 55,
+				"parent" : 0
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 33,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 79,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 82,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 86,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 89,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 92,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 95,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 148,
+				"parent" : 0
+			},
+			{
+				"command" : 6,
+				"file" : 0,
+				"line" : 206,
+				"parent" : 0
+			},
+			{
+				"command" : 5,
+				"file" : 0,
+				"line" : 50,
+				"parent" : 0
+			},
+			{
+				"command" : 7,
+				"file" : 0,
+				"line" : 215,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -O0 -g -fstandalone-debug -fno-discard-value-names -fno-elide-constructors   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-frtti"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fexceptions"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-malloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-calloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-realloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-free"
+				},
+				{
+					"fragment" : "-std=gnu++17"
+				},
+				{
+					"fragment" : "-Winvalid-pch -Xclang -emit-pch -Xclang -include -Xclang /home/utbot/UTBotCpp/server/cmake-build-debug-remote-host/CMakeFiles/UTBot_UnitTests.dir/cmake_pch.hxx -x c++-header"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "CARES_STATICLIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "KLEE_LIBCXX_BC_NAME=\"libc++.bca\""
+				},
+				{
+					"backtrace" : 2,
+					"define" : "KLEE_UCLIBC_BCA_NAME=\"klee-uclibc.bca\""
+				},
+				{
+					"backtrace" : 4,
+					"define" : "LOGURU_WITH_STREAMS=1"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "UTBOT_DEV_ROOT_DIR=\"/utbot_distr\""
+				},
+				{
+					"backtrace" : 2,
+					"define" : "_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "_LINUX"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_CONSTANT_MACROS"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_FORMAT_MACROS"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_LIMIT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 7,
+					"path" : "/home/utbot/UTBotCpp/server/logger-aux"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/home/utbot/UTBotCpp/submodules/json/src"
+				},
+				{
+					"backtrace" : 9,
+					"path" : "/home/utbot/UTBotCpp/submodules/ordered-map/include"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/home/utbot/UTBotCpp/submodules/parallel-hashmap"
+				},
+				{
+					"backtrace" : 11,
+					"path" : "/utbot_distr/klee/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/utbot_distr/cli"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/home/utbot/UTBotCpp/server/cmake-build-debug-remote-host"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/home/utbot/UTBotCpp/server/src"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/home/utbot/UTBotCpp/server/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/server/resources"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/server/thirdparty/ordered-map"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/submodules/loguru"
+				},
+				{
+					"backtrace" : 15,
+					"isSystem" : true,
+					"path" : "/utbot_distr/install/include"
+				},
+				{
+					"backtrace" : 14,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest/include"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/klee/include/run_klee"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "17"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 16,
+					"header" : "\"gtest/gtest.h\""
+				},
+				{
+					"backtrace" : 2,
+					"header" : "/home/utbot/UTBotCpp/server/pch.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				0
+			]
+		},
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -O0 -g -fstandalone-debug -fno-discard-value-names -fno-elide-constructors   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-frtti"
+				},
+				{
+					"backtrace" : 3,
+					"fragment" : "-fexceptions"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-malloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-calloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-realloc"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "-fno-builtin-free"
+				},
+				{
+					"fragment" : "-std=gnu++17"
+				},
+				{
+					"fragment" : "-Winvalid-pch -Xclang -include-pch -Xclang /home/utbot/UTBotCpp/server/cmake-build-debug-remote-host/CMakeFiles/UTBot_UnitTests.dir/cmake_pch.hxx.pch -Xclang -include -Xclang /home/utbot/UTBotCpp/server/cmake-build-debug-remote-host/CMakeFiles/UTBot_UnitTests.dir/cmake_pch.hxx"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"backtrace" : 2,
+					"define" : "CARES_STATICLIB"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "KLEE_LIBCXX_BC_NAME=\"libc++.bca\""
+				},
+				{
+					"backtrace" : 2,
+					"define" : "KLEE_UCLIBC_BCA_NAME=\"klee-uclibc.bca\""
+				},
+				{
+					"backtrace" : 4,
+					"define" : "LOGURU_WITH_STREAMS=1"
+				},
+				{
+					"backtrace" : 5,
+					"define" : "UTBOT_DEV_ROOT_DIR=\"/utbot_distr\""
+				},
+				{
+					"backtrace" : 2,
+					"define" : "_GNU_SOURCE"
+				},
+				{
+					"backtrace" : 6,
+					"define" : "_LINUX"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_CONSTANT_MACROS"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_FORMAT_MACROS"
+				},
+				{
+					"backtrace" : 2,
+					"define" : "__STDC_LIMIT_MACROS"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 7,
+					"path" : "/home/utbot/UTBotCpp/server/logger-aux"
+				},
+				{
+					"backtrace" : 8,
+					"path" : "/home/utbot/UTBotCpp/submodules/json/src"
+				},
+				{
+					"backtrace" : 9,
+					"path" : "/home/utbot/UTBotCpp/submodules/ordered-map/include"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/home/utbot/UTBotCpp/submodules/parallel-hashmap"
+				},
+				{
+					"backtrace" : 11,
+					"path" : "/utbot_distr/klee/include"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/utbot_distr/cli"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/home/utbot/UTBotCpp/server/cmake-build-debug-remote-host"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/home/utbot/UTBotCpp/server/src"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/home/utbot/UTBotCpp/server/src/include"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/server/resources"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/server/thirdparty/ordered-map"
+				},
+				{
+					"backtrace" : 2,
+					"path" : "/home/utbot/UTBotCpp/submodules/loguru"
+				},
+				{
+					"backtrace" : 15,
+					"isSystem" : true,
+					"path" : "/utbot_distr/install/include"
+				},
+				{
+					"backtrace" : 14,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest/include"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/klee/include/run_klee"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "17"
+			},
+			"precompileHeaders" : 
+			[
+				{
+					"backtrace" : 16,
+					"header" : "\"gtest/gtest.h\""
+				},
+				{
+					"backtrace" : 2,
+					"header" : "/home/utbot/UTBotCpp/server/pch.h"
+				}
+			],
+			"sourceIndexes" : 
+			[
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 2,
+			"id" : "UTBotCppLib::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "loguru::@6890427a1f51a3e7e1df"
+		},
+		{
+			"backtrace" : 2,
+			"id" : "gtest::@32fe1c6cd3a65a2fab56"
+		}
+	],
+	"id" : "UTBot_UnitTests::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-g -O0 -g -fstandalone-debug -fno-discard-value-names -fno-elide-constructors",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-export-dynamic -lpthread -ldl",
+				"role" : "flags"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "lib/libgtestd.a",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "libUTBotCppLib.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangTooling.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangFormat.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangToolingInclusions.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangToolingCore.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangRewriteFrontend.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangFrontend.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangDriver.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMOption.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangParse.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangRewrite.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangSerialization.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangSema.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangAnalysis.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangASTMatchers.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangEdit.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangAST.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMFrontendOpenMP.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangLex.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libclangBasic.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libgrpc++_reflection.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libgrpc++.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libgrpc.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libz.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libcares.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libaddress_sorting.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libre2.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libupb.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_raw_hash_set.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_hashtablez_sampler.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_hash.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_city.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_low_level_hash.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_statusor.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libgpr.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_bad_variant_access.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_status.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_strerror.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_distributions.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_seed_sequences.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_pool_urbg.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_randen.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_randen_hwaes.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_randen_hwaes_impl.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_randen_slow.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_platform.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_internal_seed_material.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_random_seed_gen_exception.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_cord.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_bad_optional_access.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_cordz_info.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_cord_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_cordz_functions.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_exponential_biased.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_cordz_handle.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_str_format_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_synchronization.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_stacktrace.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_symbolize.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_debugging_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_demangle_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_graphcycles_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_malloc_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_time.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_strings.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_throw_delegate.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_int128.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_strings_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_base.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_spinlock_wait.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lrt",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_raw_logging_internal.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_log_severity.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_civil_time.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libabsl_time_zone.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libssl.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libcrypto.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lpthread",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libprotobuf.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-pthread",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "libloguru.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeRunner.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeCore.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeADT.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86Disassembler.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86AsmParser.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86CodeGen.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMCFGuard.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMGlobalISel.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMSelectionDAG.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMAsmPrinter.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMDebugInfoDWARF.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86Desc.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMMCDisassembler.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86Utils.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMX86Info.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMMCJIT.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMExecutionEngine.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMRuntimeDyld.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libsqlite3.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeModule.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMCodeGen.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMTarget.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMipo.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMScalarOpts.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMInstCombine.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMAggressiveInstCombine.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMBitWriter.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMInstrumentation.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMVectorize.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMLinker.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMTransformUtils.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMAnalysis.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMProfileData.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMObject.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMTextAPI.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMMCParser.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMMC.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMDebugInfoCodeView.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMDebugInfoMSF.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMIRReader.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMBitReader.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMAsmParser.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMCore.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMRemarks.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMBitstreamReader.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMBinaryFormat.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleaverSolver.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeBasic.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libz3.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleaverExpr.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/klee/lib/run_klee/RelWithDebInfo/libkleeSupport.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMSupport.a",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-ldl",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lrt",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-ltinfo",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lpthread",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "-lm",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libz.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/usr/lib/x86_64-linux-gnu/libtcmalloc.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/utbot_distr/install/lib/libLLVMDemangle.a",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "UTBot_UnitTests",
+	"nameOnDisk" : "UTBot_UnitTests",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13
+			]
+		},
+		{
+			"name" : "Precompile Header File",
+			"sourceIndexes" : 
+			[
+				14
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 0,
+			"compileGroupIndex" : 0,
+			"path" : "cmake-build-debug-remote-host/CMakeFiles/UTBot_UnitTests.dir/cmake_pch.hxx.cxx",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/BaseTest.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/CLI_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/CollectionUtil_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/KleeGen_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Library_Test.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Regression_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Server_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Stub_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Syntax_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Targets_Test.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/TestUtils.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/Utils_Tests.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 1,
+			"path" : "test/framework/main.cpp",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 0,
+			"path" : "cmake-build-debug-remote-host/CMakeFiles/UTBot_UnitTests.dir/cmake_pch.hxx",
+			"sourceGroupIndex" : 1
+		}
+	],
+	"type" : "EXECUTABLE"
+}

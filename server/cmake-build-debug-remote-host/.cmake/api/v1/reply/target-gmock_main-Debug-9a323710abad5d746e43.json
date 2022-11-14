@@ -1,0 +1,293 @@
+{
+	"archive" : {},
+	"artifacts" : 
+	[
+		{
+			"path" : "lib/libgmock_maind.a"
+		}
+	],
+	"backtrace" : 3,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"cxx_library_with_type",
+			"cxx_library",
+			"install",
+			"install_project",
+			"target_link_libraries",
+			"add_compile_options",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"/utbot_distr/gtest/googletest/cmake/internal_utils.cmake",
+			"/utbot_distr/gtest/googlemock/CMakeLists.txt",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 2,
+				"file" : 1,
+				"line" : 103,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 202,
+				"parent" : 1
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 150,
+				"parent" : 2
+			},
+			{
+				"command" : 4,
+				"file" : 1,
+				"line" : 121,
+				"parent" : 0
+			},
+			{
+				"command" : 3,
+				"file" : 0,
+				"line" : 332,
+				"parent" : 4
+			},
+			{
+				"command" : 5,
+				"file" : 1,
+				"line" : 104,
+				"parent" : 0
+			},
+			{
+				"file" : 2
+			},
+			{
+				"command" : 6,
+				"file" : 2,
+				"line" : 44,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 50,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 79,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 82,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 86,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 89,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 92,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 95,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 2,
+				"line" : 148,
+				"parent" : 7
+			},
+			{
+				"command" : 7,
+				"file" : 1,
+				"line" : 79,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-g -O0 -g -fstandalone-debug -fno-discard-value-names -fno-elide-constructors   -D_GNU_SOURCE -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+				},
+				{
+					"fragment" : "-Wall -Wshadow -Werror -Wconversion -DGTEST_HAS_PTHREAD=1 -fexceptions -W -Wpointer-arith -Wreturn-type -Wcast-qual -Wwrite-strings -Wswitch -Wunused-parameter -Wcast-align -Wchar-subscripts -Winline -Wredundant-decls"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-frtti"
+				},
+				{
+					"backtrace" : 8,
+					"fragment" : "-fexceptions"
+				},
+				{
+					"fragment" : "-std=c++11"
+				}
+			],
+			"defines" : 
+			[
+				{
+					"define" : "LOGURU_WITH_STREAMS=1"
+				},
+				{
+					"define" : "UTBOT_DEV_ROOT_DIR=\"/utbot_distr\""
+				},
+				{
+					"define" : "_LINUX"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 9,
+					"path" : "/utbot_distr/install/include"
+				},
+				{
+					"backtrace" : 10,
+					"path" : "/home/utbot/UTBotCpp/server/logger-aux"
+				},
+				{
+					"backtrace" : 11,
+					"path" : "/home/utbot/UTBotCpp/submodules/json/src"
+				},
+				{
+					"backtrace" : 12,
+					"path" : "/home/utbot/UTBotCpp/submodules/ordered-map/include"
+				},
+				{
+					"backtrace" : 13,
+					"path" : "/home/utbot/UTBotCpp/submodules/parallel-hashmap"
+				},
+				{
+					"backtrace" : 14,
+					"path" : "/utbot_distr/klee/include"
+				},
+				{
+					"backtrace" : 15,
+					"path" : "/utbot_distr/cli"
+				},
+				{
+					"backtrace" : 16,
+					"path" : "/home/utbot/UTBotCpp/server/cmake-build-debug-remote-host"
+				},
+				{
+					"backtrace" : 17,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googlemock/include"
+				},
+				{
+					"backtrace" : 17,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googlemock"
+				},
+				{
+					"backtrace" : 17,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest/include"
+				},
+				{
+					"backtrace" : 17,
+					"isSystem" : true,
+					"path" : "/utbot_distr/gtest/googletest"
+				}
+			],
+			"language" : "CXX",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					3
+				],
+				"standard" : "11"
+			},
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"backtrace" : 6,
+			"id" : "gmock::@645c719b6bb61ab77cfe"
+		},
+		{
+			"backtrace" : 6,
+			"id" : "gtest::@32fe1c6cd3a65a2fab56"
+		}
+	],
+	"id" : "gmock_main::@645c719b6bb61ab77cfe",
+	"install" : 
+	{
+		"destinations" : 
+		[
+			{
+				"backtrace" : 5,
+				"path" : "lib"
+			}
+		],
+		"prefix" : 
+		{
+			"path" : "/usr/local"
+		}
+	},
+	"name" : "gmock_main",
+	"nameOnDisk" : "libgmock_maind.a",
+	"paths" : 
+	{
+		"build" : "googletest-build/googlemock",
+		"source" : "/utbot_distr/gtest/googlemock"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 3,
+			"compileGroupIndex" : 0,
+			"path" : "/utbot_distr/gtest/googlemock/src/gmock_main.cc",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "STATIC_LIBRARY"
+}

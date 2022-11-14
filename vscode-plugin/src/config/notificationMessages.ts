@@ -17,6 +17,7 @@ export const SFTP_URL = "https://marketplace.visualstudio.com/items?itemName=Nat
 export const installSFTP = `Please, [install](${SFTP_URL}) Natizyskunk SFTP`;
 // }SFTP
 
+
 // {SARIF
 export const defaultSARIFViewer = "MS-SarifVSCode.sarif-viewer";
 export const SARIF_URL = "https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer";
