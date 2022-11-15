@@ -171,7 +171,7 @@ function showTab(tabIndex) {
 
     showElement(currentTabElement, true);
     // Show previous button if necessary
-    showElement(prevButton, tabIndex === 0);
+    showElement(prevButton, tabIndex !== 0);
 
     // Set nextButton title according to tab number
     if (tabIndex === tabElements.length - 1) {
