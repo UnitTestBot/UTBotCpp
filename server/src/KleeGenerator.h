@@ -15,7 +15,6 @@
 #include "streams/tests/TestsWriter.h"
 #include "types/Types.h"
 #include "utils/ExecUtils.h"
-
 #include "utils/path/FileSystemPath.h"
 #include "testgens/BaseTestGen.h"
 
@@ -25,7 +24,6 @@
 
 
 using json = nlohmann::json;
-using namespace ::testsgen;
 
 /**
  * @brief Contains methods for generating files for KLEE and build them.

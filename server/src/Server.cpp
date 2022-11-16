@@ -272,7 +272,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                                                    std::chrono::duration_cast<std::chrono::milliseconds>(
                                                                            generationStartTime -
                                                                            preprocessingStartTime));
-        auto start_time = std::chrono::steady_clock::now();
         kleeRunner.runKlee(testMethods, testGen.tests, generator, testGen.methodNameToReturnTypeMap,
                            lineInfo, testsWriter, testGen.isBatched(), interactiveMode, generationStatsMap);
         LOG_S(INFO) << "KLEE time: " << std::chrono::duration_cast<std::chrono::milliseconds>

@@ -20,7 +20,6 @@ using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
 using TestCasePredicate = std::function<bool(tests::Tests::MethodTestCase)>;
 using CoverageLines = CollectionUtils::MapFileTo<std::set<int>>;
 using StatusCountMap = std::unordered_map<testsgen::TestStatus, int>;
-using namespace ::testsgen;
 
 namespace testUtils {
     enum BuildCommandsTool {
@@ -47,7 +46,7 @@ namespace testUtils {
     void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
                             const std::vector<UnitTest> &tests,
                             const StatusCountMap &expectedStatusCountMap,
-                            ErrorMode errorMode = ErrorMode::FAILING);
+                            bool onlyPassed = true);
 
     size_t getNumberOfTests(const tests::TestsMap &tests);
 

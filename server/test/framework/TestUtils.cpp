@@ -147,19 +147,22 @@ namespace testUtils {
 
 
     void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
-                       const std::vector<UnitTest> &tests,
-                       const StatusCountMap &expectedStatusCountMap,
-                            ErrorMode errorMode) {
-        StatusCountMap actualStatusCountMap;
-        for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ErrorMode::FAILING) {
+                            const std::vector<UnitTest> &tests,
+                            const StatusCountMap &expectedStatusCountMap,
+                            bool onlyPassed) {
+        StatusCountMap actualStatusCountMap{{TestStatus::TEST_PASSED,      0},
+                                            {TestStatus::TEST_DEATH,       0},
+                                            {TestStatus::TEST_FAILED,      0},
+                                            {TestStatus::TEST_INTERRUPTED, 0}};
+        for (auto const &[filename, suitename, testname]: tests) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && onlyPassed) {
                 continue;
             }
             const auto status = testResultMap.at(filename).at(testname).status();
             actualStatusCountMap[status]++;
         }
-        for (const auto &[status, count] : actualStatusCountMap) {
-            ASSERT_GE(count, expectedStatusCountMap.at(status));
+        for (const auto &[status, count]: expectedStatusCountMap) {
+            ASSERT_GE(actualStatusCountMap.at(status), count);
         }
     }
 

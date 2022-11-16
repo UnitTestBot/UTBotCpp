@@ -512,7 +512,6 @@
 					"type": "string",
 					"enum": [
 						"Failing",
-						"Auto",
 						"Passing"
 					],
 					"default": "Failing",

@@ -3,8 +3,6 @@
 
 #include "AssertsVisitor.h"
 
-using namespace ::testsgen;
-
 namespace visitor {
     class ParametrizedAssertsVisitor : public AssertsVisitor {
     private:

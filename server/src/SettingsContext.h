@@ -4,7 +4,6 @@
 #include <chrono>
 #include <optional>
 #include <protobuf/testgen.grpc.pb.h>
-using namespace ::testsgen;
 
 namespace testsgen {
     class SettingsContext;
@@ -21,14 +20,14 @@ namespace utbot {
                         int32_t timeoutPerTest,
                         bool useDeterministicSearcher,
                         bool useStubs,
-                        ErrorMode errorMode);
+                        testsgen::ErrorMode errorMode);
 
         const bool generateForStaticFunctions;
         const bool verbose;
         const std::optional<std::chrono::seconds> timeoutPerFunction, timeoutPerTest;
         const bool useDeterministicSearcher;
         const bool useStubs;
-        ErrorMode errorMode;
+        testsgen::ErrorMode errorMode;
     };
 }
 

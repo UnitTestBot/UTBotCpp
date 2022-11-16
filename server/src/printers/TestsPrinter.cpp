@@ -230,6 +230,7 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
                                       ErrorMode errorMode) {
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
+
     TestsPrinter::verboseParameters(methodDescription, testCase);
 
     printLazyVariables(methodDescription, testCase, true);
@@ -250,8 +251,8 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
     markTestedFunctionCallIfNeed(methodDescription.name, testCase);
 
-    if (testCase.isError() && errorMode == ::testsgen::ErrorMode::FAILING) {
-        printFailAssertion();
+    if (testCase.isError()) {
+        printFailAssertion(errorMode);
     } else {
         ss << NL;
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
@@ -680,7 +681,7 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
         classAsserts(methodDescription, testCase);
         changeableParamsAsserts(methodDescription, testCase);
     } else {
-        printFailAssertion();
+        printFailAssertion(errorMode);
     }
 }
 
@@ -791,13 +792,22 @@ void printer::TestsPrinter::parametrizedInitializeSymbolicStubs(const Tests::Met
     }
 }
 
-void TestsPrinter::printFailAssertion() {
-    ss << NL;
-    ss << LINE_INDENT()
-       << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
-       << LINE_INDENT() << LINE_INDENT()
-       << "\"actually completed successfully. See the SARIF report for details.\"";
-    ss << SCNL;
+void TestsPrinter::printFailAssertion(ErrorMode errorMode) {
+    switch (errorMode) {
+        case ErrorMode::FAILING:
+            ss << NL;
+            ss << LINE_INDENT()
+               << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
+               << LINE_INDENT() << LINE_INDENT()
+               << "\"actually completed successfully. See the SARIF report for details.\"";
+            ss << SCNL;
+            break;
+        case ErrorMode::PASSING_IN_TARGET_ONLY:
+            //TODO add passing scenario
+        case ErrorMode::PASSING:
+        default:
+            break;
+    }
 }
 
 std::string printer::MultiLinePrinter::print(TestsPrinter *printer,

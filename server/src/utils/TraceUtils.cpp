@@ -2,9 +2,9 @@
 #include <fstream>
 #include "ErrorInfo.h"
 #include "utils/path/FileSystemPath.h"
-#include "../Paths.h"
+#include "Paths.h"
 
-static std::string getLineByNumberInFileWithStackTrace(const fs::path& errorFilePath, int lineNumber) {
+static std::string getLineByNumberInFileWithStackTrace(const fs::path &errorFilePath, int lineNumber) {
     std::ifstream input;
     std::string line;
     input.open(errorFilePath.string(), std::ios::in);
@@ -16,26 +16,26 @@ static std::string getLineByNumberInFileWithStackTrace(const fs::path& errorFile
     return line;
 }
 
-[[nodiscard]]std::string getTypeOfError(const fs::path& errorFilePath) {
+[[nodiscard]]std::string getTypeOfError(const fs::path &errorFilePath) {
     return getLineByNumberInFileWithStackTrace(errorFilePath, 0);
 }
 
-[[nodiscard]]fs::path getFileErrorFound(const fs::path& errorFilePath) {
+[[nodiscard]]fs::path getFileErrorFound(const fs::path &errorFilePath) {
     std::string lineWithErrorFilePath = getLineByNumberInFileWithStackTrace(errorFilePath, 1);
     fs::path fileWithError(lineWithErrorFilePath.substr(6));
     return fileWithError;
 }
 
-[[nodiscard]]uint64_t getLineErrorFound(const fs::path& errorFilePath) {
+[[nodiscard]]uint64_t getLineErrorFound(const fs::path &errorFilePath) {
     std::string stringWithLine = getLineByNumberInFileWithStackTrace(errorFilePath, 3);
     return std::stoi(stringWithLine.substr(6));
 }
 
-bool isPointerOutOfBound(const std::string& typeofError) {
+bool isPointerOutOfBound(const std::string &typeofError) {
     return typeofError == "Error: memory error: out of bound pointer";
 }
 
-bool errorInExceptionHeader(const std::string& fileWhereErrorFound) {
+bool errorInExceptionHeader(const std::string &fileWhereErrorFound) {
     return fileWhereErrorFound.find("exception.h") != std::string::npos;
 }
 

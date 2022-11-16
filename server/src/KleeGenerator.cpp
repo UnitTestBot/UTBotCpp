@@ -15,7 +15,6 @@
 #include "loguru.h"
 
 using namespace tests;
-using namespace ::testsgen;
 
 static const std::string GENERATION_COMPILE_MAKEFILE = "GenerationCompileMakefile.mk";
 static const std::string GENERATION_KLEE_MAKEFILE = "GenerationKleeMakefile.mk";

@@ -31,22 +31,6 @@ int badCastException(int a) {
     }
 }
 
-int optionalException(int a) {
-    if (a > 5) {
-        throw std::bad_optional_access();
-    } else {
-        return 5;
-    }
-}
-
-int variantException(int a) {
-    if (a > 5) {
-        throw std::bad_variant_access();
-    } else {
-        return 5;
-    }
-}
-
 int customException(int a) {
     if (a > 5) {
         throw MyException();

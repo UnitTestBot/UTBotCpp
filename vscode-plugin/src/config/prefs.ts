@@ -380,11 +380,9 @@ export class Prefs {
         const errorModeString = this.getAssetBase(Prefs.ERROR_SUITES_PREF, defaultValue);
         if (errorModeString === "Passing") {
             errorMode = ErrorMode.PASSING;
-        } else if (errorModeString === "Failing") {
-            errorMode = ErrorMode.FAILING;
         } else {
-            errorMode = ErrorMode.PASSING_IN_TARGET_ONLY;
-        }
+            errorMode = ErrorMode.FAILING;
+        } 
         return errorMode;
     }
 
@@ -399,5 +397,4 @@ export class Prefs {
     public static showTestResults(): boolean {
         return this.getAssetBase(Prefs.SHOW_TEST_RESULTS_PREF, true);
     }
-
 }

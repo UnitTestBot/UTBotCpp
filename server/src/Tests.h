@@ -9,8 +9,6 @@
 #include "utils/PrinterUtils.h"
 #include "utils/SizeUtils.h"
 #include "json.hpp"
-#include "utils/ErrorInfo.h"
-
 #include <klee/KTest.h>
 #include <klee/TestCase.h>
 #include <tsl/ordered_map.h>
@@ -28,6 +26,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <utils/ErrorInfo.h>
 
 using json = nlohmann::json;
 

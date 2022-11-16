@@ -6,8 +6,6 @@
 
 #include "utils/path/FileSystemPath.h"
 
-using namespace ::testsgen;
-
 namespace {
     using testsgen::TestsResponse;
 

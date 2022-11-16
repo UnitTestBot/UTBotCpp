@@ -167,7 +167,7 @@ namespace printer {
 
         std::uint32_t printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods);
 
-        void printFailAssertion();
+        void printFailAssertion(ErrorMode errorMode);
     };
 }
 #endif // UNITTESTBOT_TESTSPRINTER_H

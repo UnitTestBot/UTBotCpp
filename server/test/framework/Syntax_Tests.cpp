@@ -2302,7 +2302,6 @@ namespace {
         testUtils::checkStatuses(resultMap, tests);
 
         StatusCountMap expectedStatusCountMap{
-            {testsgen::TEST_DEATH, 4},
             {testsgen::TEST_PASSED, 6}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }

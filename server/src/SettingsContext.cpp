@@ -1,7 +1,6 @@
 #include "SettingsContext.h"
 
 #include <protobuf/testgen.grpc.pb.h>
-using  namespace ::testsgen;
 
 namespace utbot {
     SettingsContext::SettingsContext(bool generateForStaticFunctions,
@@ -10,7 +9,7 @@ namespace utbot {
                                      int32_t timeoutPerTest,
                                      bool useDeterministicSearcher,
                                      bool useStubs,
-                                     ErrorMode errorMode)
+                                     testsgen::ErrorMode errorMode)
         : generateForStaticFunctions(generateForStaticFunctions),
           verbose(verbose),
           timeoutPerFunction(timeoutPerFunction > 0
