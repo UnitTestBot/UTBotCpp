@@ -13,12 +13,14 @@ export const targetNotUsed = "There is no used target. Use any in UTBot Targets 
 
 // {SFTP
 export const defaultSFTP = "Natizyskunk.sftp";
-export const installSFTP = "Please, install Natizyskunk SFTP from https://marketplace.visualstudio.com/items?itemName=" + defaultSFTP;
+export const SFTP_URL = "https://marketplace.visualstudio.com/items?itemName=Natizyskunk.sftp";
+export const installSFTP = `Please, [install](${SFTP_URL}) Natizyskunk SFTP`;
 // }SFTP
 
 // {SARIF
 export const defaultSARIFViewer = "MS-SarifVSCode.sarif-viewer";
-export const installSARIFViewer = "Please, install MS Sarif Viewer from https://marketplace.visualstudio.com/items?itemName=" + defaultSARIFViewer;
+export const SARIF_URL = "https://marketplace.visualstudio.com/items?itemName=MS-SarifVSCode.sarif-viewer";
+export const installSARIFViewer = `Please, [install](${SARIF_URL}) MS Sarif Viewer`;
 // }SARIF
 
 
