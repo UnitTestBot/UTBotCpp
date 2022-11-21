@@ -20,6 +20,10 @@ void GlobalVariableUsageMatchCallback::checkUsage(const MatchFinder::MatchResult
             Result.Nodes.getNodeAs<clang::VarDecl>(Matchers::GLOBAL_VARIABLE_USAGE)) {
         clang::QualType varType = pVarDecl->getType();
         std::string name = pVarDecl->getNameAsString();
+        if (!pVarDecl->isKnownToBeDefined() && !pVarDecl->isExternC()) {
+            LOG_S(DEBUG) << "Variable \"" << name << "\" was skipped - it has no definition.";
+            return;
+        }
         if (const auto *pFunctionDecl = Result.Nodes.getNodeAs<clang::FunctionDecl>(
                 Matchers::FUNCTION_USED_GLOBAL_VARIABLE)) {
             if (varType.isConstant(pVarDecl->getASTContext())) {
@@ -64,7 +68,7 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
     const std::string usedParamTypeString = varDecl->getType().getAsString();
     types::Type paramType = types::Type(realParamType, usedParamTypeString, sourceManager);
     method.globalParams.emplace_back(paramType, usage.variableName, AlignmentFetcher::fetch(varDecl));
-    if (varDecl->isKnownToBeDefined()) {
+    if (varDecl->isExternC()) {
         tests.externVariables.insert({paramType, usage.variableName});
     }
 }
