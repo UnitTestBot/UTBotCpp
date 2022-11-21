@@ -27,7 +27,9 @@ class Synchronizer {
 
     [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getOutdatedStubs() const;
 
-    bool isProbablyOutdated(const fs::path &srcFilePath) const;
+    bool isProbablyOutdatedStubs(const fs::path &srcFilePath) const;
+
+    bool isProbablyOutdatedWrappers(const fs::path &srcFilePath) const;
 
     bool removeStubIfSourceAbsent(const StubOperator &stub) const;
 
