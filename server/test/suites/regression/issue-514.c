@@ -1,4 +1,4 @@
-#define MAX_INDEX 10
+#define MAX_INDEX 12
 
 extern unsigned g_arrayNumber[MAX_INDEX];
 

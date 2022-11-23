@@ -535,7 +535,7 @@ namespace {
                             } }));
                 } else if (md.name == "use_globals") {
                     EXPECT_GE(md.testCases.size(), 3);
-                    EXPECT_EQ(md.globalParams.size(), 2);
+                    EXPECT_EQ(md.globalParams.size(), 3);
                 } else if (md.name == "use_global_array") {
                     EXPECT_GE(md.testCases.size(), 3);
                     EXPECT_EQ(md.globalParams.size(), 1);
