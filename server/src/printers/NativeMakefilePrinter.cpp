@@ -271,7 +271,9 @@ namespace printer {
         std::string postCompileAction =
             stringFormat("mv -f %s %s", temporaryDependencyFile, dependencyFile);
 
-        declareTarget(compileCommand.getOutput(), { compileCommand.getSourcePath(), dependencyFile },
+        auto source =  getRelativePath(compilationUnitInfo.command.getSourcePath());
+
+        declareTarget(compileCommand.getOutput(), { compileCommand.getSourcePath(), dependencyFile, source },
                       { makingDependencyDirectory,
                         compileCommand.toStringWithChangingDirectoryToNew(
                                 getRelativePath(compileCommand.getDirectory())),
