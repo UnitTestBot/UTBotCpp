@@ -42,7 +42,7 @@ namespace Paths {
                           const std::vector<fs::path> &dirNames,
                           const std::function<bool(const fs::path &path)> &filter);
 
-    static bool errorFileExists(const fs::path &path, std::string const& suffix);
+    bool errorFileExists(const fs::path &path, std::string const& suffix);
 
     static inline void setOptPath(fs::path &path, const std::string &value) {
         path = fs::path(value);

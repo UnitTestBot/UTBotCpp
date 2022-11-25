@@ -757,8 +757,8 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
-    std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
-                              castType);
+    std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName,
+                                                  false, returnPointersCount, castType);
     switch (errorMode) {
         case ErrorMode::PASSING:
             if (testCase.errorInfo.errorType == ErrorType::EXCEPTION_THROWN) {
@@ -769,6 +769,7 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
             break;
         case ErrorMode::PASSING_IN_TARGET_ONLY:
             // TODO: generate EXPECT_ANY_THROW and ASSERT_DEATH only if runtime error was in target function
+        default:
             break;
     }
     return functionCall;

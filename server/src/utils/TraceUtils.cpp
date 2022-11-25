@@ -40,8 +40,7 @@ bool errorInExceptionHeader(const std::string &fileWhereErrorFound) {
 }
 
 [[nodiscard]]ErrorInfo getErrorInfo(const fs::path &path) {
-    if (Paths::errorFileExists(path, "uncaught_exception") ||
-        Paths::errorFileExists(path, "unexpected_exception")) {
+    if (Paths::errorFileExists(path, "uncaught_exception") || Paths::errorFileExists(path, "unexpected_exception")) {
         return {ErrorType::EXCEPTION_THROWN};
     }
     if (Paths::errorFileExists(path, "ptr")) {
@@ -55,25 +54,11 @@ bool errorInExceptionHeader(const std::string &fileWhereErrorFound) {
         }
     }
     if (Paths::errorFileExists(path, "assert")) {
-        ErrorInfo errorInfo;
-        errorInfo.errorType = ErrorType::ASSERTION_FAILURE;
         fs::path errorFilePath = Paths::replaceExtension(path, ".assert.err");
-        errorInfo.failureBody = getTypeOfError(errorFilePath);
-        errorInfo.fileWithFailure = getFileErrorFound(errorFilePath);
-        errorInfo.lineWithFailure = getLineErrorFound(errorFilePath);
-        return errorInfo;
+        return {ErrorType::ASSERTION_FAILURE,
+                getTypeOfError(errorFilePath),
+                getFileErrorFound(errorFilePath),
+                getLineErrorFound(errorFilePath)};
     }
     return {ErrorType::NO_ERROR};
 }
-
-//[[nodiscard]]ErrorInfo hasFailedAssert(const fs::path& path) {
-//    ErrorInfo errorInfo;
-//    if (Paths::errorFileExists(path, "assert")) {
-//        errorInfo.errorType = ErrorType::ASSERTION_FAILURE;
-//        fs::path errorFilePath = Paths::replaceExtension(path, ".assert.err");
-//        errorInfo.assertBody = getTypeOfError(errorFilePath);
-//        errorInfo.fileWithFailure = getFileErrorFound(errorFilePath);
-//        errorInfo.lineWithFailure = getLineErrorFound(errorFilePath);
-//    }
-//    return errorInfo;
-//}

@@ -125,7 +125,7 @@ namespace Paths {
         return replaceExtension(path, StringUtils::stringFormat(".%s.err", suffix));
     }
 
-    static bool errorFileExists(const fs::path &path, std::string const& suffix) {
+    bool errorFileExists(const fs::path &path, std::string const& suffix) {
         return fs::exists(errorFile(path, suffix));
     }
 
