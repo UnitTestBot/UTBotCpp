@@ -44,7 +44,13 @@ Synchronizer::Synchronizer(BaseTestGen *testGen,
     : testGen(testGen), sizeContext(sizeContext) {
 }
 
-bool Synchronizer::isProbablyOutdated(const fs::path &srcFilePath) const {
+long long Synchronizer::getFileOutdatedTime(const fs::path &filePath) const {
+    return TimeUtils::convertFileToSystemClock(fs::last_write_time(filePath))
+                           .time_since_epoch()
+                           .count();
+}
+
+bool Synchronizer::isProbablyOutdatedStubs(const fs::path &srcFilePath) const {
     fs::path stubFilePath = Paths::sourcePathToStubPath(testGen->projectContext, srcFilePath);
     if (!fs::exists(stubFilePath)) {
         return true;
@@ -58,22 +64,33 @@ bool Synchronizer::isProbablyOutdated(const fs::path &srcFilePath) const {
     } catch (...) {
         return true;
     }
-    srcTimestamp = TimeUtils::convertFileToSystemClock(fs::last_write_time(srcFilePath))
-                       .time_since_epoch()
-                       .count();
+    srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
     return stubTimestamp <= srcTimestamp;
 }
 
+bool Synchronizer::isProbablyOutdatedWrappers(const fs::path &srcFilePath) const {
+    fs::path wrapperFilePath = Paths::getWrapperFilePath(testGen->projectContext, srcFilePath);
+    if (!fs::exists(wrapperFilePath)) {
+        return true;
+    }
+    long long wrapperTimestamp, srcTimestamp;
+    wrapperTimestamp = Synchronizer::getFileOutdatedTime(wrapperFilePath);
+    srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
+    return wrapperTimestamp <= srcTimestamp;
+}
+
 CollectionUtils::FileSet Synchronizer::getOutdatedSourcePaths() const {
-    return CollectionUtils::filterOut(getTargetSourceFiles(), [this](fs::path const &sourcePath) {
-        return !isProbablyOutdated(sourcePath);
+    auto allFiles = getTargetSourceFiles();
+    auto outdatedSources = CollectionUtils::filterOut(getTargetSourceFiles(), [this](fs::path const &sourcePath) {
+        return !isProbablyOutdatedWrappers(sourcePath);
     });
+    return outdatedSources;
 }
 
 StubSet Synchronizer::getOutdatedStubs() const {
     auto allFiles = getStubsFiles();
     auto outdatedStubs = CollectionUtils::filterOut(allFiles, [this](StubOperator const &stubOperator) {
-        return !isProbablyOutdated(stubOperator.getSourceFilePath());
+        return !isProbablyOutdatedStubs(stubOperator.getSourceFilePath());
     });
     return outdatedStubs;
 }
