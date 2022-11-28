@@ -9,7 +9,7 @@ Features demonstration in 5 min (click to see on [YouTube](https://www.youtube.c
 
 [![UTBot C/C++ Demo](https://img.youtube.com/vi/bDJyWEeYhvk/0.jpg)](https://www.youtube.com/watch?v=bDJyWEeYhvk "UTBot C/C++ Demo")
 
-### Try online demo here: https://www.utbot.org/utbot
+### Try UTBot demo online [here](https://www.utbot.org/demo/?language=C)!
 
 More info on [wiki](https://github.com/UnitTestBot/UTBotCpp/wiki)
 
