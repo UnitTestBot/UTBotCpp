@@ -284,10 +284,6 @@ const std::string &types::Type::getStdinParamName() {
     return stdinParamName;
 }
 
-std::string types::Type::getFileParamName(char fileName) {
-    return StringUtils::stringFormat("%c_file_buf", fileName);
-}
-
 bool types::Type::isPointerToPointer() const {
     const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = this->pointerArrayKinds();
     return pointerArrayKinds.size() > 1 &&

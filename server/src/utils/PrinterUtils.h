@@ -103,6 +103,8 @@ namespace PrinterUtils {
     std::string generateNewVar(int cnt);
 
     std::string getFileParamKTestJSON(char fileName);
+    std::string getFileReadBytesParamKTestJSON(char fileName);
+    std::string getFileWriteBytesParamKTestJSON(char fileName);
 
     const std::string LAZYRENAME = "utbotInnerVar";
     const std::string UTBOT_ARGC = "utbot_argc";
