@@ -1,3 +1,4 @@
+#include <utils/stats/TestsExecutionStats.h>
 #include "TestRunner.h"
 
 #include "printers/DefaultMakefilePrinter.h"

@@ -61,6 +61,10 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     resetStream();
     writeCopyrightHeader();
     genHeaders(tests, generatedHeaderPath);
+    ss << NL;
+
+    strDeclareSetOfVars(tests.externVariables);
+
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 
     for (const auto &commentBlock : tests.commentBlocks) {

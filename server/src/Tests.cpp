@@ -1163,4 +1163,9 @@ bool isUnnamed(char *name) {
 bool Tests::MethodTestCase::isError() const {
     return suiteName == ERROR_SUITE_NAME;
 }
+
+bool Tests::TypeAndVarName::operator<(const Tests::TypeAndVarName &other) const {
+    return varName < other.varName || (varName == other.varName && type.mTypeName() < other.type.mTypeName());
+}
+
 }

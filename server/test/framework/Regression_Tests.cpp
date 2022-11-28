@@ -367,4 +367,12 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
+
+    TEST_F(Regression_Test, Extern_Variables) {
+        fs::path source = getTestFilePath("issue-514.c");
+        auto [testGen, status] = createTestForFunction(source, 5);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
+    }
+
 }

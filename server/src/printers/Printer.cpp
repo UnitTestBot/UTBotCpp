@@ -674,4 +674,15 @@ namespace printer {
     void Printer::writeCopyrightHeader() {
         ss << Copyright::GENERATED_C_CPP_FILE_HEADER << NL;
     }
+
+    Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars) {
+        for (const auto &var : vars) {
+            if (var.type.isArray()) {
+                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
+            } else {
+                strDeclareVar(var.type.mTypeName(), var.varName);
+            }
+        }
+        return ss;
+    }
 }
