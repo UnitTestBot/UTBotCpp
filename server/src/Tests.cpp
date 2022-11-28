@@ -971,13 +971,30 @@ void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCas
 
 void KTestObjectParser::processSymbolicFiles(Tests::TestCaseDescription &testCaseDescription,
                                              const std::vector<RawKleeParam> &rawKleeParams) {
-    std::vector<Tests::TestCaseParamValue> filesValues(types::Type::symFilesCount);
-    for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount; fileName++) {
+    std::vector<Tests::FileInfo> filesValues(types::Type::symFilesCount);
+    int fileIndex = 0;
+    for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount; fileName++, fileIndex++) {
+        std::string readBytesName = PrinterUtils::getFileReadBytesParamKTestJSON(fileName);
+        auto &&readBytes = getKleeParamOrThrow(rawKleeParams, readBytesName);
+        filesValues[fileIndex].readBytes = std::stoi(
+            testParameterView(readBytes, { types::Type::longlongType(), readBytesName },
+                              types::PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
+                              testCaseDescription.lazyReferences)
+                ->getEntryValue(nullptr));
+
+        std::string writeBytesName = PrinterUtils::getFileWriteBytesParamKTestJSON(fileName);
+        auto &&writeBytes = getKleeParamOrThrow(rawKleeParams, writeBytesName);
+        filesValues[fileIndex].writeBytes = std::stoi(
+            testParameterView(writeBytes, { types::Type::longlongType(), writeBytesName },
+                              types::PointerUsage::PARAMETER, testCaseDescription.lazyAddressToName,
+                              testCaseDescription.lazyReferences)
+                ->getEntryValue(nullptr));
+
         auto &&fileBuffer =
             getKleeParamOrThrow(rawKleeParams, PrinterUtils::getFileParamKTestJSON(fileName));
-        auto &&testParamView = stringLiteralView(fileBuffer.rawData, types::Type::symInputSize);
-        filesValues[fileName - 'A'] = Tests::TestCaseParamValue(
-            types::Type::getFileParamName(fileName), std::nullopt, testParamView);
+        filesValues[fileIndex].data =
+            stringLiteralView(fileBuffer.rawData, filesValues[fileIndex].readBytes)
+                ->getEntryValue(nullptr);
     }
     testCaseDescription.filesValues = filesValues;
 }

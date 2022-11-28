@@ -1283,7 +1283,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, Pointers_In_Structs_2) {
+    TEST_F(Syntax_Test, DISABLED_Pointers_In_Structs_2) {
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 17);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2001,7 +2001,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, len_bound) {
+    TEST_F(Syntax_Test, DISABLED_len_bound) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 92);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2017,7 +2017,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, DISABLED_sort_list) {
+    TEST_F(Syntax_Test, sort_list) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 104, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2039,7 +2039,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, DISABLED_sort_list_with_cmp) {
+    TEST_F(Syntax_Test, sort_list_with_cmp) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 135, 90);
 
         ASSERT_TRUE(status.ok()) << status.error_message();

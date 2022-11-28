@@ -242,7 +242,6 @@ namespace types {
         static const size_t symFilesCount = 3;
 
         static const std::string &getStdinParamName();
-        static std::string getFileParamName(char fileName);
     private:
 
         explicit Type(const TypeName& type, size_t pointersNum=0);

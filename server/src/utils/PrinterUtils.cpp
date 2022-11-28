@@ -136,4 +136,12 @@ namespace PrinterUtils {
     std::string getFileParamKTestJSON(char fileName) {
         return StringUtils::stringFormat("%c-data", fileName);
     }
+
+    std::string getFileReadBytesParamKTestJSON(char fileName) {
+        return StringUtils::stringFormat("%c-data-read", fileName);
+    }
+
+    std::string getFileWriteBytesParamKTestJSON(char fileName) {
+        return StringUtils::stringFormat("%c-data-write", fileName);
+    }
 }

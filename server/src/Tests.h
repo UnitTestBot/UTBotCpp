@@ -392,6 +392,12 @@ namespace tests {
                   view(std::move(_view)) {}
         };
 
+        struct FileInfo {
+            std::string data;
+            int readBytes;
+            int writeBytes;
+        };
+
         struct TestCaseDescription {
             std::string suiteName;
 
@@ -410,8 +416,8 @@ namespace tests {
             TestCaseParamValue returnValue;
             TestCaseParamValue functionReturnNotNullValue;
             TestCaseParamValue kleePathFlagSymbolicValue;
-            std::optional <TestCaseParamValue> stdinValue = std::nullopt;
-            std::optional <std::vector<TestCaseParamValue>> filesValues = std::nullopt;
+            std::optional<TestCaseParamValue> stdinValue = std::nullopt;
+            std::optional<std::vector<FileInfo>> filesValues;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
         };
@@ -423,8 +429,8 @@ namespace tests {
 
             std::vector<TestCaseParamValue> globalPreValues;
             std::vector<TestCaseParamValue> globalPostValues;
-            std::optional <TestCaseParamValue> stdinValue;
-            std::optional <std::vector<TestCaseParamValue>> filesValues = std::nullopt;
+            std::optional<TestCaseParamValue> stdinValue;
+            std::optional<std::vector<FileInfo>> filesValues;
             std::vector<InitReference> lazyReferences;
             std::vector<UTBotKTestObject> objects;
 
@@ -443,6 +449,10 @@ namespace tests {
             std::vector<std::string> errorDescriptors;
 
             [[nodiscard]] bool isError() const;
+
+            FileInfo getFileByName(char fileName) const {
+                return filesValues.value()[fileName - 'A'];
+            }
         };
 
         struct Modifiers {

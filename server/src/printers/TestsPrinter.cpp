@@ -260,17 +260,28 @@ void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescrip
     fs::path pathToSourceFile =
         Paths::sourcePathToTestPath(projectContext, methodDescription.sourceFilePath);
     fs::path pathToTestDir = Paths::getPathDirRelativeToBuildDir(projectContext, pathToSourceFile);
+    int numInitFiles = 0;
     for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount; fileName++) {
+        if (testCase.getFileByName(fileName).readBytes == 0) {
+            continue;
+        }
+
+        numInitFiles++;
         std::string strFileName(1, fileName);
-        strFunctionCall("write_to_file",
-                        { StringUtils::wrapQuotations(pathToTestDir / strFileName),
-                          testCase.filesValues.value()[fileName - 'A'].view->getEntryValue(this) });
+        strFunctionCall("write_to_file", { StringUtils::wrapQuotations(pathToTestDir / strFileName),
+                                           testCase.getFileByName(fileName).data });
     }
-    ss << NL;
+    if (numInitFiles != 0) {
+        ss << NL;
+    }
 }
 
 void TestsPrinter::openFiles(const Tests::MethodDescription &methodDescription,
                              const Tests::MethodTestCase &testCase) {
+    if (!testCase.filesValues.has_value()) {
+        LOG_S(WARNING) << "There are not symbolic files in the test.";
+        return;
+    }
     char fileName = 'A';
     fs::path pathToSourceFile =
         Paths::sourcePathToTestPath(projectContext, methodDescription.sourceFilePath);
@@ -281,12 +292,15 @@ void TestsPrinter::openFiles(const Tests::MethodDescription &methodDescription,
             continue;
         }
 
-        std::string strFileName(1, fileName++);
+        std::string strFileName(1, fileName);
+        std::string fileMode =
+            testCase.getFileByName(fileName).writeBytes > 0 ? "\"w\"" : "\"r\"";
         strDeclareVar(param.type.typeName(), param.name,
                       constrFunctionCall(
                           "(UTBot::FILE *) fopen",
-                          { StringUtils::wrapQuotations(pathToTestDir / strFileName), "\"r\"" }, "",
-                          std::nullopt, false));
+                          { StringUtils::wrapQuotations(pathToTestDir / strFileName), fileMode },
+                          "", std::nullopt, false));
+        fileName++;
     }
     if (fileName != 'A') {
         ss << NL;
