@@ -135,13 +135,6 @@ namespace CollectionUtils {
         return result;
     }
 
-    template <typename Iterable, typename Functor>
-    void apply(Iterable const &items, Functor &&functor) {
-        for (auto it : items) {
-            functor(it);
-        }
-    }
-
     /**
      * @brief Transforms given collection to another by applying functor to each element.
      * @param items collection of type Collection with elements of type T.
