@@ -6,6 +6,7 @@
 #include "loguru.h"
 #include "utils/StringUtils.h"
 #include "utils/CompilationUtils.h"
+#include "Paths.h"
 
 static std::string tryConvertToFullPath(const std::string &possibleFilePath, const fs::path &dirPath) {
     fs::path fullFilePath = Paths::getCCJsonFileFullPath(possibleFilePath, dirPath);
@@ -68,6 +69,10 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         fs::path jsonFile = compileCommand.at("file").get<std::string>();
         fs::path sourceFile = Paths::getCCJsonFileFullPath(jsonFile, directory);
 
+        if (!Paths::isSourceFile(sourceFile)){
+            continue;
+        }
+
         std::vector<std::string> jsonArguments;
         if (compileCommand.contains("command")) {
             std::string command = compileCommand.at("command");
@@ -125,7 +130,9 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
             objectFileInfos[outputFile] = objectInfo;
         }
         const fs::path &sourcePath = objectInfo->getSourcePath();
-        sourceFileInfos[sourcePath].emplace_back(objectInfo);
+        if (Paths::isSourceFile(sourcePath)){
+            sourceFileInfos[sourcePath].emplace_back(objectInfo);
+        }
     }
     for (auto &[sourceFile, objectInfos]: sourceFileInfos) {
         std::sort(objectInfos.begin(), objectInfos.end(), BuildDatabase::ObjectFileInfo::conflictPriorityMore);
@@ -164,6 +171,9 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
         for (nlohmann::json const &jsonFile: linkCommand.at("files")) {
             auto filename = jsonFile.get<std::string>();
             fs::path currentFile = Paths::getCCJsonFileFullPath(filename, command.getDirectory());
+            if (currentFile.string().substr(currentFile.string().size() - 4) == ".f.o"){
+                continue;
+            }
             targetInfo->addFile(currentFile);
             if (Paths::isObjectFile(currentFile)) {
                 if (!CollectionUtils::containsKey(objectFileInfos, currentFile)) {
