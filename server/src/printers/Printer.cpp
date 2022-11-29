@@ -281,13 +281,7 @@ namespace printer {
         strTabIf(needTabs);
         std::vector<std::string> parameters;
         for (const auto &param : method.params) {
-            if (param.type.isRValueReference()) {
-                parameters.push_back("std::move(" + param.name + ")");
-            } else if (param.type.maybeJustPointer() && !param.type.isFilePointer()) {
-                parameters.push_back("&" + param.name);
-            } else {
-                parameters.push_back(param.name);
-            }
+            parameters.push_back(param.getFunctionParamDecl());
         }
         auto classObjName = method.getClassName();
         return strFunctionCall(method.name, parameters, end, classObjName, needTabs,

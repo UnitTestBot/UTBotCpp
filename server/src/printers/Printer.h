@@ -221,7 +221,7 @@ namespace printer {
         void writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable);
 
         void genStubForStructFunctionPointer(const std::string &structName,
-                                             const types::Field &ieldName,
+                                             const types::Field &fieldName,
                                              const std::string &stubName);
 
         void genStubForStructFunctionPointerArray(const std::string &structName,
