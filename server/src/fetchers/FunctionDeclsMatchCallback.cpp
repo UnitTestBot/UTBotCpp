@@ -91,8 +91,8 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
 
         const auto paramsFromDefinition = FS->parameters();
         const auto paramsFromDeclaration = FSFromHeader->parameters();
-        for (size_t i = 0; i < paramsFromDeclaration.size(); ++i) {
-            const auto &declParam = paramsFromDeclaration[i];
+        for (size_t i = 0; i < paramsFromDefinition.size(); ++i) {
+//            const auto &declParam = paramsFromDeclaration[i];
             const auto &defParam = paramsFromDefinition[i];
             std::string name = NameDecorator::decorate(defParam->getNameAsString());
             std::string mangledName = PrinterUtils::getParamMangledName(name, methodName);
@@ -102,9 +102,9 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             if (name == methodDescription.name) {
                 name = mangledName;
             }
-            auto paramType = ParamsHandler::getType(defParam->getType(), declParam->getType(), sourceManager);
-            addFunctionPointer(methodDescription.functionPointers, declParam->getFunctionType(),
-                               declParam->getType(), name, sourceManager, paramType);
+            auto paramType = ParamsHandler::getType(defParam->getType(), defParam->getType(), sourceManager);
+            addFunctionPointer(methodDescription.functionPointers, defParam->getFunctionType(),
+                               defParam->getType(), name, sourceManager, paramType);
             auto alignment = AlignmentFetcher::fetch(defParam);
             bool hasIncompleteType = ClangUtils::isIncomplete(defParam->getType());
             methodDescription.params.emplace_back(paramType, name, alignment, hasIncompleteType);
