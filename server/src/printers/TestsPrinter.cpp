@@ -743,16 +743,7 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
                                           const Tests::MethodTestCase &testCase) {
     std::vector<std::string> args;
     for (const auto &param : methodDescription.params) {
-        if (param.type.isTwoDimensionalPointer() &&
-            types::TypesHandler::isVoid(param.type.baseTypeObj())) {
-            std::string qualifier = Printer::getConstQualifier(param.type);
-            std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
-            args.push_back(arg);
-        } else {
-            std::string maybeAmpersand =
-                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
-            args.push_back(maybeAmpersand + param.name);
-        }
+        args.push_back(param.getFunctionParamDecl());
     }
     return args;
 }

@@ -377,6 +377,18 @@ namespace tests {
                        this->underscoredName() :
                        this->name;
             }
+
+            [[nodiscard]] std::string getFunctionParamDecl() const {
+                if (type.isTwoDimensionalPointer() && types::TypesHandler::isVoid(type.baseTypeObj())) {
+                    std::string qualifier = type.isConstQualified() ? "const " : "";
+                    return StringUtils::stringFormat("(%svoid **) %s", qualifier, name);
+                } else if (type.isRValueReference()) {
+                    return "std::move(" + name + ")";
+                } else if (type.maybeJustPointer() && !type.isFilePointer() ) {
+                    return "&" + name;
+                }
+                return name;
+            }
         };
 
         struct TestCaseParamValue {
