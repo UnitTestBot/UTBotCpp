@@ -200,8 +200,9 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     std::string decoratedName = decorate(name);
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
 
-    std::string curDecl = getRenamedDeclarationAsString(decl, policy, decoratedName);
-    std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
+    auto res = getDeclarationAsString(decl, decoratedName);
+    std::string curDecl = getDeclarationAsString(decl, decoratedName);
+    std::string wrapperDecl = getDeclarationAsString(decl, wrapperName);
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
     *internalStream << "static " << curDecl << " {\n";
     printReturn(decl, wrapperName, internalStream);
@@ -252,7 +253,7 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
      */
     std::string name = decl->getNameAsString();
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
-    std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
+    std::string wrapperDecl = getDeclarationAsString(decl, wrapperName);
 
     *wrapperStream << wrapperDecl << " {\n";
     printReturn(decl, name, wrapperStream);
@@ -361,4 +362,22 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
     auto &info = decl->getASTContext().Idents.get(name);
     DeclarationName wrapperDeclarationName{ &info };
     const_cast<NamedDecl *>(decl)->setDeclName(wrapperDeclarationName);
+}
+
+std::string SourceToHeaderMatchCallback::getDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
+    std::string result;
+    auto funcReturnType = decl->getFunctionType()->getReturnType().getAsString();
+    auto parameters = CollectionUtils::transformTo<std::vector<std::string>>(
+        decl->parameters(), [](ParmVarDecl *param) { return param->getNameAsString(); });
+    auto params_types = CollectionUtils::transformTo<std::vector<std::string>>(
+        decl->parameters(), [](ParmVarDecl *param) { return param->getType().getAsString(); });
+    result += funcReturnType + ' ' + name + '(';
+    for (int i = 0; i < parameters.size(); i++){
+        if (i != 0){
+            result += ", ";
+        }
+        result += params_types[i] + ' ' + parameters[i];
+    }
+    result += ")";
+    return result;
 }
