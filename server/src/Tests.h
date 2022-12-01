@@ -13,6 +13,7 @@
 #include <klee/TestCase.h>
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
+#include "Paths.h"
 
 #include <cassert>
 #include <climits>
@@ -25,6 +26,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <utils/ErrorInfo.h>
 
 using json = nlohmann::json;
 
@@ -78,6 +80,7 @@ namespace tests {
         std::vector<UTBotKTestObject> objects;
         Status status;
         std::vector<std::string> errorDescriptors;
+        ErrorInfo errorInfo;
 
         UTBotKTest(std::vector<UTBotKTestObject> objects,
                    const Status &status,
@@ -420,6 +423,7 @@ namespace tests {
             std::optional<std::vector<FileInfo>> filesValues;
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
+            ErrorInfo errorInfo;
         };
 
         struct MethodTestCase {
@@ -447,6 +451,7 @@ namespace tests {
             std::optional<TestCaseParamValue> classPreValues;
             std::optional<TestCaseParamValue> classPostValues;
             std::vector<std::string> errorDescriptors;
+            ErrorInfo errorInfo;
 
             [[nodiscard]] bool isError() const;
 
@@ -911,5 +916,5 @@ namespace tests {
                                         const std::string &typeName,
                                         size_t offsetInBits,
                                         size_t lenInBits);
-}
+} // tests
 #endif // UNITTESTBOT_TESTS_H

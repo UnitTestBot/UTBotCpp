@@ -30,9 +30,12 @@ namespace StringUtils {
      * @param args each of elements must either be primitive or have c_str method
      * (e.g. std::string, fs::path and others)
      */
-    template <typename... Args>
-    std::string stringFormat(const std::string &format, Args&&... args) {
-        size_t size = snprintf(nullptr, 0, format.c_str(), internal::extractCString(std::forward<Args>(args))...) + 1; // Extra space for '\0'
+    template<typename... Args>
+    std::string stringFormat(const std::string &format, Args &&... args) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-security"
+        size_t size = snprintf(nullptr, 0, format.c_str(), internal::extractCString(std::forward<Args>(args))...) +
+                      1; // Extra space for '\0'
         if (size <= 0) {
             throw std::runtime_error("Error during formatting.");
         }
@@ -40,6 +43,7 @@ namespace StringUtils {
         snprintf(formatBuffer.data(), size, format.c_str(), internal::extractCString(std::forward<Args>(args))...);
         return {formatBuffer.begin(), formatBuffer.begin() + size - 1}; // We don't want the '\0' inside
     }
+#pragma GCC diagnostic pop
 }
 
 #endif //UNITTESTBOT_STRINGFORMAT_H

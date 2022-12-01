@@ -1,4 +1,5 @@
 #include "ParametrizedAssertsVisitor.h"
+using namespace ::testsgen;
 
 namespace visitor {
     ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(const types::TypesHandler *typesHandler,
@@ -11,12 +12,12 @@ namespace visitor {
     static thread_local std::string functionCall;
 
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
-                                           const Tests::MethodTestCase &testCase) {
+                                           const Tests::MethodTestCase &testCase,
+                                           ErrorMode errorMode) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;
-        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase,
-                                                          false);
+        functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false, errorMode);
         if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
             printer->writeCodeLine(

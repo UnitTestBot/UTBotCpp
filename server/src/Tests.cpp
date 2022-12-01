@@ -744,6 +744,7 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
 
             testCase.errorDescriptors = case_.errorDescriptors;
 
+            testCase.errorInfo = testCaseDescription.errorInfo;
             if (filterByLineFlag) {
                 auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
                 if (!view || view->getEntryValue(nullptr) != "1") {
@@ -824,6 +825,7 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
 
     Tests::TestCaseDescription testCaseDescription;
     testCaseDescription.objects = ktest.objects;
+    testCaseDescription.errorInfo = ktest.errorInfo;
 
     for (const auto &obj : testCaseDescription.objects) {
         if (obj.name != LAZYNAME) {

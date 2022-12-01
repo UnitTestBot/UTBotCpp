@@ -112,12 +112,13 @@ public:
      * @throws ExecutionProcessException if a Clang call returns non-zero code.
      */
     void parseKTestsToFinalCode(
-        const utbot::ProjectContext &projectContext,
-        tests::Tests &tests,
-        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-        const std::vector<MethodKtests> &kleeOutput,
-        const std::shared_ptr<LineInfo> &lineInfo = nullptr,
-        bool verbose = false);
+            const utbot::ProjectContext &projectContext,
+            tests::Tests &tests,
+            const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+            const std::vector<MethodKtests> &kleeOutput,
+            const std::shared_ptr<LineInfo> &lineInfo = nullptr,
+            bool verbose = false,
+            ErrorMode errorMode = ErrorMode::FAILING);
 
     [[nodiscard]] fs::path getBitcodeFile(const fs::path &sourcePath) const;
 

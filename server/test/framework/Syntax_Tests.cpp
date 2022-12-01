@@ -22,6 +22,7 @@ namespace {
     using testUtils::checkTestCasePredicates;
     using testUtils::createLineRequest;
     using CompilationUtils::CompilerName;
+    using namespace ::testsgen;
 
     class Syntax_Test : public BaseTest {
     protected:
@@ -2256,7 +2257,7 @@ namespace {
         static auto coverageAndResultsWriter =
             std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, false, 45, 0, false, false };
+        utbot::SettingsContext settingsContext{ true, false, 45, 0, false, false, ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         EXPECT_FALSE(coverageGenerator.hasExceptions());
@@ -2289,7 +2290,7 @@ namespace {
         static auto coverageAndResultsWriter =
             std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false };
+        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false, ErrorMode::FAILING };
         coverageGenerator.generate(false, settingsContext);
 
         EXPECT_FALSE(coverageGenerator.hasExceptions());
@@ -2301,7 +2302,6 @@ namespace {
         testUtils::checkStatuses(resultMap, tests);
 
         StatusCountMap expectedStatusCountMap{
-            {testsgen::TEST_DEATH, 4},
             {testsgen::TEST_PASSED, 6}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }

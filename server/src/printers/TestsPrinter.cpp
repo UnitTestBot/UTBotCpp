@@ -159,7 +159,8 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
 
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
                            const std::optional<LineInfo::PredicateInfo>& predicateInfo,
-                           bool verbose) {
+                           bool verbose,
+                           ErrorMode errorMode) {
     resetStream();
 
     if(needDecorate()) {
@@ -178,13 +179,15 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
                        methodDescription,
                        predicateInfo,
                        verbose,
-                       testNum);
+                       testNum,
+                       errorMode);
     resetStream();
     genCodeBySuiteName(Tests::ERROR_SUITE_NAME,
                        methodDescription,
                        predicateInfo,
                        verbose,
-                       testNum);
+                       testNum,
+                       errorMode);
     resetStream();
 }
 
@@ -203,8 +206,9 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       Tests::MethodDescription &methodDescription,
                                       const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                       bool verbose,
-                                      int &testNum) {
-    auto &testCases = methodDescription.suiteTestCases[targetSuiteName];
+                                      int &testNum,
+                                      ErrorMode errorMode) {
+    const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
     }
@@ -215,9 +219,9 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
         testHeader(testCase);
         redirectStdin(methodDescription, testCase, verbose);
         if (verbose) {
-            genVerboseTestCase(methodDescription, testCase, predicateInfo);
+            genVerboseTestCase(methodDescription, testCase, predicateInfo, errorMode);
         } else {
-            genParametrizedTestCase(methodDescription, testCase, predicateInfo);
+            genParametrizedTestCase(methodDescription, testCase, predicateInfo, errorMode);
         }
     }
 
@@ -226,7 +230,8 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
 
 void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDescription,
                                       const Tests::MethodTestCase &testCase,
-                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo) {
+                                      const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+                                      ErrorMode errorMode) {
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
 
@@ -239,11 +244,19 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     if (!testCase.isError()) {
         TestsPrinter::verboseOutputVariable(methodDescription, testCase);
     }
-    TestsPrinter::verboseFunctionCall(methodDescription, testCase);
+    if (testCase.errorInfo.errorType == ErrorType::ASSERTION_FAILURE) {
+        ss << LINE_INDENT() << "/*"
+           << LINE_INDENT() << testCase.errorInfo.failureBody << NL
+           << LINE_INDENT() << "FILE: " << testCase.errorInfo.fileWithFailure.string() << NL
+           << LINE_INDENT() << "LINE: " << testCase.errorInfo.lineWithFailure << NL
+           << LINE_INDENT() << "*/" << NL;
+    }
+
+    TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
     markTestedFunctionCallIfNeed(methodDescription.name, testCase);
 
     if (testCase.isError()) {
-        printFailAssertion();
+        printFailAssertion(errorMode);
     } else {
         ss << NL;
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
@@ -358,7 +371,8 @@ void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDesc
 
 void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
-                                           const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
+                                           const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                           ErrorMode errorMode) {
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
@@ -368,7 +382,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printFunctionParameters(methodDescription, testCase, false);
     printLazyVariables(methodDescription, testCase, false);
     printLazyReferences(methodDescription, testCase, false);
-    parametrizedAsserts(methodDescription, testCase, predicateInfo);
+    parametrizedAsserts(methodDescription, testCase, predicateInfo, errorMode);
     ss << RB() << NL;
 }
 
@@ -534,14 +548,15 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
 }
 
 void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDescription,
-                                       const Tests::MethodTestCase &testCase) {
+                                       const Tests::MethodTestCase &testCase,
+                                       ErrorMode errorMode) {
     std::string baseReturnType = types::TypesHandler::cBoolToCpp(methodDescription.returnType.baseType());
     types::Type expectedType = typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     if (methodDescription.returnType.maybeReturnArray()) {
         expectedType = methodDescription.returnType.arrayClone(types::PointerUsage::RETURN);
     }
     strComment("Trigger the function");
-    std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true);
+    std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true, errorMode);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
         size_t returnPointersCount = 0;
         if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
@@ -674,16 +689,17 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
 
 void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase,
-                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo) {
+                                       const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                       ErrorMode errorMode) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
-    visitor.visit(methodDescription, testCase);
+    visitor.visit(methodDescription, testCase, errorMode);
     markTestedFunctionCallIfNeed(methodDescription.name, testCase);
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
         changeableParamsAsserts(methodDescription, testCase);
     } else {
-        printFailAssertion();
+        printFailAssertion(errorMode);
     }
 }
 
@@ -743,7 +759,8 @@ TestsPrinter::methodParametersListVerbose(const Tests::MethodDescription &method
 
 std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescription &methodDescription,
                                                     const Tests::MethodTestCase &testCase,
-                                                    bool verboseMode) {
+                                                    bool verboseMode,
+                                                    ErrorMode errorMode) {
     std::vector<std::string> methodArgs =
         verboseMode ? methodParametersListVerbose(methodDescription, testCase)
                     : methodParametersListParametrized(methodDescription, testCase);
@@ -758,8 +775,22 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
         returnPointersCount = methodDescription.returnType.countReturnPointers(true);
     }
-    return constrFunctionCall(methodDescription.name, methodArgs, "", classObjName, false, returnPointersCount,
-                              castType);
+    std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName,
+                                                  false, returnPointersCount, castType);
+    switch (errorMode) {
+        case ErrorMode::PASSING:
+            if (testCase.errorInfo.errorType == ErrorType::EXCEPTION_THROWN) {
+                functionCall = "EXPECT_ANY_THROW(" + functionCall + ")";
+            } else if (testCase.isError()) {
+                functionCall = "ASSERT_DEATH(" + functionCall + ", \".*\")";
+            }
+            break;
+        case ErrorMode::PASSING_IN_TARGET_ONLY:
+            // TODO: generate EXPECT_ANY_THROW and ASSERT_DEATH only if runtime error was in target function
+        default:
+            break;
+    }
+    return functionCall;
 }
 
 void printer::TestsPrinter::parametrizedInitializeGlobalVariables(const Tests::MethodDescription &methodDescription,
@@ -780,13 +811,22 @@ void printer::TestsPrinter::parametrizedInitializeSymbolicStubs(const Tests::Met
     }
 }
 
-void TestsPrinter::printFailAssertion() {
-    ss << NL;
-    ss << LINE_INDENT()
-       << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
-       << LINE_INDENT() << LINE_INDENT()
-       << "\"actually completed successfully. See the SARIF report for details.\"";
-    ss << SCNL;
+void TestsPrinter::printFailAssertion(ErrorMode errorMode) {
+    switch (errorMode) {
+        case ErrorMode::FAILING:
+            ss << NL;
+            ss << LINE_INDENT()
+               << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
+               << LINE_INDENT() << LINE_INDENT()
+               << "\"actually completed successfully. See the SARIF report for details.\"";
+            ss << SCNL;
+            break;
+        case ErrorMode::PASSING_IN_TARGET_ONLY:
+            //TODO add passing scenario
+        case ErrorMode::PASSING:
+        default:
+            break;
+    }
 }
 
 std::string printer::MultiLinePrinter::print(TestsPrinter *printer,

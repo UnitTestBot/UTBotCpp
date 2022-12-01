@@ -40,11 +40,13 @@ namespace testUtils {
                        const CoverageLines &expectedLinesUncovered,
                        const CoverageLines &expectedLinesNone);
 
-    void checkStatuses(const Coverage::TestResultMap &testResultMap, const std::vector<UnitTest> &tests);
+    void checkStatuses(const Coverage::TestResultMap &testResultMap, const std::vector<UnitTest> &tests,
+                       ErrorMode errorMode = ErrorMode::FAILING);
 
     void checkStatusesCount(const Coverage::TestResultMap &testResultsMap,
                             const std::vector<UnitTest> &tests,
-                            const StatusCountMap &expectedStatusCountMap);
+                            const StatusCountMap &expectedStatusCountMap,
+                            bool onlyPassed = true);
 
     size_t getNumberOfTests(const tests::TestsMap &tests);
 
@@ -62,7 +64,8 @@ namespace testUtils {
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const fs::path &filePath);
+                                                         const fs::path &filePath,
+                                                         ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
@@ -71,7 +74,8 @@ namespace testUtils {
                                                          const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                          bool useStubs = false,
                                                          bool verbose = true,
-                                                         int kleeTimeout = 60);
+                                                         int kleeTimeout = 60,
+                                                         ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -81,7 +85,8 @@ namespace testUtils {
                                                    const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
                                                    bool verbose = true,
-                                                   int kleeTimeout = 60);
+                                                   int kleeTimeout = 60,
+                                                   ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
@@ -92,7 +97,8 @@ namespace testUtils {
                                                    const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
                                                    bool verbose = true,
-                                                   int kleeTimeout = 60);
+                                                   int kleeTimeout = 60,
+                                                   ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                      const fs::path &projectPath,
@@ -103,7 +109,8 @@ namespace testUtils {
                                                      const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                      bool useStubs = false,
                                                      bool verbose = true,
-                                                     int kleeTimeout = 60);
+                                                    int kleeTimeout = 60,
+                                                     ErrorMode errorMode = ErrorMode::FAILING);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,

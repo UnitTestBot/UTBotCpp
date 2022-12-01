@@ -65,18 +65,16 @@ std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
         StringUtils::trim(s);
     }
     std::string testSuite;
-    std::vector<std::string> testsList;
-    for (const std::string &s : gtestListTestsOutput) {
+    std::vector<UnitTest> testList;
+    for (const std::string &s: gtestListTestsOutput) {
         if (s.back() == '.') {
             testSuite = s;
             testSuite.pop_back();
         } else {
-            testsList.push_back(s);
+            testList.push_back({testFilePath, testSuite, s});
         }
     }
-    return CollectionUtils::transform(testsList, [&testFilePath, &testSuite](std::string const &name) {
-        return UnitTest{ testFilePath, testSuite, name };
-    });
+    return testList;
 }
 
 std::vector<UnitTest> TestRunner::getTestsToLaunch() {

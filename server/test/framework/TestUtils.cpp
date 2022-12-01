@@ -134,9 +134,9 @@ namespace testUtils {
     }
 
     void checkStatuses(const Coverage::TestResultMap &testResultMap,
-                       const std::vector<UnitTest> &tests) {
+                       const std::vector<UnitTest> &tests, ErrorMode errorMode) {
         for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && errorMode == ErrorMode::FAILING) {
                 continue;
             }
             const auto status = testResultMap.at(filename).at(testname).status();
@@ -147,18 +147,22 @@ namespace testUtils {
 
 
     void checkStatusesCount(const Coverage::TestResultMap &testResultMap,
-                       const std::vector<UnitTest> &tests,
-                            const StatusCountMap &expectedStatusCountMap) {
-        StatusCountMap actualStatusCountMap;
-        for (auto const &[filename, suitename, testname] : tests) {
-            if (suitename == tests::Tests::ERROR_SUITE_NAME) {
+                            const std::vector<UnitTest> &tests,
+                            const StatusCountMap &expectedStatusCountMap,
+                            bool onlyPassed) {
+        StatusCountMap actualStatusCountMap{{TestStatus::TEST_PASSED,      0},
+                                            {TestStatus::TEST_DEATH,       0},
+                                            {TestStatus::TEST_FAILED,      0},
+                                            {TestStatus::TEST_INTERRUPTED, 0}};
+        for (auto const &[filename, suitename, testname]: tests) {
+            if (suitename == tests::Tests::ERROR_SUITE_NAME && onlyPassed) {
                 continue;
             }
             const auto status = testResultMap.at(filename).at(testname).status();
             actualStatusCountMap[status]++;
         }
-        for (const auto &[status, count] : actualStatusCountMap) {
-            ASSERT_GE(count, expectedStatusCountMap.at(status));
+        for (const auto &[status, count]: expectedStatusCountMap) {
+            ASSERT_GE(actualStatusCountMap.at(status), count);
         }
     }
 
@@ -215,12 +219,12 @@ namespace testUtils {
                                                          const std::string &targetOrSourcePath,
                                                          bool useStubs,
                                                          bool verbose,
-                                                         int kleeTimeout) {
+                                                         int kleeTimeout,
+                                                         ErrorMode errorMode) {
         auto projectContext = GrpcUtils::createProjectContext(
                 projectName, projectPath, projectPath / "tests", buildDirRelativePath);
         auto settingsContext =
-                GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs);
-
+                GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode);
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
@@ -235,9 +239,10 @@ namespace testUtils {
                                                    const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
-                                                   int kleeTimeout) {
+                                                   int kleeTimeout,
+                                                   ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout);
+                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
@@ -250,9 +255,10 @@ namespace testUtils {
                                                    const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
-                                                   int kleeTimeout) {
+                                                   int kleeTimeout,
+                                                   ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout);
+                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
@@ -266,19 +272,21 @@ namespace testUtils {
                                                      const std::string &targetOrSourcePath,
                                                      bool useStubs,
                                                      bool verbose,
-                                                     int kleeTimeout) {
+                                                     int kleeTimeout,
+                                                     ErrorMode errorMode) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, targetOrSourcePath, useStubs, verbose, kleeTimeout);
+                                             srcPaths, filePath, line, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const fs::path &filePath) {
+                                                         const fs::path &filePath,
+                                                         ErrorMode errorMode) {
         auto projectContext =
             GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "");
         // we actually don't pass all parameters except test directory and project name on client
-        auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false);
+        auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false, errorMode);
         return GrpcUtils::createSnippetRequest(std::move(projectContext),
                                                std::move(settingsContext), filePath);
     }

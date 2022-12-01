@@ -14,7 +14,8 @@ namespace visitor {
                                             bool isError);
 
         void visit(const Tests::MethodDescription &methodDescription,
-                   const Tests::MethodTestCase &testCase);
+                   const Tests::MethodTestCase &testCase,
+                   ErrorMode errorMode = ErrorMode::FAILING);
 
     protected:
         void visitPointer(const types::Type &type,
