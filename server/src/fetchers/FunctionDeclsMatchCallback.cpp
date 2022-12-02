@@ -89,7 +89,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
                 ASTPrinter::getSourceText(FS->getBody()->getSourceRange(), sourceManager);
         }
 
-        const auto paramsFromDefinition = FS->parameters();;
+        const auto paramsFromDefinition = FS->parameters();
         for (size_t i = 0; i < paramsFromDefinition.size(); ++i) {
             const auto &defParam = paramsFromDefinition[i];
             std::string name = NameDecorator::decorate(defParam->getNameAsString());
