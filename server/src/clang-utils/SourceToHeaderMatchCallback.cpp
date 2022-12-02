@@ -200,7 +200,6 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     std::string decoratedName = decorate(name);
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
 
-    auto res = getDeclarationAsString(decl, decoratedName);
     std::string curDecl = getDeclarationAsString(decl, decoratedName);
     std::string wrapperDecl = getDeclarationAsString(decl, wrapperName);
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
@@ -366,18 +365,22 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
 
 std::string SourceToHeaderMatchCallback::getDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
     std::string result;
-    auto funcReturnType = decl->getFunctionType()->getReturnType().getAsString();
-    auto parameters = CollectionUtils::transformTo<std::vector<std::string>>(
+    llvm::raw_string_ostream resultStream{ result };
+    std::string funcReturnType = decl->getFunctionType()->getReturnType().getAsString();
+    std::vector<std::string> parameters = CollectionUtils::transformTo<std::vector<std::string>>(
         decl->parameters(), [](ParmVarDecl *param) { return param->getNameAsString(); });
-    auto params_types = CollectionUtils::transformTo<std::vector<std::string>>(
+
+    std::vector<std::string> param_types = CollectionUtils::transformTo<std::vector<std::string>>(
         decl->parameters(), [](ParmVarDecl *param) { return param->getType().getAsString(); });
-    result += funcReturnType + ' ' + name + '(';
+    resultStream << funcReturnType << ' ' << name << '(';
+
     for (int i = 0; i < parameters.size(); i++){
         if (i != 0){
-            result += ", ";
+            resultStream << ", ";
         }
-        result += params_types[i] + ' ' + parameters[i];
+        resultStream << param_types[i] << ' ' << parameters[i];
     }
-    result += ")";
+    resultStream << ")";
+    resultStream.flush();
     return result;
 }

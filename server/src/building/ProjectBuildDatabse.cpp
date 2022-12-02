@@ -130,9 +130,9 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
             objectFileInfos[outputFile] = objectInfo;
         }
         const fs::path &sourcePath = objectInfo->getSourcePath();
-        if (Paths::isSourceFile(sourcePath)){
-            sourceFileInfos[sourcePath].emplace_back(objectInfo);
-        }
+
+        sourceFileInfos[sourcePath].emplace_back(objectInfo);
+
     }
     for (auto &[sourceFile, objectInfos]: sourceFileInfos) {
         std::sort(objectInfos.begin(), objectInfos.end(), BuildDatabase::ObjectFileInfo::conflictPriorityMore);
