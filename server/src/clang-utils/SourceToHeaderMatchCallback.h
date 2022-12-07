@@ -88,7 +88,9 @@ private:
 
     std::string decorate(std::string_view name) const;
 
-    std::string getDeclarationAsString(const clang::FunctionDecl *decl, std::string const &name) const;
+    std::string getOldStyleDeclarationAsString(const clang::FunctionDecl *decl, std::string const &name) const;
+
+    bool IsOldStyleDefinition(std::string const &definition) const;
 };
 
 

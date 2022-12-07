@@ -200,8 +200,14 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     std::string decoratedName = decorate(name);
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
 
-    std::string curDecl = getDeclarationAsString(decl, decoratedName);
-    std::string wrapperDecl = getDeclarationAsString(decl, wrapperName);
+    std::string curDecl = getRenamedDeclarationAsString(decl, policy, decoratedName);
+    std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
+
+    if (IsOldStyleDefinition(curDecl)){
+        curDecl = getOldStyleDeclarationAsString(decl, decoratedName);
+        wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
+    }
+
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
     *internalStream << "static " << curDecl << " {\n";
     printReturn(decl, wrapperName, internalStream);
@@ -252,7 +258,10 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
      */
     std::string name = decl->getNameAsString();
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
-    std::string wrapperDecl = getDeclarationAsString(decl, wrapperName);
+    std::string wrapperDecl = getRenamedDeclarationAsString(decl, policy, wrapperName);
+    if (IsOldStyleDefinition(wrapperDecl)){
+        wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
+    }
 
     *wrapperStream << wrapperDecl << " {\n";
     printReturn(decl, name, wrapperStream);
@@ -363,7 +372,7 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
     const_cast<NamedDecl *>(decl)->setDeclName(wrapperDeclarationName);
 }
 
-std::string SourceToHeaderMatchCallback::getDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
+std::string SourceToHeaderMatchCallback::getOldStyleDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
     std::string result;
     llvm::raw_string_ostream resultStream{ result };
     std::string funcReturnType = decl->getFunctionType()->getReturnType().getAsString();
@@ -383,4 +392,10 @@ std::string SourceToHeaderMatchCallback::getDeclarationAsString(const FunctionDe
     resultStream << ")";
     resultStream.flush();
     return result;
+}
+
+bool SourceToHeaderMatchCallback::IsOldStyleDefinition(std::string const &definition) const{
+    std::regex normStyle ("\\([a-zA-Z0-9*&_()\\[\\]]+ [a-zA-Z0-9*&_()\\[\\]]+[,) ]");
+    bool res = std::regex_search(definition, normStyle);
+    return !res;
 }
