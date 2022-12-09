@@ -432,6 +432,9 @@ bool BuildDatabase::ObjectFileInfo::is32bits() const {
 }
 
 fs::path BuildDatabase::TargetInfo::getOutput() const {
+    if (commands.empty()){
+        throw CompilationDatabaseException("There are no targets");
+    }
     return commands[0].getOutput();
 }
 
