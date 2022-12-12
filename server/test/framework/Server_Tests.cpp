@@ -116,7 +116,6 @@ namespace {
                     createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
             auto request = GrpcUtils::createFileRequest(std::move(projectRequest), filename);
             auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-            testGen.setTargetForSource(filename);
             Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
             return FileGenResult(testGen, status);
         }
@@ -980,7 +979,6 @@ namespace {
             createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
         auto request = GrpcUtils::createFileRequest(std::move(projectRequest), basic_functions_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1004,7 +1002,6 @@ namespace {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                          basic_functions_c, 17, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1021,7 +1018,6 @@ namespace {
         auto request = createLineRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                          basic_functions_c, 17, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto testGen = LineTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1039,7 +1035,6 @@ namespace {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                           multiple_classes_h, 6);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1054,7 +1049,6 @@ namespace {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                           multiple_classes_h, 11);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1069,7 +1063,6 @@ namespace {
         auto request = createClassRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                           multiple_classes_h, 14);
         auto testGen = ClassTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(multiple_classes_cpp);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
 
@@ -1085,7 +1078,6 @@ namespace {
                                              basic_functions_c, 6, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1118,7 +1110,6 @@ namespace {
         auto request =
             GrpcUtils::createPredicateRequest(std::move(lineRequest), std::move(predicateInfo));
         auto testGen = PredicateTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1141,7 +1132,6 @@ namespace {
         auto request =
             GrpcUtils::createPredicateRequest(std::move(lineRequest), std::move(predicateInfo));
         auto testGen = PredicateTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(basic_functions_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1160,7 +1150,6 @@ namespace {
                                              symbolic_stdin_c, 8, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(symbolic_stdin_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1182,7 +1171,6 @@ namespace {
                                              symbolic_stdin_c, 19, GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 0);
         request->set_allocated_linerequest(lineRequest.release());
         auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(symbolic_stdin_c);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();

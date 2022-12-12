@@ -3,7 +3,7 @@
 LineTestGen::LineTestGen(const testsgen::LineRequest &request,
                          ProgressWriter *progressWriter,
                          bool testMode, bool forHeader)
-        : ProjectTestGen(request.projectrequest(), progressWriter, testMode, false) {
+        : ProjectTestGen(request.projectrequest(), progressWriter, testMode, false, fs::weakly_canonical(request.sourceinfo().filepath())) {
     filePath = fs::weakly_canonical(request.sourceinfo().filepath());
     line = request.sourceinfo().line();
     std::optional<fs::path> sourcePath = Paths::headerPathToSourcePath(filePath);

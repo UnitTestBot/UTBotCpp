@@ -7,7 +7,7 @@
 class TargetBuildDatabase : public BuildDatabase {
 private:
     fs::path target;
-    bool isAutoTarget;
+    bool isAutoTarget = false;
 
 public:
     TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const std::string &targetOrSourcePath);

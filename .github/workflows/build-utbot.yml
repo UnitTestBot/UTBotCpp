@@ -153,7 +153,7 @@ jobs:
 
   build-portable-container:
     needs: build-utbot-and-generate-test
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       DOCKER_IMAGE_TAG: docker-image
       PORTABLE_CONTAINER_NAME: Portable

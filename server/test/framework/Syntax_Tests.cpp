@@ -2240,7 +2240,6 @@ namespace {
                                                     srcPaths, linked_list_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true,
                                                     false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(linked_list_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
@@ -2273,7 +2272,6 @@ namespace {
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
                                                     srcPaths, tree_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(tree_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
         EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
