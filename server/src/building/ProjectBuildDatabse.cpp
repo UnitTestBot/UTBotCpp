@@ -171,7 +171,7 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
         for (nlohmann::json const &jsonFile: linkCommand.at("files")) {
             auto filename = jsonFile.get<std::string>();
             fs::path currentFile = Paths::getCCJsonFileFullPath(filename, command.getDirectory());
-            if (currentFile.string().substr(currentFile.string().size() - 4) == ".f.o"){
+            if (Paths::skipFile(currentFile)){
                 continue;
             }
             targetInfo->addFile(currentFile);

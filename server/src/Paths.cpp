@@ -51,6 +51,10 @@ namespace Paths {
         return m.first == base.end();
     }
 
+    bool skipFile(const fs::path &file) {
+        return file.string().substr(file.string().size() - 4) == ".f.o";
+    }
+
     fs::path longestCommonPrefixPath(const fs::path &a, const fs::path &b) {
         if (a == b) {
             return a;
