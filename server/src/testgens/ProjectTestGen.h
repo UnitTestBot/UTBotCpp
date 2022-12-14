@@ -10,7 +10,8 @@ public:
     ProjectTestGen(const testsgen::ProjectRequest &request,
                    ProgressWriter *progressWriter,
                    bool testMode,
-                   bool autoDetect = true);
+                   bool autoDetect = true,
+                   const std::optional<fs::path> &sourceFile = std::nullopt);
 
     ~ProjectTestGen() override = default;
 

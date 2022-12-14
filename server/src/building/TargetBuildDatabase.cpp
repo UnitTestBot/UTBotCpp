@@ -19,7 +19,7 @@ TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const
         }
     }
 
-    isAutoTarget = target == GrpcUtils::UTBOT_AUTO_TARGET_PATH;
+    LOG_S(INFO) << StringUtils::stringFormat("Chosen target: %s", target);
 
     {
         auto objectFilesList = baseBuildDatabase->getArchiveObjectFiles(target);
