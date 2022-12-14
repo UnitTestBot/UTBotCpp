@@ -9,6 +9,7 @@
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
+#include "utils/StubsUtils.h"
 
 #include "loguru.h"
 
@@ -500,9 +501,8 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
                                     const Tests::MethodParam &param,
                                     const Tests::TestCaseParamValue &value,
                                     bool needDeclaration) {
-    std::string stubFunctionName =
-        PrinterUtils::getFunctionPointerStubName(method.getClassTypeName(),
-                                                 method.name, param.name);
+    std::string stubFunctionName = StubsUtils::getFunctionPointerStubName(method.getClassTypeName(),
+                                                                          method.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(method.name, param.name, false), param.name,
                       stubFunctionName);
@@ -660,7 +660,7 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
     const auto &value = testCase.paramValues[param_num];
     if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
         auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
-        std::string stubName = PrinterUtils::getFunctionPointerStubName(
+        std::string stubName = StubsUtils::getFunctionPointerStubName(
             methodDescription.getClassTypeName(), methodDescription.name, param.name);
         strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
     } else if (types::TypesHandler::isCStringType(param.type)) {

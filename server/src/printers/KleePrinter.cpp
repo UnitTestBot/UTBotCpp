@@ -8,6 +8,7 @@
 #include "utils/CollectionUtils.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
+#include "utils/StubsUtils.h"
 #include "visitors/KleeAssumeParamVisitor.h"
 #include "visitors/KleeAssumeReturnValueVisitor.h"
 
@@ -396,7 +397,7 @@ void KleePrinter::genParamsDeclarations(
 bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod,
                                       const Tests::MethodParam &param) {
     std::string stubFunctionName =
-        PrinterUtils::getFunctionPointerStubName(testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
+        StubsUtils::getFunctionPointerStubName(testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
                                                  testMethod.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(testMethod.name, param.name, false), param.name,

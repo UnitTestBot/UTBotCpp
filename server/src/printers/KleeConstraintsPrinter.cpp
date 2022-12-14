@@ -1,6 +1,7 @@
 #include "KleeConstraintsPrinter.h"
 
 #include "utils/PrinterUtils.h"
+#include "utils/StubsUtils.h"
 #include "exceptions/UnImplementedException.h"
 
 #include "loguru.h"
@@ -125,7 +126,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
                                       field.type,
                                       isStruct ? state.endString : false,
                                       state.depth + 1 };
-        std::string stubFunctionName = PrinterUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
+        std::string stubFunctionName = StubsUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
         switch (typesHandler->getTypeKind(field.type)) {
         case TypeKind::STRUCT_LIKE:
             genConstraintsForStruct(newState);

@@ -5,6 +5,7 @@
 #include "printers/TestsPrinter.h"
 #include "utils/KleeUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/StubsUtils.h"
 
 #include "loguru.h"
 
@@ -201,13 +202,13 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const std::vec
 std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(const std::optional<std::string> &scopeName,
                                                                             const std::string &methodName, const std::string &paramName) {
     std::string value =
-        PrinterUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
+        StubsUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
     return std::make_shared<FunctionPointerView>(value);
 }
 
 std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(const std::string &structName,
                                                                             const std::string &fieldName) {
-    std::string value = PrinterUtils::getFunctionPointerAsStructFieldStubName(structName, fieldName, false).substr(1);
+    std::string value = StubsUtils::getFunctionPointerAsStructFieldStubName(structName, fieldName, false).substr(1);
     return std::make_shared<FunctionPointerView>(value);
 }
 
