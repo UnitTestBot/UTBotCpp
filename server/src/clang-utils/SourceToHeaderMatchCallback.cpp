@@ -394,6 +394,14 @@ std::string SourceToHeaderMatchCallback::getOldStyleDeclarationAsString(const Fu
     return result;
 }
 
+/*Example of old style definition
+int sum(a, b)
+int a;
+int b;
+{
+    return a + b;
+}
+*/
 bool SourceToHeaderMatchCallback::IsOldStyleDefinition(std::string const &definition) const{
     std::regex normStyle ("\\([a-zA-Z0-9*&_()\\[\\]]+ [a-zA-Z0-9*&_()\\[\\]]+[,) ]");
     bool res = std::regex_search(definition, normStyle);
