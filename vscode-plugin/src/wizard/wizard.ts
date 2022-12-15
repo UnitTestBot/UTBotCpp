@@ -258,11 +258,13 @@ export class UtbotWizardPanel {
     private lastSFTPRequest: Promise<any> | null = null;
     private pingSFTPAction(host: string, port: number, successCmd: string, failureCmd: string): void {
         const ssh = new NodeSSH();
+        const username = defcfg.DefaultConfigValues.getDefaultSFTPUsername().toString();
+        const password = defcfg.DefaultConfigValues.getDefaultSFTPPassword().toString();
         const capturedPingPromiseForLambda = ssh.connect({
             host: host,
             port: port,
-            username: 'utbot',
-            password: 'utbot'
+            username: username,
+            password: password
         });
         this.lastSFTPRequest = capturedPingPromiseForLambda;
         capturedPingPromiseForLambda.then( async () => {
