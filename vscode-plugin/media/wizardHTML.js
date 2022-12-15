@@ -301,11 +301,8 @@ function defaultValidateForEmptyValue() {
 
 function validateForm() {
     let valid = true;
-    if (isStartTab()) {
-        // call them all - we need to mark all invalid input
-        valid &= isPluginInstalledAndMarkValid("SFTP_")
-        valid &= isPluginInstalledAndMarkValid("SARIF_");
-    } else if (isConnectionTab()) {
+    
+    if (isConnectionTab()) {
         // call them all - we need to mark all invalid input
         valid &= isConnectionPortValid($("portGRPCInput"), GRPC_PREFIX);
         valid &= isConnectionPortValid($("portSFTPInput"), SFTP_PREFIX);
