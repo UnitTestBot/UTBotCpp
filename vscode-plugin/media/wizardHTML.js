@@ -301,7 +301,18 @@ function defaultValidateForEmptyValue() {
 
 function validateForm() {
     let valid = true;
-    
+    if (isStartTab()) {
+        if (!isPluginInstalledAndMarkValid("SFTP_")){
+            vscode.postMessage({
+                command: 'check_sftp_on_start'
+            });;
+        }
+        if(!isPluginInstalledAndMarkValid("SARIF_")){
+            vscode.postMessage({
+                command: 'check_sarif_on_start'
+            });;
+        }
+    }
     if (isConnectionTab()) {
         // call them all - we need to mark all invalid input
         valid &= isConnectionPortValid($("portGRPCInput"), GRPC_PREFIX);
