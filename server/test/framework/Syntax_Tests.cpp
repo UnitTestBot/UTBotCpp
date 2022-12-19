@@ -3223,6 +3223,44 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, run_tests_for_input_output_c) {
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, input_output_c,
+                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(input_output_c);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 63); // 61 regression tests and 2 error
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path input_output_test_cpp = Paths::sourcePathToTestPath(
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath),
+            input_output_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(input_output_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
+                                                       coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{
+            true, false, 45, 30, false, false, ErrorMode::FAILING
+        };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        StatusCountMap expectedStatusCountMap{ {testsgen::TEST_PASSED, 61} };
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
+    }
+
     TEST_F(Syntax_Test, file_fgetc) {
         auto [testGen, status] = createTestForFunction(file_c, 5);
 
@@ -3375,6 +3413,44 @@ namespace {
                     }
                 })
         );
+    }
+
+    TEST_F(Syntax_Test, run_tests_for_file_c) {
+        auto request =
+            testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                         file_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        testGen.setTargetForSource(file_c);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 33);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path file_test_cpp = Paths::sourcePathToTestPath(
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath),
+            file_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(file_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
+                                                       coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{
+            true, false, 45, 0, false, false, ErrorMode::FAILING
+        };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 33 } };
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
     template<typename T>
