@@ -277,7 +277,12 @@ fs::path BuildDatabase::getRootForSource(const fs::path &path) const {
 }
 
 fs::path BuildDatabase::getRootForFirstSource() const {
-    return getRootForSource(sourceFileInfos.begin()->first);
+    if (sourceFileInfos.empty()){
+        throw CompilationDatabaseException("Source files not found");
+    } else {
+        return getRootForSource(sourceFileInfos.begin()->first);
+    }
+}
 }
 
 fs::path BuildDatabase::getBitcodeForSource(const fs::path &sourceFile) const {
