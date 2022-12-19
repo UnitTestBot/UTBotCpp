@@ -302,10 +302,18 @@ function defaultValidateForEmptyValue() {
 function validateForm() {
     let valid = true;
     if (isStartTab()) {
-        // call them all - we need to mark all invalid input
-        valid &= isPluginInstalledAndMarkValid("SFTP_")
-        valid &= isPluginInstalledAndMarkValid("SARIF_");
-    } else if (isConnectionTab()) {
+        if (!isPluginInstalledAndMarkValid("SFTP_")){
+            vscode.postMessage({
+                command: 'check_sftp_on_start'
+            });;
+        }
+        if(!isPluginInstalledAndMarkValid("SARIF_")){
+            vscode.postMessage({
+                command: 'check_sarif_on_start'
+            });;
+        }
+    }
+    if (isConnectionTab()) {
         // call them all - we need to mark all invalid input
         valid &= isConnectionPortValid($("portGRPCInput"), GRPC_PREFIX);
         valid &= isConnectionPortValid($("portSFTPInput"), SFTP_PREFIX);

@@ -52,6 +52,22 @@ export class DefaultConfigValues {
         return DefaultConfigValues.DEFAULT_SFTP_PORT;
     }
 
+    public static getDefaultSFTPUsername(): string{
+        const username = vsUtils.getFromSftpConfig("username");
+        if ((username === undefined) || (username.length === 0)) {
+            return "utbot";
+        }
+        return username.toString();
+    }
+
+    public static getDefaultSFTPPassword(): string{
+        const password = vsUtils.getFromSftpConfig("password");
+        if ((password === undefined) || (password.length === 0)) {
+            return "utbot";
+        }
+        return password.toString();
+    }
+
     public static getDefaultRemotePath(): string {
         let remotePath = Prefs.getRemotePath();
         if (remotePath.length === 0) {
