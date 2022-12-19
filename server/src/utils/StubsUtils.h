@@ -10,8 +10,15 @@ namespace StubsUtils {
                                            const std::string &paramName,
                                            bool omitSuffix = false);
 
+    bool isFunctionPointerStubName(const std::string &functionPointerStubName,
+                                   const std::optional<std::string> &scopeName,
+                                   const std::string &methodName,
+                                   bool omitSuffix = false);
+
     std::string parseParamNameFromFunctionPointerStubName(const std::string &functionPointerStubName,
-                                                          const std::string &methodName);
+                                                          const std::optional<std::string> &scopeName,
+                                                          const std::string &methodName,
+                                                          bool omitSuffix = false);
 
     std::string getStubSymbolicVarName(const std::string &methodName);
 

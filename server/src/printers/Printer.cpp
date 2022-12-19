@@ -551,6 +551,7 @@ namespace printer {
         std::string prefix = PrinterUtils::getKleePrefix(forKlee);
         for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
             std::string stubName = StubsUtils::getFunctionPointerStubName(scopeName, testMethod.name, name, true);
+            testMethod.stubsStorage->registerFunctionPointerStub(testMethod.name, pointerFunctionStub);
             writeStubForParam(typesHandler, pointerFunctionStub, testMethod.name, stubName, true,
                               forKlee);
         }
