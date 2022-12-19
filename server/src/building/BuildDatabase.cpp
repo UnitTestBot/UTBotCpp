@@ -283,7 +283,6 @@ fs::path BuildDatabase::getRootForFirstSource() const {
         return getRootForSource(sourceFileInfos.begin()->first);
     }
 }
-}
 
 fs::path BuildDatabase::getBitcodeForSource(const fs::path &sourceFile) const {
     fs::path serverBuildObjectFilePath = newDirForFile(sourceFile);
