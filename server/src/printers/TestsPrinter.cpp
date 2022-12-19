@@ -267,7 +267,7 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
 void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescription,
                                    const Tests::MethodTestCase &testCase) {
     if (!testCase.filesValues.has_value()) {
-        LOG_S(WARNING) << "There are not symbolic files in the test.";
+        LOG_S(INFO) << "There are not symbolic files in the test.";
         return;
     }
     fs::path pathToSourceFile =
@@ -292,7 +292,6 @@ void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescrip
 void TestsPrinter::openFiles(const Tests::MethodDescription &methodDescription,
                              const Tests::MethodTestCase &testCase) {
     if (!testCase.filesValues.has_value()) {
-        LOG_S(WARNING) << "There are not symbolic files in the test.";
         return;
     }
     char fileName = 'A';

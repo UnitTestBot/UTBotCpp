@@ -1475,7 +1475,7 @@ namespace {
 
         testUtils::checkStatuses(resultMap, tests);
 
-        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 8}};
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
