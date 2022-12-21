@@ -42,7 +42,6 @@ namespace {
                 Paths::sourcePathToTestPath(projectContext, calc_sum_c);
 
         std::vector<fs::path> modifiedSourceFiles = { literals_foo_c, calc_sum_h, calc_sum_c };
-        bool verboseMode;
 
         void SetUp() override {
             clearTestDirectory();
@@ -297,12 +296,7 @@ namespace {
         }
     }
 
-    class ParametrizedVerboseTest : public Stub_Test, public testing::WithParamInterface<std::tuple<bool>> {
-    protected:
-        void SetUp() override {
-            verboseMode = std::get<0>(GetParam());
-        }
-    };
+    class ParametrizedVerboseTest : public Stub_Test, public testing::WithParamInterface<std::tuple<bool>> {};
 
     INSTANTIATE_TEST_SUITE_P(Stubs_For_Function_Pointers, ParametrizedVerboseTest,
                              ::testing::Combine(::testing::ValuesIn({true, false})),
@@ -316,7 +310,7 @@ namespace {
 
     TEST_P(ParametrizedVerboseTest, Stubs_For_Function_Pointers) {
         auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, function_pointers_c,
-                                         GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, verboseMode);
+                                         GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, std::get<0>(GetParam()));
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
