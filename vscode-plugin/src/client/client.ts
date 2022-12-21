@@ -765,8 +765,10 @@ export class Client {
         }, this.DEFAULT_TIMEOUT);
         serverResponse.on('data', async responseAny => {
             const response = responseAny as T;
+            const logEntry = response as LogEntry;
             started.value = true;
             await this.handleResponse(response, progressKey, resolve, responseHandler);
+            utbotUI.channels().outputServerLogChannel.append(logEntry.getMessage());
         })
             .on('error', (err) => {
                 started.value = true;
