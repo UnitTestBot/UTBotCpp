@@ -15,21 +15,8 @@ namespace StubsUtils {
         return stubName;
     }
 
-    std::string parseParamNameFromFunctionPointerStubName(const std::string &functionPointerStubName,
-                                                          const std::string &methodName) {
-        return functionPointerStubName.substr(methodName.length() + 1, functionPointerStubName.length());
-    }
-
     std::string getStubSymbolicVarName(const std::string &methodName) {
         return methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
-    }
-
-    bool isStubSymbolicVarName(const std::string &name) {
-        return StringUtils::endsWith(name, PrinterUtils::KLEE_SYMBOLIC_SUFFIX);
-    }
-
-    std::string parseMethodNameFromStubSymbolicVarName(const std::string &symbolicVarName) {
-        return symbolicVarName.substr(0, symbolicVarName.length() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.length());
     }
 
     std::string getFunctionPointerAsStructFieldStubName(const std::string &structName,

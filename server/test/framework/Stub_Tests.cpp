@@ -24,12 +24,14 @@ namespace {
         fs::path literals = getTestFilePath("lib/literals");
         fs::path calc = getTestFilePath("lib/calc");
         fs::path foreign = getTestFilePath("lib/foreign");
+        fs::path function_pointers = getTestFilePath("lib/function_pointers");
 
         fs::path literals_foo_c = literals / "foo.c";
         fs::path calc_sum_c = calc / "sum.c";
         fs::path calc_sum_h = calc / "sum.h";
         fs::path calc_mult_c = calc / "mult.c";
         fs::path foreign_bar_c = foreign / "bar.c";
+        fs::path function_pointers_c = function_pointers / "function_pointers.c";
 
         fs::path sum_stub_c = getTestFilePath(testDirName + "/stubs/lib/calc/sum_stub.c");
 
@@ -292,5 +294,40 @@ namespace {
 
             checkStubFileEqualsTo(sum_stub_c, suitePath / "modified" / "sum_stub_sync.c");
         }
+    }
+
+    TEST_F(Stub_Test, Stubs_For_Function_Pointers) {
+        auto request = createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths, function_pointers_c,
+                                         GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 7);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path function_pointers_test_cpp = Paths::sourcePathToTestPath(
+                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath), function_pointers_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(function_pointers_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+                projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+                std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
+                                                       coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{
+                true, false, 45, 30, false, true, ErrorMode::FAILING
+        };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        StatusCountMap expectedStatusCountMap{ {testsgen::TEST_PASSED, 7} };
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 }
