@@ -454,20 +454,27 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         ss << NL;
     }
 
-    if (!testCase.stubValuesTypes.empty()) {
-        strComment("Initialize symbolic stubs");
-        for (auto i = 0; i < testCase.stubValuesTypes.size(); i++) {
-            const auto &param = testCase.stubValuesTypes[i];
-            const auto &value = testCase.stubValues[i];
-            if (param.type.isTwoDimensionalPointer()) {
-                Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
-                verboseParameter(methodDescription, valueParam, value, true);
-                gen2DPointer(param, false);
-            } else {
-                verboseParameter(methodDescription, param, value, false);
+    std::vector<std::vector<tests::Tests::MethodParam>> types = { testCase.stubValuesTypes, testCase.stubParamTypes };
+    std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = { testCase.stubParamValues, testCase.stubParamValues };
+
+    for (int j = 0; j < types.size(); j++) {
+        if (!types[j].empty()) {
+            if (j == 0) {
+                strComment("Initialize symbolic stubs");
             }
+            for (auto i = 0; i < types[j].size(); i++) {
+                const auto &param = types[j][i];
+                const auto &value = values[j][i];
+                if (param.type.isTwoDimensionalPointer()) {
+                    Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
+                    verboseParameter(methodDescription, valueParam, value, true);
+                    gen2DPointer(param, false);
+                } else {
+                    verboseParameter(methodDescription, param, value, false);
+                }
+            }
+            ss << NL;
         }
-        ss << NL;
     }
 
     if (!testCase.paramValues.empty()) {
@@ -490,7 +497,7 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
             Tests::TestCaseParamValue value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
             value.name = valueParam.name;
-            if (param.type.isLValueReference() || param.type.isSimple()) {
+            if (param.type.isLValueReference() || param.type.isSimple() || param.type.isPointerToFunction()) {
                 verboseParameter(methodDescription, valueParam, value, true);
             }
         }
