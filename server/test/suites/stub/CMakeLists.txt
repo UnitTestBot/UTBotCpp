@@ -12,6 +12,7 @@ set(CMAKE_EXPORT_LINK_COMMANDS ON)
 add_subdirectory(lib/calc)
 add_subdirectory(lib/literals)
 add_subdirectory(lib/foreign)
+add_subdirectory(lib/function_pointers)
 
 add_executable(exe main.c)
 target_link_libraries(exe calc literals)

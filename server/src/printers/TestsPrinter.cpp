@@ -9,6 +9,7 @@
 #include "visitors/VerboseAssertsReturnValueVisitor.h"
 #include "visitors/VerboseParameterVisitor.h"
 #include "utils/KleeUtils.h"
+#include "utils/StubsUtils.h"
 
 #include "loguru.h"
 
@@ -452,20 +453,27 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         ss << NL;
     }
 
-    if (!testCase.stubValuesTypes.empty()) {
-        strComment("Initialize symbolic stubs");
-        for (auto i = 0; i < testCase.stubValuesTypes.size(); i++) {
-            const auto &param = testCase.stubValuesTypes[i];
-            const auto &value = testCase.stubValues[i];
-            if (param.type.isTwoDimensionalPointer()) {
-                Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
-                verboseParameter(methodDescription, valueParam, value, true);
-                gen2DPointer(param, false);
-            } else {
-                verboseParameter(methodDescription, param, value, false);
+    std::vector<std::vector<tests::Tests::MethodParam>> types = { testCase.stubValuesTypes, testCase.stubParamTypes };
+    std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = { testCase.stubParamValues, testCase.stubParamValues };
+
+    for (int j = 0; j < types.size(); j++) {
+        if (!types[j].empty()) {
+            if (j == 0) {
+                strComment("Initialize symbolic stubs");
             }
+            for (auto i = 0; i < types[j].size(); i++) {
+                const auto &param = types[j][i];
+                const auto &value = values[j][i];
+                if (param.type.isTwoDimensionalPointer()) {
+                    Tests::MethodParam valueParam{ param.type, param.underscoredName(), param.alignment };
+                    verboseParameter(methodDescription, valueParam, value, true);
+                    gen2DPointer(param, false);
+                } else {
+                    verboseParameter(methodDescription, param, value, false);
+                }
+            }
+            ss << NL;
         }
-        ss << NL;
     }
 
     if (!testCase.paramValues.empty()) {
@@ -488,7 +496,7 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
             Tests::TestCaseParamValue value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
             value.name = valueParam.name;
-            if (param.type.isLValueReference() || param.type.isSimple()) {
+            if (param.type.isLValueReference() || param.type.isSimple() || param.type.isPointerToFunction()) {
                 verboseParameter(methodDescription, valueParam, value, true);
             }
         }
@@ -499,9 +507,8 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
                                     const Tests::MethodParam &param,
                                     const Tests::TestCaseParamValue &value,
                                     bool needDeclaration) {
-    std::string stubFunctionName =
-        PrinterUtils::getFunctionPointerStubName(method.getClassTypeName(),
-                                                 method.name, param.name);
+    std::string stubFunctionName = StubsUtils::getFunctionPointerStubName(method.getClassTypeName(),
+                                                                          method.name, param.name);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(method.name, param.name, false), param.name,
                       stubFunctionName);
@@ -659,7 +666,7 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
     const auto &value = testCase.paramValues[param_num];
     if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
         auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
-        std::string stubName = PrinterUtils::getFunctionPointerStubName(
+        std::string stubName = StubsUtils::getFunctionPointerStubName(
             methodDescription.getClassTypeName(), methodDescription.name, param.name);
         strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
     } else if (types::TypesHandler::isCStringType(param.type)) {

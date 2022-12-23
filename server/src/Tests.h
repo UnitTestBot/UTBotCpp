@@ -14,6 +14,7 @@
 #include <tsl/ordered_map.h>
 #include <tsl/ordered_set.h>
 #include "Paths.h"
+#include "stubs/StubsStorage.h"
 
 #include <cassert>
 #include <climits>
@@ -498,6 +499,8 @@ namespace tests {
 
             typedef std::unordered_map<std::string, std::shared_ptr<types::FunctionInfo>> FPointerMap;
             FPointerMap functionPointers;
+            std::shared_ptr<StubsStorage> stubsStorage;
+
             std::vector<MethodTestCase> testCases;
             typedef std::unordered_map<std::string, std::vector<int>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;

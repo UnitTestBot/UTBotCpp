@@ -3,6 +3,7 @@
 #include "printers/Printer.h"
 
 #include <unordered_set>
+#include "utils/StubsUtils.h"
 
 namespace visitor {
     FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(const types::TypesHandler *typesHandler)
@@ -38,8 +39,7 @@ namespace visitor {
         }
         auto structInfo = typesHandler->getStructInfo(type);
         for (const auto &[name, field] : structInfo.functionFields) {
-            auto stubName =
-                PrinterUtils::getFunctionPointerAsStructFieldStubName(structInfo.name, name, true);
+            auto stubName = StubsUtils::getFunctionPointerAsStructFieldStubName(structInfo.name, name, true);
             printer.writeStubForParam(typesHandler, field, structInfo.name, stubName, false, true);
         }
         for (auto &field : structInfo.fields) {

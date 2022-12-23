@@ -4,6 +4,7 @@
 #include "types/SimpleType.h"
 #include "utils/ArgumentsUtils.h"
 #include "utils/Copyright.h"
+#include "utils/StubsUtils.h"
 #include "visitors/VerboseParameterVisitor.h"
 #include "printers/KleeConstraintsPrinter.h"
 
@@ -549,8 +550,8 @@ namespace printer {
         std::string scopeName = (forKlee ? testMethod.getClassName().value_or("") : "");
         std::string prefix = PrinterUtils::getKleePrefix(forKlee);
         for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
-            std::string stubName = PrinterUtils::getFunctionPointerStubName(scopeName,
-                                                                       testMethod.name, name, true);
+            std::string stubName = StubsUtils::getFunctionPointerStubName(scopeName, testMethod.name, name, true);
+            testMethod.stubsStorage->registerFunctionPointerStub(testMethod.name, pointerFunctionStub);
             writeStubForParam(typesHandler, pointerFunctionStub, testMethod.name, stubName, true,
                               forKlee);
         }

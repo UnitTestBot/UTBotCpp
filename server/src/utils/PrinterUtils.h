@@ -72,15 +72,6 @@ namespace PrinterUtils {
 
     std::string fillVarName(std::string const &temp, std::string const &varName);
 
-    std::string getFunctionPointerStubName(const std::optional<std::string> &scopeName,
-                                           const std::string &methodName,
-                                           const std::string &paramName,
-                                           bool omitSuffix = false);
-
-    std::string getFunctionPointerAsStructFieldStubName(const std::string &structName,
-                                                        const std::string &fieldName,
-                                                        bool omitSuffix = false);
-
     std::string getKleePrefix(bool forKlee);
 
     std::string wrapUserValue(const testsgen::ValidationType &type, const std::string &value);

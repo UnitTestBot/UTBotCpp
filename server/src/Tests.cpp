@@ -5,6 +5,7 @@
 #include "printers/TestsPrinter.h"
 #include "utils/KleeUtils.h"
 #include "utils/StringUtils.h"
+#include "utils/StubsUtils.h"
 
 #include "loguru.h"
 
@@ -31,7 +32,9 @@ Tests::MethodDescription::MethodDescription()
                          { Tests::ERROR_SUITE_NAME,   std::vector<int>() }},
           codeText{{ Tests::DEFAULT_SUITE_NAME, std::string() },
                    { Tests::ERROR_SUITE_NAME,   std::string() }},
-          modifiers{} { }
+          modifiers{} {
+    stubsStorage = std::make_shared<StubsStorage>();
+}
 
 static const std::unordered_map<std::string, std::string> FPSpecialValuesMappings = {
     {"nan", "NAN"},
@@ -201,13 +204,13 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const std::vec
 std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(const std::optional<std::string> &scopeName,
                                                                             const std::string &methodName, const std::string &paramName) {
     std::string value =
-        PrinterUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
+        StubsUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
     return std::make_shared<FunctionPointerView>(value);
 }
 
 std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(const std::string &structName,
                                                                             const std::string &fieldName) {
-    std::string value = PrinterUtils::getFunctionPointerAsStructFieldStubName(structName, fieldName, false).substr(1);
+    std::string value = StubsUtils::getFunctionPointerAsStructFieldStubName(structName, fieldName, false).substr(1);
     return std::make_shared<FunctionPointerView>(value);
 }
 
@@ -677,14 +680,10 @@ types::Type KTestObjectParser::traverseLazyInStruct(std::vector<bool> &visited,
 void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                           const Tests::MethodDescription &methodDescription) {
     for (auto const &obj : testCase.objects) {
-        if (StringUtils::endsWith(obj.name, PrinterUtils::KLEE_SYMBOLIC_SUFFIX)) {
-            std::string stubFuncName = obj.name.substr(0, obj.name.length() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.length());
-            if (!CollectionUtils::contains(methodDescription.functionPointers, stubFuncName)) {
-                std::string message = "Can't find function pointer with name " + stubFuncName;
-                LOG_S(WARNING) << message;
-                continue;
-            }
-            types::Type stubType = types::Type::createArray(methodDescription.functionPointers.at(stubFuncName)->returnType);
+        std::optional<std::shared_ptr<FunctionInfo>> maybeFunctionInfo =
+                methodDescription.stubsStorage->getFunctionPointerByKTestObjectName(obj.name);
+        if (maybeFunctionInfo.has_value()) {
+            types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
             std::shared_ptr<AbstractValueView> stubView = testParameterView({obj.name, obj.bytes}, {stubType, obj.name},
                                                                             PointerUsage::PARAMETER, testCase.lazyAddressToName,
                                                                             testCase.lazyReferences, methodDescription);

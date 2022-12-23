@@ -1,0 +1,3 @@
+add_library(function_pointers)
+target_include_directories(function_pointers PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_sources(function_pointers PRIVATE function_pointers.c PUBLIC function_pointers.h)
