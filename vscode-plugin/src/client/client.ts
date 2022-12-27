@@ -130,10 +130,18 @@ export class Client {
             if (this.noConnectionEstablishedBefore) {
                 this.noConnectionEstablishedBefore = false;
                 await this.events.onDidConnectFirstTimeEventEmitter.fire();
+                await Promise.all([
+                    this.provideLogChannel(),
+                    this.provideGTestChannel()
+                ]);
             }
             if (!this.isConnectionEstablished()) {
                 messages.showInfoMessage(messages.successfullyConnected);
                 logger.info('Successfully connected to server');
+                await Promise.all([
+                    this.provideLogChannel(),
+                    this.provideGTestChannel()
+                ]);
             }
             if (this.newClient || !response.getLinked()) {
                 await Promise.all([
@@ -238,7 +246,6 @@ export class Client {
 
     private async writeGTestLog(responseAny: any): Promise<void> {
         const gtestEntry = responseAny as LogEntry;
-        utbotUI.channels().outputGTestChannel.show(true);
         utbotUI.channels().outputGTestChannel.appendLine(gtestEntry.getMessage());
     }
 
