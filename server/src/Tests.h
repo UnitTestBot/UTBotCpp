@@ -499,6 +499,7 @@ namespace tests {
 
             typedef std::unordered_map<std::string, std::shared_ptr<types::FunctionInfo>> FPointerMap;
             FPointerMap functionPointers;
+            std::shared_ptr<StubsStorage> stubsParamStorage;
             std::shared_ptr<StubsStorage> stubsStorage;
 
             std::vector<MethodTestCase> testCases;
@@ -521,7 +522,7 @@ namespace tests {
                 });
             }
 
-            [[nodiscard]] types::FunctionInfo toFunctionInfo() {
+            [[nodiscard]] types::FunctionInfo toFunctionInfo() const {
                 types::FunctionInfo fInfo;
                 fInfo.isArray = false;
                 fInfo.name = name;
@@ -796,7 +797,8 @@ namespace tests {
                                    const Tests::MethodParam &param,
                                    std::vector<RawKleeParam> &rawKleeParams);
 
-        void processStubParamValue(Tests::TestCaseDescription &testCaseDescription,
+        void processStubParamValue(const Tests::MethodDescription &methodDescription,
+                                   Tests::TestCaseDescription &testCaseDescription,
                                    const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
                                    std::vector<RawKleeParam> &rawKleeParams);
 

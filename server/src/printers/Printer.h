@@ -182,8 +182,6 @@ namespace printer {
                                 const std::string &nameForStub,
                                 bool makeStatic = false);
 
-        static std::string getStubSymbolicVarName(const std::string &methodName);
-
         Stream strKleeMakeSymbolic(SRef varName, bool needAmpersand, SRef pseudoName);
 
         static inline std::string getTypedefFunctionPointer(const std::string &parentFunctionName,
@@ -208,8 +206,6 @@ namespace printer {
         void writeStubsForFunctionParams(const types::TypesHandler* typesHandler,
                                          const Tests::MethodDescription& testMethod,
                                          bool forKlee);
-
-        void writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod);
 
         void writeStubsForStructureFields(const Tests &tests);
 

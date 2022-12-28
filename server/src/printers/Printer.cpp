@@ -407,11 +407,9 @@ namespace printer {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        std::string stubSymbolicVarName = getStubSymbolicVarName(nameForStub);
+        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(nameForStub);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
-            stubSymbolicVarName = getStubSymbolicVarName(methodName + "_" + nameForStub);
-            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
-                               types::PointerUsage::PARAMETER);
+            stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName + "_" + nameForStub);
         }
 
         if (!prefix.empty()) {
@@ -458,10 +456,6 @@ namespace printer {
         returnValue = stubSymbolicVarName + "[" + cntCall + "++]";
         strReturn(returnValue) << RB() << NL;
         return ss;
-    }
-
-    std::string Printer::getStubSymbolicVarName(const std::string &methodName) {
-        return methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
     }
 
     Printer::Stream Printer::strKleeMakeSymbolic(const std::string &varName, bool needAmpersand, SRef pseudoName) {
@@ -551,21 +545,9 @@ namespace printer {
         std::string prefix = PrinterUtils::getKleePrefix(forKlee);
         for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
             std::string stubName = StubsUtils::getFunctionPointerStubName(scopeName, testMethod.name, name, true);
-            testMethod.stubsStorage->registerFunctionPointerStub(testMethod.name, pointerFunctionStub);
+            testMethod.stubsParamStorage->registerStub(testMethod.name, pointerFunctionStub, std::nullopt);
             writeStubForParam(typesHandler, pointerFunctionStub, testMethod.name, stubName, true,
                               forKlee);
-        }
-    }
-
-    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
-        std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
-        for (const auto& testCase: testMethod.testCases) {
-            for (size_t i = 0; i < testCase.stubValues.size(); i++) {
-                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
-            }
-        }
-        for (const auto& [name, type]: symbolicNamesToTypesMap) {
-            strDeclareVar("extern \"C\" " + type, name);
         }
     }
 

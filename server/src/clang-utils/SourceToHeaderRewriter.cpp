@@ -5,6 +5,7 @@
 #include "SourceToHeaderMatchCallback.h"
 #include "utils/Copyright.h"
 #include "utils/LogUtils.h"
+#include "utils/StubsUtils.h"
 
 #include "loguru.h"
 
@@ -97,7 +98,7 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
         NameDecorator::UNDEF_WCHAR_T, NameDecorator::UNDEFS_CODE);
 }
 
-std::string SourceToHeaderRewriter::generateStubHeader(const fs::path &sourceFilePath) {
+std::string SourceToHeaderRewriter::generateStubHeader(const tests::Tests &tests, const fs::path &sourceFilePath) {
     MEASURE_FUNCTION_EXECUTION_TIME
     LOG_IF_S(WARNING, Paths::isCXXFile(sourceFilePath))
         << "Stubs feature for C++ sources has not been tested thoroughly; some problems may occur";
@@ -105,7 +106,8 @@ std::string SourceToHeaderRewriter::generateStubHeader(const fs::path &sourceFil
     long long creationTime = TimeUtils::convertFileToSystemClock(fs::file_time_type::clock::now())
                                  .time_since_epoch()
                                  .count();
-    return StringUtils::stringFormat(
+    printer::StubsPrinter stubsPrinter(Paths::getSourceLanguage(sourceFilePath));
+    stubsPrinter.ss << StringUtils::stringFormat(
         "//%s\n"
         "//Please, do not change the line above\n"
         "%s\n"
@@ -113,6 +115,15 @@ std::string SourceToHeaderRewriter::generateStubHeader(const fs::path &sourceFil
         "%s\n",
         std::to_string(creationTime), Copyright::GENERATED_C_CPP_FILE_HEADER,
         sourceDeclarations.externalDeclarations);
+    for (const auto &[methodName, methodDescription] : tests.methods) {
+        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName);
+        if (!types::TypesHandler::omitMakeSymbolic(methodDescription.returnType)) {
+            stubSymbolicVarName = StubsUtils::getStubSymbolicVarName("_" + methodName);
+            stubsPrinter.strDeclareArrayVar(types::Type::createArray(methodDescription.returnType), stubSymbolicVarName,
+                                            types::PointerUsage::PARAMETER);
+        }
+    }
+    return stubsPrinter.ss.str();
 }
 
 std::string SourceToHeaderRewriter::generateWrapper(const fs::path &sourceFilePath) {

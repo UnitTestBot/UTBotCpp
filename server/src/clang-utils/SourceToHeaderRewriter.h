@@ -9,6 +9,7 @@
 #include "fetchers/Fetcher.h"
 #include "fetchers/FetcherUtils.h"
 #include "utils/FileSystemUtils.h"
+#include "printers/StubsPrinter.h"
 
 #include <clang/AST/RecursiveASTVisitor.h>
 #include <clang/Frontend/CompilerInstance.h>
@@ -53,7 +54,7 @@ public:
 
     std::string generateTestHeader(const fs::path &sourceFilePath, const Tests &test);
 
-    std::string generateStubHeader(const fs::path &sourceFilePath);
+    std::string generateStubHeader(const tests::Tests &tests, const fs::path &sourceFilePath);
 
     std::string generateWrapper(const fs::path &sourceFilePath);
 

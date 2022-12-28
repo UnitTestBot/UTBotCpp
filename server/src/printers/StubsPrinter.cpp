@@ -2,6 +2,7 @@
 
 #include "Paths.h"
 #include "utils/TimeUtils.h"
+#include "utils/StubsUtils.h"
 
 using printer::StubsPrinter;
 
@@ -51,14 +52,8 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
                 param.type = copyParamType;
             }
         }
-
-        if (!typesHandler.omitMakeSymbolic(methodCopy.returnType)) {
-            std::string stubSymbolicVarName = getStubSymbolicVarName(method.name);
-            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
-                               types::PointerUsage::PARAMETER);
-        }
 	
-	if (methodCopy.sourceBody) {
+	    if (methodCopy.sourceBody) {
             strFunctionDecl(methodCopy, " ");
             ss << methodCopy.sourceBody.value() << NL;
         } else {
