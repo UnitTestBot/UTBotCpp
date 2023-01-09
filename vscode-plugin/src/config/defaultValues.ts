@@ -60,10 +60,15 @@ export class DefaultConfigValues {
         return username.toString();
     }
 
-    public static getDefaultSFTPPassword(): string{
+    public static async getDefaultSFTPPassword(): Promise<string | undefined> {
         const password = vsUtils.getFromSftpConfig("password");
         if ((password === undefined) || (password.length === 0)) {
-            return "utbot";
+            vs.window.createInputBox().show();
+            const passwordInput = vs.window.showInputBox({
+                password: true,
+                title: "Password",
+            }) ?? '';
+            return passwordInput;
         }
         return password.toString();
     }
