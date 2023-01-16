@@ -96,7 +96,7 @@ namespace CompilationUtils {
                 }
             }
 
-            StringUtils::replaceAll(directoryField, userSystemProjectPath, projectPathStr);
+//            StringUtils::replaceAll(directoryField, userSystemProjectPath, projectPathStr);
             cmd[directoryFieldName] = directoryField;
 
             if (cmd.contains(fileFieldName)) {

@@ -176,12 +176,19 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
             }
             targetInfo->addFile(currentFile);
             if (Paths::isObjectFile(currentFile)) {
-                if (!CollectionUtils::containsKey(objectFileInfos, currentFile)) {
+                if (!CollectionUtils::containsKey(objectFileInfos, currentFile) &&
+                    !CollectionUtils::containsKey(objectFileInfos,
+                                                  relative(currentFile, directory))) {
                     throw CompilationDatabaseException(
-                            "compile_commands.json doesn't contain a command for object file "
-                            + currentFile.string());
+                        "compile_commands.json doesn't contain a command for object file " +
+                        currentFile.string());
                 }
-                objectFileInfos[currentFile]->linkUnit = output;
+                if (CollectionUtils::containsKey(objectFileInfos, currentFile)) {
+                    objectFileInfos[currentFile]->linkUnit = output;
+                } else if (CollectionUtils::containsKey(objectFileInfos,
+                                                        relative(currentFile, directory))) {
+                    objectFileInfos[relative(currentFile, directory)]->linkUnit = output;
+                }
             }
         }
         targetInfo->commands.emplace_back(command);
