@@ -64,7 +64,12 @@ bool Synchronizer::isProbablyOutdatedStubs(const fs::path &srcFilePath) const {
     } catch (...) {
         return true;
     }
-    srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
+    if (!fs::exists(srcFilePath)){
+        srcTimestamp = time(NULL);
+    }
+    else {
+        srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
+    }
     return stubTimestamp <= srcTimestamp;
 }
 
@@ -75,7 +80,12 @@ bool Synchronizer::isProbablyOutdatedWrappers(const fs::path &srcFilePath) const
     }
     long long wrapperTimestamp, srcTimestamp;
     wrapperTimestamp = Synchronizer::getFileOutdatedTime(wrapperFilePath);
-    srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
+    if (!fs::exists(srcFilePath)){
+        srcTimestamp = time(NULL);
+    }
+    else {
+        srcTimestamp = Synchronizer::getFileOutdatedTime(srcFilePath);
+    }
     return wrapperTimestamp <= srcTimestamp;
 }
 
