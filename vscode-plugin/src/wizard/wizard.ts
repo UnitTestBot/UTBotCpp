@@ -103,11 +103,18 @@ export class UtbotWizardPanel {
                                 break;
                             }
                             else if (message.command.startsWith(`SFTP_`)) {
+                                let password = await defcfg.DefaultConfigValues.getDefaultSFTPPassword(); 
+                                const username = defcfg.DefaultConfigValues.getDefaultSFTPUsername().toString();
+                                if (password === undefined){
+                                    password = '';
+                                }
                                 this.pingSFTPAction(
                                     message.host,
                                     message.port,
                                     message.command + '_success',
-                                    message.command + '_failure');
+                                    message.command + '_failure',
+                                    password.toString(),
+                                    username);
                                 break;
                             }
                         }
@@ -269,10 +276,8 @@ export class UtbotWizardPanel {
     }
 
     private lastSFTPRequest: Promise<any> | null = null;
-    private pingSFTPAction(host: string, port: number, successCmd: string, failureCmd: string): void {
+    private pingSFTPAction(host: string, port: number, successCmd: string, failureCmd: string, password: string, username: string): void {
         const ssh = new NodeSSH();
-        const username = defcfg.DefaultConfigValues.getDefaultSFTPUsername().toString();
-        const password = defcfg.DefaultConfigValues.getDefaultSFTPPassword().toString();
         const capturedPingPromiseForLambda = ssh.connect({
             host: host,
             port: port,
