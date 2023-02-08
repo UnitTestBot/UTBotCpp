@@ -473,8 +473,10 @@ namespace tests {
             }
             
             std::string getError() const {
-                assert(!errorDescriptors.empty());
-                return errorDescriptors[0].substr(0, errorDescriptors[0].find('\n'));
+                if (!errorDescriptors.empty()) {
+                    return errorDescriptors[0].substr(0, errorDescriptors[0].find('\n'));
+                }
+                return "";
             }
         };
 
