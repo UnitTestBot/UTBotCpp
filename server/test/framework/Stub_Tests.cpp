@@ -37,7 +37,7 @@ namespace {
 
         fs::path testsDirPath = getTestFilePath("tests");
         utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
-                                              buildDirRelativePath };
+                                              buildDirRelativePath, clientProjectPath };
         fs::path sum_test_cpp =
                 Paths::sourcePathToTestPath(projectContext, calc_sum_c);
 
@@ -319,7 +319,8 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path function_pointers_test_cpp = Paths::sourcePathToTestPath(
-                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath), function_pointers_c);
+                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+                function_pointers_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(function_pointers_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
                 projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));

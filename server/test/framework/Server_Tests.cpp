@@ -1204,7 +1204,7 @@ namespace {
 
             testDirPath = getTestFilePath(pregeneratedTestsRelativeDir);
             projectContext = std::make_unique<utbot::ProjectContext>(
-                projectName, suitePath, testDirPath, buildDirRelativePath);
+                projectName, suitePath, testDirPath, buildDirRelativePath, clientProjectPath);
 
             basic_functions_c = getTestFilePath("basic_functions.c");
             simple_loop_uncovered_c = getTestFilePath("simple_loop_uncovered.c");
@@ -1500,7 +1500,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 11);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath);
+                                                                      buildDirRelativePath, clientProjectPath);
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_asserts_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1548,7 +1548,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 11);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath);
+                                                                      buildDirRelativePath, clientProjectPath);
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_asserts_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1594,7 +1594,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 8);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath);
+                                                                      buildDirRelativePath, clientProjectPath);
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_exceptions_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1640,7 +1640,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 8);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath);
+                                                                      buildDirRelativePath, clientProjectPath);
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_exceptions_cpp));
         auto runRequest = createCoverageAndResultsRequest(
