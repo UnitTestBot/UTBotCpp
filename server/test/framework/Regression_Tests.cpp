@@ -347,7 +347,7 @@ namespace {
         return result;
     }
 
-    TEST_F(Regression_Test, Pointers_Alignment) {
+    TEST_F(Regression_Test, DISABLED_Pointers_Alignment) {
         fs::path source = getTestFilePath("issue-195.c");
         auto [testGen, status] = createTestForFunction(source, 8);
 

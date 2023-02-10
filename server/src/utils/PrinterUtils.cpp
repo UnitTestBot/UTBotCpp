@@ -47,7 +47,8 @@ namespace PrinterUtils {
             return C_NULL;
         } else {
             std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
-            return StringUtils::stringFormat("(%s%s) 0x%x", type, additionalPointers, std::stoull(value));
+            return StringUtils::stringFormat("(%s%s) 0x%lx", type, additionalPointers,
+                                             std::stoull(value));
         }
     }
 
