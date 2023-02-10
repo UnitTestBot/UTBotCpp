@@ -60,6 +60,7 @@ namespace {
         fs::path bitfields_c = getTestFilePath("bitfields.c");
         fs::path namespace_cpp = getTestFilePath("namespace.cpp");
         fs::path rvalue_reference_cpp = getTestFilePath("function_with_rvalue_params.cpp");
+        fs::path hard_linked_list_c = getTestFilePath("hard_linked_list.c");
 
         void SetUp() override {
             clearEnv(CompilationUtils::CompilerName::CLANG);
@@ -1285,14 +1286,14 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, DISABLED_Pointers_In_Structs_2) {
+    TEST_F(Syntax_Test, Pointers_In_Structs_2) {
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 17);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         testUtils::checkMinNumberOfTests(testGen.tests.at(structs_with_pointers_c).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, DISABLED_Pointers_In_Structs_3) {
+    TEST_F(Syntax_Test, Pointers_In_Structs_3) {
         //This test worked with flag --search=dfs, but plugin utbot doesn't use this flag
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 27);
 
@@ -2237,74 +2238,6 @@ namespace {
             "check_option");
     }
 
-    TEST_F(Syntax_Test, Run_Tests_For_Linked_List) {
-        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, linked_list_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true,
-                                                    false);
-        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-        ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
-
-        fs::path testsDirPath = getTestFilePath("tests");
-
-        fs::path linked_list_test_cpp = Paths::sourcePathToTestPath(utbot::ProjectContext(
-            projectName, suitePath, testsDirPath, buildDirRelativePath), linked_list_c);
-        auto testFilter = GrpcUtils::createTestFilterForFile(linked_list_test_cpp);
-        auto runRequest = testUtils::createCoverageAndResultsRequest(
-            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
-
-        static auto coverageAndResultsWriter =
-            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, false, 45, 0, false, false, ErrorMode::FAILING };
-        coverageGenerator.generate(false, settingsContext);
-
-        EXPECT_FALSE(coverageGenerator.hasExceptions());
-        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
-
-        auto resultsMap = coverageGenerator.getTestResultMap();
-        auto tests = coverageGenerator.getTestsToLaunch();
-
-        // TODO: add checkStatusesCount after linkedlist fix
-        testUtils::checkStatuses(resultsMap, tests);
-    }
-
-    TEST_F(Syntax_Test, Run_Tests_For_Tree) {
-        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, tree_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
-        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-        ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
-
-        fs::path testsDirPath = getTestFilePath("tests");
-
-        fs::path tree_test_cpp = Paths::sourcePathToTestPath(utbot::ProjectContext(
-            projectName, suitePath, testsDirPath, buildDirRelativePath), tree_c);
-        auto testFilter = GrpcUtils::createTestFilterForFile(tree_test_cpp);
-        auto runRequest = testUtils::createCoverageAndResultsRequest(
-            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
-
-        static auto coverageAndResultsWriter =
-            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, false, 15, 0, false, false, ErrorMode::FAILING };
-        coverageGenerator.generate(false, settingsContext);
-
-        EXPECT_FALSE(coverageGenerator.hasExceptions());
-        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
-
-        auto resultMap = coverageGenerator.getTestResultMap();
-        auto tests = coverageGenerator.getTestsToLaunch();
-
-        testUtils::checkStatuses(resultMap, tests);
-
-        StatusCountMap expectedStatusCountMap{
-            {testsgen::TEST_PASSED, 6}};
-        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
-    }
-
     TEST_F(Syntax_Test, Simple_parameter_cpp) {
         auto [testGen, status] = createTestForFunction(different_parameters_cpp, 4);
 
@@ -2870,7 +2803,8 @@ namespace {
                         return stoi(testCase.paramValues.front().view->getEntryValue(nullptr)) % 3 == 1;
                     },
                     [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues.front().view->getEntryValue(nullptr)) % 3 == 2;
+                        auto paramValue = stoi(testCase.paramValues.front().view->getEntryValue(nullptr));
+                        return paramValue % 3 != 0 && paramValue % 3 != 1;
                     }
                 })
         );
@@ -3223,44 +3157,6 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, run_tests_for_input_output_c) {
-        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
-                                                    srcPaths, input_output_c,
-                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
-        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(input_output_c);
-        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-        ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 63); // 61 regression tests and 2 error
-
-        fs::path testsDirPath = getTestFilePath("tests");
-
-        fs::path input_output_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath),
-            input_output_c);
-        auto testFilter = GrpcUtils::createTestFilterForFile(input_output_test_cpp);
-        auto runRequest = testUtils::createCoverageAndResultsRequest(
-            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
-
-        static auto coverageAndResultsWriter =
-            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
-                                                       coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{
-            true, false, 45, 30, false, false, ErrorMode::FAILING
-        };
-        coverageGenerator.generate(false, settingsContext);
-
-        EXPECT_FALSE(coverageGenerator.hasExceptions());
-        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
-
-        auto resultMap = coverageGenerator.getTestResultMap();
-        auto tests = coverageGenerator.getTestsToLaunch();
-
-        StatusCountMap expectedStatusCountMap{ {testsgen::TEST_PASSED, 61} };
-        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
-    }
-
     TEST_F(Syntax_Test, file_fgetc) {
         auto [testGen, status] = createTestForFunction(file_c, 5);
 
@@ -3415,44 +3311,6 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, run_tests_for_file_c) {
-        auto request =
-            testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
-                                         file_c, GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
-        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
-        testGen.setTargetForSource(file_c);
-        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
-        ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 33);
-
-        fs::path testsDirPath = getTestFilePath("tests");
-
-        fs::path file_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath),
-            file_c);
-        auto testFilter = GrpcUtils::createTestFilterForFile(file_test_cpp);
-        auto runRequest = testUtils::createCoverageAndResultsRequest(
-            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
-
-        static auto coverageAndResultsWriter =
-            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
-                                                       coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
-        };
-        coverageGenerator.generate(false, settingsContext);
-
-        EXPECT_FALSE(coverageGenerator.hasExceptions());
-        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
-
-        auto resultMap = coverageGenerator.getTestResultMap();
-        auto tests = coverageGenerator.getTestsToLaunch();
-
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 33 } };
-        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
-    }
-
     template<typename T>
     bool checkBitfieldFit(const std::shared_ptr<tests::AbstractValueView> &fieldView, size_t size) {
         T val = StringUtils::stot<T>(fieldView->getEntryValue(nullptr));
@@ -3600,5 +3458,33 @@ namespace {
                 }
             })
         );
+    }
+
+    TEST_F(Syntax_Test, hard_list_and_pointers) {
+        auto [testGen, status] = createTestForFunction(hard_linked_list_c, 5);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(hard_linked_list_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                { [](const tests::Tests::MethodTestCase &testCase) {
+                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                 },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                  },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -2;
+                  },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                  },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -3;
+                  },
+                  [](const tests::Tests::MethodTestCase &testCase) {
+                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
+                  } }));
     }
 }

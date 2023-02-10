@@ -29,4 +29,9 @@ add_executable(server
         alignment.c
         symbolic_stdin.c
         multiple_classes.cpp
+        file.c
+        hard_linked_list.c
+        input_output.c
+        linked_list.c
+        tree.c
         )
