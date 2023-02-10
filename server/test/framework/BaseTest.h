@@ -23,7 +23,7 @@ protected:
 
     CompilerName compilerName = CompilerName::CLANG;
     std::string buildDirRelativePath;
-    std::string clientProjectPath;
+    std::string clientProjectPath = "";
     fs::path buildPath;
     std::vector<fs::path> srcPaths;
 
