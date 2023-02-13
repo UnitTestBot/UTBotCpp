@@ -108,9 +108,10 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
                         }
                     } else {
                         if (!StringUtils::endsWith(testFilePath.c_str(), "_test.h") &&
-                            !StringUtils::endsWith(testFilePath.stem().c_str(), "_stub")) {
-                            LOG_S(WARNING)
-                                << "Found extra file in test directory: " << testFilePath;
+                            !StringUtils::endsWith(testFilePath.stem().c_str(), "_stub") &&
+                            !StringUtils::endsWith(testFilePath.c_str(), "_wrapper.c") &&
+                            !StringUtils::endsWith(testFilePath.c_str(), ".mk")) {
+                            LOG_S(WARNING) << "Found extra file in test directory: " << testFilePath;
                         }
                     }
                 });
