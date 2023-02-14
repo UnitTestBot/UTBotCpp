@@ -16,7 +16,8 @@ public:
     ProjectContext(std::string projectName,
                    fs::path projectPath,
                    fs::path testDirPath,
-                   fs::path buildDirRelativePath);
+                   fs::path buildDirRelativePath,
+                   fs::path serverBuildDir);
 
     explicit ProjectContext(const testsgen::ProjectContext &projectContext);
 
@@ -28,6 +29,7 @@ public:
     const fs::path projectPath;
     const fs::path testDirPath;
     const fs::path buildDirRelativePath;
+    const fs::path clientProjectPath;
 };
 }
 

@@ -57,18 +57,16 @@ namespace CompilationUtils {
         }
     }
 
-    void substituteRemotePathToCCJsonForFile(const fs::path &projectPath,
-                                             const std::string &buildDirRelativePath,
-                                             const std::string &jsonFileName,
-                                             const fs::path &newJsonDir) {
-        fs::path compileCommandsJsonPath = projectPath / buildDirRelativePath / jsonFileName;
-        fs::create_directories(newJsonDir);
+    void substituteRemotePathToCCJsonForFile(const utbot::ProjectContext &projectContext,
+                                             const std::string &jsonFileName) {
+        fs::path compileCommandsJsonPath = projectContext.buildDir() / jsonFileName;
+        fs::create_directories(Paths::getUTBotBuildDir(projectContext));
         if (!fs::exists(compileCommandsJsonPath)) {
             throw CompilationDatabaseException("Can't find " + compileCommandsJsonPath.string());
         }
         std::ifstream ifs(compileCommandsJsonPath);
         json json = json::parse(ifs);
-        std::string projectPathStr = Paths::normalizedTrimmed(fs::absolute(projectPath)).string();
+        std::string projectPathStr = Paths::normalizedTrimmed(fs::absolute(projectContext.projectPath)).string();
         Paths::removeBackTrailedSlash(projectPathStr);
 
         const std::string directoryFieldName = "directory";
@@ -79,8 +77,7 @@ namespace CompilationUtils {
 
         for (auto &cmd : json) {
             std::string directoryField = cmd[directoryFieldName];
-            std::string userSystemProjectPath =
-                Paths::subtractPath(directoryField, buildDirRelativePath);
+            std::string userSystemProjectPath = Paths::normalizedTrimmed(projectContext.clientProjectPath);
             Paths::removeBackTrailedSlash(userSystemProjectPath);
 
             if (cmd.contains(commandFieldName)) {
@@ -106,25 +103,23 @@ namespace CompilationUtils {
             } else {
                 for (auto &currentFile : cmd[filesFieldName]) {
                     std::string currentFileField = currentFile;
-                    StringUtils::replaceAll(currentFileField, userSystemProjectPath,
-                                            projectPathStr);
+                    StringUtils::replaceAll(currentFileField, userSystemProjectPath, projectPathStr);
                     currentFile = currentFileField;
                 }
             }
         }
-        fs::path newJsonPath = newJsonDir / jsonFileName;
+        fs::path newJsonPath = Paths::getUTBotBuildDir(projectContext) / jsonFileName;
         JsonUtils::writeJsonToFile(newJsonPath, json);
-        LOG_S(DEBUG) << jsonFileName << " for mount is written to: " << newJsonDir;
+        LOG_S(DEBUG) << jsonFileName << " for mount is written to: " << newJsonPath;
     }
 
     fs::path substituteRemotePathToCompileCommandsJsonPath(const utbot::ProjectContext &projectContext) {
         const std::string ccJsonFileName = "compile_commands.json";
-        fs::path utbotBuildDir = Paths::getUTBotBuildDir(projectContext);
-        substituteRemotePathToCCJsonForFile(projectContext.projectPath, projectContext.buildDirRelativePath,
-                                            ccJsonFileName, utbotBuildDir);
-        substituteRemotePathToCCJsonForFile(projectContext.projectPath, projectContext.buildDirRelativePath,
-                                            "link_commands.json", utbotBuildDir);
-        return utbotBuildDir;
+        const std::string lcJsonFileName = "link_commands.json";
+
+        substituteRemotePathToCCJsonForFile(projectContext, ccJsonFileName);
+        substituteRemotePathToCCJsonForFile(projectContext, lcJsonFileName);
+        return Paths::getUTBotBuildDir(projectContext);
     }
 
     fs::path getClangCompileCommandsJsonPath(const fs::path &buildCommandsJsonPath) {

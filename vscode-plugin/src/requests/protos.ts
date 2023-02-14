@@ -11,6 +11,8 @@ import {
 } from "../proto-ts/testgen_pb";
 import { PredicateInfo, SourceInfo, ValidationType } from "../proto-ts/util_pb";
 import { RequestTestsParams } from "./params";
+import * as vsUtils from "../utils/vscodeUtils";
+
 
 export class Protos {
     public static projectRequestByParams(params: RequestTestsParams): ProjectRequest {
@@ -37,6 +39,7 @@ export class Protos {
         projectContext.setProjectpath(projectPath);
         projectContext.setTestdirpath(Prefs.getTestsDirPath());
         projectContext.setBuilddirrelativepath(buildDirRelativePath);
+        projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath)
         projectInfo.setProjectcontext(projectContext);
         projectInfo.setSettingscontext(Prefs.getSettingsContext());
         projectInfo.setSourcepathsList(srcPathsList);

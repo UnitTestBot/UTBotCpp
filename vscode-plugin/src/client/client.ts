@@ -1,6 +1,7 @@
 /* eslint-disable no-async-promise-executor */
 import * as grpc from 'grpc';
 import * as vs from 'vscode';
+import * as vsUtils from "../utils/vscodeUtils";
 import * as os from 'os';
 import * as messages from '../config/notificationMessages';
 import { Prefs } from '../config/prefs';
@@ -394,6 +395,7 @@ export class Client {
             projectContext.setProjectname(projectName);
             projectContext.setProjectpath(projectPath);
             projectContext.setBuilddirrelativepath(buildDirRelativePath);
+            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath)
             const projectConfigRequest = new ProjectConfigRequest();
             projectConfigRequest.setProjectcontext(projectContext);
             projectConfigRequest.setConfigmode(configMode);
@@ -426,6 +428,7 @@ export class Client {
             projectContext.setProjectpath(buildDir[0]);
             projectContext.setTestdirpath(Prefs.getTestsDirPath());
             projectContext.setBuilddirrelativepath(buildDir[1]);
+            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath)
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());
 
@@ -640,6 +643,7 @@ export class Client {
             projectContext.setProjectpath(params.projectPath);
             projectContext.setTestdirpath(Prefs.getTestsDirPath());
             projectContext.setBuilddirrelativepath(params.buildDirRelativePath);
+            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());
             rpcRequest.setCoverage(true);

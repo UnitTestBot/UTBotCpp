@@ -17,19 +17,25 @@ namespace visitor {
         auto returnType = methodDescription.returnType.maybeReturnArray()
                           ? methodDescription.returnType.arrayClone(usage, pointerSize)
                           : methodDescription.returnType;
+
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false, errorMode);
-        if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
-            additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-            printer->writeCodeLine(
-                    StringUtils::stringFormat("EXPECT_TRUE(%s)",
-                                              PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
-            return;
+        if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
+            if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
+                additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
+                printer->writeCodeLine(
+                        StringUtils::stringFormat("EXPECT_TRUE(%s)",
+                                                  PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
+                return;
+            } else {
+                additionalPointersCount = 0;
+                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+                functionCall = {};
+                additionalPointersCount = 0;
+            }
         } else {
-            additionalPointersCount = 0;
+            printer->writeCodeLine(functionCall);
+            return;
         }
-        visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
-        functionCall = {};
-        additionalPointersCount = 0;
     }
 
     void ParametrizedAssertsVisitor::visitArray(const types::Type &type,
