@@ -408,6 +408,9 @@ void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath)
 }
 
 void TestsPrinter::testHeader(const Tests::MethodTestCase &testCase) {
+    if (testCase.isError()) {
+        strComment(testCase.getError());
+    }
     strFunctionCall("TEST", { testCase.suiteName, testCase.testName }, NL) << LB(false);
 }
 

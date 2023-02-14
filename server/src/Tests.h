@@ -467,6 +467,13 @@ namespace tests {
             FileInfo getFileByName(char fileName) const {
                 return filesValues.value()[fileName - 'A'];
             }
+            
+            std::string getError() const {
+                if (!errorDescriptors.empty()) {
+                    return errorDescriptors[0].substr(0, errorDescriptors[0].find('\n'));
+                }
+                return "";
+            }
         };
 
         struct Modifiers {
