@@ -60,7 +60,7 @@ namespace {
             auto projectContext = GrpcUtils::createProjectContext(
                     projectName, suitePath, testsDirPath, buildDirRelativePath);
 
-            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false, ErrorMode::PASSING);
+            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false, ErrorMode::PASSING, false);
 
             auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
                                                            std::move(settingsContext),
@@ -1229,7 +1229,7 @@ namespace {
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode};
+            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode, false};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1462,7 +1462,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1508,7 +1508,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1556,7 +1556,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1602,7 +1602,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1648,7 +1648,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1721,7 +1721,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ErrorMode::FAILING };
+        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1808,7 +1808,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1846,7 +1846,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 15, 0, false, false, ErrorMode::FAILING
+            true, false, 15, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1888,7 +1888,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 30, false, false, ErrorMode::FAILING
+            true, false, 45, 30, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1927,7 +1927,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1965,7 +1965,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 

@@ -36,7 +36,8 @@ namespace GrpcUtils {
                           int32_t timeoutPerTest,
                           bool useDeterministicSearcher,
                           bool useStubs,
-                          ErrorMode errorMode) {
+                          ErrorMode errorMode,
+                          bool differentVariablesOfTheSameType) {
         auto result = std::make_unique<testsgen::SettingsContext>();
         result->set_generateforstaticfunctions(generateForStaticFunctions);
         result->set_verbose(verbose);
@@ -45,6 +46,7 @@ namespace GrpcUtils {
         result->set_usedeterministicsearcher(useDeterministicSearcher);
         result->set_usestubs(useStubs);
         result->set_errormode(errorMode);
+        result->set_differentvariablesofthesametype(differentVariablesOfTheSameType);
         return result;
     }
 

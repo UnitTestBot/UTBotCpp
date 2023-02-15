@@ -12,9 +12,9 @@ namespace printer {
 
         utbot::Language getLanguage() const override;
 
-        Stream genConstraints(const std::string &name, const types::Type& type);
+        Stream genConstraints(const std::string &name, const types::Type& type, const std::vector<std::string>& names={});
 
-        Stream genConstraints(const Tests::MethodParam &param);
+        Stream genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names={});
 
         void setTabsDepth(const size_t depth) {
             tabsDepth = depth;
@@ -31,7 +31,7 @@ namespace printer {
             int depth = 0;
         };
 
-        void genConstraintsForPrimitive(const ConstraintsState &state);
+        void genConstraintsForPrimitive(const ConstraintsState &state, const std::vector<std::string>& names={});
 
         void genConstraintsForPointerOrArray(const ConstraintsState &state);
 
@@ -44,7 +44,7 @@ namespace printer {
 
         void genConstraintsForPointerInStruct(const ConstraintsState &state);
 
-        static std::string cexConstraints(const std::string &name, const types::Type &type);
+        static std::string cexConstraints(const std::string &name, const types::Type &type, const std::vector<std::string>& names={});
 
         void noConstraints(const std::string &cause);
     };

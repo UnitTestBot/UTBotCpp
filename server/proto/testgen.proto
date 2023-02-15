@@ -105,6 +105,7 @@ message SettingsContext {
     bool useDeterministicSearcher = 5;
     bool useStubs = 6;
     ErrorMode errorMode = 7;
+    bool differentVariablesOfTheSameType = 8;
 }
 
 message SnippetRequest {

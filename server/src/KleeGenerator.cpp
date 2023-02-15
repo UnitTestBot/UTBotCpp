@@ -244,7 +244,7 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                                                     const std::shared_ptr<LineInfo> &lineInfo) {
     std::vector<fs::path> outFiles;
     LOG_S(DEBUG) << "Building generated klee files...";
-    printer::KleePrinter kleePrinter(&typesHandler, testGen->getTargetBuildDatabase(), utbot::Language::UNKNOWN);
+    printer::KleePrinter kleePrinter(&typesHandler, testGen->getTargetBuildDatabase(), utbot::Language::UNKNOWN, testGen);
     ExecUtils::doWorkWithProgress(
             testsMap, testGen->progressWriter, "Building generated klee files",
             [&](auto const &it) {
