@@ -13,6 +13,7 @@ add_executable(server
         assertion_failures.c
         basic_functions.c
         dependent_functions.c
+        different_variables.c
         floating_point.c
         floating_point_plain.c
         globals.c

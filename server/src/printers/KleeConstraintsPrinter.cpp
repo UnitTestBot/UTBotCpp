@@ -15,7 +15,7 @@ printer::KleeConstraintsPrinter::KleeConstraintsPrinter(const types::TypesHandle
     : Printer(srcLanguage), typesHandler(typesHandler) {}
 
 printer::KleeConstraintsPrinter::Stream
-KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Type& type) {
+KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Type& type, const std::vector<std::string>& names) {
     ConstraintsState state = { "&" + name, name, type, true };
     auto paramType = type;
     if (type.maybeJustPointer()) {
@@ -34,19 +34,19 @@ KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Typ
             genConstraintsForEnum(state);
             break;
         default:
-            genConstraintsForPrimitive(state);
+            genConstraintsForPrimitive(state, names);
     }
 
     return ss;
 }
 
 printer::KleeConstraintsPrinter::Stream
-KleeConstraintsPrinter::genConstraints(const Tests::MethodParam &param) {
-    return genConstraints(param.name, param.type);
+KleeConstraintsPrinter::genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names) {
+    return genConstraints(param.name, param.type, names);
 }
 
-void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &state) {
-    const auto &cons = cexConstraints(state.curElement, state.curType);
+void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &state, const std::vector<std::string>& names) {
+    const auto &cons = cexConstraints(state.curElement, state.curType, names);
     if (!cons.empty()) {
         strFunctionCall(PrinterUtils::KLEE_PREFER_CEX, { state.paramName, cons });
     } else {
@@ -164,7 +164,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
     }
 }
 
-std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, const types::Type &type) {
+std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, const types::Type &type, const std::vector<std::string>& names) {
     if (!CollectionUtils::containsKey(TypesHandler::preferredConstraints(), type.baseType())) {
         return "";
     }
@@ -174,6 +174,11 @@ std::string KleeConstraintsPrinter::cexConstraints(const std::string &name, cons
         ssCex << name << " " << constraints[i];
         if (i + 1 < constraints.size()) {
             ssCex << " & ";
+        }
+    }
+    for (const std::string& currentName: names){
+        if(name != currentName){
+            ssCex << " & " << name << " != " << currentName;
         }
     }
     return ssCex.str();

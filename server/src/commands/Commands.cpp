@@ -412,6 +412,10 @@ ErrorMode Commands::SettingsContextOptionGroup::getErrorMode() const {
     return errorMode;
 }
 
+bool Commands::SettingsContextOptionGroup::doDifferentVariablesOfTheSameType() const {
+    return differentVariablesOfTheSameType;
+}
+
 Commands::RunTestsCommands::RunTestsCommands(Commands::MainCommands &commands) {
     runCommand = commands.getRunTestsCommand();
 

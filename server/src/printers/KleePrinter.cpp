@@ -5,6 +5,7 @@
 #include "Paths.h"
 #include "exceptions/NoSuchTypeException.h"
 #include "exceptions/UnImplementedException.h"
+#include "testgens/BaseTestGen.h"
 #include "utils/CollectionUtils.h"
 #include "utils/FileSystemUtils.h"
 #include "utils/KleeUtils.h"
@@ -29,8 +30,9 @@ static const std::string CALLOC_DECLARATION = "extern\n"
 
 printer::KleePrinter::KleePrinter(const types::TypesHandler *typesHandler,
                                   std::shared_ptr<BuildDatabase> buildDatabase,
-                                  utbot::Language srcLanguage)
-    : Printer(srcLanguage), typesHandler(typesHandler), buildDatabase(std::move(buildDatabase)) {
+                                  utbot::Language srcLanguage,
+                                  const BaseTestGen *testGen)
+    : Printer(srcLanguage), typesHandler(typesHandler), buildDatabase(std::move(buildDatabase)), testGen(testGen) {
 }
 
 void KleePrinter::writePosixWrapper(const Tests &tests,
@@ -376,7 +378,11 @@ void KleePrinter::genParamsDeclarations(
                 .str();
         ss << constraintsBlock;
     }
+    std::unordered_map<std::string , std::vector<std::string>>typesToNames;
     for (const auto &param : testMethod.params) {
+        if(testGen->settingsContext.differentVariablesOfTheSameType){
+            typesToNames[param.type.typeName()].push_back(param.name);
+        }
         if (!filter(param)) {
             continue;
         }
@@ -388,7 +394,9 @@ void KleePrinter::genParamsDeclarations(
         auto paramType =
             kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
         strKleeMakeSymbolic(paramType, kleeParam.name, param.name, !isArray);
-        genConstraints(kleeParam, testMethod.name);
+        if(testGen->settingsContext.differentVariablesOfTheSameType && typesToNames[param.type.typeName()].size() <= 3){
+            genConstraints(kleeParam, testMethod.name, typesToNames[param.type.typeName()]);}
+        else {genConstraints(kleeParam, testMethod.name);}
         genTwoDimPointers(param, true);
         commentBlockSeparator();
     }
@@ -479,10 +487,10 @@ void KleePrinter::genParamsKleeAssumes(
     }
 }
 
-void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::string &methodName) {
+void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::string &methodName, const std::vector<std::string>& names) {
     KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
     constraintsPrinter.setTabsDepth(tabsDepth);
-    const auto constraintsBlock = constraintsPrinter.genConstraints(param).str();
+    const auto constraintsBlock = constraintsPrinter.genConstraints(param, names).str();
     ss << constraintsBlock;
 }
 

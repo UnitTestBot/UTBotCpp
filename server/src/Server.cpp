@@ -249,7 +249,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
             if (lineTestGen->needToAddPathFlag()) {
                 LOG_S(DEBUG) << "Added test line flag for file " << lineInfo->filePath;
                 fs::path flagFilePath =
-                        printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath))
+                        printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath), &testGen)
                                 .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
                 pathSubstitution = {lineTestGen->filePath, flagFilePath};
             }

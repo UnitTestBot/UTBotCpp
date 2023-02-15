@@ -51,6 +51,7 @@ namespace {
         fs::path linked_list_c = getTestFilePath("linked_list.c");
         fs::path tree_c = getTestFilePath("tree.c");
         fs::path different_parameters_cpp = getTestFilePath("different_parameters.cpp");
+        fs::path different_variables_cpp = getTestFilePath("different_variables.cpp");
         fs::path simple_class_cpp = getTestFilePath("simple_class.cpp");
         fs::path inner_unnamed_c = getTestFilePath("inner_unnamed.c");
         fs::path array_sort_c = getTestFilePath("array_sort.c");
