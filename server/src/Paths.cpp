@@ -416,11 +416,11 @@ namespace Paths {
         return removeSuffix(sourceFilePath, STUB_SUFFIX);
     }
 
+    //endregion
+
     bool isHeadersEqual(const fs::path &srcPath, const fs::path &headerPath) {
         return removeSuffix(srcPath, STUB_SUFFIX).stem() == headerPath.stem();
     }
-
-    //endregion
 
     const std::vector<std::string> CXXFileExtensions({".cc", ".cp", ".cpp", ".c++", ".cxx"});
     const std::vector<std::string> HPPFileExtensions({".hh", ".hpp", ".hxx"});
