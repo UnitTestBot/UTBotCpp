@@ -38,7 +38,7 @@ namespace CompilationUtils {
     std::shared_ptr<CompilationDatabase>
     getCompilationDatabase(const fs::path &buildCommandsJsonPath);
 
-    CompilerName getCompilerName(fs::path const &compilerPath);
+    CompilerName getCompilerName(fs::path compilerPath);
 
     fs::path substituteRemotePathToCompileCommandsJsonPath(const utbot::ProjectContext &projectContext);
 

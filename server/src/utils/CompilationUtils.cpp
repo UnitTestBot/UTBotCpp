@@ -25,21 +25,33 @@ namespace CompilationUtils {
         return compilationDatabase;
     }
 
-    CompilerName getCompilerName(const fs::path &compilerPath) {
-        auto compiler = compilerPath.filename().string();
-        if (StringUtils::contains(compiler, CLANGXX_PATH)) {
-            return CompilerName::CLANGXX;
+    CompilerName getCompilerName(fs::path compilerPath) {
+        CompilerName compilerName = CompilerName::UNKNOWN;
+        while (compilerName == CompilerName::UNKNOWN) {
+            std::string compiler = compilerPath.filename().string();
+            if (StringUtils::contains(compiler, CLANGXX_PATH)) {
+                return CompilerName::CLANGXX;
+            }
+            if (StringUtils::contains(compiler, CLANG_PATH)) {
+                return CompilerName::CLANG;
+            }
+            if (StringUtils::contains(compiler, GXX_PATH_PATTERN)) {
+                return CompilerName::GXX;
+            }
+            if (StringUtils::contains(compiler, GCC_PATH_PATTERN)) {
+                return CompilerName::GCC;
+            }
+            compilerPath = fs::findInPATH(compilerPath);
+            if (fs::is_symlink(compilerPath)) {
+                std::error_code ec;
+                compilerPath = fs::read_symlink(compilerPath, ec);
+                if (!ec) {
+                    continue;
+                }
+            }
+            break;
         }
-        if (StringUtils::contains(compiler, CLANG_PATH)) {
-            return CompilerName::CLANG;
-        }
-        if (StringUtils::contains(compiler, GXX_PATH_PATTERN)) {
-            return CompilerName::GXX;
-        }
-        if (StringUtils::contains(compiler, GCC_PATH_PATTERN)) {
-            return CompilerName::GCC;
-        }
-        return CompilerName::UNKNOWN;
+        return compilerName;
     }
 
     std::string getBuildDirectoryName(CompilerName compilerName) {
