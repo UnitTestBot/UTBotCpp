@@ -64,6 +64,8 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << NL;
 
+    ss << "using namespace UTBot;" << NL;
+
     strDeclareSetOfVars(tests.externVariables);
 
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
