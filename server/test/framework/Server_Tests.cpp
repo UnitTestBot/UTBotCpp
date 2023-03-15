@@ -138,14 +138,6 @@ namespace {
             return std::stoi(first.view->getEntryValue(nullptr)) == std::stoi(second.view->getEntryValue(nullptr));
         }
 
-        void checkDifferentVariablesTrue_C(BaseTestGen &testGen){
-            checkDifferentVariables_C(testGen, true);
-        }
-
-        void checkDifferentVariablesFalse_C(BaseTestGen &testGen){
-            checkDifferentVariables_C(testGen, false);
-        }
-
         void checkDifferentVariables_C(BaseTestGen &testGen, bool differentVariables) {
             for (const auto &[methodName, methodDescription] :
                  testGen.tests.at(different_variables_c).methods) {
@@ -842,7 +834,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        checkDifferentVariablesFalse_C(testGen);
+        checkDifferentVariables_C(testGen, false);
     }
 
     TEST_F(Server_Test, Different_Variables_True) {
@@ -853,7 +845,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        checkDifferentVariablesTrue_C(testGen);
+        checkDifferentVariables_C(testGen, true);
     }
 
     TEST_F(Server_Test, Dependent_Functions) {
