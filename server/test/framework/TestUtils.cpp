@@ -220,11 +220,12 @@ namespace testUtils {
                                                          bool useStubs,
                                                          bool verbose,
                                                          int kleeTimeout,
-                                                         ErrorMode errorMode) {
+                                                         ErrorMode errorMode,
+                                                         bool differentVariables) {
         auto projectContext = GrpcUtils::createProjectContext(
                 projectName, projectPath, projectPath / "tests", buildDirRelativePath);
         auto settingsContext =
-                GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode);
+                GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode, differentVariables);
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
@@ -286,7 +287,7 @@ namespace testUtils {
         auto projectContext =
             GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "");
         // we actually don't pass all parameters except test directory and project name on client
-        auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false, errorMode);
+        auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false, errorMode, false);
         return GrpcUtils::createSnippetRequest(std::move(projectContext),
                                                std::move(settingsContext), filePath);
     }

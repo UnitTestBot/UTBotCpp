@@ -245,6 +245,8 @@ namespace Commands {
 
         [[nodiscard]] ErrorMode getErrorMode() const;
 
+        [[nodiscard]] bool doDifferentVariablesOfTheSameType() const;
+
     private:
         CLI::Option_group *settingsContextOptions;
         bool generateForStaticFunctions = true;
@@ -254,6 +256,7 @@ namespace Commands {
         bool noDeterministicSearcher = false;
         bool noStubs = false;
         ErrorMode errorMode = ErrorMode::FAILING;
+        bool differentVariablesOfTheSameType = false;
     };
 };
 

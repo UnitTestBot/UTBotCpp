@@ -46,6 +46,8 @@ export class Prefs {
 
     public static ERROR_SUITES_PREF = 'unittestbot.testsGeneration.errorMode';
 
+    public static DIFF_VARS_PREF = 'unittestbot.testsGeneration.differentVariablesOfTheSameType';
+
 
     public static isLocalHost(): boolean {
         const host = Prefs.getAsset(Prefs.HOST_PREF);
@@ -83,7 +85,8 @@ export class Prefs {
         .setTimeoutpertest(Prefs.timeoutPerTest())
         .setUsedeterministicsearcher(Prefs.useDeterministicSearcher())
         .setUsestubs(Prefs.useStubs())
-        .setErrormode(Prefs.errorMode());
+        .setErrormode(Prefs.errorMode())
+        .setDifferentvariablesofthesametype(Prefs.differentVariablesOfTheSameType());
         return settingsContext;
     }
 
@@ -396,5 +399,9 @@ export class Prefs {
 
     public static showTestResults(): boolean {
         return this.getAssetBase(Prefs.SHOW_TEST_RESULTS_PREF, true);
+    }
+
+    public static differentVariablesOfTheSameType(): boolean {
+        return this.getAssetBase(Prefs.DIFF_VARS_PREF, true);
     }
 }

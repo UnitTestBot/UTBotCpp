@@ -28,7 +28,8 @@ namespace GrpcUtils {
                           int32_t timeoutPerTest,
                           bool useDeterministicSearcher,
                           bool useStubs,
-                          ErrorMode errorMode);
+                          ErrorMode errorMode,
+                          bool differentVariablesOfTheSameType);
 
     std::unique_ptr<testsgen::SnippetRequest>
     createSnippetRequest(std::unique_ptr<testsgen::ProjectContext> projectContext,

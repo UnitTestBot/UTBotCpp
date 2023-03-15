@@ -34,6 +34,7 @@ namespace {
         fs::path assertion_failures_c = getTestFilePath("assertion_failures.c");
         fs::path basic_functions_c = getTestFilePath("basic_functions.c");
         fs::path dependent_functions_c = getTestFilePath("dependent_functions.c");
+        fs::path different_variables_c = getTestFilePath("different_variables.c");
         fs::path pointer_parameters_c = getTestFilePath("pointer_parameters.c");
         fs::path simple_structs_c = getTestFilePath("simple_structs.c");
         fs::path simple_unions_c = getTestFilePath("simple_unions.c");
@@ -60,7 +61,7 @@ namespace {
             auto projectContext = GrpcUtils::createProjectContext(
                     projectName, suitePath, testsDirPath, buildDirRelativePath);
 
-            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false, ErrorMode::PASSING);
+            auto settingsContext = GrpcUtils::createSettingsContext(true, false, 30, 0, false, false, ErrorMode::PASSING, false);
 
             auto request = GrpcUtils::createProjectRequest(std::move(projectContext),
                                                            std::move(settingsContext),
@@ -131,6 +132,75 @@ namespace {
                           return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 7;
                       } }),
                 "buggy_function2");
+        }
+
+        static bool checkEquals(const tests::Tests::TestCaseParamValue& first, const tests::Tests::TestCaseParamValue& second){
+            return std::stoi(first.view->getEntryValue(nullptr)) == std::stoi(second.view->getEntryValue(nullptr));
+        }
+
+        void checkDifferentVariables_C(BaseTestGen &testGen, bool differentVariables) {
+            for (const auto &[methodName, methodDescription] :
+                 testGen.tests.at(different_variables_c).methods) {
+                if (methodName == "swap_two_int_pointers") {
+                    checkTestCasePredicates(
+                        methodDescription.testCases,
+                        std::vector<TestCasePredicate>(
+                            { [differentVariables](tests::Tests::MethodTestCase const &testCase) {
+                                return (differentVariables ^
+                                        checkEquals(testCase.paramValues[0],
+                                                    testCase.paramValues[1])) &&
+                                       checkEquals(testCase.paramPostValues[0],
+                                                   testCase.paramValues[1]) &&
+                                       checkEquals(testCase.paramPostValues[1],
+                                                   testCase.paramValues[0]) &&
+                                       testCase.stdinValue == std::nullopt;
+                            } }),
+                        methodName);
+                } else if (methodName == "max_of_two_float") {
+                    checkTestCasePredicates(
+                        methodDescription.testCases,
+                        std::vector<TestCasePredicate>(
+                            { [differentVariables](tests::Tests::MethodTestCase const &testCase) {
+                                 return ((stod(testCase.paramValues[0].view->getEntryValue(
+                                              nullptr)) ==
+                                          stod(testCase.paramValues[1].view->getEntryValue(
+                                              nullptr))) ^
+                                         differentVariables) &&
+                                        stod(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                            std::max(
+                                                stod(testCase.paramValues[0].view->getEntryValue(
+                                                    nullptr)),
+                                                stod(testCase.paramValues[1].view->getEntryValue(
+                                                    nullptr))) &&
+                                        testCase.stdinValue == std::nullopt;
+                             },
+                              [](tests::Tests::MethodTestCase const &testCase) {
+                                  return stod(testCase.paramValues[0].view->getEntryValue(
+                                             nullptr)) !=
+                                             stod(testCase.paramValues[1].view->getEntryValue(
+                                                 nullptr)) &&
+                                         stod(testCase.returnValue.view->getEntryValue(nullptr)) ==
+                                             std::max(
+                                                 stod(testCase.paramValues[0].view->getEntryValue(
+                                                     nullptr)),
+                                                 stod(testCase.paramValues[1].view->getEntryValue(
+                                                     nullptr))) &&
+                                         testCase.stdinValue == std::nullopt;
+                              } }),
+                        methodName);
+                } else if (methodName == "struct_test") {
+                    checkTestCasePredicates(
+                        methodDescription.testCases,
+                        std::vector<TestCasePredicate>(
+                            { [](tests::Tests::MethodTestCase const &testCase) {
+                                 return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
+                             },
+                              [](tests::Tests::MethodTestCase const &testCase) {
+                                  return testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                              } }),
+                        methodName);
+                }
+            }
         }
 
         void checkBasicFunctions_C(BaseTestGen &testGen) {
@@ -756,6 +826,28 @@ namespace {
         checkAssertionFailures_C(testGen);
     }
 
+    TEST_F(Server_Test, Different_Variables_False) {
+        auto projectRequest =
+            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                 GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, true, 60, ErrorMode::PASSING, false);
+        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), different_variables_c);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        checkDifferentVariables_C(testGen, false);
+    }
+
+    TEST_F(Server_Test, Different_Variables_True) {
+        auto projectRequest =
+            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                 GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, true, 60, ErrorMode::PASSING, true);
+        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), different_variables_c);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        checkDifferentVariables_C(testGen, true);
+    }
+
     TEST_F(Server_Test, Dependent_Functions) {
         auto [testGen, status] = performFeatureFileTestsRequest(dependent_functions_c);
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -1229,7 +1321,7 @@ namespace {
             static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
             CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode};
+            utbot::SettingsContext settingsContext{ true, true, 30, 0, true, false, errorMode, false};
             coverageGenerator.generate(withCoverage, settingsContext);
             EXPECT_FALSE(coverageGenerator.hasExceptions());
             return coverageGenerator;
@@ -1462,7 +1554,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1508,7 +1600,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1556,7 +1648,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1602,7 +1694,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1648,7 +1740,7 @@ namespace {
                 buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
-        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING};
+        utbot::SettingsContext settingsContext{true, true, 30, 0, true, false, ErrorMode::PASSING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1721,7 +1813,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ request.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ErrorMode::FAILING };
+        utbot::SettingsContext settingsContext{ true, true, 15, timeout, true, false, ErrorMode::FAILING, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
@@ -1808,7 +1900,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1846,7 +1938,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 15, 0, false, false, ErrorMode::FAILING
+            true, false, 15, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1888,7 +1980,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 30, false, false, ErrorMode::FAILING
+            true, false, 45, 30, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1927,7 +2019,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 
@@ -1965,7 +2057,7 @@ namespace {
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
                                                        coverageAndResultsWriter.get() };
         utbot::SettingsContext settingsContext{
-            true, false, 45, 0, false, false, ErrorMode::FAILING
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
         };
         coverageGenerator.generate(false, settingsContext);
 

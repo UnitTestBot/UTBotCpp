@@ -20,7 +20,8 @@ namespace utbot {
                         int32_t timeoutPerTest,
                         bool useDeterministicSearcher,
                         bool useStubs,
-                        testsgen::ErrorMode errorMode);
+                        testsgen::ErrorMode errorMode,
+                        bool differentVariablesOfTheSameType);
 
         const bool generateForStaticFunctions;
         const bool verbose;
@@ -28,6 +29,7 @@ namespace utbot {
         const bool useDeterministicSearcher;
         const bool useStubs;
         testsgen::ErrorMode errorMode;
+        const bool differentVariablesOfTheSameType;
     };
 }
 
