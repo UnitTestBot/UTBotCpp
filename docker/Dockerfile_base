@@ -74,16 +74,17 @@ RUN git clone --single-branch --branch "release/${LLVM_VERSION_MAJOR}.x" --depth
 WORKDIR $UTBOT_ALL/llvm-project
 RUN mkdir build && cd build \
     && $UTBOT_CMAKE_BINARY \
-    -DCMAKE_BUILD_TYPE=MinSizeRel \
+    -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_BINUTILS_INCDIR=$UTBOT_ALL/llvm_gold_plugin \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_EH=ON \
     -DLLVM_TARGETS_TO_BUILD="host" \
-    -DLLVM_ENABLE_PROJECTS="clang;compiler-rt;libc;libclc;libcxx;libcxxabi;lld;lldb;clang-tools-extra" -G "Ninja" ../llvm \
+    -DLLVM_ENABLE_PROJECTS="clang;libclc;lld;lldb;clang-tools-extra" \
+    -DLLVM_ENABLE_RUNTIMES="compiler-rt;libc;libcxx;libcxxabi" \
+    -G "Ninja" ../llvm \
     && $UTBOT_CMAKE_BINARY --build . --target install
-
 
 # Install KLEE dependencies
 ENV CURL_CA_BUNDLE=""
@@ -125,7 +126,7 @@ RUN cd $UTBOT_ALL/grpc && git submodule update --init
 RUN cd $UTBOT_ALL/grpc \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
+  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
   && make -j`nproc` \
   && make install \
   && cd $UTBOT_ALL \
