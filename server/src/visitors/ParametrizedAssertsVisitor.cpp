@@ -1,12 +1,16 @@
 #include "ParametrizedAssertsVisitor.h"
+#include "Tests.h"
+
 using namespace ::testsgen;
 
 namespace visitor {
-    ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(const types::TypesHandler *typesHandler,
-                                                           printer::TestsPrinter *printer,
-                                                           const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-                                                           bool isError)
-            : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo), isError(isError) {
+    ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(
+        const types::TypesHandler *typesHandler,
+        printer::TestsPrinter *printer,
+        const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+        bool isError)
+        : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo),
+          isError(isError) {
     }
 
     static thread_local std::string functionCall;
@@ -22,13 +26,14 @@ namespace visitor {
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
             if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
                 additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-                printer->writeCodeLine(
-                        StringUtils::stringFormat("EXPECT_TRUE(%s)",
-                                                  PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
-                return;
-            } else {
-                additionalPointersCount = 0;
-                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+            printer->writeCodeLine(StringUtils::stringFormat(
+                "EXPECT_TRUE(%s)",
+                PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
+            return;
+        } else {
+            additionalPointersCount = 0;
+                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0,
+                 methodDescription.constructorInfo);
                 functionCall = {};
                 additionalPointersCount = 0;
             }
@@ -43,22 +48,25 @@ namespace visitor {
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
                                                 size_t size,
-                                                int depth) {
+                                                int depth,
+                                                tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
             if (type.isArray()) {
                 if (isError) {
                     printer->writeCodeLine(functionCall);
                     return;
                 } else {
-                    printer->strDeclareVar(
-                            printer::Printer::getConstQualifier(type) + type.usedType(), PrinterUtils::ACTUAL,
-                            functionCall, std::nullopt, true, additionalPointersCount);
+                    printer->strDeclareVar(printer::Printer::getConstQualifier(type) +
+                                               type.usedType(),
+                                           PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
+                                           additionalPointersCount);
                     printer->strDeclareArrayVar(
                         type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
                         view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
-                return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
+                return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
+                                                          depth);
             }
         }
 
@@ -67,7 +75,8 @@ namespace visitor {
             std::vector<size_t> sizes = type.arraysSizes(usage);
             const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
             const auto indexing = printer::Printer::constrMultiIndex(iterators);
-            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
+            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
+                     depth + sizes.size());
             printer->closeBrackets(sizes.size());
         }
     }
@@ -76,14 +85,42 @@ namespace visitor {
                                                  const std::string &name,
                                                  const tests::AbstractValueView *view,
                                                  const std::string &access,
-                                                 int depth) {
+                                                 int depth,
+                                                 tests::Tests::ConstructorInfo constructorInfo) {
         auto value = view->getEntryValue(printer);
+        if (depth == 0) {
+            std::optional<std::string> initValue = functionCall;
+            if (constructorInfo == tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR) {
+                initValue = "std::move(" + functionCall +  ")";
+            }
+            printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
+                                   PrinterUtils::ACTUAL, initValue, std::nullopt, true,
+                                   additionalPointersCount);
+            if (!tests::Tests::isConstructor(constructorInfo)) {
+                printer->strDeclareVar(type.typeName(),
+                                       PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
+            }
+        } else {
+            printer->ss << value << NL;
+        }
+    }
+
+    void ParametrizedAssertsVisitor::visitUnion(const types::Type &type,
+                                                const std::string &name,
+                                                const tests::AbstractValueView *view,
+                                                const std::string &access,
+                                                int depth,
+                                                tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
                                    PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                    additionalPointersCount);
-            printer->strDeclareVar(
-                type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
+            if (!tests::Tests::isConstructor(constructorInfo)) {
+                printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED,
+                                       view->getEntryValue(printer));
+            }
+        } else {
+           AbstractValueViewVisitor::visitUnion(type, name, view, access, depth, constructorInfo);
         }
         AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
     }
@@ -92,7 +129,8 @@ namespace visitor {
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,
                                                     const std::string &access,
-                                                    int depth) {
+                                                    int depth,
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
             if (types::TypesHandler::isVoid(type) || isError) {
                 printer->writeCodeLine(functionCall);
@@ -104,17 +142,22 @@ namespace visitor {
                 auto signature =
                         processExpect(type, gtestMacro, {view->getEntryValue(printer), getDecorateActualVarName(access)});
                 signature = changeSignatureToNullCheck(signature, type, view, access);
-                printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
-                                         std::nullopt, inUnion);
+                printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true,
+                                         0, std::nullopt, inUnion);
             }
         } else {
             if (isError) {
                 return;
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
-            auto signature =
-                    processExpect(type, gtestMacro, {getDecorateActualVarName(access),
-                                                     PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED)});
+            std::string expectedValue;
+            if (!tests::Tests::isConstructor(constructorInfo)) {
+                expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
+            } else {
+                expectedValue = view->getEntryValue(printer);
+            }
+            auto signature = processExpect(type, gtestMacro,
+                                           { getDecorateActualVarName(access), expectedValue });
             signature = changeSignatureToNullCheck(signature, type, view, access);
             printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                      std::nullopt, inUnion);

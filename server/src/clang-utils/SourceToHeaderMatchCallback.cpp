@@ -5,6 +5,7 @@
 #include "SourceToHeaderRewriter.h"
 #include "printers/Printer.h"
 #include "utils/ExecUtils.h"
+#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -80,7 +81,7 @@ void SourceToHeaderMatchCallback::checkTypedef(const MatchFinder::MatchResult &R
 
 void SourceToHeaderMatchCallback::checkFunctionDecl(
     const ast_matchers::MatchFinder::MatchResult &Result) {
-    if (const auto *decl = Result.Nodes.getNodeAs<FunctionDecl>(FUNCTION_DEF)) {
+    if (const FunctionDecl *decl = ClangUtils::getFunctionOrConstructor(Result)) {
         if (decl->isInlined() && decl->getStorageClass() == SC_None) {
             LOG_S(DEBUG)
                 << "inline function without static or extern modifier is not supported by now";

@@ -17,8 +17,9 @@ namespace visitor {
         functionCall = printer->constrFunctionCall(methodDescription, 0, "", false);
         additionalPointersCount = methodDescription.returnType.countReturnPointers();
         auto returnType = methodDescription.returnType.baseTypeObj();
+        std::optional<std::string> initValue = functionCall;
         printer->strDeclareVar(getActualTmpVarType(returnType).baseType(),
-                           KleeUtils::TEMP_VARIABLE_NAME, functionCall,
+                           KleeUtils::TEMP_VARIABLE_NAME, initValue,
                            std::nullopt, true, additionalPointersCount);
         checkNotNullBefore();
         if (predicateInfo.has_value()) {
@@ -58,7 +59,8 @@ namespace visitor {
                                                       const std::string &name,
                                                       const tests::AbstractValueView *view,
                                                       const std::string &access,
-                                                      int depth) {
+                                                      int depth,
+                                                      tests::Tests::ConstructorInfo constructorInfo) {
         std::string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
                                              PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
         kleeAssumeWithNullCheck(assumption);
@@ -68,7 +70,8 @@ namespace visitor {
                                                    const std::string &name,
                                                    const tests::AbstractValueView *view,
                                                    const std::string &access,
-                                                   int depth) {
+                                                   int depth,
+                                                   tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0) {
             kleeAssumeWithNullCheck("", false);
             AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
@@ -76,6 +79,18 @@ namespace visitor {
         } else {
             AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
         }
+    }
+
+    void KleeAssumeReturnValueVisitor::visitUnion(const types::Type &type,
+                                                  const std::string &name,
+                                                  const tests::AbstractValueView *view,
+                                                  const std::string &access,
+                                                  int depth,
+                                                  tests::Tests::ConstructorInfo constructorInfo) {
+        if (depth == 0) {
+            kleeAssumeWithNullCheck("", false);
+        }
+        AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
     }
 
     void KleeAssumeReturnValueVisitor::visitPointer(const types::Type &type,
@@ -95,7 +110,8 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   size_t size,
-                                                  int depth) {
+                                                  int depth,
+                                                  tests::Tests::ConstructorInfo constructorInfo) {
         if (depth == 0 && additionalPointersCount > 0) {
             returnTypeIsArray = true;
             additionalPointersCount--;

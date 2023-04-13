@@ -6,7 +6,8 @@
 #include "utils/StubsUtils.h"
 
 namespace visitor {
-    FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(const types::TypesHandler *typesHandler)
+    FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(
+        const types::TypesHandler *typesHandler)
         : AbstractValueViewVisitor(typesHandler, types::PointerUsage::RETURN) {
     }
 
@@ -29,10 +30,11 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitStruct(const types::Type &type,
-                                             const std::string &name,
-                                             const tests::AbstractValueView *view,
-                                             const std::string &access,
-                                             int depth) {
+                                                     const std::string &name,
+                                                     const tests::AbstractValueView *view,
+                                                     const std::string &access,
+                                                     int depth,
+                                                     tests::Tests::ConstructorInfo constructorInfo) {
         auto [_, inserted] = used.insert(type.getId());
         if (!inserted) {
             return;
@@ -45,7 +47,7 @@ namespace visitor {
         for (auto &field : structInfo.fields) {
             if (!types::TypesHandler::isPointerToFunction(field.type) &&
                 !types::TypesHandler::isArrayOfPointersToFunction(field.type)) {
-                visitAny(field.type, name, nullptr, access, depth + 1);
+                visitAny(field.type, name, nullptr, access, depth + 1, constructorInfo);
             }
         }
     }
@@ -65,15 +67,18 @@ namespace visitor {
                                                     const tests::AbstractValueView *view,
                                                     const std::string &access,
                                                     size_t size,
-                                                    int depth) {
-        AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth + type.getDimension());
+                                                    int depth,
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
+        AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
+                                           depth + type.getDimension(), constructorInfo);
     }
 
     void FunctionPointerForStubsVisitor::visitPrimitive(const types::Type &type,
                                                         const std::string &name,
                                                         const tests::AbstractValueView *view,
                                                         const std::string &access,
-                                                        int depth) {
+                                                        int depth,
+                                                        tests::Tests::ConstructorInfo constructorInfo) {
         // need to be implemented
     }
 }

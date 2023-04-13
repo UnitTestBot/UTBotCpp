@@ -10,7 +10,8 @@ namespace visitor {
                                             const std::string &name,
                                             const tests::AbstractValueView *view,
                                             const std::string &access,
-                                            int depth) {
+                                            int depth,
+                                            tests::Tests::ConstructorInfo constructorInfo) {
         if (types::TypesHandler::isCStringType(type)) {
             return visitCString(type, name, view, access, depth);
         }
@@ -32,13 +33,17 @@ namespace visitor {
                 return visitPointer(type, name, view, access, depth);
             }
         } else if (typesHandler->isStructLike(type)) {
-            return visitStruct(type, name, view, access, depth);
+            return visitStruct(type, name, view, access, depth, constructorInfo);
+        } else if (typesHandler->isUnion(type)) {
+            return visitUnion(type, name, view, access, depth, constructorInfo);
+        } else if (types::TypesHandler::isPointerToFunction(type)) {
+            return visitPointerToFunction(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
             return visitEnum(type, name, view, access, depth);
         } else if (types::TypesHandler::isPointerToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
         } else if (types::TypesHandler::isPrimitiveType(type)) {
-            return visitPrimitive(type, name, view, access, depth);
+            return visitPrimitive(type, name, view, access, depth, constructorInfo);
         }
     }
 
@@ -64,7 +69,8 @@ namespace visitor {
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
                                               size_t size,
-                                              int depth) {
+                                              int depth,
+                                              tests::Tests::ConstructorInfo constructorInfo) {
         auto subViews = view ? &view->getSubViews() : nullptr;
         for (int i = 0; i < size; i++) {
             auto index = "[" + std::to_string(i) + "]";
@@ -88,7 +94,8 @@ namespace visitor {
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
-                                              int depth) {
+                                               int depth,
+                                               tests::Tests::ConstructorInfo constructorInfo) {
         const types::StructInfo &structInfo = typesHandler->getStructInfo(type);
         auto subViews = view ? &view->getSubViews() : nullptr;
 
@@ -99,7 +106,26 @@ namespace visitor {
             auto newName = PrinterUtils::getFieldAccess(name, field);
             auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
             auto newAccess = PrinterUtils::getFieldAccess(access, field);
-            visitAny(field.type, newName, newView, newAccess, depth + 1);
+            visitAny(field.type, newName, newView, newAccess, depth + 1, constructorInfo);
+        }
+    }
+    void AbstractValueViewVisitor::visitUnion(const types::Type &type,
+                                              const std::string &name,
+                                              const tests::AbstractValueView *view,
+                                              const std::string &access,
+                                              int depth,
+                                              tests::Tests::ConstructorInfo constructorInfo) {
+        auto unionInfo = typesHandler->getUnionInfo(type);
+        auto subViews = view ? &view->getSubViews() : nullptr;
+
+        bool oldFlag = inUnion;
+        inUnion = true;
+        for (int i = 0; i < unionInfo.fields.size(); i++) {
+            auto const &field = unionInfo.fields[i];
+            auto newName = PrinterUtils::getFieldAccess(name, field.name);
+            auto const *newView = subViews ? (*subViews)[i].get() : nullptr;
+            auto newAccess = PrinterUtils::getFieldAccess(access, field.name);
+            visitAny(field.type, newName, newView, newAccess, depth + 1, constructorInfo);
         }
         inUnion = oldFlag;
     }
@@ -107,8 +133,9 @@ namespace visitor {
                                              const std::string &name,
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
-                                             int depth) {
-        visitPrimitive(type, name, view, access, depth);
+                                             int depth,
+                                             tests::Tests::ConstructorInfo constructorInfo) {
+        visitPrimitive(type, name, view, access, depth, constructorInfo);
     }
 
     void AbstractValueViewVisitor::visitPointerToFunction(const types::Type &type,

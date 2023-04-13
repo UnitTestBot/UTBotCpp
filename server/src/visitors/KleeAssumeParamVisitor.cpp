@@ -29,10 +29,11 @@ namespace visitor {
   }
 
   void KleeAssumeParamVisitor::visitPrimitive(const types::Type &type,
-                                              const std::string &name,
-                                              const tests::AbstractValueView *view,
-                                              const std::string &access,
-                                              int depth) {
+                                                    const std::string &name,
+                                                    const tests::AbstractValueView *view,
+                                                    const std::string &access,
+                                                    int depth,
+                                                    tests::Tests::ConstructorInfo constructorInfo) {
       kleeAssume(PrinterUtils::getEqualString(name, PrinterUtils::fillVarName(access, outVariable)));
   }
 
@@ -50,11 +51,12 @@ namespace visitor {
   }
 
   void KleeAssumeParamVisitor::visitArray(const types::Type &type,
-                                          const std::string &name,
-                                          const tests::AbstractValueView *view,
-                                          const std::string &access,
-                                          size_t size,
-                                          int depth) {
+                                                const std::string &name,
+                                                const tests::AbstractValueView *view,
+                                                const std::string &access,
+                                                size_t size,
+                                                int depth,
+                                                tests::Tests::ConstructorInfo constructorInfo) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
@@ -71,7 +73,7 @@ namespace visitor {
       if (assignPointersToNull) {
           kleeAssume(PrinterUtils::getEqualString(name + indexing,  PrinterUtils::C_NULL));
       } else {
-          visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
+          visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size(), constructorInfo);
       }
       printer->closeBrackets(sizes.size());
   }
