@@ -59,13 +59,6 @@ namespace visitor {
                                  int depth,
                                  tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
 
-        virtual void visitUnion(const types::Type &type,
-                                const std::string &name,
-                                const tests::AbstractValueView *view,
-                                const std::string &access,
-                                int depth,
-                                tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR);
-
         virtual void visitEnum(const types::Type &type,
                                     const std::string &name,
                                     const tests::AbstractValueView *view,

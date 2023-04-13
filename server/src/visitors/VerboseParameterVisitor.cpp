@@ -98,23 +98,6 @@ namespace visitor {
         }
     }
 
-    void VerboseParameterVisitor::visitUnion(const types::Type &type,
-                                             const std::string &name,
-                                             const tests::AbstractValueView *view,
-                                             const std::string &access,
-                                             int depth,
-                                             tests::Tests::ConstructorInfo constructorInfo) {
-        auto value = view->getEntryValue(printer);
-        if (depth == 0) {
-            if (needDeclaration) {
-                printer->strDeclareVar(type.usedType(), name, value, parameterAlignment);
-            } else {
-                printer->strAssignVar(name, value);
-            }
-        } else {
-            printer->strAssignVar(name, value);
-        }
-    }
     void VerboseParameterVisitor::visitPrimitive(const types::Type &type,
                                                  const std::string &name,
                                                  const tests::AbstractValueView *view,

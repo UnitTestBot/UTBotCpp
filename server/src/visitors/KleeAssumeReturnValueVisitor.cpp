@@ -81,18 +81,6 @@ namespace visitor {
         }
     }
 
-    void KleeAssumeReturnValueVisitor::visitUnion(const types::Type &type,
-                                                  const std::string &name,
-                                                  const tests::AbstractValueView *view,
-                                                  const std::string &access,
-                                                  int depth,
-                                                  tests::Tests::ConstructorInfo constructorInfo) {
-        if (depth == 0) {
-            kleeAssumeWithNullCheck("", false);
-        }
-        AbstractValueViewVisitor::visitUnion(type, name, view, access, depth);
-    }
-
     void KleeAssumeReturnValueVisitor::visitPointer(const types::Type &type,
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,

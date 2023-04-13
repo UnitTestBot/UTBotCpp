@@ -105,26 +105,6 @@ namespace visitor {
         }
     }
 
-    void ParametrizedAssertsVisitor::visitUnion(const types::Type &type,
-                                                const std::string &name,
-                                                const tests::AbstractValueView *view,
-                                                const std::string &access,
-                                                int depth,
-                                                tests::Tests::ConstructorInfo constructorInfo) {
-        if (depth == 0) {
-            printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
-                                   additionalPointersCount);
-            if (!tests::Tests::isConstructor(constructorInfo)) {
-                printer->strDeclareVar(type.typeName(), PrinterUtils::EXPECTED,
-                                       view->getEntryValue(printer));
-            }
-        } else {
-           AbstractValueViewVisitor::visitUnion(type, name, view, access, depth, constructorInfo);
-        }
-        AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
-    }
-
     void ParametrizedAssertsVisitor::visitPrimitive(const types::Type &type,
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,

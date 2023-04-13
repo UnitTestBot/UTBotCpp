@@ -1274,11 +1274,10 @@ bool Tests::MethodTestCase::isError() const {
 
 [[nodiscard]] bool Tests::isConstructor(Tests::ConstructorInfo constructorInfo) {
     return (constructorInfo == Tests::ConstructorInfo::CONSTRUCTOR) || (constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR);
+}
 
 bool Tests::TypeAndVarName::operator<(const Tests::TypeAndVarName &other) const {
     return varName < other.varName || (varName == other.varName && type.mTypeName() < other.type.mTypeName());
-}
-
 }
 
 [[nodiscard]] bool Tests::isMoveConstructor(Tests::ConstructorInfo constructorInfo) {

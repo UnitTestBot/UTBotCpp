@@ -32,7 +32,7 @@ TwoElements::TwoElements() {
     second = 0;
 }
 
-Closet::Closet(const Closet& other) {
+Closet::Closet(const Closet &other) {
     length = other.length;
     width = other.width;
     height = other.height;
@@ -60,7 +60,7 @@ Closet2::Closet2() {
     volume = height * width * length;
 }
 
-Closet3::Closet3(Closet3 && other) {
+Closet3::Closet3(Closet3 &&other) {
     length = other.length;
     width = other.width;
     height = other.height;

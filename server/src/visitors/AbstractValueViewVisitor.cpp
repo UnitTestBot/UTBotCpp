@@ -34,8 +34,6 @@ namespace visitor {
             }
         } else if (typesHandler->isStructLike(type)) {
             return visitStruct(type, name, view, access, depth, constructorInfo);
-        } else if (typesHandler->isUnion(type)) {
-            return visitUnion(type, name, view, access, depth, constructorInfo);
         } else if (types::TypesHandler::isPointerToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
@@ -109,26 +107,7 @@ namespace visitor {
             visitAny(field.type, newName, newView, newAccess, depth + 1, constructorInfo);
         }
     }
-    void AbstractValueViewVisitor::visitUnion(const types::Type &type,
-                                              const std::string &name,
-                                              const tests::AbstractValueView *view,
-                                              const std::string &access,
-                                              int depth,
-                                              tests::Tests::ConstructorInfo constructorInfo) {
-        auto unionInfo = typesHandler->getUnionInfo(type);
-        auto subViews = view ? &view->getSubViews() : nullptr;
 
-        bool oldFlag = inUnion;
-        inUnion = true;
-        for (int i = 0; i < unionInfo.fields.size(); i++) {
-            auto const &field = unionInfo.fields[i];
-            auto newName = PrinterUtils::getFieldAccess(name, field.name);
-            auto const *newView = subViews ? (*subViews)[i].get() : nullptr;
-            auto newAccess = PrinterUtils::getFieldAccess(access, field.name);
-            visitAny(field.type, newName, newView, newAccess, depth + 1, constructorInfo);
-        }
-        inUnion = oldFlag;
-    }
     void AbstractValueViewVisitor::visitEnum(const types::Type &type,
                                              const std::string &name,
                                              const tests::AbstractValueView *view,

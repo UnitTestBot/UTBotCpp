@@ -32,12 +32,6 @@ namespace visitor {
                          const std::string &access,
                          int depth,
                          tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
-        void visitUnion(const types::Type &type,
-                        const std::string &name,
-                        const tests::AbstractValueView *view,
-                        const std::string &access,
-                        int depth,
-                        tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
 
         void visitArray(const types::Type &type,
                         const std::string &name,

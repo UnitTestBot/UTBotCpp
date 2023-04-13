@@ -1,7 +1,7 @@
 #include <utility>
 #include "function_with_rvalue_params.h"
 
-int double_max(int && first, int && second) {
+int double_max(int &&first, int &&second) {
     if (first > second) {
         return 2 * first;
     } else {
@@ -9,7 +9,7 @@ int double_max(int && first, int && second) {
     }
 }
 
-int remainder(const int && value) {
+int remainder(const int &&value) {
     if (value % 3 == 0) {
         return 0;
     } else if (value % 3 == 1) {
@@ -19,7 +19,7 @@ int remainder(const int && value) {
     }
 }
 
-int && return_and_get_rvalue_reference(int && first, int && second) {
+int &&return_and_get_rvalue_reference(int &&first, int &&second) {
     if (first % 5 == 0) {
         return std::move(first);
     } else if (second % 5 == 0) {
@@ -29,29 +29,29 @@ int && return_and_get_rvalue_reference(int && first, int && second) {
     }
 }
 
-int get_rvalue_custom_struct_as_param(Closet && closet) {
-    if (closet.height > 5 && closet.width > 5 && closet.length > 5) {
-        closet.height /= 5;
-        closet.volume /= 5;
-        closet.width /= 5;
+int get_rvalue_custom_struct_as_param(Box &&box) {
+    if (box.height > 5 && box.width > 5 && box.length > 5) {
+        box.height /= 5;
+        box.volume /= 5;
+        box.width /= 5;
         return 1;
     } else {
-        closet.width = 5;
-        closet.height = 5;
-        closet.length = 5;
-        closet.volume = 125;
+        box.width = 5;
+        box.height = 5;
+        box.length = 5;
+        box.volume = 125;
         return 2;
     }
 }
 
-Closet::Closet() {
+Box::Box() {
     length = 1.5;
     width = 0.5;
     height = 2.5;
     volume = height * width * length;
 }
 
-Closet::Closet(double length_, double width_, double height_, double volume_) {
+Box::Box(double length_, double width_, double height_, double volume_) {
     length = length_;
     width = width_;
     height = height_;
