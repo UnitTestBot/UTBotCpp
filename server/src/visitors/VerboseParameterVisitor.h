@@ -39,8 +39,7 @@ namespace visitor {
                         const tests::AbstractValueView *view,
                         const std::string &access,
                         size_t size,
-                        int depth,
-                        tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
+                        int depth) override;
 
         void visitCString(const types::Type &type,
                           const std::string &name,
@@ -52,15 +51,13 @@ namespace visitor {
                          const std::string &name,
                          const tests::AbstractValueView *view,
                          const std::string &access,
-                         int depth,
-                         tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
+                         int depth) override;
 
         void visitPrimitive(const types::Type &type,
                             const std::string &name,
                             const tests::AbstractValueView *view,
                             const std::string &access,
-                            int depth,
-                            tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
+                            int depth) override;
 
     };
 }

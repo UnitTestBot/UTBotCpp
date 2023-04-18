@@ -26,14 +26,13 @@ namespace visitor {
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
             if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
                 additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-            printer->writeCodeLine(StringUtils::stringFormat(
-                "EXPECT_TRUE(%s)",
-                PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
-            return;
-        } else {
-            additionalPointersCount = 0;
-                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0,
-                 methodDescription.constructorInfo);
+                printer->writeCodeLine(StringUtils::stringFormat(
+                        "EXPECT_TRUE(%s)",
+                        PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
+                return;
+            } else {
+                additionalPointersCount = 0;
+                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
                 functionCall = {};
                 additionalPointersCount = 0;
             }
@@ -48,8 +47,7 @@ namespace visitor {
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
                                                 size_t size,
-                                                int depth,
-                                                tests::Tests::ConstructorInfo constructorInfo) {
+                                                int depth) {
         if (depth == 0) {
             if (type.isArray()) {
                 if (isError) {
@@ -85,21 +83,14 @@ namespace visitor {
                                                  const std::string &name,
                                                  const tests::AbstractValueView *view,
                                                  const std::string &access,
-                                                 int depth,
-                                                 tests::Tests::ConstructorInfo constructorInfo) {
+                                                 int depth) {
         auto value = view->getEntryValue(printer);
         if (depth == 0) {
-            std::optional<std::string> initValue = functionCall;
-            if (constructorInfo == tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR) {
-                initValue = "std::move(" + functionCall +  ")";
-            }
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
-                                   PrinterUtils::ACTUAL, initValue, std::nullopt, true,
+                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                    additionalPointersCount);
-            if (!tests::Tests::isConstructor(constructorInfo)) {
-                printer->strDeclareVar(type.typeName(),
+            printer->strDeclareVar(type.typeName(),
                                        PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
-            }
         } else {
             printer->ss << value << NL;
         }
@@ -109,8 +100,7 @@ namespace visitor {
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,
                                                     const std::string &access,
-                                                    int depth,
-                                                    tests::Tests::ConstructorInfo constructorInfo) {
+                                                    int depth) {
         if (depth == 0) {
             if (types::TypesHandler::isVoid(type) || isError) {
                 printer->writeCodeLine(functionCall);
@@ -131,11 +121,7 @@ namespace visitor {
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
             std::string expectedValue;
-            if (!tests::Tests::isConstructor(constructorInfo)) {
-                expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
-            } else {
-                expectedValue = view->getEntryValue(printer);
-            }
+            expectedValue = view->getEntryValue(printer);
             auto signature = processExpect(type, gtestMacro,
                                            { getDecorateActualVarName(access), expectedValue });
             signature = changeSignatureToNullCheck(signature, type, view, access);

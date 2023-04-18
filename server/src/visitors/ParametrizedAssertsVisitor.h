@@ -29,22 +29,19 @@ namespace visitor {
                         const tests::AbstractValueView *view,
                         const std::string &access,
                         size_t size,
-                        int depth,
-                        tests::Tests::ConstructorInfo constructorInfo) override;
+                        int depth) override;
 
         void visitStruct(const types::Type &type,
                          const std::string &name,
                          const tests::AbstractValueView *view,
                          const std::string &access,
-                         int depth,
-                         tests::Tests::ConstructorInfo constructorInfo) override;
+                         int depth) override;
 
         void visitPrimitive(const types::Type &type,
                             const std::string &name,
                             const tests::AbstractValueView *view,
                             const std::string &access,
-                            int depth,
-                            tests::Tests::ConstructorInfo constructorInfo) override;
+                            int depth) override;
 
         void visitPointerToFunction(const types::Type &type,
                                     const std::string &name,

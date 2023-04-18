@@ -10,8 +10,7 @@ namespace visitor {
                                             const std::string &name,
                                             const tests::AbstractValueView *view,
                                             const std::string &access,
-                                            int depth,
-                                            tests::Tests::ConstructorInfo constructorInfo) {
+                                            int depth) {
         if (types::TypesHandler::isCStringType(type)) {
             return visitCString(type, name, view, access, depth);
         }
@@ -33,7 +32,7 @@ namespace visitor {
                 return visitPointer(type, name, view, access, depth);
             }
         } else if (typesHandler->isStructLike(type)) {
-            return visitStruct(type, name, view, access, depth, constructorInfo);
+            return visitStruct(type, name, view, access, depth);
         } else if (types::TypesHandler::isPointerToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
@@ -41,7 +40,7 @@ namespace visitor {
         } else if (types::TypesHandler::isPointerToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
         } else if (types::TypesHandler::isPrimitiveType(type)) {
-            return visitPrimitive(type, name, view, access, depth, constructorInfo);
+            return visitPrimitive(type, name, view, access, depth);
         }
     }
 
@@ -67,8 +66,7 @@ namespace visitor {
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
                                               size_t size,
-                                              int depth,
-                                              tests::Tests::ConstructorInfo constructorInfo) {
+                                              int depth) {
         auto subViews = view ? &view->getSubViews() : nullptr;
         for (int i = 0; i < size; i++) {
             auto index = "[" + std::to_string(i) + "]";
@@ -92,8 +90,7 @@ namespace visitor {
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
-                                               int depth,
-                                               tests::Tests::ConstructorInfo constructorInfo) {
+                                               int depth) {
         const types::StructInfo &structInfo = typesHandler->getStructInfo(type);
         auto subViews = view ? &view->getSubViews() : nullptr;
 
@@ -104,7 +101,7 @@ namespace visitor {
             auto newName = PrinterUtils::getFieldAccess(name, field);
             auto const *newView = (subViews && i < subViews->size()) ? (*subViews)[i].get() : nullptr;
             auto newAccess = PrinterUtils::getFieldAccess(access, field);
-            visitAny(field.type, newName, newView, newAccess, depth + 1, constructorInfo);
+            visitAny(field.type, newName, newView, newAccess, depth + 1);
         }
     }
 
@@ -112,9 +109,8 @@ namespace visitor {
                                              const std::string &name,
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
-                                             int depth,
-                                             tests::Tests::ConstructorInfo constructorInfo) {
-        visitPrimitive(type, name, view, access, depth, constructorInfo);
+                                             int depth) {
+        visitPrimitive(type, name, view, access, depth);
     }
 
     void AbstractValueViewVisitor::visitPointerToFunction(const types::Type &type,

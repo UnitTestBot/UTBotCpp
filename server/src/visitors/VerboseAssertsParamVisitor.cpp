@@ -44,8 +44,7 @@ namespace visitor {
                                                     const tests::AbstractValueView *view,
                                                     const std::string &access,
                                                     size_t size,
-                                                    int depth,
-                                                    tests::Tests::ConstructorInfo constructorInfo) {
+                                                    int depth) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
@@ -61,8 +60,7 @@ namespace visitor {
                                                         const std::string &name,
                                                         const tests::AbstractValueView *view,
                                                         const std::string &access,
-                                                        int depth,
-                                                        tests::Tests::ConstructorInfo constructorInfo) {
+                                                        int depth) {
       auto signature = processExpect(type, PrinterUtils::EQ, {PrinterUtils::fillVarName(access, expectedVariable), name });
       printer->strFunctionCall(signature.name, signature.args);
   }

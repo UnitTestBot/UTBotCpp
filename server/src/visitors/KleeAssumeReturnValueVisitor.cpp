@@ -59,8 +59,7 @@ namespace visitor {
                                                       const std::string &name,
                                                       const tests::AbstractValueView *view,
                                                       const std::string &access,
-                                                      int depth,
-                                                      tests::Tests::ConstructorInfo constructorInfo) {
+                                                      int depth) {
         std::string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
                                              PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
         kleeAssumeWithNullCheck(assumption);
@@ -70,8 +69,7 @@ namespace visitor {
                                                    const std::string &name,
                                                    const tests::AbstractValueView *view,
                                                    const std::string &access,
-                                                   int depth,
-                                                   tests::Tests::ConstructorInfo constructorInfo) {
+                                                   int depth) {
         if (depth == 0) {
             kleeAssumeWithNullCheck("", false);
             AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
@@ -98,8 +96,7 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   size_t size,
-                                                  int depth,
-                                                  tests::Tests::ConstructorInfo constructorInfo) {
+                                                  int depth) {
         if (depth == 0 && additionalPointersCount > 0) {
             returnTypeIsArray = true;
             additionalPointersCount--;

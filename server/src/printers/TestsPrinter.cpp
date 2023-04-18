@@ -790,6 +790,9 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
         default:
             break;
     }
+    if (methodDescription.constructorInfo == tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR) {
+        functionCall = "std::move(" + functionCall + ")";
+    }
     return functionCall;
 }
 

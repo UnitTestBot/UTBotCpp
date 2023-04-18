@@ -25,8 +25,7 @@ namespace visitor {
                         const tests::AbstractValueView *view,
                         const std::string &access,
                         size_t size,
-                        int depth,
-                        tests::Tests::ConstructorInfo constructorInfo = tests::Tests::ConstructorInfo::NOT_A_CONSTRUCTOR) override;
+                        int depth) override;
     };
 }
 
