@@ -589,7 +589,9 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
         strComment("No check results for function returning pointer to function");
     } else {
         auto visitor = visitor::VerboseAssertsReturnValueVisitor(typesHandler, this, predicateInfo);
-        visitor.visit(methodDescription, testCase);
+        if (!methodDescription.isConstructor()) {
+            visitor.visit(methodDescription, testCase);
+        }
     }
 
     if (!methodDescription.globalParams.empty()) {
@@ -701,7 +703,9 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
                                        const std::optional<LineInfo::PredicateInfo>& predicateInfo,
                                        ErrorMode errorMode) {
     auto visitor = visitor::ParametrizedAssertsVisitor(typesHandler, this, predicateInfo, testCase.isError());
-    visitor.visit(methodDescription, testCase, errorMode);
+    if (!methodDescription.isConstructor()) {
+        visitor.visit(methodDescription, testCase, errorMode);
+    }
     markTestedFunctionCallIfNeed(methodDescription.name, testCase);
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
@@ -777,6 +781,9 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
     }
     std::string functionCall = constrFunctionCall(methodDescription.name, methodArgs, "", classObjName,
                                                   false, returnPointersCount, castType);
+    if (methodDescription.isMoveConstructor()) {
+        functionCall = "std::move(" + functionCall + ")";
+    }
     switch (errorMode) {
         case ErrorMode::PASSING:
             if (testCase.errorInfo.errorType == ErrorType::EXCEPTION_THROWN) {

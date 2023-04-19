@@ -1,12 +1,16 @@
 #include "ParametrizedAssertsVisitor.h"
+#include "Tests.h"
+
 using namespace ::testsgen;
 
 namespace visitor {
-    ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(const types::TypesHandler *typesHandler,
-                                                           printer::TestsPrinter *printer,
-                                                           const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-                                                           bool isError)
-            : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo), isError(isError) {
+    ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(
+            const types::TypesHandler *typesHandler,
+            printer::TestsPrinter *printer,
+            const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+            bool isError)
+            : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo),
+              isError(isError) {
     }
 
     static thread_local std::string functionCall;
@@ -22,9 +26,9 @@ namespace visitor {
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
             if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
                 additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-                printer->writeCodeLine(
-                        StringUtils::stringFormat("EXPECT_TRUE(%s)",
-                                                  PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
+                printer->writeCodeLine(StringUtils::stringFormat(
+                        "EXPECT_TRUE(%s)",
+                        PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
                 return;
             } else {
                 additionalPointersCount = 0;
@@ -50,15 +54,17 @@ namespace visitor {
                     printer->writeCodeLine(functionCall);
                     return;
                 } else {
-                    printer->strDeclareVar(
-                            printer::Printer::getConstQualifier(type) + type.usedType(), PrinterUtils::ACTUAL,
-                            functionCall, std::nullopt, true, additionalPointersCount);
+                    printer->strDeclareVar(printer::Printer::getConstQualifier(type) +
+                                           type.usedType(),
+                                           PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
+                                           additionalPointersCount);
                     printer->strDeclareArrayVar(
-                        type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                        view->getEntryValue(printer), std::nullopt, true);
+                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
+                            view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
-                return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
+                return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
+                                                          depth);
             }
         }
 
@@ -67,7 +73,8 @@ namespace visitor {
             std::vector<size_t> sizes = type.arraysSizes(usage);
             const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
             const auto indexing = printer::Printer::constrMultiIndex(iterators);
-            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
+            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
+                     depth + sizes.size());
             printer->closeBrackets(sizes.size());
         }
     }
@@ -82,10 +89,11 @@ namespace visitor {
             printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
                                    PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                    additionalPointersCount);
-            printer->strDeclareVar(
-                type.typeName(), PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
+            printer->strDeclareVar(type.typeName(),
+                                       PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
+        } else {
+            printer->ss << value << NL;
         }
-        AbstractValueViewVisitor::visitStruct(type, name, view, access, depth);
     }
 
     void ParametrizedAssertsVisitor::visitPrimitive(const types::Type &type,
@@ -104,17 +112,16 @@ namespace visitor {
                 auto signature =
                         processExpect(type, gtestMacro, {view->getEntryValue(printer), getDecorateActualVarName(access)});
                 signature = changeSignatureToNullCheck(signature, type, view, access);
-                printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
-                                         std::nullopt, inUnion);
+                printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true,
+                                         0, std::nullopt, inUnion);
             }
         } else {
             if (isError) {
                 return;
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
-            auto signature =
-                    processExpect(type, gtestMacro, {getDecorateActualVarName(access),
-                                                     PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED)});
+            auto signature = processExpect(type, gtestMacro,
+                                           {getDecorateActualVarName(access), view->getEntryValue(printer)});
             signature = changeSignatureToNullCheck(signature, type, view, access);
             printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                      std::nullopt, inUnion);

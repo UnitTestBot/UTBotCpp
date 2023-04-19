@@ -10,11 +10,13 @@ namespace visitor {
     void VerboseAssertsReturnValueVisitor::visit(const Tests::MethodDescription &methodDescription,
                                                  const Tests::MethodTestCase &testCase) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
-                              ? methodDescription.returnType.arrayClone(usage, pointerSize)
-                              : methodDescription.returnType.baseTypeObj();
+                          ? methodDescription.returnType.arrayClone(usage, pointerSize)
+                          : methodDescription.returnType.baseTypeObj();
         if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
-            printer->writeCodeLine(StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")", PrinterUtils::ACTUAL));
+            printer->writeCodeLine(
+                    StringUtils::stringFormat("EXPECT_TRUE(%s" + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL + ")",
+                                              PrinterUtils::ACTUAL));
             return;
         }
         additionalPointersCount = 0;
@@ -27,10 +29,12 @@ namespace visitor {
                                                           const std::string &access,
                                                           int depth) {
         const auto &gtestMacro = predicateMapping.at(predicate);
-        auto signature = processExpect(type, gtestMacro, {PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), getDecorateActualVarName(access) });
+        auto signature = processExpect(type, gtestMacro, {PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED),
+                                                          getDecorateActualVarName(access)});
         signature = changeSignatureToNullCheck(signature, type, view, access);
         printer->strFunctionCall(signature.name, signature.args);
     }
+
     void VerboseAssertsReturnValueVisitor::visitPointer(const types::Type &type,
                                                         const std::string &name,
                                                         const tests::AbstractValueView *view,
@@ -42,6 +46,7 @@ namespace visitor {
             // assign NULL to pointer field
         }
     }
+
     void VerboseAssertsReturnValueVisitor::visitArray(const types::Type &type,
                                                       const std::string &name,
                                                       const tests::AbstractValueView *view,

@@ -50,11 +50,11 @@ namespace visitor {
   }
 
   void KleeAssumeParamVisitor::visitArray(const types::Type &type,
-                                          const std::string &name,
-                                          const tests::AbstractValueView *view,
-                                          const std::string &access,
-                                          size_t size,
-                                          int depth) {
+                                                const std::string &name,
+                                                const tests::AbstractValueView *view,
+                                                const std::string &access,
+                                                size_t size,
+                                                int depth) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
@@ -69,7 +69,7 @@ namespace visitor {
       const auto iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
       const auto indexing = printer::Printer::constrMultiIndex(iterators);
       if (assignPointersToNull) {
-          kleeAssume(PrinterUtils::getEqualString(name + indexing,  PrinterUtils::C_NULL));
+          kleeAssume(PrinterUtils::getEqualString(name + indexing, PrinterUtils::C_NULL));
       } else {
           visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
       }

@@ -85,10 +85,10 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitStruct(const types::Type &type,
-                                              const std::string &name,
-                                              const tests::AbstractValueView *view,
-                                              const std::string &access,
-                                              int depth) {
+                                               const std::string &name,
+                                               const tests::AbstractValueView *view,
+                                               const std::string &access,
+                                               int depth) {
         const types::StructInfo &structInfo = typesHandler->getStructInfo(type);
         auto subViews = view ? &view->getSubViews() : nullptr;
 
@@ -101,8 +101,8 @@ namespace visitor {
             auto newAccess = PrinterUtils::getFieldAccess(access, field);
             visitAny(field.type, newName, newView, newAccess, depth + 1);
         }
-        inUnion = oldFlag;
     }
+
     void AbstractValueViewVisitor::visitEnum(const types::Type &type,
                                              const std::string &name,
                                              const tests::AbstractValueView *view,

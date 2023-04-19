@@ -78,16 +78,16 @@ namespace printer {
 
         void verboseAsserts(const tests::Tests::MethodDescription &methodDescription,
                             const Tests::MethodTestCase &testCase,
-                            const std::optional<LineInfo::PredicateInfo>& predicateInfo);
+                            const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
         void classAsserts(const Tests::MethodDescription &methodDescription,
-                                        const Tests::MethodTestCase &testCase);
+                          const Tests::MethodTestCase &testCase);
 
         void changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
-                            const Tests::MethodTestCase &testCase);
+                                     const Tests::MethodTestCase &testCase);
 
         void globalParamsAsserts(const Tests::MethodDescription &methodDescription,
-                            const Tests::MethodTestCase &testCase);
+                                 const Tests::MethodTestCase &testCase);
 
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
@@ -128,9 +128,8 @@ namespace printer {
         parametrizedInitializeGlobalVariables(const Tests::MethodDescription &methodDescription,
                                               const Tests::MethodTestCase &testCase);
 
-        void
-        parametrizedInitializeSymbolicStubs(const Tests::MethodDescription &methodDescription,
-                                            const Tests::MethodTestCase &testCase);
+        void parametrizedInitializeSymbolicStubs(const Tests::MethodDescription &methodDescription,
+                                                 const Tests::MethodTestCase &testCase);
 
         void printLazyVariables(const Tests::MethodDescription &methodDescription,
                                 const Tests::MethodTestCase &testCase,

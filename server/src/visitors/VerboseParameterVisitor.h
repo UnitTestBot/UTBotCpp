@@ -58,6 +58,7 @@ namespace visitor {
                             const tests::AbstractValueView *view,
                             const std::string &access,
                             int depth) override;
+
     };
 }
 

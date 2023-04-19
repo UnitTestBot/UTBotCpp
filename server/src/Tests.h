@@ -482,6 +482,12 @@ namespace tests {
             bool isInline;
         };
 
+        enum ConstructorInfo {
+            NOT_A_CONSTRUCTOR = 0,
+            CONSTRUCTOR = 1,
+            MOVE_CONSTRUCTOR = 2
+        };
+
         struct MethodDescription {
             std::optional<MethodParam> classObj;
             std::string name;
@@ -507,6 +513,8 @@ namespace tests {
             std::vector<MethodTestCase> testCases;
             typedef std::unordered_map<std::string, std::vector<int>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
+
+            ConstructorInfo constructorInfo = ConstructorInfo::NOT_A_CONSTRUCTOR;
 
             bool operator==(const MethodDescription &other) const;
 
@@ -570,6 +578,15 @@ namespace tests {
                     return std::make_optional(classObj->type.typeName());
                 }
                 return std::nullopt;
+            }
+
+            [[nodiscard]] bool isConstructor() const {
+                return constructorInfo == Tests::ConstructorInfo::CONSTRUCTOR ||
+                       constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
+            }
+
+            [[nodiscard]] bool isMoveConstructor() const {
+                return constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
             }
         };
 

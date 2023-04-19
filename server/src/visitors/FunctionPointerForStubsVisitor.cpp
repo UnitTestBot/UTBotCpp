@@ -6,7 +6,8 @@
 #include "utils/StubsUtils.h"
 
 namespace visitor {
-    FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(const types::TypesHandler *typesHandler)
+    FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(
+        const types::TypesHandler *typesHandler)
         : AbstractValueViewVisitor(typesHandler, types::PointerUsage::RETURN) {
     }
 
@@ -29,10 +30,10 @@ namespace visitor {
     }
 
     void FunctionPointerForStubsVisitor::visitStruct(const types::Type &type,
-                                             const std::string &name,
-                                             const tests::AbstractValueView *view,
-                                             const std::string &access,
-                                             int depth) {
+                                                     const std::string &name,
+                                                     const tests::AbstractValueView *view,
+                                                     const std::string &access,
+                                                     int depth) {
         auto [_, inserted] = used.insert(type.getId());
         if (!inserted) {
             return;
@@ -66,7 +67,8 @@ namespace visitor {
                                                     const std::string &access,
                                                     size_t size,
                                                     int depth) {
-        AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth + type.getDimension());
+        AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
+                                           depth + type.getDimension());
     }
 
     void FunctionPointerForStubsVisitor::visitPrimitive(const types::Type &type,

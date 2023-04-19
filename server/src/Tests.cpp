@@ -1275,5 +1275,4 @@ bool Tests::MethodTestCase::isError() const {
 bool Tests::TypeAndVarName::operator<(const Tests::TypeAndVarName &other) const {
     return varName < other.varName || (varName == other.varName && type.mTypeName() < other.type.mTypeName());
 }
-
-}
+} // tests

@@ -36,6 +36,8 @@ Fetcher::Fetcher(Options options,
         addMatcher<TypeDeclsMatchCallback>(structJustDeclMatcher);
     }
     if (options.has(Options::Value::FUNCTION)) {
+        addMatcher<FunctionDeclsMatchCallback>(constructorDefinitionMatcher, false, false, false);
+        addMatcher<FunctionDeclsMatchCallback>(memberConstructorDefinitionMatcher, false, false, false);
         addMatcher<FunctionDeclsMatchCallback>(functionDefinitionMatcher, false, false, false);
     }
     if (options.has(Options::Value::GLOBAL_VARIABLE_USAGE)) {
@@ -50,11 +52,15 @@ Fetcher::Fetcher(Options options,
         sourceFileCallbacks.add(std::move(callback));
     }
     if (options.has(Options::Value::FUNCTION_NAMES_ONLY)) {
+        addMatcher<FunctionDeclsMatchCallback>(constructorDefinitionMatcher, true, false, false);
+        addMatcher<FunctionDeclsMatchCallback>(memberConstructorDefinitionMatcher, true, false, false);
         addMatcher<FunctionDeclsMatchCallback>(functionDefinitionMatcher, true, false, false);
         auto callback = std::make_unique<SingleFileParseModeCallback>();
         sourceFileCallbacks.add(std::move(callback));
     }
     if (options.has(Options::Value::RETURN_TYPE_NAMES_ONLY)) {
+        addMatcher<FunctionDeclsMatchCallback>(constructorDefinitionMatcher, false, true, true);
+        addMatcher<FunctionDeclsMatchCallback>(memberConstructorDefinitionMatcher, false, true, true);
         addMatcher<FunctionDeclsMatchCallback>(functionDefinitionMatcher, false, true, true);
         auto callback = std::make_unique<SingleFileParseModeCallback>();
         sourceFileCallbacks.add(std::move(callback));
