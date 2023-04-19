@@ -5,12 +5,12 @@ using namespace ::testsgen;
 
 namespace visitor {
     ParametrizedAssertsVisitor::ParametrizedAssertsVisitor(
-        const types::TypesHandler *typesHandler,
-        printer::TestsPrinter *printer,
-        const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-        bool isError)
-        : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo),
-          isError(isError) {
+            const types::TypesHandler *typesHandler,
+            printer::TestsPrinter *printer,
+            const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+            bool isError)
+            : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo),
+              isError(isError) {
     }
 
     static thread_local std::string functionCall;
@@ -55,12 +55,12 @@ namespace visitor {
                     return;
                 } else {
                     printer->strDeclareVar(printer::Printer::getConstQualifier(type) +
-                                               type.usedType(),
+                                           type.usedType(),
                                            PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                            additionalPointersCount);
                     printer->strDeclareArrayVar(
-                        type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
-                        view->getEntryValue(printer), std::nullopt, true);
+                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
+                            view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
                 return AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,

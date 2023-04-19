@@ -514,7 +514,7 @@ namespace tests {
             typedef std::unordered_map<std::string, std::vector<int>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
 
-            ConstructorInfo constructorInfo{};
+            ConstructorInfo constructorInfo;
 
             bool operator==(const MethodDescription &other) const;
 

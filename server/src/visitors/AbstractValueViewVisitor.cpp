@@ -33,8 +33,6 @@ namespace visitor {
             }
         } else if (typesHandler->isStructLike(type)) {
             return visitStruct(type, name, view, access, depth);
-        } else if (types::TypesHandler::isPointerToFunction(type)) {
-            return visitPointerToFunction(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {
             return visitEnum(type, name, view, access, depth);
         } else if (types::TypesHandler::isPointerToFunction(type)) {
@@ -87,9 +85,9 @@ namespace visitor {
     }
 
     void AbstractValueViewVisitor::visitStruct(const types::Type &type,
-                                              const std::string &name,
-                                              const tests::AbstractValueView *view,
-                                              const std::string &access,
+                                               const std::string &name,
+                                               const tests::AbstractValueView *view,
+                                               const std::string &access,
                                                int depth) {
         const types::StructInfo &structInfo = typesHandler->getStructInfo(type);
         auto subViews = view ? &view->getSubViews() : nullptr;

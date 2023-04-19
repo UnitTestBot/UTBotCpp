@@ -22,20 +22,20 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     ExecUtils::throwIfCancelled();
-    if (const FunctionDecl * FS = ClangUtils::getFunctionOrConstructor(Result)) {
+    if (const FunctionDecl *FS = ClangUtils::getFunctionOrConstructor(Result)) {
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                                      ->tryGetRealPathName()
-                                      .str();
+                ->tryGetRealPathName()
+                .str();
 
         std::string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
         methodDescription.name = methodName;
         if (const CXXConstructorDecl *CS = ClangUtils::getConstructor(Result)) {
-            methodDescription.constructorInfo = tests::Tests::ConstructorInfo::CONSTRUCTOR;
+            methodDescription.constructorInfo = Tests::ConstructorInfo::CONSTRUCTOR;
             if (CS->isMoveConstructor()) {
-                methodDescription.constructorInfo = tests::Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
+                methodDescription.constructorInfo = Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
             }
         }
         methodDescription.sourceFilePath = sourceFilePath;
@@ -55,22 +55,22 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         // we find declaration of the function from header
         const auto *FSFromHeader = FS->getFirstDecl();
         auto functionDeclHeaderLocation =
-            sourceManager.getExpansionLoc(FSFromHeader->getLocation());
+                sourceManager.getExpansionLoc(FSFromHeader->getLocation());
         auto path = fs::path(sourceManager.getFilename(functionDeclHeaderLocation).str());
         bool isHeader = Paths::isHeaderFile(path);
         if (!isHeader) {
             LOG_S(DEBUG) << "Didn't find any header with declaration of function " << methodName;
         }
 
-        auto *nodeParent = (CXXRecordDecl *)FS->getParent();
+        auto *nodeParent = (CXXRecordDecl *) FS->getParent();
 
         if (FS->isCXXClassMember() && !methodDescription.isConstructor()) {
             std::string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
             auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);
-            methodDescription.classObj = { classType,
-                                           classType.typeName() + "_obj",
-                                           std::nullopt };
+            methodDescription.classObj = {classType,
+                                          classType.typeName() + "_obj",
+                                          std::nullopt};
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);
@@ -78,10 +78,10 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             typesResolver.resolve(realReturnType);
         }
         auto returnVarName =
-            NameDecorator::decorate(PrinterUtils::getReturnMangledName(methodName));
+                NameDecorator::decorate(PrinterUtils::getReturnMangledName(methodName));
         const QualType pType = realReturnType->getPointeeType();
         if (pType.getTypePtrOrNull()) {
-                addFunctionPointer(methodDescription.functionPointers,
+            addFunctionPointer(methodDescription.functionPointers,
                                pType->getAs<clang::FunctionType>(), realReturnType,
                                returnVarName, sourceManager, methodDescription.returnType);
         }
@@ -90,10 +90,10 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         methodDescription.modifiers.isInline = FS->isInlined();
         methodDescription.isVariadic = FS->isVariadic();
         methodDescription.paramsString =
-            ASTPrinter::getSourceText(FS->getParametersSourceRange(), sourceManager);
+                ASTPrinter::getSourceText(FS->getParametersSourceRange(), sourceManager);
         if (FS->hasBody() && parent->fetchFunctionBodies) {
             methodDescription.sourceBody =
-                ASTPrinter::getSourceText(FS->getBody()->getSourceRange(), sourceManager);
+                    ASTPrinter::getSourceText(FS->getBody()->getSourceRange(), sourceManager);
         }
 
         const auto paramsFromDefinition = FS->parameters();

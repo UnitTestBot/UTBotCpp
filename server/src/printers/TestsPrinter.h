@@ -164,7 +164,6 @@ namespace printer {
                                 int &testNum,
                                 ErrorMode errorMode);
 
-
         std::uint32_t printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods);
 
         void printFailAssertion(ErrorMode errorMode);

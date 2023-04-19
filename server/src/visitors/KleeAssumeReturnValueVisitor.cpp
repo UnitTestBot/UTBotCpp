@@ -17,10 +17,9 @@ namespace visitor {
         functionCall = printer->constrFunctionCall(methodDescription, 0, "", false);
         additionalPointersCount = methodDescription.returnType.countReturnPointers();
         auto returnType = methodDescription.returnType.baseTypeObj();
-        std::optional<std::string> initValue = functionCall;
         printer->strDeclareVar(getActualTmpVarType(returnType).baseType(),
-                           KleeUtils::TEMP_VARIABLE_NAME, initValue,
-                           std::nullopt, true, additionalPointersCount);
+                               KleeUtils::TEMP_VARIABLE_NAME, functionCall,
+                               std::nullopt, true, additionalPointersCount);
         checkNotNullBefore();
         if (predicateInfo.has_value()) {
             std::string assumption;
