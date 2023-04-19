@@ -483,14 +483,10 @@ namespace tests {
         };
 
         enum ConstructorInfo {
-            NOT_A_CONSTRUCTOR,
-            CONSTRUCTOR,
-            MOVE_CONSTRUCTOR
+            NOT_A_CONSTRUCTOR = 0,
+            CONSTRUCTOR = 1,
+            MOVE_CONSTRUCTOR = 2
         };
-
-        [[nodiscard]] static bool isConstructor(ConstructorInfo constructorInfo);
-
-        [[nodiscard]] static bool isMoveConstructor(ConstructorInfo constructorInfo);
 
         struct MethodDescription {
             std::optional<MethodParam> classObj;
@@ -582,6 +578,15 @@ namespace tests {
                     return std::make_optional(classObj->type.typeName());
                 }
                 return std::nullopt;
+            }
+
+            [[nodiscard]] bool isConstructor() const {
+                return constructorInfo == Tests::ConstructorInfo::CONSTRUCTOR ||
+                       constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
+            }
+
+            [[nodiscard]] bool isMoveConstructor() const {
+                return constructorInfo == Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
             }
         };
 

@@ -64,7 +64,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
 
         auto *nodeParent = (CXXRecordDecl *)FS->getParent();
 
-        if (FS->isCXXClassMember() && !tests::Tests::isConstructor(methodDescription.constructorInfo)) {
+        if (FS->isCXXClassMember() && !methodDescription.isConstructor()) {
             std::string className = nodeParent->getNameAsString();
             const clang::QualType clangClassType = nodeParent->getTypeForDecl()->getCanonicalTypeInternal();
             auto classType = ParamsHandler::getType(clangClassType, clangClassType, sourceManager);

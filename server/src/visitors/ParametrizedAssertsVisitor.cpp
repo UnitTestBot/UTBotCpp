@@ -120,10 +120,8 @@ namespace visitor {
                 return;
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
-            std::string expectedValue;
-            expectedValue = view->getEntryValue(printer);
             auto signature = processExpect(type, gtestMacro,
-                                           { getDecorateActualVarName(access), expectedValue });
+                                           {getDecorateActualVarName(access), view->getEntryValue(printer)});
             signature = changeSignatureToNullCheck(signature, type, view, access);
             printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                      std::nullopt, inUnion);

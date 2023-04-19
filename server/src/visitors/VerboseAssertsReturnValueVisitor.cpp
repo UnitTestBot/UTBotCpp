@@ -27,12 +27,12 @@ namespace visitor {
                                                           const std::string &access,
                                                           int depth) {
         const auto &gtestMacro = predicateMapping.at(predicate);
-        std::string expectedValue;
-        expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
-        auto signature = processExpect(type, gtestMacro, {expectedValue, getDecorateActualVarName(access) });
+        std::string expectedValue = PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED);
+        auto signature = processExpect(type, gtestMacro, {expectedValue, getDecorateActualVarName(access)});
         signature = changeSignatureToNullCheck(signature, type, view, access);
         printer->strFunctionCall(signature.name, signature.args);
     }
+
     void VerboseAssertsReturnValueVisitor::visitPointer(const types::Type &type,
                                                         const std::string &name,
                                                         const tests::AbstractValueView *view,
