@@ -357,13 +357,12 @@ std::shared_ptr<const BuildDatabase::TargetInfo> BuildDatabase::getClientLinkUni
 bool BuildDatabase::ObjectFileInfo::conflictPriorityMore(
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &left,
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &right) {
-    if (StringUtils::contains(left->getOutputFile().string(), "64")) {
-        return true;
+    bool leftContains64 = StringUtils::contains(left->getOutputFile().string(), "64");
+    bool rightContains64 = StringUtils::contains(right->getOutputFile().string(), "64");
+    if (leftContains64 == rightContains64) {
+        return left->getOutputFile().string() < right->getOutputFile().string();
     }
-    if (StringUtils::contains(right->getOutputFile().string(), "64")) {
-        return false;
-    }
-    return false;
+    return leftContains64;
 }
 
 fs::path BuildDatabase::getCorrespondingBitcodeFile(const fs::path &filepath) {

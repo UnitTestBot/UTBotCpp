@@ -82,7 +82,7 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
         }
         else {
             std::vector<std::string> cmakeOptionsWithMandatory = CMAKE_MANDATORY_OPTIONS;
-            for (const std::string &op : cmakeOptions) {
+            for (const std::string &op: cmakeOptions) {
                 if (op.find("_USE_RESPONSE_FILE_FOR_") == std::string::npos) {
                     cmakeOptionsWithMandatory.emplace_back(op);
                 }
@@ -90,11 +90,12 @@ UserProjectConfiguration::RunProjectConfigurationCommands(const fs::path &buildD
             cmakeOptionsWithMandatory.emplace_back("..");
 
             ShellExecTask::ExecutionParameters cmakeParams(
-                Paths::getCMake(),
-                cmakeOptionsWithMandatory);
+                    Paths::getCMake(),
+                    cmakeOptionsWithMandatory);
+
+            // Use "--always-make" because bear catch only called commands
             ShellExecTask::ExecutionParameters bearMakeParams(
-                Paths::getBear(),
-                { Paths::getMake(), MakefileUtils::threadFlag() });
+                    Paths::getBear(), {Paths::getMake(), MakefileUtils::threadFlag(), "--always-make"});
 
             fs::path cmakeListsPath = getCmakeListsPath(buildDirPath);
             if (fs::exists(cmakeListsPath)) {
