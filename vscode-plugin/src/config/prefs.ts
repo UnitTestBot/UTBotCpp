@@ -9,7 +9,7 @@ import * as defcfg from './defaultValues';
 import * as Randomstring from 'randomstring';
 import {SettingsContext} from '../proto-ts/testgen_pb';
 import {isWin32} from '../utils/utils';
-import {ErrorMode} from '../proto-ts/testgen_pb'
+import {ErrorMode} from '../proto-ts/testgen_pb';
 
 const { logger } = ExtensionLogger;
 

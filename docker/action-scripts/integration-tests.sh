@@ -3,6 +3,9 @@
 source docker/building_dependencies/runtime_env.sh
 cd vscode-plugin
 
+#fix error with dri3 on github runner
+export LIBGL_DRI3_DISABLE=1
+
 #download vs_code
 npm run download_vscode
 
