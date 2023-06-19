@@ -395,7 +395,7 @@ export class Client {
             projectContext.setProjectname(projectName);
             projectContext.setProjectpath(projectPath);
             projectContext.setBuilddirrelativepath(buildDirRelativePath);
-            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath)
+            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
             const projectConfigRequest = new ProjectConfigRequest();
             projectConfigRequest.setProjectcontext(projectContext);
             projectConfigRequest.setConfigmode(configMode);
@@ -428,7 +428,7 @@ export class Client {
             projectContext.setProjectpath(buildDir[0]);
             projectContext.setTestdirpath(Prefs.getTestsDirPath());
             projectContext.setBuilddirrelativepath(buildDir[1]);
-            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath)
+            projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());
 
