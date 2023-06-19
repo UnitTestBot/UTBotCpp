@@ -354,11 +354,15 @@ std::shared_ptr<const BuildDatabase::TargetInfo> BuildDatabase::getClientLinkUni
                                        filepath.string());
 }
 
+static inline bool maybe64bits(const fs::path &path) {
+    return StringUtils::contains(path.string(), "64");
+}
+
 bool BuildDatabase::ObjectFileInfo::conflictPriorityMore(
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &left,
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &right) {
-    bool leftContains64 = StringUtils::contains(left->getOutputFile().string(), "64");
-    bool rightContains64 = StringUtils::contains(right->getOutputFile().string(), "64");
+    bool leftContains64 = maybe64bits(left->getOutputFile());
+    bool rightContains64 = maybe64bits(right->getOutputFile());
     if (leftContains64 == rightContains64) {
         return left->getOutputFile().string() < right->getOutputFile().string();
     }
