@@ -658,7 +658,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
                 continue;
             }
             if (!visited[indObj]) {
-                Tests::MethodParam param = {fieldType.baseTypeObj(1), "", std::nullopt };
+                Tests::MethodParam param = {fieldType.baseTypeObj(1), "", std::nullopt};
                 order.emplace(indObj, param, curType.paramValue);
                 visited[indObj] = true;
             }

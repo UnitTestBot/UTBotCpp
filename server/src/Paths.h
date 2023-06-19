@@ -16,6 +16,7 @@
 namespace Paths {
     extern fs::path logPath;
     const std::string MAKEFILE_EXTENSION = ".mk";
+    const std::string CXX_EXTENSION = ".cpp";
     const std::string TEST_SUFFIX = "_test";
     const std::string STUB_SUFFIX = "_stub";
     const std::string DOT_SEP = "_dot_";

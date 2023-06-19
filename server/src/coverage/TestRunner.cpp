@@ -90,10 +90,11 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
                         return;
                     }
                     const auto &testFilePath = directoryEntry.path();
-                    if (testFilePath.extension() == ".cpp" && StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX)) {
+                    if (testFilePath.extension() == Paths::CXX_EXTENSION &&
+                        StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX)) {
                         fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
                         fs::path makefile =
-                            Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                                Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
                         if (fs::exists(makefile)) {
                             try {
                                 auto tests = getTestsFromMakefile(makefile, testFilePath);
