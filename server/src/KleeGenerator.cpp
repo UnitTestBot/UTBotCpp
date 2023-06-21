@@ -38,7 +38,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
     auto compileCommands = getCompileCommandsForKlee(filesToBuild, stubSources);
     printer::DefaultMakefilePrinter makefilePrinter;
 
-    std::vector<fs::path> outfilePaths;
+    std::vector<std::string> outfilePaths;
     for (const auto &compileCommand: compileCommands) {
         fs::path output = compileCommand.getOutput();
         outfilePaths.emplace_back(output);
@@ -47,6 +47,7 @@ KleeGenerator::buildByCDb(const CollectionUtils::MapFileTo<fs::path> &filesToBui
                                       {compileCommandWithChangingDirectory.toStringWithChangingDirectory()});
     }
 
+    outfilePaths.push_back(printer::DefaultMakefilePrinter::TARGET_FORCE);
     makefilePrinter.declareTarget(printer::DefaultMakefilePrinter::TARGET_ALL, outfilePaths, {});
     const fs::path makefile = testGen->serverBuildDir / GENERATION_COMPILE_MAKEFILE;
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
@@ -200,7 +201,8 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
     printer::DefaultMakefilePrinter makefilePrinter;
     auto commandWithChangingDirectory = utbot::CompileCommand(command, true);
     makefilePrinter.declareTarget(printer::DefaultMakefilePrinter::TARGET_BUILD,
-                                  {commandWithChangingDirectory.getSourcePath()},
+                                  {commandWithChangingDirectory.getSourcePath(),
+                                   printer::DefaultMakefilePrinter::TARGET_FORCE},
                                   {commandWithChangingDirectory.toStringWithChangingDirectory()});
     fs::path makefile = testGen->serverBuildDir / GENERATION_KLEE_MAKEFILE;
     FileSystemUtils::writeToFile(makefile, makefilePrinter.ss.str());
@@ -300,13 +302,12 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                     }
                     kleeFilesInfo->setCorrectMethods(std::move(correctMethods));
 
-                    auto kleeFilePath = writeKleeFile(
-                            kleePrinter, tests, lineInfo,
-                            [&kleeFilesInfo](tests::Tests::MethodDescription const &method) -> bool {
-                                return kleeFilesInfo->isCorrectMethod(method.name);
-                            });
-                    auto kleeBitcodeFile =
-                            defaultBuild(filename, kleeFilePath, buildDirPath, includeFlags);
+                    kleeFilePath = writeKleeFile(kleePrinter, tests, lineInfo,
+                                                 [&kleeFilesInfo](
+                                                         tests::Tests::MethodDescription const &method) -> bool {
+                                                     return kleeFilesInfo->isCorrectMethod(method.name);
+                                                 });
+                    kleeBitcodeFile = defaultBuild(filename, kleeFilePath, buildDirPath, includeFlags);
                     if (kleeBitcodeFile.isSuccess()) {
                         outFiles.emplace_back(kleeBitcodeFile.getOpt().value());
                     } else {

@@ -308,7 +308,7 @@ namespace Paths {
     fs::path getWrapperFilePath(const utbot::ProjectContext &projectContext,
                                 const fs::path &sourceFilePath) {
         fs::path relative = getRelativeDirPath(projectContext, sourceFilePath);
-        fs::path filename = addSuffix(sourceFilePath.filename(), "_wrapper");
+        fs::path filename = addSuffix(sourceFilePath.filename(), MAKE_WRAPPER_SUFFIX);
         return getWrapperDirPath(projectContext) / relative / filename;
     }
 

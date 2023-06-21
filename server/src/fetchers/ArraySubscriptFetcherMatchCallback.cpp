@@ -2,6 +2,7 @@
 
 #include "Fetcher.h"
 #include "clang-utils/Matchers.h"
+#include "clang-utils/ClangUtils.h"
 #include "utils/CollectionUtils.h"
 
 #include "loguru.h"
@@ -17,10 +18,7 @@ ArraySubscriptFetcherMatchCallback::ArraySubscriptFetcherMatchCallback(Fetcher *
 
 void ArraySubscriptFetcherMatchCallback::run(const MatchFinder::MatchResult &Result) {
     if (const auto *FS = Result.Nodes.getNodeAs<ArraySubscriptExpr>(SUBSCRIPT)) {
-        SourceManager &sourceManager = Result.Context->getSourceManager();
-        fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                                      ->tryGetRealPathName()
-                                      .str();
+        fs::path sourceFilePath = ClangUtils::getSourceFilePath(Result.Context->getSourceManager());
         auto child = FS->children().begin();
         while (canBeMissed(*child) && !child->children().empty()) {
             child = child->children().begin();
@@ -29,8 +27,8 @@ void ArraySubscriptFetcherMatchCallback::run(const MatchFinder::MatchResult &Res
         if (!isa<DeclRefExpr>(variableExpr)) {
             return;
         }
-        auto declrefExpr = cast<DeclRefExpr>(variableExpr);
-        auto variableDecl = declrefExpr->getDecl();
+        auto declRefExpr = cast<DeclRefExpr>(variableExpr);
+        auto variableDecl = declRefExpr->getDecl();
         auto contextDecl = variableDecl->getParentFunctionOrMethod();
         if (contextDecl == nullptr || std::string(contextDecl->getDeclKindName()) != "Function") {
             return;

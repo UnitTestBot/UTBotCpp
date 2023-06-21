@@ -8,7 +8,6 @@
 #include "utils/FileSystemUtils.h"
 #include "utils/JsonUtils.h"
 #include "utils/StringUtils.h"
-#include "utils/stats/TestsExecutionStats.h"
 
 #include "loguru.h"
 
@@ -91,10 +90,11 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
                         return;
                     }
                     const auto &testFilePath = directoryEntry.path();
-                    if (StringUtils::endsWith(testFilePath.c_str(), "_test.cpp")) {
+                    if (testFilePath.extension() == Paths::CXX_EXTENSION &&
+                        StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX)) {
                         fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
                         fs::path makefile =
-                            Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                                Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
                         if (fs::exists(makefile)) {
                             try {
                                 auto tests = getTestsFromMakefile(makefile, testFilePath);
@@ -107,10 +107,10 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
                                 "Makefile for %s not found, candidate: %s", testFilePath, makefile);
                         }
                     } else {
-                        if (!StringUtils::endsWith(testFilePath.c_str(), "_test.h") &&
-                            !StringUtils::endsWith(testFilePath.stem().c_str(), "_stub") &&
-                            !StringUtils::endsWith(testFilePath.c_str(), "_wrapper.c") &&
-                            !StringUtils::endsWith(testFilePath.c_str(), ".mk")) {
+                        if (!StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX) &&
+                            !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::STUB_SUFFIX) &&
+                            !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::MAKE_WRAPPER_SUFFIX) &&
+                            !StringUtils::endsWith(testFilePath.c_str(), Paths::MAKEFILE_EXTENSION)) {
                             LOG_S(WARNING) << "Found extra file in test directory: " << testFilePath;
                         }
                     }

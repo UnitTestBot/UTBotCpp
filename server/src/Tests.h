@@ -467,7 +467,7 @@ namespace tests {
             FileInfo getFileByName(char fileName) const {
                 return filesValues.value()[fileName - 'A'];
             }
-            
+
             std::string getError() const {
                 if (!errorDescriptors.empty()) {
                     return errorDescriptors[0].substr(0, errorDescriptors[0].find('\n'));
@@ -491,6 +491,7 @@ namespace tests {
         struct MethodDescription {
             std::optional<MethodParam> classObj;
             std::string name;
+            std::string callName;
             typedef std::unordered_map<std::string, std::string> SuiteNameToCodeTextMap;
             std::string stubsText;
             SuiteNameToCodeTextMap codeText;
@@ -513,6 +514,7 @@ namespace tests {
             std::vector<MethodTestCase> testCases;
             typedef std::unordered_map<std::string, std::vector<int>> SuiteNameToTestCasesMap;
             SuiteNameToTestCasesMap suiteTestCases;
+            types::AccessSpecifier accessSpecifier;
 
             ConstructorInfo constructorInfo = ConstructorInfo::NOT_A_CONSTRUCTOR;
 
@@ -546,20 +548,12 @@ namespace tests {
             [[nodiscard]] static MethodDescription fromFunctionInfo(const types::FunctionInfo& fInfo) {
                 MethodDescription method;
                 method.name = fInfo.name;
+                method.callName = fInfo.name;
                 method.returnType = fInfo.returnType;
                 for (const auto& param: fInfo.params) {
                     method.params.emplace_back(param.type, param.name, std::nullopt);
                 }
                 return method;
-            }
-
-            [[nodiscard]] bool hasChangeable() const {
-                for (const auto& i : params) {
-                    if (i.isChangeable()) {
-                        return true;
-                    }
-                }
-                return false;
             }
 
             [[nodiscard]] bool isClassMethod() const {

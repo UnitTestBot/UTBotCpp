@@ -48,8 +48,7 @@ void GlobalVariableUsageMatchCallback::checkUsage(const MatchFinder::MatchResult
 void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *functionDecl,
                                                    const clang::VarDecl *varDecl) {
     clang::SourceManager &sourceManager = functionDecl->getASTContext().getSourceManager();
-    fs::path sourceFilePath =
-        sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     auto const &[iterator, inserted] =
         usages.emplace(varDecl->getNameAsString(), functionDecl->getNameAsString());
     auto const &usage = *iterator;

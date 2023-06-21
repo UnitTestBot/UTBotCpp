@@ -592,9 +592,9 @@ void KTestObjectParser::addToOrder(const std::vector<UTBotKTestObject> &objects,
     if (it != objects.end()) {
         size_t jsonInd = it - objects.begin();
         visited[jsonInd] = true;
-        Tests::MethodParam param = { paramType.isObjectPointer() ? paramType.baseTypeObj()
-                                                                 : paramType,
-                                     paramName, std::nullopt };
+        Tests::MethodParam param = {paramType.isObjectPointer() ? paramType.baseTypeObj()
+                                                                : paramType,
+                                    paramName, std::nullopt };
         order.emplace(jsonInd, param, paramValue);
         return;
     }
@@ -658,7 +658,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
                 continue;
             }
             if (!visited[indObj]) {
-                Tests::MethodParam param = { fieldType.baseTypeObj(1), "", std::nullopt };
+                Tests::MethodParam param = {fieldType.baseTypeObj(1), "", std::nullopt};
                 order.emplace(indObj, param, curType.paramValue);
                 visited[indObj] = true;
             }

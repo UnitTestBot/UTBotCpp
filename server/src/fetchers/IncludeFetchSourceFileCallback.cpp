@@ -3,6 +3,7 @@
 #include "Fetcher.h"
 #include "utils/ExecUtils.h"
 #include "utils/LogUtils.h"
+#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -39,9 +40,7 @@ public:
             }
             return;
         }
-        fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                                      ->tryGetRealPathName()
-                                      .str();
+        fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
         LOG_S(MAX) << "Fetched inclusion directive. "
                    << "Source file sourceFilePath: " << sourceFilePath
                    << "\nPath:" << sourceFilePath;

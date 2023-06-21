@@ -143,18 +143,27 @@ fs::path KleePrinter::writeTmpKleeFile(
     strInclude("klee/klee.h") << NL;
     ss << CALLOC_DECLARATION << NL;
     writeStubsForStructureFields(tests);
-
-    writeAccessPrivateMacros(typesHandler, tests, false);
+    writeAccessPrivateMacros(typesHandler, tests, false,
+                             [methodFilter, onlyForOneClass, onlyForOneFunction, testedMethod, testedClass](
+                                     tests::Tests::MethodDescription const &testMethod) {
+                                 bool filter = methodFilter(testMethod);
+                                 bool forThisFunction = !onlyForOneFunction || testMethod.name == testedMethod;
+                                 bool forThisClass = !onlyForOneClass || !testMethod.isClassMethod() ||
+                                                     testMethod.classObj->type.typeName() == testedClass;
+                                 return filter && forThisFunction && forThisClass;
+                             });
 
     strDeclareSetOfVars(tests.externVariables);
     ss << NL;
 
-    for (const auto &[methodName, testMethod] : tests.methods) {
+    for (const auto &[methodName, testMethod]: tests.methods) {
         if (!methodFilter(testMethod)) {
             continue;
         }
-        if ((onlyForOneFunction && methodName != testedMethod) ||
-            (onlyForOneClass && testMethod.isClassMethod() && testMethod.classObj->type.typeName() != testedClass)) {
+        if (onlyForOneFunction && methodName != testedMethod) {
+            continue;
+        }
+        if (onlyForOneClass && testMethod.isClassMethod() && testMethod.classObj->type.typeName() != testedClass) {
             continue;
         }
         try {
@@ -359,7 +368,7 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
                 strAssignVar(param.name, kleeParam.name);
             }
         }
-        genConstraints(kleeParam, testMethod.name);
+        genConstraints(kleeParam);
     }
 }
 
@@ -392,11 +401,14 @@ void KleePrinter::genParamsDeclarations(
             continue;
         }
         auto paramType =
-            kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
+                kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
         strKleeMakeSymbolic(paramType, kleeParam.name, param.name, !isArray);
-        if(testGen->settingsContext.differentVariablesOfTheSameType && typesToNames[param.type.typeName()].size() <= 3){
-            genConstraints(kleeParam, testMethod.name, typesToNames[param.type.typeName()]);}
-        else {genConstraints(kleeParam, testMethod.name);}
+        if (testGen->settingsContext.differentVariablesOfTheSameType &&
+            typesToNames[param.type.typeName()].size() <= 3) {
+            genConstraints(kleeParam, typesToNames[param.type.typeName()]);
+        } else {
+            genConstraints(kleeParam);
+        }
         genTwoDimPointers(param, true);
         commentBlockSeparator();
     }
@@ -487,7 +499,7 @@ void KleePrinter::genParamsKleeAssumes(
     }
 }
 
-void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::string &methodName, const std::vector<std::string>& names) {
+void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names) {
     KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
     constraintsPrinter.setTabsDepth(tabsDepth);
     const auto constraintsBlock = constraintsPrinter.genConstraints(param, names).str();

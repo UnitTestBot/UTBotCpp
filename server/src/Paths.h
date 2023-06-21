@@ -16,6 +16,7 @@
 namespace Paths {
     extern fs::path logPath;
     const std::string MAKEFILE_EXTENSION = ".mk";
+    const std::string CXX_EXTENSION = ".cpp";
     const std::string TEST_SUFFIX = "_test";
     const std::string STUB_SUFFIX = "_stub";
     const std::string DOT_SEP = "_dot_";
@@ -77,7 +78,7 @@ namespace Paths {
     }
 
     static inline fs::path addTestSuffix(const fs::path &path) {
-        return addSuffix(path, "_test");
+        return addSuffix(path, Paths::TEST_SUFFIX);
     }
 
     static inline fs::path removeSuffix(const fs::path &path, std::string const &suffix) {
@@ -381,12 +382,6 @@ namespace Paths {
     //endregion
 
     //region transformations
-    extern const std::string MAKEFILE_EXTENSION;
-    extern const std::string TEST_SUFFIX;
-    extern const std::string STUB_SUFFIX;
-    extern const std::string DOT_SEP;
-    extern const std::string MAKE_WRAPPER_SUFFIX;
-    extern const char dot;
 
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);
 

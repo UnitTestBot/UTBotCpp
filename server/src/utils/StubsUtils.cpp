@@ -8,7 +8,7 @@ namespace StubsUtils {
                                            bool omitSuffix) {
         std::string stubName = "*" + scopeName.value_or("") + "_" + methodName;
         if (!omitSuffix) {
-            stubName += "_" + paramName + "_stub";
+            stubName += "_" + paramName + Paths::STUB_SUFFIX;
         } else {
             stubName = stubName.substr(1);
         }
@@ -24,7 +24,7 @@ namespace StubsUtils {
                                                         bool omitSuffix) {
         std::string stubName = "*" + structName;
         if (!omitSuffix) {
-            stubName += "_" + fieldName + "_stub";
+            stubName += "_" + fieldName + Paths::STUB_SUFFIX;
         } else {
             stubName = stubName.substr(1);
         }

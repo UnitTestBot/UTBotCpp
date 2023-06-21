@@ -12,6 +12,7 @@ public:
     static const std::string TARGET_ALL;
     static const std::string TARGET_BUILD;
     static const std::string TARGET_RUN;
+    static const std::string TARGET_FORCE;
 
     DefaultMakefilePrinter();
 

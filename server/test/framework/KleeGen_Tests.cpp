@@ -68,7 +68,7 @@ namespace {
         KleeGenerator generator(&testGen, typesHandler, {});
 
         fs::path sourceFilePath = *testSuite.sourcesFilePaths.begin();
-        auto actualFilePath = generator.defaultBuild(sourceFilePath);
-        EXPECT_TRUE(fs::exists(actualFilePath.getOpt().value()));
+        auto actualFilePath = generator.defaultBuild(sourceFilePath).getOpt().value();
+        EXPECT_TRUE(fs::exists(actualFilePath)) << testUtils::fileNotExistsMessage(actualFilePath);
     }
 }

@@ -30,15 +30,16 @@ namespace printer {
         utbot::Language getLanguage() const override;
 
         fs::path writeTmpKleeFile(
-            const Tests &tests,
-            const std::string &buildDir,
-            const PathSubstitution &pathSubstitution,
-            const std::optional<LineInfo::PredicateInfo> &predicateInfo = std::nullopt,
-            const std::string &testedMethod = "",
-            const std::optional<std::string> &testedClass = "",
-            bool onlyForOneFunction = false,
-            bool onlyForOneClass = false,
-            const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter = [](tests::Tests::MethodDescription const &) { return true; });
+                const Tests &tests,
+                const std::string &buildDir,
+                const PathSubstitution &pathSubstitution,
+                const std::optional<LineInfo::PredicateInfo> &predicateInfo = std::nullopt,
+                const std::string &testedMethod = "",
+                const std::optional<std::string> &testedClass = "",
+                bool onlyForOneFunction = false,
+                bool onlyForOneClass = false,
+                const std::function<bool(tests::Tests::MethodDescription const &)> &methodFilter = [](
+                        tests::Tests::MethodDescription const &) { return true; });
 
         std::string addTestLineFlag(const std::shared_ptr<LineInfo> &lineInfo,
                                     bool needAssertion,
@@ -87,7 +88,7 @@ namespace printer {
         /*
          * Functions for constraints generation.
          */
-        void genConstraints(const Tests::MethodParam &param, const std::string& methodName = "", const std::vector<std::string>& names = {});
+        void genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names = {});
 
         void genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare);
 

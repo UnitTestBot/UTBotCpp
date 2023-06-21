@@ -63,6 +63,7 @@ namespace {
         fs::path namespace_cpp = getTestFilePath("namespace.cpp");
         fs::path rvalue_reference_cpp = getTestFilePath("function_with_rvalue_params.cpp");
         fs::path hard_linked_list_c = getTestFilePath("hard_linked_list.c");
+        fs::path unsupported_class_cpp = getTestFilePath("unsupported_class.cpp");
 
         void SetUp() override {
             clearEnv(CompilationUtils::CompilerName::CLANG);
@@ -2606,7 +2607,7 @@ namespace {
                                           }));
     }
 
-    TEST_F(Syntax_Test, Default_constructor) {
+    TEST_F(Syntax_Test, Default_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 59);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2614,7 +2615,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_parameters) {
+    TEST_F(Syntax_Test, Constructor_with_parameters_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 86);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2622,7 +2623,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Copy_constructor) {
+    TEST_F(Syntax_Test, Copy_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 37);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2630,7 +2631,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Move_constructor) {
+    TEST_F(Syntax_Test, Move_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 67);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2638,7 +2639,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_pointers) {
+    TEST_F(Syntax_Test, Constructor_with_pointers_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 21);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2646,7 +2647,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_if_stmt) {
+    TEST_F(Syntax_Test, Constructor_with_if_stmt_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 9);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2730,7 +2731,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, example_namespace) {
+    TEST_F(Syntax_Test, example_namespace_cpp) {
         auto [testGen, status] = createTestForFunction(namespace_cpp, 3);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2793,7 +2794,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, multiple_rvalue_params) {
+    TEST_F(Syntax_Test, multiple_rvalue_params_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 9);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2832,7 +2833,7 @@ namespace {
 
     }
 
-    TEST_F(Syntax_Test, const_rvalue_reference) {
+    TEST_F(Syntax_Test, const_rvalue_reference_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 17);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2873,7 +2874,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, return_and_get_params) {
+    TEST_F(Syntax_Test, return_and_get_params_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 28);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2913,7 +2914,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, rvalue_struct_param) {
+    TEST_F(Syntax_Test, rvalue_struct_param_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 38);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2932,6 +2933,14 @@ namespace {
                     }
                 })
         );
+    }
+
+    TEST_F(Syntax_Test, unsupported_clases_cpp) {
+        std::vector<size_t> lines = {4, 8, 12, 16};
+        for (const auto &line: lines) {
+            auto [testGen, status] = createTestForFunction(unsupported_class_cpp, line);
+            ASSERT_FALSE(status.ok());
+        }
     }
 
     TEST_F(Syntax_Test, simple_getc) {

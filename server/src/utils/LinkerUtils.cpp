@@ -5,14 +5,13 @@
 #include "exceptions/UnImplementedException.h"
 
 namespace LinkerUtils {
-    static inline const std::string STUB_SUFFIX = "_stub";
 
     fs::path applySuffix(const fs::path &output,
                          BuildResult::Type unitType,
                          const std::string &suffixForParentOfStubs) {
         switch (unitType) {
         case BuildResult::Type::ALL_STUBS:
-            return Paths::addSuffix(output, STUB_SUFFIX);
+            return Paths::addSuffix(output, Paths::STUB_SUFFIX);
         case BuildResult::Type::ANY_STUBS:
             return Paths::addSuffix(output, suffixForParentOfStubs);
         case BuildResult::Type::NO_STUBS:

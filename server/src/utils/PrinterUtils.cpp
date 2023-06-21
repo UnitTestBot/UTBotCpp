@@ -27,7 +27,7 @@ namespace PrinterUtils {
             return objectName;
         }
         const std::string &fieldName = field.name;
-        if (field.accessSpecifier == types::Field::AS_pubic) {
+        if (field.accessSpecifier == types::AccessSpecifier::AS_pubic) {
             if (fieldName.empty()) {
                 return objectName;
             }

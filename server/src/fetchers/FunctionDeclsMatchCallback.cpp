@@ -6,7 +6,6 @@
 #include "clang-utils/AlignmentFetcher.h"
 #include "clang-utils/ClangUtils.h"
 #include "utils/LogUtils.h"
-#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -16,8 +15,8 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
                                                        bool onlyNames,
                                                        bool toResolveReturnTypes,
                                                        bool onlyReturnTypes)
-    : parent(parent), typesResolver(parent), onlyNames(onlyNames),
-      toResolveReturnTypes(toResolveReturnTypes), onlyReturnTypes(onlyReturnTypes) {
+        : parent(parent), typesResolver(parent), onlyNames(onlyNames),
+          toResolveReturnTypes(toResolveReturnTypes), onlyReturnTypes(onlyReturnTypes) {
 }
 
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
@@ -25,19 +24,17 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     if (const FunctionDecl *FS = ClangUtils::getFunctionOrConstructor(Result)) {
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
-        fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                ->tryGetRealPathName()
-                .str();
+        fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
 
-        std::string methodName = FS->getNameAsString();
         Tests::MethodDescription methodDescription;
-        methodDescription.name = methodName;
         if (const CXXConstructorDecl *CS = ClangUtils::getConstructor(Result)) {
-            methodDescription.constructorInfo = Tests::ConstructorInfo::CONSTRUCTOR;
-            if (CS->isMoveConstructor()) {
-                methodDescription.constructorInfo = Tests::ConstructorInfo::MOVE_CONSTRUCTOR;
-            }
+            methodDescription.constructorInfo = CS->isMoveConstructor() ? Tests::ConstructorInfo::MOVE_CONSTRUCTOR
+                                                                        : Tests::ConstructorInfo::CONSTRUCTOR;
         }
+
+        std::string methodName = FS->getQualifiedNameAsString();
+        methodDescription.name = methodName;
+        methodDescription.callName = ClangUtils::getCallName(FS);
         methodDescription.sourceFilePath = sourceFilePath;
         if (onlyNames) {
             addMethod(sourceFilePath, methodDescription);
@@ -45,6 +42,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
         clang::QualType realReturnType = ClangUtils::getReturnType(FS, Result);
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
+        methodDescription.accessSpecifier = types::AS_pubic;
         if (onlyReturnTypes) {
             addMethod(sourceFilePath, methodDescription);
             return;
@@ -71,6 +69,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             methodDescription.classObj = {classType,
                                           classType.typeName() + "_obj",
                                           std::nullopt};
+            methodDescription.accessSpecifier = getAcessSpecifier(FS);
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);
@@ -96,8 +95,11 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
                     ASTPrinter::getSourceText(FS->getBody()->getSourceRange(), sourceManager);
         }
 
+
         const auto paramsFromDefinition = FS->parameters();
-        for (size_t i = 0; i < paramsFromDefinition.size(); ++i) {
+        const auto paramsFromDeclaration = FSFromHeader->parameters();
+        for (size_t i = 0; i < paramsFromDeclaration.size(); ++i) {
+            const auto &declParam = paramsFromDeclaration[i];
             const auto &defParam = paramsFromDefinition[i];
             std::string name = NameDecorator::decorate(defParam->getNameAsString());
             std::string mangledName = PrinterUtils::getParamMangledName(name, methodName);
@@ -107,9 +109,9 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             if (name == methodDescription.name) {
                 name = mangledName;
             }
-            auto paramType = ParamsHandler::getType(defParam->getType(), defParam->getType(), sourceManager);
-            addFunctionPointer(methodDescription.functionPointers, defParam->getFunctionType(),
-                               defParam->getType(), name, sourceManager, paramType);
+            auto paramType = ParamsHandler::getType(defParam->getType(), declParam->getType(), sourceManager);
+            addFunctionPointer(methodDescription.functionPointers, declParam->getFunctionType(),
+                               declParam->getType(), name, sourceManager, paramType);
             auto alignment = AlignmentFetcher::fetch(defParam);
             bool hasIncompleteType = ClangUtils::isIncomplete(defParam->getType());
             methodDescription.params.emplace_back(paramType, name, alignment, hasIncompleteType);
@@ -154,18 +156,22 @@ void FunctionDeclsMatchCallback::logFunction(const Tests::MethodDescription &des
 }
 
 void FunctionDeclsMatchCallback::addFunctionPointer(
-    tests::Tests::MethodDescription::FPointerMap &functionPointers,
-    const clang::FunctionType *functionType,
-    const clang::QualType &qualType,
-    const std::string &name,
-    const clang::SourceManager &sourceManager,
-    const types::Type &type) {
+        tests::Tests::MethodDescription::FPointerMap &functionPointers,
+        const clang::FunctionType *functionType,
+        const clang::QualType &qualType,
+        const std::string &name,
+        const clang::SourceManager &sourceManager,
+        const types::Type &type) {
     if (type.isPointerToFunction()) {
-        functionPointers[name] = ParamsHandler::getFunctionPointerDeclaration(functionType, name, sourceManager,
-                                                            false);
+        if (functionType) {
+            functionPointers[name] = ParamsHandler::getFunctionPointerDeclaration(functionType, name, sourceManager,
+                                                                                  false);
+        } else {
+            LOG_S(WARNING) << "Type '" << name << "' fetch as function pointer but can't get functionType";
+        }
     } else if (type.isArrayOfPointersToFunction()) {
         functionPointers[name] = ParamsHandler::getFunctionPointerDeclaration(
-            qualType->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(), name,
-            sourceManager, true);
+                qualType->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(), name,
+                sourceManager, true);
     }
 }

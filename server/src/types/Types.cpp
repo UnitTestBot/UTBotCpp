@@ -7,6 +7,7 @@
 #include "exceptions/UnImplementedException.h"
 #include "utils/PrinterUtils.h"
 #include "utils/SizeUtils.h"
+#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -18,7 +19,7 @@
 types::Type::Type(clang::QualType qualType, TypeName usedTypeName, const clang::SourceManager &sourceManager): mUsedType(std::move(usedTypeName)) {
     clang::QualType canonicalType = qualType.getCanonicalType();
     auto pp = clang::PrintingPolicy(clang::LangOptions());
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
         pp.adjustForCPlusPlus();
     }

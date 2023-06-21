@@ -2,15 +2,16 @@
 
 #include "Paths.h"
 #include "clang-utils/ASTPrinter.h"
+#include "clang-utils/ClangUtils.h"
 #include "fetchers/Fetcher.h"
 #include "fetchers/FetcherUtils.h"
 #include "utils/LogUtils.h"
+#include "utils/path/FileSystemPath.h"
 
 #include <clang/AST/ASTContext.h>
 
 #include "loguru.h"
 
-#include "utils/path/FileSystemPath.h"
 #include <vector>
 
 TypesResolver::TypesResolver(const Fetcher *parent) : parent(parent) {
@@ -67,7 +68,8 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
 
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
         if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
-            clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
+            clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(
+                    parentNode).getCanonicalType();
             uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
             if (!fullname[parentID].empty()) {
                 fullname[id] = fullname[parentID] + "::" + fullname[id];
@@ -98,16 +100,14 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     types::StructInfo structInfo;
     fs::path filename =
             sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(
-            sourceManager.getMainFileID())->tryGetRealPathName().str();
+    fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
-        const auto *cppD =  llvm::dyn_cast<const clang::CXXRecordDecl>(D);
+        const auto *cppD = llvm::dyn_cast<const clang::CXXRecordDecl>(D);
         structInfo.isCLike = cppD != nullptr && cppD->isCLike();
-    }
-    else {
+    } else {
         structInfo.isCLike = true;
     }
 
@@ -121,7 +121,7 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
        << "\tFile path: " << structInfo.filePath.string() << "";
     std::vector<types::Field> fields;
 
-    for (const clang::FieldDecl *F : D->fields()) {
+    for (const clang::FieldDecl *F: D->fields()) {
         if (F->isUnnamedBitfield()) {
             continue;
         }
@@ -134,14 +134,14 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                F->getFunctionType(), field.name, sourceManager,
-                field.type.isArrayOfPointersToFunction());
+                    F->getFunctionType(), field.name, sourceManager,
+                    field.type.isArrayOfPointersToFunction());
             auto returnType = F->getFunctionType()->getReturnType();
             if (returnType->isPointerType()
                 && returnType->getPointeeType()->isStructureType()
                 && returnType->getPointeeType().getBaseTypeIdentifier()) {
                 std::string structName =
-                    returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
+                        returnType->getPointeeType().getBaseTypeIdentifier()->getName().str();
                 if (!CollectionUtils::containsKey((*parent->structsDeclared).at(sourceFilePath),
                                                   structName)) {
                     (*parent->structsToDeclare)[sourceFilePath].insert(structName);
@@ -149,8 +149,8 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
             }
         } else if (field.type.isArrayOfPointersToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
-                F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
-                field.name, sourceManager, field.type.isArrayOfPointersToFunction());
+                    F->getType()->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(),
+                    field.name, sourceManager, field.type.isArrayOfPointersToFunction());
         }
         field.size = F->isBitField() ? F->getBitWidthValue(context) : context.getTypeSize(F->getType());
         field.offset = context.getFieldOffset(F);
@@ -158,22 +158,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
             ss << "\n\t" << field.type.typeName() << " " << field.name << ";";
         }
         if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
-            switch (F->getAccess()) {
-                case clang::AccessSpecifier::AS_private :
-                    field.accessSpecifier = types::Field::AS_private;
-                    break;
-                case clang::AccessSpecifier::AS_protected :
-                    field.accessSpecifier = types::Field::AS_protected;
-                    break;
-                case clang::AccessSpecifier::AS_public :
-                    field.accessSpecifier = types::Field::AS_pubic;
-                    break;
-                case clang::AccessSpecifier::AS_none :
-                    field.accessSpecifier = types::Field::AS_none;
-                    break;
-            }
+            field.accessSpecifier = getAcessSpecifier(F);
         } else {
-            field.accessSpecifier = types::Field::AS_pubic;
+            field.accessSpecifier = types::AccessSpecifier::AS_pubic;
         }
         fields.push_back(field);
     }
@@ -181,6 +168,23 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     structInfo.size = getRecordSize(D);
     structInfo.alignment = getDeclAlignment(D);
     structInfo.subType = subType;
+    structInfo.hasDefaultPublicConstructor = false;
+    if (auto CXXD = dynamic_cast<const clang::CXXRecordDecl *>(D)) {
+        LOG_S(MAX) << "Struct/Class " << structInfo.name << " CXX class";
+        if (!CXXD->isCLike()) {
+            structInfo.isCLike = false;
+        }
+        for (const auto &ctor: CXXD->ctors()) {
+            if (ctor->isDefaultConstructor() && !ctor->isDeleted() &&
+                    getAcessSpecifier(ctor) == types::AccessSpecifier::AS_pubic) {
+                structInfo.hasDefaultPublicConstructor = true;
+                break;
+            }
+        }
+        LOG_IF_S(MAX, !structInfo.hasDefaultPublicConstructor) << "Struct/Class "
+                                                               << structInfo.name
+                                                               << " hasn't default public constructor";
+    }
 
     addInfo(id, parent->projectTypes->structs, structInfo);
     ss << "\nName: " << structInfo.name << ", id: " << id << " , size: " << structInfo.size << "\n";
@@ -221,10 +225,10 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
     }
 
     types::EnumInfo enumInfo;
-    fs::path sourceFilePath = sourceManager.getFileEntryForID(sourceManager.getMainFileID())->tryGetRealPathName().str();
+    fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     enumInfo.name = getFullname(EN, canonicalType, id, sourceFilePath);
     enumInfo.filePath = Paths::getCCJsonFileFullPath(
-        sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
+            sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
     clang::QualType promotionType = EN->getPromotionType();
     enumInfo.size = context.getTypeSize(promotionType);
 
@@ -256,7 +260,6 @@ void TypesResolver::updateMaximumAlignment(size_t alignment) const {
     size_t &maximumAlignment = *(this->parent->maximumAlignment);
     maximumAlignment = std::max(maximumAlignment, alignment);
 }
-
 
 
 void TypesResolver::resolve(const clang::QualType &type) {

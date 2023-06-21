@@ -156,7 +156,6 @@ namespace printer {
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)", getRelativePath(buildDirectory)));
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)",
                                    getRelativePath(dependencyDirectory)));
-        declareTarget(FORCE, {}, {});
 
         comment("{ gtest");
 
@@ -449,7 +448,7 @@ namespace printer {
             coverageInfoBinary = testExecutablePath.string();
         }
 
-        declareTarget("bin", { FORCE }, { stringFormat("echo %s",
+        declareTarget("bin", { TARGET_FORCE }, { stringFormat("echo %s",
                                                        getRelativePath(coverageInfoBinary)) });
 
         utbot::RunCommand testRunCommand{ { getRelativePath(testExecutablePath), "$(GTEST_FLAGS)" },

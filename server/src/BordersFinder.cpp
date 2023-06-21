@@ -23,11 +23,9 @@ BordersFinder::BordersFinder(const fs::path &filePath,
 
 void BordersFinder::run(const MatchFinder::MatchResult &Result) {
     LOG_SCOPE_FUNCTION(MAX);
+    SourceManager &sourceManager = Result.Context->getSourceManager();
     if (const auto *ST = Result.Nodes.getNodeAs<clang::CXXRecordDecl>(Matchers::STRUCT_OR_CLASS_JUST_DECL)) {
-        SourceManager &sourceManager = Result.Context->getSourceManager();
-        fs::path path = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                ->tryGetRealPathName()
-                .str();
+        fs::path path = ClangUtils::getSourceFilePath(sourceManager);
         auto borders = getBorders(sourceManager, ST->getSourceRange());
         if (!containsLine(borders) || (classBorder.has_value() && !(borders < classBorder.value()))) {
             return;
@@ -40,10 +38,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         LOG_S(MAX) << "Class name: " << ST->getNameAsString();
         LOG_S(MAX) << "Class's borders: " << lineInfo.begin << ' ' << lineInfo.end;
     } else if (const FunctionDecl *FS = ClangUtils::getFunctionOrConstructor(Result)) {
-        SourceManager &sourceManager = Result.Context->getSourceManager();
-        fs::path path = sourceManager.getFileEntryForID(sourceManager.getMainFileID())
-                ->tryGetRealPathName()
-                .str();
+        fs::path path = ClangUtils::getSourceFilePath(sourceManager);
         Stmt *currentStmt = FS->getBody();
         if ((currentStmt == nullptr) || !containsLine(getFunctionBordersLines(sourceManager, FS))) {
             return;
@@ -83,7 +78,7 @@ void BordersFinder::run(const MatchFinder::MatchResult &Result) {
         } else {
             lineInfo.scopeName = path.stem().string();
         }
-        lineInfo.methodName = FS->getNameAsString();
+        lineInfo.methodName = FS->getQualifiedNameAsString();
         clang::QualType realReturnType = ClangUtils::getReturnType(FS, Result);
         lineInfo.functionReturnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
         lineInfo.initialized = true;

@@ -227,23 +227,9 @@ namespace printer {
     Printer::Stream &Printer::strFunctionDecl(const tests::Tests::MethodDescription &method,
                                               const std::string &end,
                                               const std::vector<std::string> &modifiers) {
-        return strFunctionDecl(method.returnType.usedType(), method.name, method.getParamTypes(),
+        return strFunctionDecl(method.returnType.usedType(), method.callName, method.getParamTypes(),
                                method.getParamNames(), end, modifiers, method.functionPointers,
                                method.isVariadic);
-    }
-
-
-    Printer::Stream &
-    Printer::strFunctionDeclWithParamString(const tests::Tests::MethodDescription &method,
-                                            const std::string &end,
-                                            const std::vector<std::string> &modifiers) {
-        ss << LINE_INDENT();
-        for (const auto &modifier : modifiers) {
-            ss << modifier << " ";
-        }
-        ss << method.returnType.usedType() << " " << method.name << "(" << method.paramsString
-           << ")" << end;
-        return ss;
     }
 
     Printer::Stream &Printer::strFunctionCall(std::string_view functionName,
@@ -285,7 +271,7 @@ namespace printer {
             parameters.push_back(param.getFunctionParamDecl());
         }
         auto classObjName = method.getClassName();
-        return strFunctionCall(method.name, parameters, end, classObjName, needTabs,
+        return strFunctionCall(method.callName, parameters, end, classObjName, needTabs,
                                returnPointers);
     }
 
@@ -420,6 +406,7 @@ namespace printer {
         if (!suffix.empty()) {
             methodCopy.name += "_" + suffix;
         }
+        methodCopy.callName = methodCopy.name;
         std::vector<std::string> modifiers;
         if (makeStatic) {
             modifiers.emplace_back("static");
@@ -583,18 +570,24 @@ namespace printer {
                          stubName, "stub", methodName, fInfo->name, makeStatic);
     }
 
-    void Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable) {
+    void
+    Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler, const Tests &tests, bool onlyChangeable,
+                                      const std::function<bool(
+                                              tests::Tests::MethodDescription const &)> &methodFilter) {
         if (srcLanguage == utbot::Language::CXX) {
             ss << NL;
             strInclude("access_private.hpp");
             ss << NL;
             std::unordered_set<uint64_t> checkedOnPrivate;
-            for (const auto &[methodName, testMethod] : tests.methods) {
+            for (const auto &[methodName, testMethod]: tests.methods) {
+                if (!methodFilter(testMethod)) {
+                    continue;
+                }
                 addAccessor(typesHandler, testMethod.returnType, checkedOnPrivate);
                 if (testMethod.isClassMethod()) {
                     addAccessor(typesHandler, testMethod.classObj->type, checkedOnPrivate);
                 }
-                for (const auto& param : testMethod.params) {
+                for (const auto &param: testMethod.params) {
                     if (!onlyChangeable || param.isChangeable()) {
                         addAccessor(typesHandler, param.type, checkedOnPrivate);
                     }
@@ -604,12 +597,18 @@ namespace printer {
         }
     }
 
+    void Printer::writeAccessPrivateMacros(types::TypesHandler const *typesHandler,
+                                           const Tests &tests, bool onlyChangeable) {
+        writeAccessPrivateMacros(typesHandler, tests, onlyChangeable,
+                                 [](tests::Tests::MethodDescription const &val) { return true; });
+    }
+
     void Printer::addAccessor(const types::TypesHandler *typesHandler, const types::Type &type,
                               std::unordered_set<uint64_t> &checkedOnPrivate) {
         if (!checkedOnPrivate.count(type.getId()) && typesHandler->isStructLike(type)) {
             checkedOnPrivate.insert(type.getId());
             for (const auto& field : typesHandler->getStructInfo(type).fields) {
-                if (field.accessSpecifier != types::Field::AS_pubic) {
+                if (field.accessSpecifier != types::AccessSpecifier::AS_pubic && !field.type.isArray()) {
                     ss << StringUtils::stringFormat("ACCESS_PRIVATE_FIELD(%s, %s, %s)",
                                                     type.typeName(),
                                                     field.type.typeName(),
