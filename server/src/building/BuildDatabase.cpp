@@ -354,16 +354,19 @@ std::shared_ptr<const BuildDatabase::TargetInfo> BuildDatabase::getClientLinkUni
                                        filepath.string());
 }
 
+static inline bool maybe64bits(const fs::path &path) {
+    return StringUtils::contains(path.string(), "64");
+}
+
 bool BuildDatabase::ObjectFileInfo::conflictPriorityMore(
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &left,
         const std::shared_ptr<BuildDatabase::ObjectFileInfo> &right) {
-    if (StringUtils::contains(left->getOutputFile().string(), "64")) {
-        return true;
+    bool leftContains64 = maybe64bits(left->getOutputFile());
+    bool rightContains64 = maybe64bits(right->getOutputFile());
+    if (leftContains64 == rightContains64) {
+        return left->getOutputFile().string() < right->getOutputFile().string();
     }
-    if (StringUtils::contains(right->getOutputFile().string(), "64")) {
-        return false;
-    }
-    return false;
+    return leftContains64;
 }
 
 fs::path BuildDatabase::getCorrespondingBitcodeFile(const fs::path &filepath) {
