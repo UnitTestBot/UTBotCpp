@@ -390,6 +390,13 @@ void types::Type::replaceUsedType(const types::TypeName &newUsedType) {
     mUsedType = newUsedType;
 }
 
+void types::Type::replaceTypeNameIfUnnamed(const TypeName &newTypeName) {
+    if (isUnnamed()) {
+        mBaseType = newTypeName;
+        mUsedType = newTypeName;
+    }
+}
+
 /*
  * Integer types
  */

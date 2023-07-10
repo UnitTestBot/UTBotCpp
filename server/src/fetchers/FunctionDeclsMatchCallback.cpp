@@ -42,6 +42,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
         clang::QualType realReturnType = ClangUtils::getReturnType(FS, Result);
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
+        methodDescription.returnType.replaceTypeNameIfUnnamed("enum " + methodName + "_return_type");
         methodDescription.accessSpecifier = types::AS_pubic;
         if (onlyReturnTypes) {
             addMethod(sourceFilePath, methodDescription);
@@ -72,6 +73,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
             methodDescription.accessSpecifier = getAcessSpecifier(FS);
         }
         methodDescription.returnType = ParamsHandler::getType(realReturnType, realReturnType, sourceManager);
+        methodDescription.returnType.replaceTypeNameIfUnnamed("enum " + methodName + "_return_type");
         methodDescription.hasIncompleteReturnType = ClangUtils::isIncomplete(realReturnType);
         if (toResolveReturnTypes) {
             typesResolver.resolve(realReturnType);

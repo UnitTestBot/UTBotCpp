@@ -196,6 +196,7 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     auto policy = getDefaultPrintingPolicy(decl, true);
     policy.TerseOutput = 1;
     policy.PolishForDeclaration = 1;
+    policy.AnonymousTagLocations = 0;
 
     std::string name = decl->getNameAsString();
     std::string decoratedName = decorate(name);
@@ -207,6 +208,15 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     if (IsOldStyleDefinition(curDecl)){
         curDecl = getOldStyleDeclarationAsString(decl, decoratedName);
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
+    }
+
+    auto returnType = decl->getReturnType();
+    if (returnType->hasUnnamedOrLocalType() && (auto EN = llvm::dyn_cast<clang::EnumDecl>(returnType->getAsTagDecl()))) {
+        std::string returnTypeName = name + "_return_type";
+        renameDecl(EN, returnTypeName);
+        print(EN);
+        StringUtils::replaceFirst(wrapperDecl, "(anonymous)", returnTypeName);
+        StringUtils::replaceFirst(curDecl, "(anonymous)", returnTypeName);
     }
 
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
@@ -251,6 +261,7 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
     auto policy = getDefaultPrintingPolicy(decl, false);
     policy.TerseOutput = 1;
     policy.PolishForDeclaration = 1;
+    policy.AnonymousTagLocations = 0;
 
     /*
      * fun_wrapper {
@@ -264,6 +275,10 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
 
+    auto returnType = decl->getReturnType();
+    if (returnType->hasUnnamedOrLocalType() && returnType->isEnumeralType()) {
+        StringUtils::replaceFirst(wrapperDecl, "enum (anonymous)", "int");
+    }
     *wrapperStream << wrapperDecl << " {\n";
     printReturn(decl, name, wrapperStream);
     *wrapperStream << "}\n";
