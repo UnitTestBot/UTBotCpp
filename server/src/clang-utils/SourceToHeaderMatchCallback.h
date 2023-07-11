@@ -88,6 +88,8 @@ private:
 
     std::string decorate(std::string_view name) const;
 
+    static void replaceAnonymousEnumTypeName(std::string& decl, const std::string& typeName);
+
     std::string getOldStyleDeclarationAsString(const clang::FunctionDecl *decl, std::string const &name) const;
 
     bool IsOldStyleDefinition(std::string const &definition) const;

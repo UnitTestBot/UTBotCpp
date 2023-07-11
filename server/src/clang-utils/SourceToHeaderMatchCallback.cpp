@@ -209,15 +209,15 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
         curDecl = getOldStyleDeclarationAsString(decl, decoratedName);
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
+    std::string enumReturnTypeName = PrinterUtils::getEnumReturnTypeName(name);
+    replaceAnonymousEnumTypeName(wrapperDecl, enumReturnTypeName);
+    replaceAnonymousEnumTypeName(curDecl, enumReturnTypeName);
 
-    auto returnType = decl->getReturnType();
-    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(returnType->getAsTagDecl());
-    if (returnType->hasUnnamedOrLocalType() && enumDecl) {
-        std::string returnTypeName = name + "_return_type";
-        renameDecl(enumDecl, returnTypeName);
+    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(decl->getReturnType()->getAsTagDecl());
+    if (enumDecl && !enumDecl->hasNameForLinkage()) {
+        std::string enumDeclTypeName = PrinterUtils::getEnumDeclTypeName(name);
+        renameDecl(enumDecl, enumDeclTypeName);
         print(enumDecl);
-        StringUtils::replaceFirst(wrapperDecl, "(anonymous)", returnTypeName);
-        StringUtils::replaceFirst(curDecl, "(anonymous)", returnTypeName);
     }
 
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
@@ -275,11 +275,8 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
     if (IsOldStyleDefinition(wrapperDecl)){
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
+    replaceAnonymousEnumTypeName(wrapperDecl, "int");
 
-    auto returnType = decl->getReturnType();
-    if (returnType->hasUnnamedOrLocalType() && returnType->isEnumeralType()) {
-        StringUtils::replaceFirst(wrapperDecl, "enum (anonymous)", "int");
-    }
     *wrapperStream << wrapperDecl << " {\n";
     printReturn(decl, name, wrapperStream);
     *wrapperStream << "}\n";
@@ -387,6 +384,10 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
     auto &info = decl->getASTContext().Idents.get(name);
     DeclarationName wrapperDeclarationName{ &info };
     const_cast<NamedDecl *>(decl)->setDeclName(wrapperDeclarationName);
+}
+
+void SourceToHeaderMatchCallback::replaceAnonymousEnumTypeName(std::string& decl, const std::string& typeName) {
+    StringUtils::replaceFirst(decl, "enum (anonymous)", typeName);
 }
 
 std::string SourceToHeaderMatchCallback::getOldStyleDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{

@@ -469,6 +469,12 @@ namespace types {
          */
         bool isEnum(const Type&) const;
 
+        /**
+         * Returns true if given type is an anonymous enum, otherwise false.
+         * @return whether given type is an anonymous enum
+         */
+         bool isAnonymousEnum(const Type&) const;
+
 
         /**
          * Returns true if given type is void, otherwise false.

@@ -511,6 +511,10 @@ bool types::TypesHandler::isEnum(const types::Type &type) const {
     return type.isSimple() && isEnum(type.getId());
 }
 
+bool types::TypesHandler::isAnonymousEnum(const types::Type& type) const {
+    return type.isUnnamed() && isEnum(type);
+}
+
 bool types::TypesHandler::isEnum(uint64_t id) const {
     return typeIsInMap(id, typeMaps.enums);
 }

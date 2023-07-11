@@ -17,9 +17,9 @@ namespace visitor {
         functionCall = printer->constrFunctionCall(methodDescription, 0, "", false);
         additionalPointersCount = methodDescription.returnType.countReturnPointers();
         auto returnType = methodDescription.returnType.baseTypeObj();
-        std::string type = (returnType.isUnnamed() && typesHandler->isEnum(returnType))
-                              ? "int"
-                              : getActualTmpVarType(returnType).baseType();
+        std::string type = typesHandler->isAnonymousEnum(returnType)
+                               ? "int"
+                               : getActualTmpVarType(returnType).baseType();
         printer->strDeclareVar(type,
                                KleeUtils::TEMP_VARIABLE_NAME, functionCall,
                                std::nullopt, true, additionalPointersCount);

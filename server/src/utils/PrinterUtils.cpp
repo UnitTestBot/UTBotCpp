@@ -97,6 +97,14 @@ namespace PrinterUtils {
         return methodName + "_return";
     }
 
+    std::string getEnumDeclTypeName(const std::string& methodName) {
+        return methodName + "_return_type";
+    }
+
+    std::string getEnumReturnTypeName(const std::string& methodName) {
+        return "enum " + methodName + "_return_type";
+    }
+
     std::string getEqualString(const std::string& lhs, const std::string& rhs) {
         return StringUtils::stringFormat("%s == %s", lhs, rhs);
     }
