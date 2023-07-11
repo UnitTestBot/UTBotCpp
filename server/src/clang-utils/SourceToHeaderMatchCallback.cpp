@@ -211,14 +211,13 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     }
 
     auto returnType = decl->getReturnType();
-    if (returnType->hasUnnamedOrLocalType()) {
-        if (auto EN = llvm::dyn_cast<clang::EnumDecl>(returnType->getAsTagDecl())) {
-            std::string returnTypeName = name + "_return_type";
-            renameDecl(EN, returnTypeName);
-            print(EN);
-            StringUtils::replaceFirst(wrapperDecl, "(anonymous)", returnTypeName);
-            StringUtils::replaceFirst(curDecl, "(anonymous)", returnTypeName);
-        }
+    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(returnType->getAsTagDecl());
+    if (returnType->hasUnnamedOrLocalType() && enumDecl) {
+        std::string returnTypeName = name + "_return_type";
+        renameDecl(enumDecl, returnTypeName);
+        print(enumDecl);
+        StringUtils::replaceFirst(wrapperDecl, "(anonymous)", returnTypeName);
+        StringUtils::replaceFirst(curDecl, "(anonymous)", returnTypeName);
     }
 
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
