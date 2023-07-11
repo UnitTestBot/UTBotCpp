@@ -97,7 +97,7 @@ namespace PrinterUtils {
         return methodName + "_return";
     }
 
-    std::string getEnumDeclTypeName(const std::string& methodName) {
+    std::string getDeclTypeName(const std::string& methodName) {
         return methodName + "_return_type";
     }
 

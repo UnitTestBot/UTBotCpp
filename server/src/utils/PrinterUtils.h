@@ -78,7 +78,7 @@ namespace PrinterUtils {
 
     std::string getParamMangledName(const std::string &paramName, const std::string &methodName);
     std::string getReturnMangledName(const std::string &methodName);
-    std::string getEnumDeclTypeName(const std::string& methodName);
+    std::string getDeclTypeName(const std::string& methodName);
     std::string getEnumReturnTypeName(const std::string& methodName);
 
     std::string getEqualString(const std::string &lhs, const std::string &rhs);

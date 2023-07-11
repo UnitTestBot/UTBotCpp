@@ -738,7 +738,7 @@ namespace {
                   }
                 }
             ),
-            "intToAnonymousParity"
+            "intToParity"
         );
     }
 

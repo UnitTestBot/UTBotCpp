@@ -215,8 +215,8 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
 
     auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(decl->getReturnType()->getAsTagDecl());
     if (enumDecl && !enumDecl->hasNameForLinkage()) {
-        std::string enumDeclTypeName = PrinterUtils::getEnumDeclTypeName(name);
-        renameDecl(enumDecl, enumDeclTypeName);
+        std::string declTypeName = PrinterUtils::getDeclTypeName(name);
+        renameDecl(enumDecl, declTypeName);
         print(enumDecl);
     }
 

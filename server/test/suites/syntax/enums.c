@@ -74,7 +74,7 @@ static int enumWithinRecord(struct EnumWithinRecord record) {
     }
 }
 
-enum {EVEN, ODD} intToAnonymousParity(int a) {
+enum {EVEN, ODD} intToParity(int a) {
     if (a % 2 == 0) {
         return EVEN;
     }
