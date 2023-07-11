@@ -722,6 +722,26 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, Anonymous_Enum_As_Return_Test) {
+        auto [testGen, status] = createTestForFunction(enums_c, 79);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(enums_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {[](const tests::Tests::MethodTestCase& testCase) {
+                      return testCase.returnValue.view->getEntryValue(nullptr) == "EVEN" && stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) % 2 == 0;
+                  },
+                 [](const tests::Tests::MethodTestCase& testCase) {
+                      return testCase.returnValue.view->getEntryValue(nullptr) == "ODD"  && stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) % 2 == 1;
+                  }
+                }
+            ),
+            "intToAnonymousParity"
+        );
+    }
+
     TEST_F(Syntax_Test, Typedef_Struct_Test) {
         auto [testGen, status] = createTestForFunction(typedefs_1_c, 15);
 
