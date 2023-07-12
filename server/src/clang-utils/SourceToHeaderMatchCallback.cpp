@@ -400,8 +400,7 @@ void SourceToHeaderMatchCallback::replaceAnonymousEnumTypeName(std::string &strD
 }
 
 bool SourceToHeaderMatchCallback::isAnonymousEnumDecl(const clang::TagDecl *tagDecl) const {
-    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(tagDecl);
-    return enumDecl && !enumDecl->hasNameForLinkage();
+    return tagDecl && tagDecl->isEnum() && !tagDecl->hasNameForLinkage();
 }
 
 std::string SourceToHeaderMatchCallback::getOldStyleDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
