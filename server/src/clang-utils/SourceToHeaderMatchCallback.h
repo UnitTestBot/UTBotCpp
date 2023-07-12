@@ -90,8 +90,7 @@ private:
 
     std::string decorate(std::string_view name) const;
 
-    void replaceAnonymousEnumTypeName(const clang::TagDecl *tagDecl,
-                                      std::string &strDecl,
+    void replaceAnonymousEnumTypeName(std::string &strDecl,
                                       const std::string &typeName) const;
 
     bool isAnonymousEnumDecl(const clang::TagDecl *tagDecl) const;
