@@ -471,7 +471,10 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
                           : testMethod.returnType;
     bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
-    strDeclareVar(returnType.baseType(), KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
+    std::string type = typesHandler->isAnonymousEnum(returnType)
+                           ? "int"
+                           : returnType.baseType();
+    strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);

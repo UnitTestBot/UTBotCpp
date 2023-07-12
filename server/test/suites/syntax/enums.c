@@ -73,3 +73,10 @@ static int enumWithinRecord(struct EnumWithinRecord record) {
         return 0;
     }
 }
+
+enum {EVEN, ODD} intToParity(int a) {
+    if (a % 2 == 0) {
+        return EVEN;
+    }
+    return ODD;
+}

@@ -390,6 +390,13 @@ void types::Type::replaceUsedType(const types::TypeName &newUsedType) {
     mUsedType = newUsedType;
 }
 
+void types::Type::replaceTypeNameIfUnnamed(const TypeName &newTypeName) {
+    if (isUnnamed()) {
+        mBaseType = newTypeName;
+        mUsedType = newTypeName;
+    }
+}
+
 /*
  * Integer types
  */
@@ -502,6 +509,10 @@ bool types::TypesHandler::isStructLike(uint64_t id) const {
  */
 bool types::TypesHandler::isEnum(const types::Type &type) const {
     return type.isSimple() && isEnum(type.getId());
+}
+
+bool types::TypesHandler::isAnonymousEnum(const types::Type& type) const {
+    return type.isUnnamed() && isEnum(type);
 }
 
 bool types::TypesHandler::isEnum(uint64_t id) const {

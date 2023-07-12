@@ -86,7 +86,14 @@ private:
 
     void renameDecl(const clang::NamedDecl *decl, const std::string &name) const;
 
+    void renameAnonymousReturnTypeDecl(const clang::TagDecl *tagDecl, const std::string &methodName) const;
+
     std::string decorate(std::string_view name) const;
+
+    void replaceAnonymousEnumTypeName(std::string &strDecl,
+                                      const std::string &typeName) const;
+
+    bool isAnonymousEnumDecl(const clang::TagDecl *tagDecl) const;
 
     std::string getOldStyleDeclarationAsString(const clang::FunctionDecl *decl, std::string const &name) const;
 

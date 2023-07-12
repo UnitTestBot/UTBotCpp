@@ -218,6 +218,13 @@ namespace types {
         void replaceUsedType(const TypeName &newUsedType);
 
         /**
+         * Replace current baseType and usedType with a new one if unnamed.
+         * @param newTypeName - name of type
+         * @return
+         */
+        void replaceTypeNameIfUnnamed(const TypeName &newTypeName);
+
+        /**
          * Creates type from its name. Created type satisfies following:
          * typeName() == "const " + type && baseType() == type && usedType() == typeName();
          * @param type - name of type
@@ -461,6 +468,12 @@ namespace types {
          * @return whether given type is an enum
          */
         bool isEnum(const Type&) const;
+
+        /**
+         * Returns true if given type is an anonymous enum, otherwise false.
+         * @return whether given type is an anonymous enum
+         */
+         bool isAnonymousEnum(const Type&) const;
 
 
         /**
