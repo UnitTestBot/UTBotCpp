@@ -210,15 +210,10 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
     std::string enumReturnTypeName = PrinterUtils::getEnumReturnTypeName(name);
-    replaceAnonymousEnumTypeName(wrapperDecl, enumReturnTypeName);
-    replaceAnonymousEnumTypeName(curDecl, enumReturnTypeName);
-
-    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(decl->getReturnType()->getAsTagDecl());
-    if (enumDecl && !enumDecl->hasNameForLinkage()) {
-        std::string declTypeName = PrinterUtils::getDeclTypeName(name);
-        renameDecl(enumDecl, declTypeName);
-        print(enumDecl);
-    }
+    TagDecl *tagDecl = decl->getReturnType()->getAsTagDecl();
+    replaceAnonymousEnumTypeName(tagDecl, wrapperDecl, enumReturnTypeName);
+    replaceAnonymousEnumTypeName(tagDecl, curDecl, enumReturnTypeName);
+    renameAnonymousReturnTypeDecl(tagDecl, name);
 
     *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
     *internalStream << "static " << curDecl << " {\n";
@@ -275,7 +270,8 @@ void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) cons
     if (IsOldStyleDefinition(wrapperDecl)){
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
-    replaceAnonymousEnumTypeName(wrapperDecl, "int");
+    TagDecl *tagDecl = decl->getReturnType()->getAsTagDecl();
+    replaceAnonymousEnumTypeName(tagDecl, wrapperDecl, "int");
 
     *wrapperStream << wrapperDecl << " {\n";
     printReturn(decl, name, wrapperStream);
@@ -386,8 +382,27 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
     const_cast<NamedDecl *>(decl)->setDeclName(wrapperDeclarationName);
 }
 
-void SourceToHeaderMatchCallback::replaceAnonymousEnumTypeName(std::string& decl, const std::string& typeName) {
-    StringUtils::replaceFirst(decl, "enum (anonymous)", typeName);
+void SourceToHeaderMatchCallback::renameAnonymousReturnTypeDecl(const TagDecl *tagDecl,
+                                                                const std::string &methodName) const {
+    if (isAnonymousEnumDecl(tagDecl)) {
+        auto enumDecl = llvm::dyn_cast<clang::EnumDecl>(tagDecl);
+        std::string declTypeName = PrinterUtils::getDeclTypeName(methodName);
+        renameDecl(enumDecl, declTypeName);
+        print(enumDecl);
+    }
+}
+
+void SourceToHeaderMatchCallback::replaceAnonymousEnumTypeName(const TagDecl *tagDecl,
+                                                               std::string &strDecl,
+                                                               const std::string &typeName) const {
+    if (isAnonymousEnumDecl(tagDecl)) {
+        StringUtils::replaceFirst(strDecl, "enum (anonymous)", typeName);
+    }
+}
+
+bool SourceToHeaderMatchCallback::isAnonymousEnumDecl(const clang::TagDecl *tagDecl) const {
+    auto enumDecl = llvm::dyn_cast_or_null<clang::EnumDecl>(tagDecl);
+    return enumDecl && !enumDecl->hasNameForLinkage();
 }
 
 std::string SourceToHeaderMatchCallback::getOldStyleDeclarationAsString(const FunctionDecl *decl, std::string const &name) const{
