@@ -209,9 +209,9 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
         curDecl = getOldStyleDeclarationAsString(decl, decoratedName);
         wrapperDecl = getOldStyleDeclarationAsString(decl, wrapperName);
     }
-    std::string enumReturnTypeName = PrinterUtils::getEnumReturnTypeName(name);
     TagDecl *tagDecl = decl->getReturnType()->getAsTagDecl();
     if (isAnonymousEnumDecl(tagDecl)) {
+        std::string enumReturnTypeName = PrinterUtils::getEnumReturnMangledTypeName(name);
         replaceAnonymousEnumTypeName(wrapperDecl, enumReturnTypeName);
         replaceAnonymousEnumTypeName(curDecl, enumReturnTypeName);
         renameAnonymousReturnTypeDecl(tagDecl, name);
@@ -389,7 +389,7 @@ void SourceToHeaderMatchCallback::renameDecl(const NamedDecl *decl, const std::s
 void SourceToHeaderMatchCallback::renameAnonymousReturnTypeDecl(const TagDecl *tagDecl,
                                                                 const std::string &methodName) const {
     auto enumDecl = llvm::dyn_cast<clang::EnumDecl>(tagDecl);
-    std::string declTypeName = PrinterUtils::getDeclTypeName(methodName);
+    std::string declTypeName = PrinterUtils::getReturnMangledTypeName(methodName);
     renameDecl(enumDecl, declTypeName);
     print(enumDecl);
 }

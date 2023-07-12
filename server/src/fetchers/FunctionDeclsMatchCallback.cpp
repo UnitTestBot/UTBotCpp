@@ -33,7 +33,7 @@ void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
         }
 
         std::string methodName = FS->getQualifiedNameAsString();
-        std::string enumReturnTypeName = PrinterUtils::getEnumReturnTypeName(methodName);
+        std::string enumReturnTypeName = PrinterUtils::getEnumReturnMangledTypeName(methodName);
         methodDescription.name = methodName;
         methodDescription.callName = ClangUtils::getCallName(FS);
         methodDescription.sourceFilePath = sourceFilePath;
