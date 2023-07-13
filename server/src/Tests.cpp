@@ -121,7 +121,7 @@ std::shared_ptr<EnumValueView> KTestObjectParser::enumView(const std::vector<cha
         value = NameDecorator::decorate(name);
     } else {
         LOG_S(WARNING) << "Enum value for '" << enumInfo.name << "' is out of range: " << value;
-        std::string format = enumInfo.isSpecifierNeeded ? "(%s) %d" : "(enum %s)(%d)";
+        std::string format = enumInfo.isSpecifierNeeded ? "(enum %s)(%d)" : "(%s) %d";
         value = StringUtils::stringFormat(format, enumInfo.name, value);
     }
     return std::make_shared<EnumValueView>(value);

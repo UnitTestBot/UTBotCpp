@@ -327,7 +327,7 @@ namespace types {
 
         std::optional<std::string> access;
 
-        bool isSpecifierNeeded;
+        bool isSpecifierNeeded = true;
 
         std::string getEntryName(std::string const& value, utbot::Language language) const;
     };
