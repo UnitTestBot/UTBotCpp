@@ -214,6 +214,10 @@ static std::optional<std::string> getAccess(const clang::Decl *decl) {
     return StringUtils::joinWith(llvm::reverse(result), "::");
 }
 
+bool isTypedefForAnonDecl(const clang::TagDecl *tagDecl) {
+    return tagDecl->getTypedefNameForAnonDecl() != nullptr;
+}
+
 void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &name) {
     clang::ASTContext const &context = EN->getASTContext();
     clang::SourceManager const &sourceManager = context.getSourceManager();
@@ -243,6 +247,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
         enumInfo.namesToEntries[enumEntry.name] = enumEntry;
     }
     enumInfo.definition = ASTPrinter::getSourceText(EN->getSourceRange(), sourceManager);
+    enumInfo.isSpecifierNeeded = isTypedefForAnonDecl(EN);
     enumInfo.alignment = getDeclAlignment(EN);
 
     addInfo(id, parent->projectTypes->enums, enumInfo);
