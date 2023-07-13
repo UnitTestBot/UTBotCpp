@@ -194,6 +194,10 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     LOG_S(DEBUG) << ss.str();
 }
 
+bool isTypedefForAnonDecl(const clang::TagDecl *tagDecl) {
+    return tagDecl->getTypedefNameForAnonDecl() != nullptr;
+}
+
 static std::optional<std::string> getAccess(const clang::Decl *decl) {
     const clang::DeclContext *pContext = decl->getDeclContext();
     std::vector<std::string> result;
@@ -233,6 +237,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
     enumInfo.size = context.getTypeSize(promotionType);
 
     enumInfo.access = getAccess(EN);
+    enumInfo.isSpecifierNeeded = isTypedefForAnonDecl(EN);
 
     for (auto it = EN->enumerator_begin(); it != EN->enumerator_end(); ++it) {
         types::EnumInfo::EnumEntry enumEntry;
