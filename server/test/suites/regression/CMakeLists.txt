@@ -49,5 +49,6 @@ target_compile_definitions(issue-276 PUBLIC EXPORT4="4")
 
 add_library(issue-195 issue-195.c)
 add_library(issue-514 issue-514.c)
+add_library(issue-600 issue-600.c)
 
 set_target_properties(regression PROPERTIES LINK_WHAT_YOU_USE TRUE)

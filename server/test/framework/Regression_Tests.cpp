@@ -375,4 +375,30 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 2);
     }
 
+    TEST_F(Regression_Test, Unnecessary_Enum_Specifier) {
+        fs::path source = getTestFilePath("issue-600.c");
+        auto [testGen, status] = createTestForFunction(source, 14);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(source).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {[](const tests::Tests::MethodTestCase &testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "-2";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                    },
+                    [](const tests::Tests::MethodTestCase &testCase) {
+                        return testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                    }
+                }),
+            "isCorrectPointerStruct"
+        );
+    }
+
 }
