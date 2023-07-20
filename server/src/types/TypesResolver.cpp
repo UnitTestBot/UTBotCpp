@@ -137,7 +137,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
         field.unnamedType = field.type.isUnnamed();
-        fullname[field.type.getId()] = field.name;
+        if (field.unnamedType && !field.anonymous) {
+            fullname[field.type.getId()] = field.name;
+        }
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
                     F->getFunctionType(), field.name, sourceManager,
