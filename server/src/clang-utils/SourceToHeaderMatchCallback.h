@@ -21,9 +21,12 @@ class SourceToHeaderMatchCallback : public clang::ast_matchers::MatchFinder::Mat
     fs::path sourceFilePath;
     llvm::raw_ostream *const externalStream = nullptr;
     llvm::raw_ostream *const internalStream = nullptr;
+    llvm::raw_ostream *const unnamedTypeDeclsStream = nullptr;
     llvm::raw_ostream *const wrapperStream = nullptr;
 
     std::unordered_set<std::string> variables{};
+
+    const types::TypesHandler &typesHandler;
 
     bool forStubHeader;
 public:
@@ -32,7 +35,9 @@ public:
                                 fs::path sourceFilePath,
                                 llvm::raw_ostream *externalStream,
                                 llvm::raw_ostream *internalStream,
+                                llvm::raw_ostream *unnamedTypeDeclsStream,
                                 llvm::raw_ostream *wrapperStream,
+                                const types::TypesHandler &typesHandler,
                                          bool forStubHeader);
 
     void run(const MatchFinder::MatchResult &Result) override;
@@ -72,6 +77,10 @@ private:
                      std::string const &name,
                      llvm::raw_ostream *stream) const;
 
+    void printUnnamedTypeDecl(const std::string &structName,
+                              const std::string &fieldName,
+                              const std::string &typeName) const;
+
     void generateWrapper(const clang::FunctionDecl *decl) const;
 
     void generateWrapper(const clang::VarDecl *decl) const;
@@ -79,6 +88,10 @@ private:
     void generateInternal(const clang::FunctionDecl *decl) const;
 
     void generateInternal(const clang::VarDecl *decl) const;
+
+    void generateUnnamedTypeDeclsForFields(const types::StructInfo &info) const;
+
+    void generateUnnamedTypeDecls(const clang::RecordDecl *decl) const;
 
     std::string getRenamedDeclarationAsString(const clang::NamedDecl *decl,
                                               clang::PrintingPolicy const &policy,

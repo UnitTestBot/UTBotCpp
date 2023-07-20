@@ -15,20 +15,26 @@ SourceToHeaderRewriter::SourceToHeaderRewriter(
     utbot::ProjectContext projectContext,
     const std::shared_ptr<CompilationDatabase> &compilationDatabase,
     std::shared_ptr<Fetcher::FileToStringSet> structsToDeclare,
-    fs::path serverBuildDir)
+    fs::path serverBuildDir,
+    const types::TypesHandler &typesHandler)
     : projectContext(std::move(projectContext)),
       clangToolRunner(compilationDatabase), structsToDeclare(structsToDeclare),
-      serverBuildDir(std::move(serverBuildDir)) {
+      serverBuildDir(std::move(serverBuildDir)), typesHandler(typesHandler) {
 }
 
 std::unique_ptr<clang::tooling::FrontendActionFactory>
 SourceToHeaderRewriter::createFactory(llvm::raw_ostream *externalStream,
                                       llvm::raw_ostream *internalStream,
+                                      llvm::raw_ostream *unnamedTypeDeclsStream,
                                       llvm::raw_ostream *wrapperStream,
                                       fs::path sourceFilePath,
                                       bool forStubHeader) {
+    if (Paths::isCXXFile(sourceFilePath)) {
+        externalStream = nullptr;
+        internalStream = nullptr;
+    }
     fetcherInstance = std::make_unique<SourceToHeaderMatchCallback>(
-        projectContext, sourceFilePath, externalStream, internalStream, wrapperStream, forStubHeader);
+        projectContext, sourceFilePath, externalStream, internalStream, unnamedTypeDeclsStream, wrapperStream, typesHandler, forStubHeader);
     finder = std::make_unique<clang::ast_matchers::MatchFinder>();
     finder->addMatcher(Matchers::anyToplevelDeclarationMatcher, fetcherInstance.get());
     return clang::tooling::newFrontendActionFactory(finder.get());
@@ -40,8 +46,10 @@ SourceToHeaderRewriter::generateSourceDeclarations(const fs::path &sourceFilePat
     llvm::raw_string_ostream externalStream(externalDeclarations);
     std::string internalDeclarations;
     llvm::raw_string_ostream internalStream(internalDeclarations);
+    std::string unnamedTypeDeclarations;
+    llvm::raw_string_ostream unnamedTypeDeclsStream(unnamedTypeDeclarations);
 
-    auto factory = createFactory(&externalStream, &internalStream, nullptr, sourceFilePath, forStubHeader);
+    auto factory = createFactory(&externalStream, &internalStream, &unnamedTypeDeclsStream, nullptr, sourceFilePath, forStubHeader);
 
     if (CollectionUtils::containsKey(*structsToDeclare, sourceFilePath)) {
         std::stringstream newContentStream;
@@ -57,14 +65,17 @@ SourceToHeaderRewriter::generateSourceDeclarations(const fs::path &sourceFilePat
     }
     externalStream.flush();
     internalStream.flush();
+    unnamedTypeDeclsStream.flush();
 
-    return { externalDeclarations, internalDeclarations };
+    return { externalDeclarations, internalDeclarations, unnamedTypeDeclarations };
 }
 
 
 std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFilePath,
                                                        const Tests &test) {
     MEASURE_FUNCTION_EXECUTION_TIME
+    auto sourceDeclarations = generateSourceDeclarations(sourceFilePath, false);
+
     if (Paths::isCXXFile(sourceFilePath)) {
         auto sourceFileToInclude = sourceFilePath;
         if (test.mainHeader.has_value()) {
@@ -73,11 +84,10 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
         }
         sourceFileToInclude = fs::relative(sourceFilePath, test.testHeaderFilePath.parent_path());
         return StringUtils::stringFormat("#define main main__\n\n"
-                                         "#include \"%s\"\n\n",
-                                         sourceFileToInclude);
+                                         "#include \"%s\"\n\n"
+                                         "%s\n",
+                                         sourceFileToInclude, sourceDeclarations.unnamedTypeDeclarations);
     }
-
-    auto sourceDeclarations = generateSourceDeclarations(sourceFilePath, false);
 
     return StringUtils::stringFormat(
         "%s\n"
@@ -88,13 +98,14 @@ std::string SourceToHeaderRewriter::generateTestHeader(const fs::path &sourceFil
         "%s\n"
         "%s\n"
         "%s\n"
-        "}\n"
-        "%s\n",
+        "%s\n"
+        "\n%s"
+        "}\n",
         Copyright::GENERATED_C_CPP_FILE_HEADER, PrinterUtils::TEST_NAMESPACE,
         NameDecorator::DEFINES_CODE, PrinterUtils::DEFINES_FOR_C_KEYWORDS,
         PrinterUtils::KNOWN_IMPLICIT_RECORD_DECLS_CODE,
         sourceDeclarations.externalDeclarations, sourceDeclarations.internalDeclarations,
-        NameDecorator::UNDEF_WCHAR_T, NameDecorator::UNDEFS_CODE);
+        NameDecorator::UNDEF_WCHAR_T, NameDecorator::UNDEFS_CODE, sourceDeclarations.unnamedTypeDeclarations);
 }
 
 std::string SourceToHeaderRewriter::generateStubHeader(const fs::path &sourceFilePath) {
@@ -122,7 +133,7 @@ std::string SourceToHeaderRewriter::generateWrapper(const fs::path &sourceFilePa
     }
     std::string result;
     llvm::raw_string_ostream wrapperStream(result);
-    auto factory = createFactory(nullptr, nullptr, &wrapperStream, sourceFilePath, false);
+    auto factory = createFactory(nullptr, nullptr, nullptr, &wrapperStream, sourceFilePath, false);
     clangToolRunner.run(sourceFilePath, factory.get());
     wrapperStream.flush();
     return result;

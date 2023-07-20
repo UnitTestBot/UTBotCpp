@@ -282,6 +282,7 @@ namespace types {
 
     struct Field {
         types::Type type;
+        bool unnamedType;
         bool anonymous;
         std::string name;
         /// size in @b bits

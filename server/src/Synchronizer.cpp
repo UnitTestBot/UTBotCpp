@@ -150,7 +150,7 @@ void Synchronizer::synchronize(const types::TypesHandler &typesHandler) {
         synchronizeStubs(outdatedStubs, typesHandler);
     }
     auto outdatedSourcePaths = getOutdatedSourcePaths();
-    synchronizeWrappers(outdatedSourcePaths);
+    synchronizeWrappers(outdatedSourcePaths, typesHandler);
 }
 
 void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
@@ -191,7 +191,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
 
     auto sourceToHeaderRewriter =
     SourceToHeaderRewriter(testGen->projectContext, testGen->getProjectBuildDatabase()->compilationDatabase,
-                           stubFetcher.getStructsToDeclare(), testGen->serverBuildDir);
+                           stubFetcher.getStructsToDeclare(), testGen->serverBuildDir, typesHandler);
 
     for (const StubOperator &outdatedStub : outdatedStubs) {
         fs::path stubPath = outdatedStub.getStubPath(testGen->projectContext);
@@ -221,7 +221,8 @@ Synchronizer::createStubsCompilationDatabase(StubSet &stubFiles,
     return CompilationUtils::getCompilationDatabase(ccJsonStubDirPath);
 }
 
-void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const {
+void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths,
+                                       const types::TypesHandler &typesHandler) const {
     auto sourceFilesNeedToRegenerateWrappers = outdatedSourcePaths;
     for (fs::path const &sourceFilePath : getTargetSourceFiles()) {
         if (!CollectionUtils::contains(sourceFilesNeedToRegenerateWrappers, sourceFilePath)) {
@@ -234,10 +235,10 @@ void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedS
     }
     ExecUtils::doWorkWithProgress(
         sourceFilesNeedToRegenerateWrappers, testGen->progressWriter,
-        "Generating wrappers", [this](fs::path const &sourceFilePath) {
+        "Generating wrappers", [this, &typesHandler](fs::path const &sourceFilePath) {
             SourceToHeaderRewriter sourceToHeaderRewriter(testGen->projectContext,
                                                           testGen->getProjectBuildDatabase()->compilationDatabase, nullptr,
-                                                          testGen->serverBuildDir);
+                                                          testGen->serverBuildDir, typesHandler);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFilePath);
             printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFilePath)).print(testGen->projectContext, sourceFilePath, wrapper);
         });

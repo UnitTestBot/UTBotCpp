@@ -37,7 +37,8 @@ class Synchronizer {
 
     void synchronizeStubs(std::unordered_set<StubOperator, HashUtils::StubHash> &outdatedStubs,
                           const types::TypesHandler &typesHandler);
-    void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths) const;
+    void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths,
+                             const types::TypesHandler &typesHandler) const;
 
     std::shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
