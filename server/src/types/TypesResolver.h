@@ -15,7 +15,6 @@ class TypesResolver {
 private:
     const Fetcher *const parent;
     std::map <uint64_t, std::string> fullname;
-    std::map <uint64_t, std::string> fieldName;
 public:
     explicit TypesResolver(Fetcher const *parent);
 

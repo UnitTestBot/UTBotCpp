@@ -1910,7 +1910,7 @@ namespace {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                  stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                              StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                     "{from_bytes<StructWithUnionOfUnnamedType_un_t>({");
+                                                     "{from_bytes<StructWithUnionOfUnnamedType_un>({");
                   },
                   [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
