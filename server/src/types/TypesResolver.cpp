@@ -65,7 +65,7 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
     pp.SuppressTagKeyword = true;
     bool typeDeclNeeded = canonicalType->hasUnnamedOrLocalType() && !fieldName[id].empty();
     std::string currentStructName = typeDeclNeeded
-                                        ? fieldName[id] + "_t"
+                                        ? StringUtils::stringFormat("%s_t", fieldName[id])
                                         : canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
     fullname.insert(std::make_pair(id, currentStructName));
 

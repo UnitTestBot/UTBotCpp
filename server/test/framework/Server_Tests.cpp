@@ -85,8 +85,10 @@ namespace {
 
             auto compilationDatabase = CompilationUtils::getCompilationDatabase(buildPath);
             auto structsToDeclare = std::make_shared<Fetcher::FileToStringSet>();
+            types::TypesHandler::SizeContext sizeContext;
+            types::TypesHandler typesHandler{testGen.types, sizeContext};
             SourceToHeaderRewriter sourceToHeaderRewriter(testGen.projectContext, compilationDatabase,
-                                                          structsToDeclare, serverBuildDir);
+                                                          structsToDeclare, serverBuildDir, typesHandler);
             std::string wrapper = sourceToHeaderRewriter.generateWrapper(sourceFile);
             printer::SourceWrapperPrinter(Paths::getSourceLanguage(sourceFile)).print(testGen.projectContext,
                                                                                       sourceFile, wrapper);

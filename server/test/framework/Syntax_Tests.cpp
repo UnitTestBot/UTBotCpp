@@ -1893,6 +1893,34 @@ namespace {
         );
     }
 
+    TEST_F(Syntax_Test, Support_Struct_with_Union_Of_Unnamed_Type) {
+        auto [testGen, status] = createTestForFunction(struct_with_union_c, 42);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        checkTestCasePredicates(
+            testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
+            std::vector<TestCasePredicate>(
+                {[] (const tests::Tests::MethodTestCase& testCase) {
+                     return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
+                                stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                            testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\x99', -2.530171e-98}}}";
+                 },
+                  [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
+                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                             StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
+                                                     "{from_bytes<StructWithUnionOfUnnamedType_un_t>({");
+                  },
+                  [] (const tests::Tests::MethodTestCase& testCase) {
+                      return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                             testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\0', -2.530171e-98}}}";
+                  }
+                })
+        );
+    }
+
     TEST_F(Syntax_Test, length_of_linked_list3) {
         auto [testGen, status] = createTestForFunction(linked_list_c, 3);
 
