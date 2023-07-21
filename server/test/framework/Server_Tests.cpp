@@ -461,7 +461,7 @@ namespace {
                  testGen.tests.at(struct_with_union_c).methods) {
                 if (methodName == "struct_with_union_of_unnamed_type_as_return_type") {
                     checkTestCasePredicates(
-                        testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
+                        methodDescription.testCases,
                         std::vector<TestCasePredicate>(
                             {[] (const tests::Tests::MethodTestCase& testCase) {
                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
