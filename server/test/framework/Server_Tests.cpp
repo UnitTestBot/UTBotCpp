@@ -38,6 +38,7 @@ namespace {
         fs::path pointer_parameters_c = getTestFilePath("pointer_parameters.c");
         fs::path simple_structs_c = getTestFilePath("simple_structs.c");
         fs::path simple_unions_c = getTestFilePath("simple_unions.c");
+        fs::path struct_with_union_c = getTestFilePath("struct_with_union.c");
         fs::path types_c = getTestFilePath("types.c");
         fs::path inner_basic_functions_c = getTestFilePath("inner/inner_basic_functions.c");
         fs::path pointer_return_c = getTestFilePath("pointer_return.c");
@@ -451,6 +452,35 @@ namespace {
                 }
                 if (methodName == "to_int") {
                     testUtils::checkMinNumberOfTests(methodDescription.testCases, 2);
+                }
+            }
+        }
+
+        void checkStructWithUnion_C(BaseTestGen &testGen) {
+            for (const auto &[methodName, methodDescription] :
+                 testGen.tests.at(struct_with_union_c).methods) {
+                if (methodName == "struct_with_union_of_unnamed_type_as_return_type") {
+                    checkTestCasePredicates(
+                        testGen.tests.at(struct_with_union_c).methods.begin().value().testCases,
+                        std::vector<TestCasePredicate>(
+                            {[] (const tests::Tests::MethodTestCase& testCase) {
+                                 return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
+                                            stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                        testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\x99', -2.530171e-98}}}";
+                             },
+                              [] (const tests::Tests::MethodTestCase& testCase) {
+                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
+                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                         StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
+                                                                 "{from_bytes<StructWithUnionOfUnnamedType_un>({");
+                              },
+                              [] (const tests::Tests::MethodTestCase& testCase) {
+                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
+                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                         testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\0', -2.530171e-98}}}";
+                              }
+                            }),
+                        methodName);
                 }
             }
         }
@@ -872,6 +902,14 @@ namespace {
         auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
         EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
         checkSimpleUnions_C(testGen);
+    }
+
+    TEST_F(Server_Test, Struct_With_Union) {
+        auto [testGen, status] = performFeatureFileTestsRequest(struct_with_union_c);
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
+        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
+        checkStructWithUnion_C(testGen);
     }
 
     TEST_F(Server_Test, Pointer_Parameters) {
