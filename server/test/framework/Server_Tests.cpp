@@ -904,14 +904,6 @@ namespace {
         checkSimpleUnions_C(testGen);
     }
 
-    TEST_F(Server_Test, Struct_With_Union) {
-        auto [testGen, status] = performFeatureFileTestsRequest(struct_with_union_c);
-        ASSERT_TRUE(status.ok()) << status.error_message();
-        auto testFilePaths = CollectionUtils::getKeys(testGen.tests);
-        EXPECT_TRUE(!testFilePaths.empty()) << "Generated test files are missing.";
-        checkStructWithUnion_C(testGen);
-    }
-
     TEST_F(Server_Test, Pointer_Parameters) {
         auto [testGen, status] = performFeatureFileTestsRequest(pointer_parameters_c);
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2108,6 +2100,45 @@ namespace {
         auto tests = coverageGenerator.getTestsToLaunch();
 
         StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 9 } };
+        testUtils::checkStatuses(resultsMap, tests);
+    }
+
+    TEST_F(Server_Test, Run_Tests_For_Struct_With_Union) {
+        fs::path struct_with_union_c = getTestFilePath("struct_with_union.c");
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, struct_with_union_c,
+                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 3);
+        checkStructWithUnion_C(testGen);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path struct_with_union_test_cpp = Paths::sourcePathToTestPath(
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            struct_with_union_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(struct_with_union_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
+                                                       coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
+        };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultsMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 3 } };
         testUtils::checkStatuses(resultsMap, tests);
     }
 }
