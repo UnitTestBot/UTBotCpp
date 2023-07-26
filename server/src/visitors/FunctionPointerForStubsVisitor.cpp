@@ -56,9 +56,7 @@ namespace visitor {
                                                       const tests::AbstractValueView *view,
                                                       const std::string &access,
                                                       int depth) {
-        if (depth == 0) {
-            AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
-        }
+        AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
     }
 
     void FunctionPointerForStubsVisitor::visitArray(const types::Type &type,
