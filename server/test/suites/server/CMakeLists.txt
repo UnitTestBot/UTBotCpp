@@ -24,6 +24,7 @@ add_executable(server
         pointer_return.c
         simple_structs.c
         simple_unions.c
+        struct_with_union.c
         complex_structs.c
         typedefs.c
         types.c

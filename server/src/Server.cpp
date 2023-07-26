@@ -203,10 +203,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                         &sizeContext.maximumAlignment,
                         testGen.compileCommandsJsonPath, false);
         fetcher.fetchWithProgress(testGen.progressWriter, logMessage);
-        SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
-                               fetcher.getStructsToDeclare(), testGen.serverBuildDir)
-                .generateTestHeaders(testGen.tests, testGen.progressWriter);
         types::TypesHandler typesHandler{testGen.types, sizeContext};
+        SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
+                               fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
+                .generateTestHeaders(testGen.tests, testGen.progressWriter);
         testGen.progressWriter->writeProgress("Generating stub files", 0.0);
         StubGen stubGen(testGen);
 

@@ -39,10 +39,23 @@ struct StructWithStructInUnion {
     } un;
 };
 
+struct StructWithUnionOfUnnamedType {
+    union {
+        int x;
+        struct {
+            char c;
+            double d;
+        } ds;
+        long long *ptr;
+    } un;
+};
+
 struct StructWithUnion struct_with_union_as_return_type(int t);
 
 struct StructWithUnionInUnion struct_with_union_in_union_as_return_type(int a, int b);
 
 struct StructWithStructInUnion struct_with_struct_in_union_as_return_type(int a, int b);
+
+struct StructWithUnionOfUnnamedType struct_with_union_of_unnamed_type_as_return_type(int a, int b);
 
 #endif

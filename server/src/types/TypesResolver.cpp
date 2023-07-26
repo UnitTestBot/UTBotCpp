@@ -63,16 +63,20 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
                                        uint64_t id, const fs::path &sourceFilePath) {
     auto pp = clang::PrintingPolicy(clang::LangOptions());
     pp.SuppressTagKeyword = true;
+    bool typeDeclNeeded = canonicalType->hasUnnamedOrLocalType() && !fullname[id].empty();
     std::string currentStructName = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
     fullname.insert(std::make_pair(id, currentStructName));
 
-    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
+    if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C || typeDeclNeeded) {
         if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
             clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(
                     parentNode).getCanonicalType();
             uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
             if (!fullname[parentID].empty()) {
                 fullname[id] = fullname[parentID] + "::" + fullname[id];
+                if (typeDeclNeeded) {
+                    StringUtils::replaceAll(fullname[id], "::", "_");
+                }
             }
         }
     }
@@ -132,6 +136,10 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
 
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
+        field.unnamedType = field.type.isUnnamed();
+        if (field.unnamedType && !field.anonymous) {
+            fullname[field.type.getId()] = field.name;
+        }
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
                     F->getFunctionType(), field.name, sourceManager,

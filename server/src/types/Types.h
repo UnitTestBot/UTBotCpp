@@ -282,6 +282,7 @@ namespace types {
 
     struct Field {
         types::Type type;
+        bool unnamedType;
         bool anonymous;
         std::string name;
         /// size in @b bits
@@ -366,7 +367,7 @@ namespace types {
             size_t maximumAlignment = 16; /// maximumAlignment in @b bytes
         };
 
-        explicit TypesHandler(TypeMaps &types, SizeContext sizeContext)
+        explicit TypesHandler(const TypeMaps &types, SizeContext sizeContext)
             : typeMaps(types), sizeContext(sizeContext){};
 
         /**
@@ -650,7 +651,7 @@ namespace types {
         };
 
     private:
-        TypeMaps &typeMaps;
+        const TypeMaps &typeMaps;
         SizeContext sizeContext;
         mutable tsl::ordered_set<TypeName> recursiveCheckStarted{};
         mutable std::unordered_map<IsSupportedTypeArguments,

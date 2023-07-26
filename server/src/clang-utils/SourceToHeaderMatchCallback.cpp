@@ -19,11 +19,14 @@ SourceToHeaderMatchCallback::SourceToHeaderMatchCallback(utbot::ProjectContext p
                                                          fs::path sourceFilePath,
                                                          raw_ostream *externalStream,
                                                          raw_ostream *internalStream,
+                                                         raw_ostream *unnamedTypeDeclsStream,
                                                          raw_ostream *wrapperStream,
+                                                         const types::TypesHandler &typesHandler,
                                                          bool forStubHeader)
     : projectContext(std::move(projectContext)),
       sourceFilePath(std::move(sourceFilePath)), externalStream(externalStream),
-      internalStream(internalStream), wrapperStream(wrapperStream), forStubHeader(forStubHeader) {
+      internalStream(internalStream), unnamedTypeDeclsStream(unnamedTypeDeclsStream),
+      wrapperStream(wrapperStream), typesHandler(typesHandler), forStubHeader(forStubHeader) {
 }
 
 void SourceToHeaderMatchCallback::run(const ast_matchers::MatchFinder::MatchResult &Result) {
@@ -128,12 +131,14 @@ void SourceToHeaderMatchCallback::checkVarDecl(const MatchFinder::MatchResult &R
 
 void SourceToHeaderMatchCallback::handleStruct(const RecordDecl *decl) {
     print(decl);
+    generateUnnamedTypeDecls(decl);
 }
 void SourceToHeaderMatchCallback::handleEnum(const EnumDecl *decl) {
     print(decl);
 }
 void SourceToHeaderMatchCallback::handleUnion(const RecordDecl *decl) {
     print(decl);
+    generateUnnamedTypeDecls(decl);
 }
 
 void SourceToHeaderMatchCallback::handleTypedef(const TypedefDecl *decl) {
@@ -301,6 +306,36 @@ void SourceToHeaderMatchCallback::generateWrapper(const VarDecl *decl) const {
     *wrapperStream << wrapperPointerDecl << " = &" << name << ";\n";
 }
 
+void SourceToHeaderMatchCallback::generateUnnamedTypeDecls(const clang::RecordDecl *decl) const {
+    if (unnamedTypeDeclsStream == nullptr) {
+        return;
+    }
+    clang::ASTContext const &context = decl->getASTContext();
+    clang::QualType canonicalType = context.getTypeDeclType(decl).getCanonicalType();
+    uint64_t id = types::Type::getIdFromCanonicalType(canonicalType);
+    if (typesHandler.isStructLike(id)) {
+        types::StructInfo info = typesHandler.getStructInfo(id);
+        generateUnnamedTypeDeclsForFields(info);
+    }
+}
+
+void SourceToHeaderMatchCallback::generateUnnamedTypeDeclsForFields(const types::StructInfo &info) const {
+    for (const types::Field &field : info.fields) {
+        if (!field.unnamedType || field.anonymous) {
+            continue;
+        }
+        if (typesHandler.isStructLike(field.type)) {
+            types::StructInfo fieldInfo = typesHandler.getStructInfo(field.type);
+            printUnnamedTypeDecl(info.name, field.name, fieldInfo.name);
+            generateUnnamedTypeDeclsForFields(fieldInfo);
+        }
+        if (typesHandler.isEnum(field.type)) {
+            types::EnumInfo enumInfo = typesHandler.getEnumInfo(field.type);
+            printUnnamedTypeDecl(info.name, field.name, enumInfo.name);
+        }
+    }
+}
+
 
 void SourceToHeaderMatchCallback::printReturn(const FunctionDecl *decl,
                                               std::string const &name,
@@ -318,6 +353,16 @@ void SourceToHeaderMatchCallback::printReturn(const FunctionDecl *decl,
     printer.strFunctionCall(name, args);
 
     *stream << printer.ss.str();
+}
+
+void SourceToHeaderMatchCallback::printUnnamedTypeDecl(const std::string &structName,
+                                                const std::string &fieldName,
+                                                const std::string &typeName) const {
+    std::string typeDecl = StringUtils::stringFormat(
+        "typedef decltype(%s::%s) %s;\n",
+        structName, fieldName, typeName
+    );
+    *unnamedTypeDeclsStream << typeDecl;
 }
 
 std::string SourceToHeaderMatchCallback::decorate(std::string_view name) const {
