@@ -678,7 +678,6 @@ namespace printer {
             if (var.type.isArray()) {
                 strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
             } else {
-                ss << "extern ";
                 strDeclareVar(var.type.usedType(), var.varName);
             }
         }

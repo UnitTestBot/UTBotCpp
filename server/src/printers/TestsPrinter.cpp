@@ -64,9 +64,9 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << NL;
 
-    strDeclareSetOfVars(tests.externVariables);
-
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
+
+    strDeclareSetOfVars(tests.externVariables);
 
     for (const auto &commentBlock : tests.commentBlocks) {
         strComment(commentBlock) << NL;
