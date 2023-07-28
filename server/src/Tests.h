@@ -843,6 +843,8 @@ namespace tests {
                                                    size_t offsetInBits,
                                                    const std::string &curVarName = "") const;
 
+        size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName, size_t offsetInBits) const;
+
         std::shared_ptr<AbstractValueView>
         getLazyPointerView(const std::vector<UTBotKTestObject> &objects,
                            std::vector<InitReference> &initReferences,

@@ -593,8 +593,9 @@ void KTestObjectParser::addToOrder(const std::vector<UTBotKTestObject> &objects,
     if (it != objects.end()) {
         size_t jsonInd = it - objects.begin();
         visited[jsonInd] = true;
-        Tests::MethodParam param = {paramType.isObjectPointer() ? paramType.baseTypeObj()
-                                                                : paramType,
+        Tests::MethodParam param = { paramType.isObjectPointer() && !paramType.isPointerToPointer()
+                                         ? paramType.baseTypeObj()
+                                         : paramType,
                                     paramName, std::nullopt };
         order.emplace(jsonInd, param, paramValue);
         return;
@@ -653,8 +654,9 @@ void KTestObjectParser::assignTypeUnnamedVar(
             if (indexOffset != 0) {
                 continue;
             }
-            types::Type fieldType =
-                traverseLazyInStruct(paramType, SizeUtils::bytesToBits(offset)).type;
+            Tests::TypeAndVarName typeAndName = { paramType, "" };
+            size_t offsetInStruct = getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(offset));
+            types::Type fieldType = traverseLazyInStruct(typeAndName.type, offsetInStruct).type;
             if (!pointToStruct(fieldType, testCase.objects[indObj])) {
                 continue;
             }
@@ -698,6 +700,26 @@ Tests::TypeAndVarName KTestObjectParser::traverseLazyInStruct(const types::Type 
     }
 }
 
+size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName, size_t offsetInBits) const {
+    if (!objTypeAndName.type.isPointerToPointer()) {
+        return offsetInBits;
+    }
+    std::vector<size_t> sizes = objTypeAndName.type.arraysSizes(types::PointerUsage::PARAMETER);
+    size_t dimension = sizes.size();
+    objTypeAndName.type = objTypeAndName.type.baseTypeObj();
+    size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
+    size_t offset = offsetInBits / sizeInBits;
+    std::string indices;
+    while (dimension != 0) {
+        size_t index = offset % sizes[--dimension];
+        offset /= sizes[dimension];
+        indices = StringUtils::stringFormat("[%d]%s", index, indices);
+    }
+    objTypeAndName.varName += indices;
+    offsetInBits %= sizeInBits;
+    return offsetInBits;
+}
+
 void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                           const Tests::MethodDescription &methodDescription) {
     for (auto const &obj : testCase.objects) {
@@ -724,21 +746,25 @@ void KTestObjectParser::assignAllLazyPointers(
             continue;
         }
         for (const auto &pointer : object.pointers) {
-            Tests::TypeAndVarName fromPtr = traverseLazyInStruct(
-                objTypeAndName[ind]->type, SizeUtils::bytesToBits(pointer.offset),
-                objTypeAndName[ind]->varName);
+            Tests::TypeAndVarName typeAndName = objTypeAndName[ind].value();
+            size_t offset =
+                getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(pointer.offset));
+            Tests::TypeAndVarName fromPtr =
+                traverseLazyInStruct(typeAndName.type, offset, typeAndName.varName);
             if (!objTypeAndName[pointer.index].has_value()) {
                 continue;
             }
 
             std::string toPtrName;
-            if (pointer.indexOffset == 0 &&
+            Tests::TypeAndVarName pointerTypeAndName = objTypeAndName[pointer.index].value();
+            size_t indexOffset =
+                getOffsetInStruct(pointerTypeAndName, SizeUtils::bytesToBits(pointer.indexOffset));
+            if (indexOffset == 0 &&
                 pointToStruct(fromPtr.type, testCase.objects[pointer.index])) {
-                toPtrName = objTypeAndName[pointer.index]->varName;
+                toPtrName = pointerTypeAndName.varName;
             } else {
-                toPtrName = traverseLazyInStruct(objTypeAndName[pointer.index]->type,
-                                                 SizeUtils::bytesToBits(pointer.indexOffset),
-                                                 objTypeAndName[pointer.index]->varName).varName;
+                toPtrName = traverseLazyInStruct(pointerTypeAndName.type, indexOffset,
+                                                 pointerTypeAndName.varName).varName;
             }
 
             testCase.lazyReferences.emplace_back(
