@@ -20,6 +20,7 @@ add_executable(server
         keywords.c
         linkage.c
         main.c
+        multi_dim_pointers.c
         pointer_parameters.c
         pointer_return.c
         simple_structs.c
