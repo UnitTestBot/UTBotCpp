@@ -587,12 +587,14 @@ void KTestObjectParser::addToOrder(const std::vector<UTBotKTestObject> &objects,
                                    const types::Type &paramType,
                                    Tests::TestCaseParamValue &paramValue,
                                    std::vector<bool> &visited,
+                                   std::vector<PointerUsage> &usages,
                                    std::queue<JsonIndAndParam> &order) {
     auto it = std::find_if(objects.begin(), objects.end(),
                      [paramName](const UTBotKTestObject &obj) { return obj.name == paramName; });
     if (it != objects.end()) {
         size_t jsonInd = it - objects.begin();
         visited[jsonInd] = true;
+        usages[jsonInd] = types::PointerUsage::PARAMETER;
         Tests::MethodParam param = { paramType.isObjectPointer() && !paramType.isPointerToPointer()
                                          ? paramType.baseTypeObj()
                                          : paramType,
@@ -615,16 +617,17 @@ bool KTestObjectParser::pointToStruct(const types::Type &pointerType,
 void KTestObjectParser::assignTypeUnnamedVar(
     Tests::MethodTestCase &testCase,
     const Tests::MethodDescription &methodDescription,
-    std::vector<std::optional<Tests::TypeAndVarName>> &objects) {
+    std::vector<std::optional<Tests::TypeAndVarName>> &objects,
+    std::vector<PointerUsage> &usages) {
     std::queue<JsonIndAndParam> order;
     std::vector<bool> visited(testCase.objects.size(), false);
     for (size_t paramInd = 0; paramInd < testCase.paramValues.size(); paramInd++) {
         addToOrder(testCase.objects, methodDescription.params[paramInd].name,
                    methodDescription.params[paramInd].type, testCase.paramValues[paramInd], visited,
-                   order);
+                   usages, order);
     }
     addToOrder(testCase.objects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
-               testCase.returnValue, visited, order);
+               testCase.returnValue, visited, usages, order);
 
     while (!order.empty()) {
         auto curType = order.front();
@@ -638,6 +641,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
                 throw UnImplementedException("Lazy variable has baseType=void");
             }
 
+            usages[curType.jsonInd] = types::PointerUsage::LAZY;
             std::vector<char> byteValue = testCase.objects[curType.jsonInd].bytes;
             Tests::TypeAndVarName typeAndVarName{ paramType, name };
             std::shared_ptr<AbstractValueView> testParamView = testParameterView(
@@ -655,7 +659,8 @@ void KTestObjectParser::assignTypeUnnamedVar(
                 continue;
             }
             Tests::TypeAndVarName typeAndName = { paramType, "" };
-            size_t offsetInStruct = getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(offset));
+            size_t offsetInStruct =
+                getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(offset), usages[indObj]);
             types::Type fieldType = traverseLazyInStruct(typeAndName.type, offsetInStruct).type;
             if (!pointToStruct(fieldType, testCase.objects[indObj])) {
                 continue;
@@ -700,11 +705,13 @@ Tests::TypeAndVarName KTestObjectParser::traverseLazyInStruct(const types::Type 
     }
 }
 
-size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName, size_t offsetInBits) const {
-    if (!objTypeAndName.type.isPointerToPointer()) {
+size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
+                                            size_t offsetInBits,
+                                            types::PointerUsage usage) const {
+    if (!objTypeAndName.type.isPointerToPointer() || usage != types::PointerUsage::PARAMETER) {
         return offsetInBits;
     }
-    std::vector<size_t> sizes = objTypeAndName.type.arraysSizes(types::PointerUsage::PARAMETER);
+    std::vector<size_t> sizes = objTypeAndName.type.arraysSizes(usage);
     size_t dimension = sizes.size();
     objTypeAndName.type = objTypeAndName.type.baseTypeObj();
     size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
@@ -739,7 +746,8 @@ void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
 
 void KTestObjectParser::assignAllLazyPointers(
     Tests::MethodTestCase &testCase,
-    const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName) const {
+    const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName,
+    const std::vector<PointerUsage> &usages) const {
     for (size_t ind = 0; ind < testCase.objects.size(); ind++) {
         const auto &object = testCase.objects[ind];
         if (!objTypeAndName[ind].has_value()) {
@@ -747,8 +755,9 @@ void KTestObjectParser::assignAllLazyPointers(
         }
         for (const auto &pointer : object.pointers) {
             Tests::TypeAndVarName typeAndName = objTypeAndName[ind].value();
-            size_t offset =
-                getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(pointer.offset));
+            size_t offset = getOffsetInStruct(typeAndName,
+                                              SizeUtils::bytesToBits(pointer.offset),
+                                              usages[ind]);
             Tests::TypeAndVarName fromPtr =
                 traverseLazyInStruct(typeAndName.type, offset, typeAndName.varName);
             if (!objTypeAndName[pointer.index].has_value()) {
@@ -757,8 +766,9 @@ void KTestObjectParser::assignAllLazyPointers(
 
             std::string toPtrName;
             Tests::TypeAndVarName pointerTypeAndName = objTypeAndName[pointer.index].value();
-            size_t indexOffset =
-                getOffsetInStruct(pointerTypeAndName, SizeUtils::bytesToBits(pointer.indexOffset));
+            size_t indexOffset = getOffsetInStruct(pointerTypeAndName,
+                                                   SizeUtils::bytesToBits(pointer.indexOffset),
+                                                   usages[pointer.index]);
             if (indexOffset == 0 &&
                 pointToStruct(fromPtr.type, testCase.objects[pointer.index])) {
                 toPtrName = pointerTypeAndName.varName;
@@ -852,11 +862,11 @@ void KTestObjectParser::parseTestCases(const UTBotKTestList &cases,
             traceStream << "\treturn: " << testCase.returnValue.view->getEntryValue(nullptr);
             LOG_S(MAX) << traceStream.str();
 
-            std::vector<std::optional<Tests::TypeAndVarName>> objectsValues(
-                testCase.objects.size());
-            assignTypeUnnamedVar(testCase, methodDescription, objectsValues);
+            std::vector<std::optional<Tests::TypeAndVarName>> objectsValues(testCase.objects.size());
+            std::vector<PointerUsage> usages(testCase.objects.size());
+            assignTypeUnnamedVar(testCase, methodDescription, objectsValues, usages);
             assignTypeStubVar(testCase, methodDescription);
-            assignAllLazyPointers(testCase, objectsValues);
+            assignAllLazyPointers(testCase, objectsValues, usages);
 
             methodDescription.testCases.push_back(testCase);
             methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase.testIndex);

@@ -824,18 +824,21 @@ namespace tests {
                                const types::Type &paramType,
                                Tests::TestCaseParamValue &paramValue,
                                std::vector<bool> &visited,
+                               std::vector<types::PointerUsage> &usages,
                                std::queue<JsonIndAndParam> &order);
 
         void assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
                                   const Tests::MethodDescription &methodDescription,
-                                  std::vector<std::optional<Tests::TypeAndVarName>> &objects);
+                                  std::vector<std::optional<Tests::TypeAndVarName>> &objects,
+                                  std::vector<types::PointerUsage> &usages);
 
         void assignTypeStubVar(Tests::MethodTestCase &testCase,
                                const Tests::MethodDescription &methodDescription);
 
         void assignAllLazyPointers(
             Tests::MethodTestCase &testCase,
-            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName) const;
+            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName,
+            const std::vector<types::PointerUsage> &usages) const;
 
         size_t findFieldIndex(const types::StructInfo &structInfo, size_t offsetInBits) const;
 
@@ -843,7 +846,9 @@ namespace tests {
                                                    size_t offsetInBits,
                                                    const std::string &curVarName = "") const;
 
-        size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName, size_t offsetInBits) const;
+        size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
+                                 size_t offsetInBits,
+                                 types::PointerUsage usage) const;
 
         std::shared_ptr<AbstractValueView>
         getLazyPointerView(const std::vector<UTBotKTestObject> &objects,
