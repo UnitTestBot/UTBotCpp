@@ -1,3 +1,5 @@
+#include "globals.h"
+
 int counter = 0;
 
 int increment()
@@ -12,7 +14,8 @@ static _Bool static_global = 0;
 static const _Bool const_global = 0;
 _Bool non_static_global = 0;
 extern _Bool externed_global;
-extern _Bool externed_global;
+extern _Bool externed_array[1];
+extern struct ExternStruct extern_struct;
 extern int externed_int_no_def;
 
 static int use_globals(int default_value)
@@ -37,6 +40,12 @@ static int use_globals(int default_value)
     }
     if (externed_global) {
         return 4;
+    }
+    if (externed_array[0]) {
+        return 5;
+    }
+    if (extern_struct.fld) {
+        return 6;
     }
     return default_value;
 }
