@@ -669,6 +669,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
                 Tests::MethodParam param = {fieldType.baseTypeObj(1), "", std::nullopt};
                 order.emplace(indObj, param, curType.paramValue);
                 visited[indObj] = true;
+                usages[indObj] = types::PointerUsage::PARAMETER;
             }
         }
     }
@@ -716,6 +717,10 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
     objTypeAndName.type = objTypeAndName.type.baseTypeObj();
     size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
     size_t offset = offsetInBits / sizeInBits;
+    offsetInBits %= sizeInBits;
+    if (objTypeAndName.varName.empty()) {
+        return offsetInBits;
+    }
     std::string indices;
     while (dimension != 0) {
         size_t index = offset % sizes[--dimension];
@@ -723,7 +728,6 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
         indices = StringUtils::stringFormat("[%d]%s", index, indices);
     }
     objTypeAndName.varName += indices;
-    offsetInBits %= sizeInBits;
     return offsetInBits;
 }
 
