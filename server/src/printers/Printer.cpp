@@ -673,12 +673,28 @@ namespace printer {
         ss << Copyright::GENERATED_C_CPP_FILE_HEADER << NL;
     }
 
-    Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars) {
+    Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars,
+                                                 const types::TypesHandler* typesHandler,
+                                                 bool namespaceNeeded) {
         for (const auto &var : vars) {
+            ss << "extern ";
             if (var.type.isArray()) {
                 strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
             } else {
-                strDeclareVar(var.type.usedType(), var.varName);
+                std::string typeName = var.type.mTypeName();
+                if (namespaceNeeded) {
+                    uint64_t id = var.type.baseTypeObj().getId();
+                    if (typesHandler->isEnum(id)) {
+                        std::string oldName = typesHandler->getEnumInfo(id).name;
+                        std::string newName = StringUtils::stringFormat("%s::%s", PrinterUtils::TEST_NAMESPACE, oldName);
+                        StringUtils::replaceFirst(typeName, oldName, newName);
+                    } else if (typesHandler->isStructLike(id)) {
+                        std::string oldName = typesHandler->getStructInfo(id).name;
+                        std::string newName = StringUtils::stringFormat("%s::%s", PrinterUtils::TEST_NAMESPACE, oldName);
+                        StringUtils::replaceFirst(typeName, oldName, newName);
+                    }
+                }
+                strDeclareVar(typeName, var.varName);
             }
         }
         return ss;

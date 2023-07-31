@@ -88,7 +88,9 @@ namespace printer {
                                   std::optional<uint64_t> alignment = std::nullopt,
                                   bool complete = true);
 
-        Stream strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars);
+        Stream strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars,
+                                   const types::TypesHandler* typesHandler,
+                                   bool namespaceNeeded);
 
         Stream strAssignVar(std::string_view name, std::string_view value);
 
