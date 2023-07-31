@@ -86,7 +86,9 @@ namespace printer {
                                   types::PointerUsage usage,
                                   std::optional<std::string_view> value = std::nullopt,
                                   std::optional<uint64_t> alignment = std::nullopt,
-                                  bool complete = true);
+                                  bool complete = true,
+                                  const types::TypesHandler* typesHandler = nullptr,
+                                  bool namespaceNeeded = false);
 
         Stream strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars,
                                    const types::TypesHandler* typesHandler,

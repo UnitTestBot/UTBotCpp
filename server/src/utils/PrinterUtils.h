@@ -81,6 +81,11 @@ namespace PrinterUtils {
     std::string getReturnMangledTypeName(const std::string& methodName);
     std::string getEnumReturnMangledTypeName(const std::string& methodName);
 
+    void decorateBaseTypeNameWithNamespace(types::TypeName &typeName,
+                                           const types::TypeName &baseTypeName);
+    void decorateTypeNameWithNamespace(uint64_t id, types::TypeName &typeName,
+                                       const types::TypesHandler* typesHandler);
+
     std::string getEqualString(const std::string &lhs, const std::string &rhs);
     std::string getDereferencePointer(const std::string &name, const size_t depth);
     std::string getExpectedVarName(const std::string &varName);

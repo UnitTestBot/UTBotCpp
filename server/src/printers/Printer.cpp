@@ -124,13 +124,19 @@ namespace printer {
                                                           types::PointerUsage usage,
                                                           std::optional<std::string_view> value,
                                                           std::optional<uint64_t> alignment,
-                                                          bool complete) {
+                                                          bool complete,
+                                                          const types::TypesHandler* typesHandler,
+                                                          bool namespaceNeeded) {
         auto baseType = type.baseType();
         std::string arrayName{ name.data(), name.length() };
 
         if (needDecorate()) {
             baseType = NameDecorator::decorate(baseType);
             arrayName = NameDecorator::decorate(arrayName);
+        }
+
+        if (namespaceNeeded && typesHandler) {
+            PrinterUtils::decorateTypeNameWithNamespace(type.baseTypeObj().getId(), baseType, typesHandler);
         }
 
         ss << LINE_INDENT();
@@ -679,20 +685,12 @@ namespace printer {
         for (const auto &var : vars) {
             ss << "extern ";
             if (var.type.isArray()) {
-                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
+                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE,
+                                   std::nullopt, std::nullopt, true, typesHandler, namespaceNeeded);
             } else {
-                std::string typeName = var.type.mTypeName();
-                if (namespaceNeeded) {
-                    uint64_t id = var.type.baseTypeObj().getId();
-                    if (typesHandler->isEnum(id)) {
-                        std::string oldName = typesHandler->getEnumInfo(id).name;
-                        std::string newName = StringUtils::stringFormat("%s::%s", PrinterUtils::TEST_NAMESPACE, oldName);
-                        StringUtils::replaceFirst(typeName, oldName, newName);
-                    } else if (typesHandler->isStructLike(id)) {
-                        std::string oldName = typesHandler->getStructInfo(id).name;
-                        std::string newName = StringUtils::stringFormat("%s::%s", PrinterUtils::TEST_NAMESPACE, oldName);
-                        StringUtils::replaceFirst(typeName, oldName, newName);
-                    }
+                types::TypeName typeName = var.type.mTypeName();
+                if (namespaceNeeded && typesHandler) {
+                    PrinterUtils::decorateTypeNameWithNamespace(var.type.baseTypeObj().getId(), typeName, typesHandler);
                 }
                 strDeclareVar(typeName, var.varName);
             }

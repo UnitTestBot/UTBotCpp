@@ -105,6 +105,24 @@ namespace PrinterUtils {
         return "enum " + getReturnMangledTypeName(methodName);
     }
 
+    void decorateBaseTypeNameWithNamespace(types::TypeName &typeName,
+                                           const types::TypeName &baseTypeName) {
+        types::TypeName newBaseTypeName =
+            StringUtils::stringFormat("%s::%s", PrinterUtils::TEST_NAMESPACE, baseTypeName);
+        StringUtils::replaceFirst(typeName, baseTypeName, newBaseTypeName);
+    }
+
+    void decorateTypeNameWithNamespace(uint64_t id, types::TypeName &typeName,
+                                       const types::TypesHandler* typesHandler) {
+        if (typesHandler->isEnum(id)) {
+            types::TypeName baseTypeName = typesHandler->getEnumInfo(id).name;
+            decorateBaseTypeNameWithNamespace(typeName, baseTypeName);
+        } else if (typesHandler->isStructLike(id)) {
+            types::TypeName baseTypeName = typesHandler->getStructInfo(id).name;
+            decorateBaseTypeNameWithNamespace(typeName, baseTypeName);
+        }
+    }
+
     std::string getEqualString(const std::string& lhs, const std::string& rhs) {
         return StringUtils::stringFormat("%s == %s", lhs, rhs);
     }
