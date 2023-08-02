@@ -28,6 +28,7 @@ namespace StubsUtils {
         } else {
             stubName = stubName.substr(1);
         }
+        StringUtils::flatten(stubName);
         return stubName;
     }
 }

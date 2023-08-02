@@ -194,7 +194,7 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
 
 static std::string getTestName(const Tests::MethodDescription &methodDescription, int testNum) {
     std::string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
-    StringUtils::replaceAll(renamedMethodDescription, ':', '_');
+    StringUtils::flatten(renamedMethodDescription);
     std::string testBaseName = methodDescription.isClassMethod()
                                    ? StringUtils::stringFormat("%s_%s",
                                                                methodDescription.classObj->type.typeName(),
