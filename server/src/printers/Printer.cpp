@@ -393,9 +393,9 @@ namespace printer {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        std::string stubSymbolicVarName = getStubSymbolicVarName(nameForStub);
+        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(nameForStub);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
-            stubSymbolicVarName = getStubSymbolicVarName(methodName + "_" + nameForStub);
+            stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName + "_" + nameForStub);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -445,10 +445,6 @@ namespace printer {
         returnValue = stubSymbolicVarName + "[" + cntCall + "++]";
         strReturn(returnValue) << RB() << NL;
         return ss;
-    }
-
-    std::string Printer::getStubSymbolicVarName(const std::string &methodName) {
-        return methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
     }
 
     Printer::Stream Printer::strKleeMakeSymbolic(const std::string &varName, bool needAmpersand, SRef pseudoName) {
