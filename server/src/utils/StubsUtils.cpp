@@ -17,7 +17,7 @@ namespace StubsUtils {
 
     std::string getStubSymbolicVarName(const std::string &methodName) {
         std::string stubName = methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
-        StringUtils::flatten(stubName);
+        StringUtils::replaceColon(stubName);
         return stubName;
     }
 
@@ -30,7 +30,7 @@ namespace StubsUtils {
         } else {
             stubName = stubName.substr(1);
         }
-        StringUtils::flatten(stubName);
+        StringUtils::replaceColon(stubName);
         return stubName;
     }
 }

@@ -84,7 +84,7 @@ namespace StringUtils {
         }
     }
 
-    void flatten(std::string &str) {
+    void replaceColon(std::string &str) {
         replaceAll(str, "::", "_");
     }
 

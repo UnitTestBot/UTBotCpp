@@ -75,7 +75,7 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
             if (!fullname[parentID].empty()) {
                 fullname[id] = fullname[parentID] + "::" + fullname[id];
                 if (typeDeclNeeded) {
-                    StringUtils::flatten(fullname[id]);
+                    StringUtils::replaceColon(fullname[id]);
                 }
             }
         }
