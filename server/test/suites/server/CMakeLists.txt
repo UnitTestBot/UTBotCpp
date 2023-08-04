@@ -25,6 +25,7 @@ add_executable(server
         simple_structs.c
         simple_unions.c
         struct_with_union.c
+        structs_with_pointers.c
         complex_structs.c
         typedefs.c
         types.c
