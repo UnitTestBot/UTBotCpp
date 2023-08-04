@@ -14,7 +14,7 @@
 StubGen::StubGen(BaseTestGen &testGen) : testGen(testGen) {
 }
 
-CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) {
+CollectionUtils::FileSet StubGen::getStubSources(const fs::path &target) const {
     if (!testGen.needToBeMocked() || !testGen.settingsContext.useStubs) {
         return {};
     }

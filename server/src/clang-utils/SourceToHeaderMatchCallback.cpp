@@ -22,11 +22,13 @@ SourceToHeaderMatchCallback::SourceToHeaderMatchCallback(utbot::ProjectContext p
                                                          raw_ostream *unnamedTypeDeclsStream,
                                                          raw_ostream *wrapperStream,
                                                          const types::TypesHandler &typesHandler,
-                                                         bool forStubHeader)
+                                                         bool forStubHeader,
+                                                         bool externFromStub)
     : projectContext(std::move(projectContext)),
       sourceFilePath(std::move(sourceFilePath)), externalStream(externalStream),
       internalStream(internalStream), unnamedTypeDeclsStream(unnamedTypeDeclsStream),
-      wrapperStream(wrapperStream), typesHandler(typesHandler), forStubHeader(forStubHeader) {
+      wrapperStream(wrapperStream), typesHandler(typesHandler), forStubHeader(forStubHeader),
+      externFromStub(externFromStub) {
 }
 
 void SourceToHeaderMatchCallback::run(const ast_matchers::MatchFinder::MatchResult &Result) {
@@ -222,14 +224,18 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
         renameAnonymousReturnTypeDecl(tagDecl, name);
     }
 
-    *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
-    *internalStream << "static " << curDecl << " {\n";
-    printReturn(decl, wrapperName, internalStream);
-    *internalStream << "}\n";
+    if (externFromStub) {
+        *internalStream << "extern \"C\" " << curDecl << ";\n";
+    } else {
+        *internalStream << "extern \"C\" " << wrapperDecl << ";\n";
+        *internalStream << "static " << curDecl << " {\n";
+        printReturn(decl, wrapperName, internalStream);
+        *internalStream << "}\n";
+    }
 }
 
 void SourceToHeaderMatchCallback::generateInternal(const VarDecl *decl) const {
-    if (internalStream == nullptr) {
+    if (internalStream == nullptr || externFromStub) {
         return;
     }
     auto policy = getDefaultPrintingPolicy(decl, true);
