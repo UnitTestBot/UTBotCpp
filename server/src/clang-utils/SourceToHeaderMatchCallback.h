@@ -93,6 +93,10 @@ private:
 
     void generateUnnamedTypeDecls(const clang::RecordDecl *decl) const;
 
+    std::string generateTypedefForGetterReturnType(const clang::VarDecl *decl,
+                                                   const clang::PrintingPolicy &policy,
+                                                   const std::string &returnTypeName) const;
+
     std::string getRenamedDeclarationAsString(const clang::NamedDecl *decl,
                                               clang::PrintingPolicy const &policy,
                                               std::string const &name) const;
