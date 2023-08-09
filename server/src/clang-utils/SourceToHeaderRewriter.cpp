@@ -155,8 +155,9 @@ void SourceToHeaderRewriter::generateTestHeaders(tests::TestsMap &tests,
         fs::path const &sourceFilePath = it.first;
         auto &test = const_cast<tests::Tests &>(it.second);
         auto iterator = selectedTargets.find(sourceFilePath);
-        bool externFromStub = iterator != selectedTargets.end() &&
-                              CollectionUtils::contains(stubGen.getStubSources(iterator->second),sourceFilePath);
+        bool externFromStub =
+            iterator != selectedTargets.end() &&
+            CollectionUtils::contains(stubGen.getStubSources(iterator->second), sourceFilePath);
         test.headerCode = generateTestHeader(sourceFilePath, test, externFromStub);
     });
 }
