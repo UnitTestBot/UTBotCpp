@@ -146,18 +146,17 @@ std::string SourceToHeaderRewriter::generateWrapper(const fs::path &sourceFilePa
 
 void SourceToHeaderRewriter::generateTestHeaders(tests::TestsMap &tests,
                                                  const StubGen &stubGen,
-                                                 const CollectionUtils::MapFileTo<fs::path> &targets,
+                                                 const CollectionUtils::MapFileTo<fs::path> &selectedTargets,
                                                  ProgressWriter const *progressWriter) {
     std::string logMessage = "Generating headers for tests";
     LOG_S(DEBUG) << logMessage;
     ExecUtils::doWorkWithProgress(tests, progressWriter, logMessage,
-                                  [this, &stubGen, &targets](auto &it) {
+                                  [this, &stubGen, &selectedTargets](auto &it) {
         fs::path const &sourceFilePath = it.first;
         auto &test = const_cast<tests::Tests &>(it.second);
-        auto iterator = targets.find(sourceFilePath);
-        bool externFromStub =
-            iterator != targets.end() &&
-            CollectionUtils::contains(stubGen.getStubSources(iterator->second),sourceFilePath);
+        auto iterator = selectedTargets.find(sourceFilePath);
+        bool externFromStub = iterator != selectedTargets.end() &&
+                              CollectionUtils::contains(stubGen.getStubSources(iterator->second),sourceFilePath);
         test.headerCode = generateTestHeader(sourceFilePath, test, externFromStub);
     });
 }

@@ -65,7 +65,7 @@ public:
 
     void generateTestHeaders(tests::TestsMap &tests,
                              const StubGen &stubGen,
-                             const CollectionUtils::MapFileTo<fs::path> &targets,
+                             const CollectionUtils::MapFileTo<fs::path> &selectedTargets,
                              ProgressWriter const *progressWriter);
 };
 

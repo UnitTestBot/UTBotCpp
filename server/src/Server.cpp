@@ -262,10 +262,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         Linker linker{testGen, stubGen, lineInfo, generator};
         linker.prepareArtifacts();
         auto testMethods = linker.getTestMethods();
-        auto successfulTargets = linker.getSuccessfulTargets();
+        auto selectedTargets = linker.getSelectedTargets();
         SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
                                fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
-            .generateTestHeaders(testGen.tests, stubGen, successfulTargets, testGen.progressWriter);
+            .generateTestHeaders(testGen.tests, stubGen, selectedTargets, testGen.progressWriter);
         KleeRunner kleeRunner{testGen.projectContext, testGen.settingsContext};
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto generationStartTime = std::chrono::steady_clock::now();
