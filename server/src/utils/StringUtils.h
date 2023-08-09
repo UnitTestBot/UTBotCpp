@@ -53,6 +53,8 @@ namespace StringUtils {
 
     void replaceAll(std::string &str, const std::string &from, const std::string &to);
 
+    void replaceColon(std::string &str);
+
     /**
      * Returns true if char literal can be printed to .cpp file as is, false otherwise.
      * @param value - given character code

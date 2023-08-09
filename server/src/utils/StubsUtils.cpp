@@ -16,7 +16,9 @@ namespace StubsUtils {
     }
 
     std::string getStubSymbolicVarName(const std::string &methodName) {
-        return methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
+        std::string stubName = methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
+        StringUtils::replaceColon(stubName);
+        return stubName;
     }
 
     std::string getFunctionPointerAsStructFieldStubName(const std::string &structName,
@@ -28,6 +30,7 @@ namespace StubsUtils {
         } else {
             stubName = stubName.substr(1);
         }
+        StringUtils::replaceColon(stubName);
         return stubName;
     }
 }

@@ -84,7 +84,7 @@ namespace KleeUtils {
                                    bool needToMangle,
                                    bool isWrapped) {
         std::string methodNewName = methodName;
-        StringUtils::replaceAll(methodNewName, ':', '_');
+        StringUtils::replaceColon(methodNewName);
         methodNewName = getRenamedOperator(methodNewName);
         if (isWrapped) {
             methodNewName += PrinterUtils::WRAPPED_SUFFIX;

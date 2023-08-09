@@ -6,6 +6,13 @@ struct StructWithArrays {
     int a[10];
 };
 
+struct StructWithFunctionPointer {
+    int s;
+    struct FunctionPointer {
+        void *(*plain) (int);
+    } fptr;
+};
+
 struct One {
     int a;
     char str[12];
@@ -23,8 +30,10 @@ struct Three {
 
 int struct_has_alphabet(struct One st);
 
-
 char arrays_in_inner_structs(struct Three st);
 
 struct One alphabet(int a);
+
+int st_access_s(struct StructWithFunctionPointer st);
+
 #endif // SIMPLE_TEST_PROJECT_COMPLEX_STRUCTS_H

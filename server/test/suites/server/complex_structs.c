@@ -41,3 +41,7 @@ struct One alphabet(int a) {
     struct One res = {1, {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'}};
     return res;
 }
+
+int st_access_s(struct StructWithFunctionPointer st) {
+    return st.s;
+}

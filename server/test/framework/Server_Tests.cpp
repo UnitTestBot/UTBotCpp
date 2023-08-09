@@ -1986,6 +1986,44 @@ namespace {
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
+    TEST_F(Server_Test, Run_Tests_For_Complex_Structs) {
+        fs::path complex_structs_c = getTestFilePath("complex_structs.c");
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, complex_structs_c,
+                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, true, false);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 12);
+
+        fs::path testsDirPath = getTestFilePath("tests");
+
+        fs::path complex_structs_test_cpp = Paths::sourcePathToTestPath(
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            complex_structs_c);
+        auto testFilter = GrpcUtils::createTestFilterForFile(complex_structs_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+            projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+            std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
+                                                       coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{
+            true, false, 45, 0, false, false, ErrorMode::FAILING, false
+        };
+        coverageGenerator.generate(false, settingsContext);
+
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultsMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 12 } };
+        testUtils::checkStatuses(resultsMap, tests);
+    }
+
     TEST_F(Server_Test, Run_Tests_For_Input_Output_C) {
         fs::path input_output_c = getTestFilePath("input_output.c");
         auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,

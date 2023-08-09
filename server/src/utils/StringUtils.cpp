@@ -84,6 +84,10 @@ namespace StringUtils {
         }
     }
 
+    void replaceColon(std::string &str) {
+        replaceAll(str, "::", "_");
+    }
+
     bool isPrintable(int code) {
         if (std::numeric_limits<char>::is_signed && code < 0) {
             code += 256;
