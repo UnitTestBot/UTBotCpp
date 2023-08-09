@@ -236,8 +236,8 @@ void SourceToHeaderMatchCallback::generateInternal(const VarDecl *decl) const {
     policy.SuppressInitializers = 1;
 
     /*
-     * extern "C" (*var_wrapper);
-     * &DECL = *var_wrapper;
+     * extern "C" (*get_var_wrapper);
+     * &DECL = *get_var_wrapper();
      */
 
     std::string name = decl->getNameAsString();
@@ -252,9 +252,13 @@ void SourceToHeaderMatchCallback::generateInternal(const VarDecl *decl) const {
     std::string wrapperPointerDecl =
         getRenamedDeclarationAsString(decl, policy, wrapperPointerName);
     std::string refDecl = getRenamedDeclarationAsString(decl, policy, refName);
+    PrinterUtils::removeThreadLocalQualifiers(refDecl);
 
-    *internalStream << "extern \"C\" " << wrapperPointerDecl << ";\n";
-    *internalStream << refDecl << " = " << wrapperPointerName << ";\n";
+    std::string returnTypeName = PrinterUtils::getPointerMangledName(name);
+    std::string getterName = PrinterUtils::getterName(wrapperName);
+    *internalStream << generateTypedefForGetterReturnType(decl, policy, returnTypeName);
+    *internalStream << "extern \"C\" " << PrinterUtils::getterDecl(returnTypeName, wrapperName) << ";\n";
+    *internalStream << stringFormat("%s = *%s();\n", refDecl, getterName);
 }
 
 void SourceToHeaderMatchCallback::generateWrapper(const FunctionDecl *decl) const {
@@ -295,15 +299,18 @@ void SourceToHeaderMatchCallback::generateWrapper(const VarDecl *decl) const {
     policy.SuppressInitializers = 1;
 
     /*
-     * (*var_wrapper) = &var;
+     * get_var_wrapper {
+     * return &var;
+     * }
      */
 
     std::string name = decl->getNameAsString();
     std::string wrapperName = PrinterUtils::wrapperName(name, projectContext, sourceFilePath);
-    std::string wrapperPointerName = stringFormat("(*%s)", wrapperName);
-    std::string wrapperPointerDecl =
-        getRenamedDeclarationAsString(decl, policy, wrapperPointerName);
-    *wrapperStream << wrapperPointerDecl << " = &" << name << ";\n";
+    std::string returnTypeName = PrinterUtils::getPointerMangledName(name);
+    *wrapperStream << generateTypedefForGetterReturnType(decl, policy, returnTypeName);
+    *wrapperStream << PrinterUtils::getterDecl(returnTypeName, wrapperName) << " {\n";
+    *wrapperStream << stringFormat("return &%s;\n", name);
+    *wrapperStream << "}\n";
 }
 
 void SourceToHeaderMatchCallback::generateUnnamedTypeDecls(const clang::RecordDecl *decl) const {
@@ -409,6 +416,16 @@ SourceToHeaderMatchCallback::getDefaultPrintingPolicy(const Decl *decl,
         policy.UnderscoreAlignof = 0;
     }
     return policy;
+}
+
+std::string
+SourceToHeaderMatchCallback::generateTypedefForGetterReturnType(const clang::VarDecl *decl,
+                                                                const clang::PrintingPolicy &policy,
+                                                                const std::string &returnTypeName) const {
+    std::string wrapperPointerName = stringFormat("(*%s)", returnTypeName);
+    std::string wrapperPointerDecl = getRenamedDeclarationAsString(decl, policy, wrapperPointerName);
+    PrinterUtils::removeThreadLocalQualifiers(wrapperPointerDecl);
+    return "typedef " + wrapperPointerDecl + ";\n";
 }
 
 std::string

@@ -68,6 +68,11 @@ namespace PrinterUtils {
                             utbot::ProjectContext const &projectContext,
                             const fs::path &sourceFilePath);
 
+    std::string getterName(const std::string &wrapperName);
+
+    std::string getterDecl(const std::string &returnTypeName,
+                           const std::string &wrapperName);
+
     std::string getFieldAccess(const std::string &objectName, const types::Field &field);
 
     std::string fillVarName(std::string const &temp, std::string const &varName);
@@ -76,6 +81,7 @@ namespace PrinterUtils {
 
     std::string wrapUserValue(const testsgen::ValidationType &type, const std::string &value);
 
+    std::string getPointerMangledName(const std::string &name);
     std::string getParamMangledName(const std::string &paramName, const std::string &methodName);
     std::string getReturnMangledName(const std::string &methodName);
     std::string getReturnMangledTypeName(const std::string& methodName);
@@ -98,6 +104,8 @@ namespace PrinterUtils {
     std::string getFileParamKTestJSON(char fileName);
     std::string getFileReadBytesParamKTestJSON(char fileName);
     std::string getFileWriteBytesParamKTestJSON(char fileName);
+
+    void removeThreadLocalQualifiers(std::string &decl);
 
     const std::string LAZYRENAME = "utbotInnerVar";
     const std::string UTBOT_ARGC = "utbot_argc";

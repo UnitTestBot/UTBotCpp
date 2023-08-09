@@ -22,6 +22,16 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("%s_%s", declName, mangledPath);
     }
 
+    std::string getterName(const std::string &wrapperName) {
+        return "get_" + wrapperName;
+    }
+
+    std::string getterDecl(const std::string &returnTypeName,
+                                   const std::string &wrapperName) {
+        std::string gName = getterName(wrapperName);
+        return StringUtils::stringFormat("%s %s()", returnTypeName, gName);
+    }
+
     std::string getFieldAccess(const std::string &objectName, const types::Field &field) {
         if (field.name.empty()) {
             return objectName;
@@ -89,6 +99,10 @@ namespace PrinterUtils {
         }
     }
 
+    std::string getPointerMangledName(const std::string &name) {
+        return name + "_pointer";
+    }
+
     std::string getParamMangledName(const std::string& paramName, const std::string& methodName) {
         return methodName + "_" + paramName + "_arg";
     }
@@ -127,5 +141,9 @@ namespace PrinterUtils {
 
     std::string getFileWriteBytesParamKTestJSON(char fileName) {
         return StringUtils::stringFormat("%c-data-write", fileName);
+    }
+
+    void removeThreadLocalQualifiers(std::string &decl) {
+        StringUtils::replaceAll(decl, "__thread ", "");
     }
 }
