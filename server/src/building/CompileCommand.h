@@ -46,6 +46,8 @@ namespace utbot {
         void removeIncludeFlags();
 
         void removeWerror();
+
+        void removeFPIE();
     };
 }
 

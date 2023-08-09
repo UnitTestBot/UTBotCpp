@@ -256,6 +256,7 @@ namespace printer {
         compileCommand.addFlagsToBegin(
             CompilationUtils::getCoverageCompileFlags(primaryCompilerName));
         compileCommand.addFlagsToBegin(SanitizerUtils::getSanitizeCompileFlags(compilerName));
+        compileCommand.removeFPIE();
 
         fs::path temporaryDependencyFile = getTemporaryDependencyFile(sourcePath);
         fs::path dependencyFile = getDependencyFile(sourcePath);
@@ -327,6 +328,7 @@ namespace printer {
         }
         testCompilationCommand.addFlagToBegin(FPIC_FLAG);
         testCompilationCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
+        testCompilationCommand.removeFPIE();
 
         fs::path testSourcePath = Paths::sourcePathToTestPath(testGen->projectContext, sourcePath);
         fs::path compilationDirectory = compilationUnitInfo->getDirectory();

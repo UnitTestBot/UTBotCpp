@@ -105,6 +105,12 @@ namespace utbot {
         });
     }
 
+    void CompileCommand::removeFPIE() {
+        CollectionUtils::erase_if(commandLine, [](const std::string &arg) {
+            return StringUtils::startsWith(arg, "-fPIE");
+        });
+    }
+
     void CompileCommand::initOutput() {
         auto it = findOutput();
         if (it != commandLine.end()) {
