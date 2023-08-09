@@ -31,6 +31,8 @@ public:
 
     std::vector<tests::TestMethod> getTestMethods();
 
+    CollectionUtils::MapFileTo<fs::path> getSelectedTargets();
+
     BuildResult
     addLinkTargetRecursively(const fs::path &fileToBuild,
                              printer::DefaultMakefilePrinter &bitcodeLinkMakefilePrinter,
@@ -54,6 +56,7 @@ private:
 
     CollectionUtils::FileSet testedFiles;
     CollectionUtils::MapFileTo<fs::path> bitcodeFileName;
+    CollectionUtils::MapFileTo<fs::path> selectedTargets;
     CollectionUtils::FileSet brokenLinkFiles;
 
     IRParser irParser;

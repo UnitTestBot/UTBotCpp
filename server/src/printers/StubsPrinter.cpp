@@ -25,6 +25,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
     ss << "#endif" << NL;
     strInclude(Paths::sourcePathToHeaderInclude(tests.sourceFilePath));
     ss << NL;
+    ss << "#pragma GCC visibility push (default)" << NL;
     strDefine(PrinterUtils::C_NULL, "((void*)0)") << NL;
     for (const auto &[_, method] : tests.methods) {
         auto methodCopy = method;
@@ -66,6 +67,7 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
         };
         ss << NL;
     }
+    ss << "#pragma GCC visibility pop" << NL;
     stubFile.code = ss.str();
     return stubFile;
 }

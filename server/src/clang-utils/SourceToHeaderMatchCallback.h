@@ -29,6 +29,7 @@ class SourceToHeaderMatchCallback : public clang::ast_matchers::MatchFinder::Mat
     const types::TypesHandler &typesHandler;
 
     bool forStubHeader;
+    bool externFromStub;
 public:
     SourceToHeaderMatchCallback(
                                 utbot::ProjectContext projectContext,
@@ -38,7 +39,8 @@ public:
                                 llvm::raw_ostream *unnamedTypeDeclsStream,
                                 llvm::raw_ostream *wrapperStream,
                                 const types::TypesHandler &typesHandler,
-                                         bool forStubHeader);
+                                bool forStubHeader,
+                                bool externFromStub);
 
     void run(const MatchFinder::MatchResult &Result) override;
 private:

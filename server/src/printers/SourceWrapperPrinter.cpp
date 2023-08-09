@@ -24,7 +24,11 @@ namespace printer {
 
         strInclude(Include(false, projectDirRelativeToWrapperFile / sourcePathRelativeToProjectDir));
 
+        ss << "#pragma GCC visibility push (default)" << NL;
+
         ss << wrapperDefinitions;
+
+        ss << "#pragma GCC visibility pop" << NL;
 
         FileSystemUtils::writeToFile(wrapperFilePath, ss.str());
     }

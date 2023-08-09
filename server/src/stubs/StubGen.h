@@ -13,7 +13,7 @@ class StubGen {
 public:
     explicit StubGen(BaseTestGen &testGen);
 
-    CollectionUtils::FileSet getStubSources(const fs::path &target);
+    CollectionUtils::FileSet getStubSources(const fs::path &target) const;
 
     CollectionUtils::FileSet
     findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescription> &signatures);

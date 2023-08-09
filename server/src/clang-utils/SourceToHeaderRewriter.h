@@ -8,6 +8,7 @@
 #include "building/BuildDatabase.h"
 #include "fetchers/Fetcher.h"
 #include "fetchers/FetcherUtils.h"
+#include "stubs/StubGen.h"
 #include "utils/FileSystemUtils.h"
 
 #include <clang/AST/RecursiveASTVisitor.h>
@@ -35,7 +36,8 @@ class SourceToHeaderRewriter {
                   llvm::raw_ostream *unnamedTypeDeclsStream,
                   llvm::raw_ostream *wrapperStream,
                   fs::path sourceFilePath,
-                  bool forStubHeader);
+                  bool forStubHeader,
+                  bool externFromStub);
 
 public:
     struct SourceDeclarations {
@@ -53,15 +55,18 @@ public:
         fs::path serverBuildDir,
         const types::TypesHandler &typesHandler);
 
-    SourceDeclarations generateSourceDeclarations(const fs::path &sourceFilePath, bool forStubHeader);
+    SourceDeclarations generateSourceDeclarations(const fs::path &sourceFilePath, bool forStubHeader, bool externFromStub);
 
-    std::string generateTestHeader(const fs::path &sourceFilePath, const Tests &test);
+    std::string generateTestHeader(const fs::path &sourceFilePath, const Tests &test, bool externFromStub);
 
     std::string generateStubHeader(const fs::path &sourceFilePath);
 
     std::string generateWrapper(const fs::path &sourceFilePath);
 
-    void generateTestHeaders(tests::TestsMap &tests, ProgressWriter const *progressWriter);
+    void generateTestHeaders(tests::TestsMap &tests,
+                             const StubGen &stubGen,
+                             const CollectionUtils::MapFileTo<fs::path> &selectedTargets,
+                             ProgressWriter const *progressWriter);
 };
 
 

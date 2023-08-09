@@ -106,6 +106,7 @@ void Linker::linkForOneFile(const fs::path &sourceFilePath) {
             auto [targetBitcode, stubsSet, _] = result.getOpt().value();
             addToGenerated({ objectFile }, targetBitcode);
             auto&& targetUnitInfo = testGen.getTargetBuildDatabase()->getClientLinkUnitInfo(target);
+            selectedTargets[sourceFilePath] = target;
             return;
         } else {
             LOG_S(DEBUG) << "Linkage for target " << target.filename() << " failed: " << result.getError()->c_str();
@@ -193,6 +194,7 @@ void Linker::linkForProject() {
                                         return compilationUnitInfo->getOutputFile();
                                     });
                             addToGenerated(objectFiles, linkres.bitcodeOutput);
+                            selectedTargets[sourceFile] = target;
                             break;
                         } else {
                             std::stringstream ss;
@@ -309,6 +311,10 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
         throw NoTestGeneratedException("Couldn't generate tests for any method");
     }
     return testMethods;
+}
+
+CollectionUtils::MapFileTo<fs::path> Linker::getSelectedTargets() {
+    return selectedTargets;
 }
 
 Linker::Linker(BaseTestGen &testGen,

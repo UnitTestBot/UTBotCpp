@@ -204,9 +204,6 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                         testGen.compileCommandsJsonPath, false);
         fetcher.fetchWithProgress(testGen.progressWriter, logMessage);
         types::TypesHandler typesHandler{testGen.types, sizeContext};
-        SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
-                               fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
-                .generateTestHeaders(testGen.tests, testGen.progressWriter);
         testGen.progressWriter->writeProgress("Generating stub files", 0.0);
         StubGen stubGen(testGen);
 
@@ -265,6 +262,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         Linker linker{testGen, stubGen, lineInfo, generator};
         linker.prepareArtifacts();
         auto testMethods = linker.getTestMethods();
+        auto selectedTargets = linker.getSelectedTargets();
+        SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
+                               fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
+            .generateTestHeaders(testGen.tests, stubGen, selectedTargets, testGen.progressWriter);
         KleeRunner kleeRunner{testGen.projectContext, testGen.settingsContext};
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto generationStartTime = std::chrono::steady_clock::now();
