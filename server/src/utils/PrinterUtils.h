@@ -72,6 +72,8 @@ namespace PrinterUtils {
 
     std::string fillVarName(std::string const &temp, std::string const &varName);
 
+    void appendIndicesToVarName(std::string &varName, const std::vector<size_t> &sizes, size_t offset);
+
     std::string getKleePrefix(bool forKlee);
 
     std::string wrapUserValue(const testsgen::ValidationType &type, const std::string &value);

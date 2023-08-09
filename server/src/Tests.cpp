@@ -713,21 +713,11 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
         return offsetInBits;
     }
     std::vector<size_t> sizes = objTypeAndName.type.arraysSizes(usage);
-    size_t dimension = sizes.size();
     objTypeAndName.type = objTypeAndName.type.baseTypeObj();
     size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
     size_t offset = offsetInBits / sizeInBits;
+    PrinterUtils::appendIndicesToVarName(objTypeAndName.varName, sizes, offset);
     offsetInBits %= sizeInBits;
-    if (objTypeAndName.varName.empty()) {
-        return offsetInBits;
-    }
-    std::string indices;
-    while (dimension != 0) {
-        size_t index = offset % sizes[--dimension];
-        offset /= sizes[dimension];
-        indices = StringUtils::stringFormat("[%d]%s", index, indices);
-    }
-    objTypeAndName.varName += indices;
     return offsetInBits;
 }
 
