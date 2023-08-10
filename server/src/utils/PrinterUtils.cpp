@@ -50,6 +50,20 @@ namespace PrinterUtils {
         return StringUtils::stringFormat(access, varName);
     }
 
+    void appendIndicesToVarName(std::string &varName, const std::vector<size_t> &sizes, size_t offset) {
+        if (varName.empty()) {
+            return;
+        }
+        size_t dimension = sizes.size();
+        std::string indices;
+        while (dimension != 0) {
+            size_t index = offset % sizes[--dimension];
+            offset /= sizes[dimension];
+            indices = StringUtils::stringFormat("[%d]%s", index, indices);
+        }
+        varName += indices;
+    }
+
     std::string initializePointer(const std::string &type,
                                   const std::string &value,
                                   size_t additionalPointersCount) {
