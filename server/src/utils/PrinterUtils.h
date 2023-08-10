@@ -95,11 +95,13 @@ namespace PrinterUtils {
 
     std::string initializePointer(const std::string &type,
                                   const std::string &value,
-                                  size_t additionalPointersCount);
+                                  size_t additionalPointersCount,
+                                  bool pointerToConstQualifiedValue);
 
     std::string initializePointerToVar(const std::string &type,
                                        const std::string &varName,
-                                       size_t additionalPointersCount);
+                                       size_t additionalPointersCount,
+                                       bool pointerToConstQualifiedValue);
 
     std::string generateNewVar(int cnt);
 
