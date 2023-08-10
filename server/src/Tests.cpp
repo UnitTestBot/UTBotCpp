@@ -717,6 +717,9 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
     size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
     size_t offset = offsetInBits / sizeInBits;
     PrinterUtils::appendIndicesToVarName(objTypeAndName.varName, sizes, offset);
+    if (objTypeAndName.type.isConstQualifiedValue()) {
+        PrinterUtils::appendConstCast(objTypeAndName.varName);
+    }
     offsetInBits %= sizeInBits;
     return offsetInBits;
 }

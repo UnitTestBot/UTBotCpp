@@ -12,6 +12,11 @@
 #include <string>
 
 namespace PrinterUtils {
+    const std::string constCast = "template<typename T>\n"
+                                  "T& constCast(const T &val) {\n"
+                                  "    return const_cast<T&>(val);\n"
+                                  "}\n";
+
     const std::string fromBytes = "template<typename T, size_t N>\n"
                                   "T from_bytes(const char (&bytes)[N]) {\n"
                                   "    T result;\n"
@@ -78,6 +83,8 @@ namespace PrinterUtils {
     std::string fillVarName(std::string const &temp, std::string const &varName);
 
     void appendIndicesToVarName(std::string &varName, const std::vector<size_t> &sizes, size_t offset);
+
+    void appendConstCast(std::string &varName);
 
     std::string getKleePrefix(bool forKlee);
 

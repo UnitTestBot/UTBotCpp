@@ -64,6 +64,13 @@ namespace PrinterUtils {
         varName += indices;
     }
 
+    void appendConstCast(std::string &varName) {
+        if (varName.empty()) {
+            return;
+        }
+        varName = StringUtils::stringFormat("constCast(%s)", varName);
+    }
+
     std::string initializePointer(const std::string &type,
                                   const std::string &value,
                                   size_t additionalPointersCount) {
