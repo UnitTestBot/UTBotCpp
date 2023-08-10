@@ -2149,7 +2149,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 4);
 
         fs::path testsDirPath = getTestFilePath("tests");
 
@@ -2175,7 +2175,7 @@ namespace {
         auto resultsMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 2 } };
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 4 } };
         testUtils::checkStatuses(resultsMap, tests);
     }
 

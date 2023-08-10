@@ -18,4 +18,6 @@ struct MainStruct {
 
 int func_with_multi_dim_pointer(struct MainStruct **str);
 
+int func_with_multi_dim_pointer_to_const(const struct MainStruct **str);
+
 #endif // UNITTESTBOT_MULTI_DIM_POINTERS_H
