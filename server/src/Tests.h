@@ -380,7 +380,7 @@ namespace tests {
 
             [[nodiscard]] std::string getFunctionParamDecl() const {
                 if (type.isTwoDimensionalPointer() && types::TypesHandler::isVoid(type.baseTypeObj())) {
-                    std::string qualifier = type.isConstQualifiedValue() ? "const " : "";
+                    std::string qualifier = PrinterUtils::getConstQualifier(type.isConstQualifiedValue());
                     return StringUtils::stringFormat("(%svoid **) %s", qualifier, name);
                 } else if (type.isRValueReference()) {
                     return "std::move(" + name + ")";

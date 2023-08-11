@@ -75,6 +75,8 @@ namespace PrinterUtils {
 
     std::string getFieldAccess(const std::string &objectName, const types::Field &field);
 
+    std::string getConstQualifier(bool constQualifiedValue);
+
     std::string fillVarName(std::string const &temp, std::string const &varName);
 
     void appendIndicesToVarName(std::string &varName, const std::vector<size_t> &sizes, size_t offset);

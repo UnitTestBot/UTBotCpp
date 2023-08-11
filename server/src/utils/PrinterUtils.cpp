@@ -46,6 +46,10 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("access_private::%s(%s)", fieldName, objectName);
     }
 
+    std::string getConstQualifier(bool constQualifiedValue) {
+        return constQualifiedValue ? "const " : "";
+    }
+
     std::string fillVarName(std::string const &access, std::string const &varName) {
         return StringUtils::stringFormat(access, varName);
     }
@@ -72,7 +76,7 @@ namespace PrinterUtils {
             return C_NULL;
         } else {
             std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
-            std::string qualifier = pointerToConstQualifiedValue ? "const " : "";
+            std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
             return StringUtils::stringFormat("(%s%s%s) 0x%lx", qualifier, type, additionalPointers,
                                              std::stoull(value));
         }
@@ -83,7 +87,7 @@ namespace PrinterUtils {
                                        size_t additionalPointersCount,
                                        bool pointerToConstQualifiedValue) {
         std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
-        std::string qualifier = pointerToConstQualifiedValue ? "const " : "";
+        std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
         return StringUtils::stringFormat("(%s%s%s) &%s", qualifier, type, additionalPointers, varName);
     }
 
