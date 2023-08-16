@@ -133,14 +133,14 @@ void SourceToHeaderMatchCallback::checkVarDecl(const MatchFinder::MatchResult &R
 
 void SourceToHeaderMatchCallback::handleStruct(const RecordDecl *decl) {
     print(decl);
-    generateUnnamedTypeDecls(decl);
+    declareNestedTypes(decl);
 }
 void SourceToHeaderMatchCallback::handleEnum(const EnumDecl *decl) {
     print(decl);
 }
 void SourceToHeaderMatchCallback::handleUnion(const RecordDecl *decl) {
     print(decl);
-    generateUnnamedTypeDecls(decl);
+    declareNestedTypes(decl);
 }
 
 void SourceToHeaderMatchCallback::handleTypedef(const TypedefDecl *decl) {
@@ -204,6 +204,7 @@ void SourceToHeaderMatchCallback::generateInternal(const FunctionDecl *decl) con
     policy.TerseOutput = 1;
     policy.PolishForDeclaration = 1;
     policy.AnonymousTagLocations = 0;
+    policy.PrintCanonicalTypes = 1;
 
     std::string name = decl->getNameAsString();
     std::string decoratedName = decorate(name);
@@ -319,33 +320,47 @@ void SourceToHeaderMatchCallback::generateWrapper(const VarDecl *decl) const {
     *wrapperStream << "}\n";
 }
 
-void SourceToHeaderMatchCallback::generateUnnamedTypeDecls(const clang::RecordDecl *decl) const {
-    if (unnamedTypeDeclsStream == nullptr) {
+void SourceToHeaderMatchCallback::declareNestedTypes(const clang::RecordDecl *decl) const {
+    if (!decl->isThisDeclarationADefinition()) {
         return;
     }
     clang::ASTContext const &context = decl->getASTContext();
     clang::QualType canonicalType = context.getTypeDeclType(decl).getCanonicalType();
     uint64_t id = types::Type::getIdFromCanonicalType(canonicalType);
-    if (typesHandler.isStructLike(id)) {
-        types::StructInfo info = typesHandler.getStructInfo(id);
-        generateUnnamedTypeDeclsForFields(info);
+    declareNestedNamedTypes(id);
+    declareNestedUnnamedTypes(id);
+}
+
+void SourceToHeaderMatchCallback::declareNestedNamedTypes(uint64_t id) const {
+    if (externalStream == nullptr || !typesHandler.isStructLike(id)) {
+        return;
+    }
+    types::StructInfo info = typesHandler.getStructInfo(id);
+    for (const types::Field &field : info.fields) {
+        types::Type fieldBaseType = field.type.baseTypeObj();
+        if (field.unnamedType || !typesHandler.isDeclaredInStruct(fieldBaseType, id)) {
+            continue;
+        }
+        printTypeDeclForNestedNamedType(info.name, fieldBaseType.typeNameForCPlusPlus());
+        declareNestedNamedTypes(fieldBaseType.getId());
     }
 }
 
-void SourceToHeaderMatchCallback::generateUnnamedTypeDeclsForFields(const types::StructInfo &info) const {
+void SourceToHeaderMatchCallback::declareNestedUnnamedTypes(uint64_t id) const {
+    if (unnamedTypeDeclsStream == nullptr || !typesHandler.isStructLike(id)) {
+        return;
+    }
+    types::StructInfo info = typesHandler.getStructInfo(id);
     for (const types::Field &field : info.fields) {
-        if (!field.unnamedType || field.anonymous) {
+        uint64_t fieldBaseTypeId = field.type.getBaseTypeId().value_or(0);
+        if (field.anonymous || !typesHandler.isDeclaredInStruct(fieldBaseTypeId, id)) {
             continue;
         }
-        if (typesHandler.isStructLike(field.type)) {
-            types::StructInfo fieldInfo = typesHandler.getStructInfo(field.type);
-            printUnnamedTypeDecl(info.name, field.name, fieldInfo.name);
-            generateUnnamedTypeDeclsForFields(fieldInfo);
+        if (field.unnamedType) {
+            printTypeDeclForNestedUnnamedType(info.name, field.name,
+                                              typesHandler.getTypeName(fieldBaseTypeId).value());
         }
-        if (typesHandler.isEnum(field.type)) {
-            types::EnumInfo enumInfo = typesHandler.getEnumInfo(field.type);
-            printUnnamedTypeDecl(info.name, field.name, enumInfo.name);
-        }
+        declareNestedUnnamedTypes(fieldBaseTypeId);
     }
 }
 
@@ -368,12 +383,21 @@ void SourceToHeaderMatchCallback::printReturn(const FunctionDecl *decl,
     *stream << printer.ss.str();
 }
 
-void SourceToHeaderMatchCallback::printUnnamedTypeDecl(const std::string &structName,
-                                                const std::string &fieldName,
-                                                const std::string &typeName) const {
+void SourceToHeaderMatchCallback::printTypeDeclForNestedNamedType(const std::string &structTypeName,
+                                                                  const std::string &fieldTypeName) const {
+    std::string typeDecl = StringUtils::stringFormat(
+        "typedef %s::%s %s;\n\n",
+        structTypeName, fieldTypeName, fieldTypeName
+    );
+    *externalStream << typeDecl;
+}
+
+void SourceToHeaderMatchCallback::printTypeDeclForNestedUnnamedType(const std::string &structTypeName,
+                                                                    const std::string &fieldName,
+                                                                    const std::string &typeName) const {
     std::string typeDecl = StringUtils::stringFormat(
         "typedef decltype(%s::%s) %s;\n",
-        structName, fieldName, typeName
+        structTypeName, fieldName, typeName
     );
     *unnamedTypeDeclsStream << typeDecl;
 }

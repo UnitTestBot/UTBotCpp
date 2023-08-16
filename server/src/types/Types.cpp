@@ -24,11 +24,14 @@ types::Type::Type(clang::QualType qualType, TypeName usedTypeName, const clang::
         pp.adjustForCPlusPlus();
     }
     mType = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
+    pp.SuppressTagKeyword = true;
+    mTypeForCPlusPlus = canonicalType.getNonReferenceType().getUnqualifiedType().getAsString(pp);
     TypeVisitor visitor;
     visitor.TraverseType(qualType);
     mKinds = visitor.getKinds();
     dimension = getDimension();
     mBaseType = visitor.getTypes()[dimension];
+    mBaseTypeForCPlusPlus = visitor.getTypesForCPlusPlus()[dimension];
     mTypeId = getIdFromCanonicalType(canonicalType);
     AbstractType *baseType = mKinds[dimension].get();
     if (auto simpleType = dynamic_cast<SimpleType*>(baseType)) {
@@ -82,8 +85,10 @@ types::Type types::Type::createConstTypeFromName(const types::TypeName& type, si
 types::Type types::Type::createArray(const types::Type &type) {
     Type res;
     res.mType = type.typeName() + "*";
+    res.mTypeForCPlusPlus = type.mTypeForCPlusPlus + (!type.mTypeForCPlusPlus.empty() ? "*" : "");
     res.mUsedType = res.mType;
     res.mBaseType = type.baseType();
+    res.mBaseTypeForCPlusPlus = type.mBaseTypeForCPlusPlus;
     res.mKinds = type.mKinds;
     res.mKinds.insert(res.mKinds.begin(), std::shared_ptr<AbstractType>(new ArrayType(
         TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::PARAMETER), false)));
@@ -94,12 +99,28 @@ types::Type types::Type::createArray(const types::Type &type) {
     return res;
 }
 
+void types::Type::convertToCPlusPlus() {
+    mType = typeNameForCPlusPlus();
+    if (!baseTypeObj().isPointerToFunction()) {
+        mUsedType = mType;
+    }
+    mBaseType = baseTypeForCPlusPlus();
+}
+
 types::TypeName types::Type::typeName() const {
     return mType;
 }
 
+types::TypeName types::Type::typeNameForCPlusPlus() const {
+    return !mTypeForCPlusPlus.empty() ? mTypeForCPlusPlus : mType;
+}
+
 types::TypeName types::Type::baseType() const {
     return mBaseType;
+}
+
+types::TypeName types::Type::baseTypeForCPlusPlus() const {
+    return !mBaseTypeForCPlusPlus.empty() ? mBaseTypeForCPlusPlus : mBaseType;
 }
 
 types::TypeName types::Type::usedType() const {
@@ -109,7 +130,9 @@ types::TypeName types::Type::usedType() const {
 types::Type types::Type::baseTypeObj(size_t depth) const {
     auto type = *this;
     type.mType = mBaseType;
+    type.mTypeForCPlusPlus = mBaseTypeForCPlusPlus;
     type.mBaseType = type.mType;
+    type.mBaseTypeForCPlusPlus = type.mTypeForCPlusPlus;
     type.mUsedType = type.mType;
     type.mKinds.erase(type.mKinds.begin(), type.mKinds.begin() + depth);
     type.dimension = type.getDimension();
@@ -515,8 +538,22 @@ bool types::TypesHandler::isAnonymousEnum(const types::Type& type) const {
     return type.isUnnamed() && isEnum(type);
 }
 
+bool types::TypesHandler::isDeclaredInStruct(const Type& type, uint64_t parentId) const {
+    return isDeclaredInStruct(type.getId(), parentId);
+}
+
 bool types::TypesHandler::isEnum(uint64_t id) const {
     return typeIsInMap(id, typeMaps.enums);
+}
+
+bool types::TypesHandler::isDeclaredInStruct(uint64_t id, uint64_t parentId) const {
+    if (isStructLike(id)) {
+        return getStructInfo(id).parentStructId == parentId;
+    }
+    if (isEnum(id)) {
+        return getEnumInfo(id).parentStructId == parentId;
+    }
+    return false;
 }
 
 /*
@@ -571,6 +608,16 @@ types::EnumInfo types::TypesHandler::getEnumInfo(const types::Type &type) const 
 
 types::EnumInfo types::TypesHandler::getEnumInfo(uint64_t id) const {
     return typeFromMap<EnumInfo>(id, typeMaps.enums);
+}
+
+std::optional<std::string> types::TypesHandler::getTypeName(uint64_t id) const {
+    if (isStructLike(id)) {
+        return getStructInfo(id).name;
+    }
+    if (isEnum(id)) {
+        return getEnumInfo(id).name;
+    }
+    return std::nullopt;
 }
 
 /**

@@ -15,7 +15,10 @@ public:
 
     std::vector<std::string> getTypes();
 
+    std::vector<std::string> getTypesForCPlusPlus();
+
 private:
     std::vector<std::string> types{};
+    std::vector<std::string> typesForCPlusPlus{};
     std::vector<std::shared_ptr<AbstractType>> kinds{};
 };

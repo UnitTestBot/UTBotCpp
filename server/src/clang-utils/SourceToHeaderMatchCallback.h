@@ -73,15 +73,18 @@ private:
     void print(const clang::NamedDecl *decl) const;
 
     clang::PrintingPolicy getDefaultPrintingPolicy(const clang::Decl *decl,
-                                                          bool adjustForCPlusPlus) const;
+                                                   bool adjustForCPlusPlus) const;
 
     void printReturn(const clang::FunctionDecl *decl,
                      std::string const &name,
                      llvm::raw_ostream *stream) const;
 
-    void printUnnamedTypeDecl(const std::string &structName,
-                              const std::string &fieldName,
-                              const std::string &typeName) const;
+    void printTypeDeclForNestedUnnamedType(const std::string &structName,
+                                           const std::string &fieldName,
+                                           const std::string &typeName) const;
+
+    void printTypeDeclForNestedNamedType(const std::string &structTypeName,
+                                         const std::string &fieldTypeName) const;
 
     void generateWrapper(const clang::FunctionDecl *decl) const;
 
@@ -91,9 +94,11 @@ private:
 
     void generateInternal(const clang::VarDecl *decl) const;
 
-    void generateUnnamedTypeDeclsForFields(const types::StructInfo &info) const;
+    void declareNestedTypes(const clang::RecordDecl *decl) const;
 
-    void generateUnnamedTypeDecls(const clang::RecordDecl *decl) const;
+    void declareNestedNamedTypes(uint64_t id) const;
+
+    void declareNestedUnnamedTypes(uint64_t id) const;
 
     std::string generateTypedefForGetterReturnType(const clang::VarDecl *decl,
                                                    const clang::PrintingPolicy &policy,

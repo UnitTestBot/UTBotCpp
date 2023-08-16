@@ -10,10 +10,14 @@
 
 bool TypeVisitor::TraverseType(clang::QualType type) {
     clang::QualType canonicalType = type.getCanonicalType();
+    auto pp = clang::PrintingPolicy(clang::LangOptions());
+    pp.adjustForCPlusPlus();
     const auto curType = canonicalType.getNonReferenceType().getUnqualifiedType();
     const auto curTypeString = curType.getAsString();
+    const auto curTypeStringForCPlusPlus = curType.getAsString(pp);
     if (types.empty() || curTypeString != types.back()) {
         types.push_back(curTypeString);
+        typesForCPlusPlus.push_back(curTypeStringForCPlusPlus);
         if (curType->isFunctionPointerType()) {
             kinds.push_back(std::make_shared<FunctionPointerType>());
         } else if (curType->isObjectPointerType()) {
@@ -51,4 +55,8 @@ std::vector<std::shared_ptr<AbstractType>> TypeVisitor::getKinds() {
 
 std::vector<std::string> TypeVisitor::getTypes() {
     return types;
+}
+
+std::vector<std::string> TypeVisitor::getTypesForCPlusPlus() {
+    return typesForCPlusPlus;
 }

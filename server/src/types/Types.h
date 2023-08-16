@@ -45,9 +45,19 @@ namespace types {
         [[nodiscard]] TypeName typeName() const;
 
         /**
+         * @return string representation of this type for C++.
+         */
+        [[nodiscard]] TypeName typeNameForCPlusPlus() const;
+
+        /**
          * @return string representation of this type without qualifiers, references and arrays.
          */
         [[nodiscard]] TypeName baseType() const;
+
+        /**
+         * @return string representation of this type without qualifiers, references and arrays for C++.
+         */
+        [[nodiscard]] TypeName baseTypeForCPlusPlus() const;
 
         /**
          * Returns string representation of this type that was actually used in source code.
@@ -234,6 +244,8 @@ namespace types {
 
         static Type createArray(const Type &type);
 
+        void convertToCPlusPlus();
+
         static Type CStringType();
 
         static Type intType();
@@ -267,7 +279,9 @@ namespace types {
         explicit Type(const TypeName& type, size_t pointersNum=0);
 
         TypeName mType;
+        TypeName mTypeForCPlusPlus;
         TypeName mBaseType;
+        TypeName mBaseTypeForCPlusPlus;
         TypeName mUsedType;
         std::vector<Kind> mKinds;
         size_t dimension;
@@ -300,6 +314,7 @@ namespace types {
         size_t size;
         /// alignment in @b bytes
         size_t alignment;
+        std::optional<uint64_t> parentStructId = std::nullopt;
     };
 
     typedef std::unordered_map<std::string, std::shared_ptr<FunctionInfo>> FPointerMap;
@@ -476,7 +491,13 @@ namespace types {
          * Returns true if given type is an anonymous enum, otherwise false.
          * @return whether given type is an anonymous enum
          */
-         bool isAnonymousEnum(const Type&) const;
+        bool isAnonymousEnum(const Type&) const;
+
+        /**
+         * Returns true if given type is declared in struct with given ID, otherwise false.
+         * @return whether given type is declared in struct with given ID
+         */
+        bool isDeclaredInStruct(const Type&, uint64_t) const;
 
 
         /**
@@ -554,9 +575,11 @@ namespace types {
 
         bool isStructLike(uint64_t id) const;
         bool isEnum(uint64_t id) const;
+        bool isDeclaredInStruct(uint64_t id, uint64_t parentId) const;
 
         [[nodiscard]] StructInfo getStructInfo(uint64_t id) const;
         [[nodiscard]] EnumInfo getEnumInfo(uint64_t id) const;
+        std::optional<std::string> getTypeName(uint64_t id) const;
 
         /**
          * Returns map of constraints for every supported primitive type, that might be used in

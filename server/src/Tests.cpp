@@ -634,6 +634,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
         order.pop();
         std::string name = testCase.objects[curType.jsonInd].name;
         types::Type paramType = curType.param.type;
+        paramType.convertToCPlusPlus();
         objects[curType.jsonInd] = { paramType, name };
 
         if (testCase.objects[curType.jsonInd].is_lazy) {
@@ -773,7 +774,7 @@ void KTestObjectParser::assignAllLazyPointers(
 
             testCase.lazyReferences.emplace_back(
                 fromPtr.varName, toPtrName,
-                PrinterUtils::initializePointerToVar(fromPtr.type.baseType(), toPtrName,
+                PrinterUtils::initializePointerToVar(fromPtr.type.baseTypeForCPlusPlus(), toPtrName,
                                                      fromPtr.type.getDimension()));
         }
     }
@@ -1232,14 +1233,14 @@ KTestObjectParser::getLazyPointerView(const std::vector<UTBotKTestObject> &objec
     if (!lazyPointer && ptr_element != objects.end()) {
             initReferences.emplace_back(
                 name, ptr_element->name,
-                PrinterUtils::initializePointerToVar(paramType.baseType(), ptr_element->name,
+                PrinterUtils::initializePointerToVar(paramType.baseTypeForCPlusPlus(), ptr_element->name,
                                                      paramType.getDimension()));
     }
     if (lazyPointer || ptr_element != objects.end()) {
             res = PrinterUtils::C_NULL;
     }
     return std::make_shared<JustValueView>(
-        PrinterUtils::initializePointer(paramType.baseType(), res, paramType.getDimension()));
+        PrinterUtils::initializePointer(paramType.baseTypeForCPlusPlus(), res, paramType.getDimension()));
 }
 
 bool Tests::MethodDescription::operator==(const Tests::MethodDescription &other) const {

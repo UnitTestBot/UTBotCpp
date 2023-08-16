@@ -338,6 +338,10 @@ void KleeGenerator::parseKTestsToFinalCode(
     for (auto it = tests.methods.begin(); it != tests.methods.end(); it++) {
         const std::string &methodName = it.key();
         Tests::MethodDescription &methodDescription = it.value();
+        for (auto &param : methodDescription.params) {
+            param.type.convertToCPlusPlus();
+        }
+        methodDescription.returnType.convertToCPlusPlus();
         if (lineInfo) {
             bool methodNotMatch = lineInfo->forMethod && methodName != lineInfo->methodName;
             bool classNotMatch = lineInfo->forClass && methodDescription.isClassMethod() &&

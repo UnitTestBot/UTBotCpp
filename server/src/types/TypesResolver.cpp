@@ -59,6 +59,15 @@ static void addInfo(uint64_t id, std::unordered_map<uint64_t, Info> &someMap, In
     }
 }
 
+std::optional<uint64_t> getParentId(const clang::TagDecl *TD) {
+    if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
+        clang::QualType parentCanonicalType =
+            parentNode->getASTContext().getTypeDeclType(parentNode).getCanonicalType();
+        return types::Type::getIdFromCanonicalType(parentCanonicalType);
+    }
+    return std::nullopt;
+}
+
 std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::QualType &canonicalType,
                                        uint64_t id, const fs::path &sourceFilePath) {
     auto pp = clang::PrintingPolicy(clang::LangOptions());
@@ -68,15 +77,11 @@ std::string TypesResolver::getFullname(const clang::TagDecl *TD, const clang::Qu
     fullname.insert(std::make_pair(id, currentStructName));
 
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C || typeDeclNeeded) {
-        if (const auto *parentNode = llvm::dyn_cast<const clang::RecordDecl>(TD->getLexicalParent())) {
-            clang::QualType parentCanonicalType = parentNode->getASTContext().getTypeDeclType(
-                    parentNode).getCanonicalType();
-            uint64_t parentID = types::Type::getIdFromCanonicalType(parentCanonicalType);
-            if (!fullname[parentID].empty()) {
-                fullname[id] = fullname[parentID] + "::" + fullname[id];
-                if (typeDeclNeeded) {
-                    StringUtils::replaceColon(fullname[id]);
-                }
+        std::optional<uint64_t> parentId = getParentId(TD);
+        if (parentId.has_value() && !fullname[parentId.value()].empty()) {
+            fullname[id] = fullname[parentId.value()] + "::" + fullname[id];
+            if (typeDeclNeeded) {
+                StringUtils::replaceColon(fullname[id]);
             }
         }
     }
@@ -107,6 +112,7 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
+    structInfo.parentStructId = getParentId(D);
     structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
         const auto *cppD = llvm::dyn_cast<const clang::CXXRecordDecl>(D);
@@ -136,9 +142,9 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
 
         const clang::QualType paramType = F->getType().getCanonicalType();
         field.type = types::Type(paramType, paramType.getAsString(), sourceManager);
-        field.unnamedType = field.type.isUnnamed();
+        field.unnamedType = field.type.baseTypeObj().isUnnamed();
         if (field.unnamedType && !field.anonymous) {
-            fullname[field.type.getId()] = field.name;
+            fullname[field.type.baseTypeObj().getId()] = field.name;
         }
         if (field.type.isPointerToFunction()) {
             structInfo.functionFields[field.name] = ParamsHandler::getFunctionPointerDeclaration(
@@ -246,6 +252,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
 
     enumInfo.access = getAccess(EN);
     enumInfo.isSpecifierNeeded = isSpecifierNeeded(EN);
+    enumInfo.parentStructId = getParentId(EN);
 
     for (auto it = EN->enumerator_begin(); it != EN->enumerator_end(); ++it) {
         types::EnumInfo::EnumEntry enumEntry;
