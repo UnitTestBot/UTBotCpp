@@ -45,3 +45,7 @@ struct One alphabet(int a) {
 int st_access_s(struct StructWithFunctionPointer st) {
     return st.s;
 }
+
+int get_fld(struct NestedStruct st) {
+    return st.fld;
+}

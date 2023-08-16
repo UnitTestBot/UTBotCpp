@@ -13,6 +13,13 @@ struct StructWithFunctionPointer {
     } fptr;
 };
 
+struct StructWithNestedStructDecl {
+    struct StructWithArrays structWithArrays;
+    struct NestedStruct {
+        int fld;
+    } *nested;
+};
+
 struct One {
     int a;
     char str[12];
@@ -35,5 +42,7 @@ char arrays_in_inner_structs(struct Three st);
 struct One alphabet(int a);
 
 int st_access_s(struct StructWithFunctionPointer st);
+
+int get_fld(struct NestedStruct st);
 
 #endif // SIMPLE_TEST_PROJECT_COMPLEX_STRUCTS_H
