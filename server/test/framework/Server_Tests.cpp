@@ -2184,7 +2184,7 @@ namespace {
         auto resultsMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 3 } };
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 6 } };
         testUtils::checkStatuses(resultsMap, tests);
     }
 
@@ -2222,7 +2222,7 @@ namespace {
         auto resultsMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 6 } };
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 3 } };
         testUtils::checkStatuses(resultsMap, tests);
     }
 
