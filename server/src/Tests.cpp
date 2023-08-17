@@ -403,20 +403,18 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     }
 
     std::optional<std::string> entryValue;
-    if (curStruct.subType == types::SubType::Union) {
-        if (fieldIndexToInitUnion == SIZE_MAX && !curStruct.name.empty()) {
-            // init by memory copy
-            entryValue = PrinterUtils::convertBytesToUnion(
-                curStruct.name,
-                arrayView(byteArray, lazyPointersArray,
-                          types::Type::createSimpleTypeFromName("utbot_byte"),
-                          curStruct.size,
-                          offsetInBits, usage)->getEntryValue(nullptr));
-            dirtyInitializedStruct = false;
-        }
-        if (fieldIndexToInitUnion != SIZE_MAX) {
-            dirtyInitializedStruct = false;
-        }
+    if (curStruct.subType == types::SubType::Union && fieldIndexToInitUnion != SIZE_MAX) {
+        dirtyInitializedStruct = false;
+    }
+    if (dirtyInitializedStruct && !curStruct.name.empty() && !anonymousField) {
+        // init by memory copy
+        entryValue = PrinterUtils::convertBytesToStruct(
+            curStruct.name,
+            arrayView(byteArray, lazyPointersArray,
+                      types::Type::createSimpleTypeFromName("utbot_byte"),
+                      curStruct.size,
+                      offsetInBits, usage)->getEntryValue(nullptr));
+        dirtyInitializedStruct = false;
     }
     return std::make_shared<StructValueView>(curStruct, subViews, entryValue,
                                              anonymousField, dirtyInitializedStruct, fieldIndexToInitUnion);

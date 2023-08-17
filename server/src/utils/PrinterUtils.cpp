@@ -10,7 +10,7 @@ namespace PrinterUtils {
     std::string convertToBytesFunctionName(const std::string &typeName) {
         return StringUtils::stringFormat("from_bytes<%s>", typeName);
     }
-    std::string convertBytesToUnion(const std::string &typeName, const std::string &bytes) {
+    std::string convertBytesToStruct(const std::string &typeName, const std::string &bytes) {
         return StringUtils::stringFormat("%s(%s)", convertToBytesFunctionName(typeName), bytes);
     }
 
