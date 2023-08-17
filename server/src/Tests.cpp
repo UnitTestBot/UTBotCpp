@@ -300,7 +300,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
             return true;
         };
 
-        if (prevFieldEndOffset < fieldStartOffset) {
+        if (prevFieldEndOffset < fieldStartOffset && curStruct.subType == types::SubType::Union) {
             // check an alignment gap
             for (int i = prevFieldEndOffset/8; i < fieldStartOffset/8; ++i) {
                 if (dirtyCheck(i)) {
@@ -392,12 +392,12 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 throw NoSuchTypeException(message);
         }
 
-        if (!dirtyInitializedField && sizeOfFieldToInitUnion < fieldLen) {
+        if (!dirtyInitializedField && sizeOfFieldToInitUnion < fieldLen &&
+            curStruct.subType == types::SubType::Union) {
             fieldIndexToInitUnion = fieldIndex;
             sizeOfFieldToInitUnion = fieldLen;
-        } else {
-            dirtyInitializedStruct = true;
         }
+        dirtyInitializedStruct |= dirtyInitializedField;
         prevFieldEndOffset = fieldEndOffset;
         ++fieldIndex;
     }

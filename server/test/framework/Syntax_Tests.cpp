@@ -1881,8 +1881,7 @@ namespace {
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                    StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                 "{from_bytes<StructWithStructInUnion::DeepUnion>({");
+                             testCase.returnValue.view->getEntryValue(nullptr) == "{{{'k', 1.010100e+00}}}";
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
@@ -1909,8 +1908,7 @@ namespace {
                   [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                  stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                             StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                     "{from_bytes<StructWithUnionOfUnnamedType_un>({");
+                             testCase.returnValue.view->getEntryValue(nullptr) == "{{{'k', 1.010100e+00}}}";
                   },
                   [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
