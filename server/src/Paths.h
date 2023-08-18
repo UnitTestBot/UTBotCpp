@@ -124,6 +124,8 @@ namespace Paths {
 
     std::string mangle(const fs::path& path);
 
+    std::string mangleExtensions(const fs::path& path);
+
     static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
                                                              const std::string &newExt) {
         std::string extensionAsSuffix = path.extension().string();

@@ -98,6 +98,14 @@ namespace Paths {
         return result;
     }
 
+    std::string mangleExtensions(const fs::path& path) {
+        if (!path.has_extension()) {
+            return path.string();
+        }
+        fs::path extension = path.extension();
+        return mangleExtensions(removeExtension(path)) + mangle(extension);
+    }
+
     fs::path subtractPath(std::string path1, std::string path2) {
         if (path2 == ".") {
             return path1;
