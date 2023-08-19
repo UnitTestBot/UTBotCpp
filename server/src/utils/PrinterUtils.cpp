@@ -23,7 +23,7 @@ namespace PrinterUtils {
     }
 
     std::string getterName(const std::string &wrapperName) {
-        return "get_" + wrapperName;
+        return "get_pointer_to_" + wrapperName;
     }
 
     std::string getterDecl(const std::string &returnTypeName,
