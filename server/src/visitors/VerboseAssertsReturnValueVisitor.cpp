@@ -32,7 +32,7 @@ namespace visitor {
         auto signature = processExpect(type, gtestMacro, {PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED),
                                                           getDecorateActualVarName(access)});
         signature = changeSignatureToNullCheck(signature, type, view, access);
-        printer->strFunctionCall(signature.name, signature.args);
+        printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0, std::nullopt, inUnion);
     }
 
     void VerboseAssertsReturnValueVisitor::visitPointer(const types::Type &type,

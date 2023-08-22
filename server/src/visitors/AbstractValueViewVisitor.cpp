@@ -93,7 +93,7 @@ namespace visitor {
         auto subViews = view ? &view->getSubViews() : nullptr;
 
         bool oldFlag = inUnion;
-        inUnion = structInfo.subType == types::SubType::Union;
+        inUnion |= structInfo.subType == types::SubType::Union;
         for (int i = 0; i < structInfo.fields.size(); ++i) {
             auto const &field = structInfo.fields[i];
             auto newName = PrinterUtils::getFieldAccess(name, field);
@@ -101,6 +101,7 @@ namespace visitor {
             auto newAccess = PrinterUtils::getFieldAccess(access, field);
             visitAny(field.type, newName, newView, newAccess, depth + 1);
         }
+        inUnion = oldFlag;
     }
 
     void AbstractValueViewVisitor::visitEnum(const types::Type &type,

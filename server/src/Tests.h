@@ -238,14 +238,20 @@ namespace tests {
                                  std::vector<std::shared_ptr<AbstractValueView>> _subViews,
                                  std::optional<std::string> _entryValue,
                                  bool _anonymous,
+                                 bool _isInit,
                                  bool _dirtyInit,
                                  size_t _fieldIndexToInitUnion)
             : AbstractValueView(std::move(_subViews))
             , entryValue(std::move(_entryValue))
             , structInfo(_structInfo)
             , anonymous(_anonymous)
+            , isInit(_isInit)
             , dirtyInit(_dirtyInit)
             , fieldIndexToInitUnion(_fieldIndexToInitUnion){}
+
+        bool isInitialized() const {
+            return isInit;
+        }
 
         bool isDirtyInit() const {
             return dirtyInit;
@@ -317,6 +323,7 @@ namespace tests {
         std::optional<std::string> entryValue;
 
         bool anonymous;
+        bool isInit;
         bool dirtyInit;
         size_t fieldIndexToInitUnion;
     };
