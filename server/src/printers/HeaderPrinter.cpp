@@ -14,7 +14,8 @@ namespace printer {
         ss << NL;
         ss << PrinterUtils::redirectStdin << NL;
         ss << PrinterUtils::writeToFile << NL;
-        ss << PrinterUtils::fromBytes;
+        ss << PrinterUtils::fromBytes << NL;
+        ss << PrinterUtils::constCast;
         headerCode += ss.str();
         FileSystemUtils::writeToFile(testHeaderFilePath, headerCode);
     }
