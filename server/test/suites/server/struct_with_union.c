@@ -12,3 +12,16 @@ struct StructWithUnionOfUnnamedType struct_with_union_of_unnamed_type_as_return_
     }
     return ans;
 }
+
+struct StructWithAnonymousUnion struct_with_anonymous_union_as_return_type(int a, int b) {
+    struct StructWithAnonymousUnion ans;
+    if (a > b) {
+        ans.ptr = 0;
+    } else if (a < b) {
+        ans.x = 153;
+    } else {
+        ans.c = 'k';
+        ans.d = 1.0101;
+    }
+    return ans;
+}

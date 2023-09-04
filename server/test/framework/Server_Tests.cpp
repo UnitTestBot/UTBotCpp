@@ -456,35 +456,6 @@ namespace {
             }
         }
 
-        void checkStructWithUnion_C(BaseTestGen &testGen) {
-            for (const auto &[methodName, methodDescription] :
-                 testGen.tests.at(struct_with_union_c).methods) {
-                if (methodName == "struct_with_union_of_unnamed_type_as_return_type") {
-                    checkTestCasePredicates(
-                        methodDescription.testCases,
-                        std::vector<TestCasePredicate>(
-                            {[] (const tests::Tests::MethodTestCase& testCase) {
-                                 return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
-                                            stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                        testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\x99', -2.530171e-98}}}";
-                             },
-                              [] (const tests::Tests::MethodTestCase& testCase) {
-                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
-                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                         StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                                 "{from_bytes<StructWithUnionOfUnnamedType_un>({");
-                              },
-                              [] (const tests::Tests::MethodTestCase& testCase) {
-                                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
-                                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                                         testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\0', -2.530171e-98}}}";
-                              }
-                            }),
-                        methodName);
-                }
-            }
-        }
-
         void checkInnerBasicFunctions_C(BaseTestGen &testGen) {
             for (const auto &[methodName, methodDescription] :
                  testGen.tests.at(inner_basic_functions_c).methods) {
@@ -2187,8 +2158,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 3);
-        checkStructWithUnion_C(testGen);
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 6);
 
         fs::path testsDirPath = getTestFilePath("tests");
 
@@ -2214,7 +2184,7 @@ namespace {
         auto resultsMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 3 } };
+        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 6 } };
         testUtils::checkStatuses(resultsMap, tests);
     }
 

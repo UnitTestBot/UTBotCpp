@@ -1882,7 +1882,7 @@ namespace {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
                                     stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                                     StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
-                                                 "{from_bytes<StructWithStructInUnion::DeepUnion>({");
+                                                            "{from_bytes<StructWithStructInUnion::DeepUnion>({");;
                          },
                          [] (const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
@@ -1903,18 +1903,18 @@ namespace {
             std::vector<TestCasePredicate>(
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                      return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
-                                stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                            stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                             testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\x99', -2.530171e-98}}}";
                  },
                   [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
-                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                              StringUtils::startsWith(testCase.returnValue.view->getEntryValue(nullptr),
                                                      "{from_bytes<StructWithUnionOfUnnamedType_un>({");
                   },
                   [] (const tests::Tests::MethodTestCase& testCase) {
                       return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >
-                                 stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                             stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
                              testCase.returnValue.view->getEntryValue(nullptr) == "{{{'\\0', -2.530171e-98}}}";
                   }
                 })

@@ -62,7 +62,7 @@ namespace PrinterUtils {
 
     std::string convertToBytesFunctionName(std::string const &typeName);
 
-    std::string convertBytesToUnion(const std::string &typeName, const std::string &bytes);
+    std::string convertBytesToStruct(const std::string &typeName, const std::string &bytes);
 
     std::string wrapperName(const std::string &declName,
                             utbot::ProjectContext const &projectContext,

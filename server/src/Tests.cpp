@@ -280,8 +280,10 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
     size_t structEndOffset = offsetInBits + curStruct.size;
     size_t fieldIndex = 0;
     bool dirtyInitializedStruct = false;
+    bool isInitializedStruct = curStruct.subType == types::SubType::Struct;
     for (const auto &field: curStruct.fields) {
         bool dirtyInitializedField = false;
+        bool isInitializedField = true;
         size_t fieldLen = typesHandler.typeSize(field.type);
         size_t fieldStartOffset = offsetInBits + field.offset;
         size_t fieldEndOffset = fieldStartOffset + fieldLen;
@@ -289,7 +291,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
             prevFieldEndOffset = offsetInBits;
         }
 
-        auto dirtyCheck = [&](int i) {
+        auto dirtyCheck = [&](size_t i) {
             if (i >= byteArray.size()) {
                 LOG_S(ERROR) << "Bad type size info: " << field.name << " index: " << fieldIndex;
             } else if (byteArray[i] == 0) {
@@ -302,15 +304,16 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
 
         if (prevFieldEndOffset < fieldStartOffset) {
             // check an alignment gap
-            for (int i = prevFieldEndOffset/8; i < fieldStartOffset/8; ++i) {
+            for (size_t i = prevFieldEndOffset / 8; i < fieldStartOffset / 8; ++i) {
                 if (dirtyCheck(i)) {
                     break;
                 }
             }
         }
-        if (!dirtyInitializedField && curStruct.subType == types::SubType::Union) {
-            // check the rest of the union
-            for (int i = fieldEndOffset/8; i < structEndOffset/8; ++i) {
+        if (!dirtyInitializedField && (curStruct.subType == types::SubType::Union ||
+                                       fieldIndex + 1 == curStruct.fields.size())) {
+            // check the rest of the union or the last field of the struct
+            for (size_t i = fieldEndOffset / 8; i < structEndOffset / 8; ++i) {
                 if (dirtyCheck(i)) {
                     break;
                 }
@@ -325,6 +328,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                                          PrinterUtils::getFieldAccess(name, field), objects,
                                          initReferences);
                     dirtyInitializedField |= sv->isDirtyInit();
+                    isInitializedField = sv->isInitialized();
                     subViews.push_back(sv);
                 }
                 break;
@@ -392,34 +396,38 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 throw NoSuchTypeException(message);
         }
 
-        if (!dirtyInitializedField && sizeOfFieldToInitUnion < fieldLen) {
+        if (!dirtyInitializedField && sizeOfFieldToInitUnion < fieldLen &&
+            curStruct.subType == types::SubType::Union) {
             fieldIndexToInitUnion = fieldIndex;
             sizeOfFieldToInitUnion = fieldLen;
-        } else {
-            dirtyInitializedStruct = true;
+            isInitializedStruct = true;
+            dirtyInitializedStruct = false;
+        }
+        if (curStruct.subType == types::SubType::Struct) {
+            dirtyInitializedStruct |= dirtyInitializedField;
+            isInitializedStruct &= isInitializedField;
         }
         prevFieldEndOffset = fieldEndOffset;
         ++fieldIndex;
     }
 
     std::optional<std::string> entryValue;
-    if (curStruct.subType == types::SubType::Union) {
-        if (fieldIndexToInitUnion == SIZE_MAX && !curStruct.name.empty()) {
-            // init by memory copy
-            entryValue = PrinterUtils::convertBytesToUnion(
-                curStruct.name,
-                arrayView(byteArray, lazyPointersArray,
-                          types::Type::createSimpleTypeFromName("utbot_byte"),
-                          curStruct.size,
-                          offsetInBits, usage)->getEntryValue(nullptr));
-            dirtyInitializedStruct = false;
-        }
-        if (fieldIndexToInitUnion != SIZE_MAX) {
-            dirtyInitializedStruct = false;
-        }
+    if (!isInitializedStruct && !curStruct.name.empty() && !anonymousField) {
+        // init by memory copy
+        entryValue = PrinterUtils::convertBytesToStruct(
+            curStruct.name,
+            arrayView(byteArray, lazyPointersArray,
+                      types::Type::createSimpleTypeFromName("utbot_byte"),
+                      curStruct.size,
+                      offsetInBits, usage)->getEntryValue(nullptr));
+        isInitializedStruct = true;
+        dirtyInitializedStruct = false;
+    }
+    if (!isInitializedStruct) {
+        dirtyInitializedStruct = false;
     }
     return std::make_shared<StructValueView>(curStruct, subViews, entryValue,
-                                             anonymousField, dirtyInitializedStruct, fieldIndexToInitUnion);
+                                             anonymousField, isInitializedStruct, dirtyInitializedStruct, fieldIndexToInitUnion);
 }
 
 std::string KTestObjectParser::primitiveCharView(const types::Type &type, std::string value) {
