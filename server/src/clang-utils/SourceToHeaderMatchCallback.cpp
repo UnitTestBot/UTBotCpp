@@ -305,7 +305,7 @@ void SourceToHeaderMatchCallback::generateWrapper(const VarDecl *decl) const {
     policy.SuppressInitializers = 1;
 
     /*
-     * get_var_wrapper {
+     * get_pointer_to_var_wrapper {
      * return &var;
      * }
      */

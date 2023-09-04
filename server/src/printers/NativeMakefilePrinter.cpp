@@ -415,8 +415,8 @@ namespace printer {
         artifacts.push_back(getRelativePath(testExecutablePath));
     }
     fs::path NativeMakefilePrinter::getTestExecutablePath(const fs::path &sourcePath) const {
-        return Paths::removeExtension(
-            Paths::removeExtension(Paths::getRecompiledFile(testGen->projectContext, sourcePath)));
+        fs::path recompiledFile = Paths::getRecompiledFile(testGen->projectContext, sourcePath);
+        return Paths::mangleExtensions(recompiledFile);
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(const NativeMakefilePrinter &baseMakefilePrinter,
