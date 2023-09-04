@@ -14,6 +14,7 @@ struct ListStruct {
 
 struct MainStruct {
     struct ListStruct list;
+    const char **name;
 };
 
 int func_with_multi_dim_pointer(struct MainStruct **str);

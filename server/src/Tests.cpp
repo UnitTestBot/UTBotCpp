@@ -774,7 +774,8 @@ void KTestObjectParser::assignAllLazyPointers(
             testCase.lazyReferences.emplace_back(
                 fromPtr.varName, toPtrName,
                 PrinterUtils::initializePointerToVar(fromPtr.type.baseType(), toPtrName,
-                                                     fromPtr.type.getDimension()));
+                                                     fromPtr.type.getDimension(),
+                                                     fromPtr.type.isConstQualifiedValue()));
         }
     }
 }
@@ -1233,13 +1234,15 @@ KTestObjectParser::getLazyPointerView(const std::vector<UTBotKTestObject> &objec
             initReferences.emplace_back(
                 name, ptr_element->name,
                 PrinterUtils::initializePointerToVar(paramType.baseType(), ptr_element->name,
-                                                     paramType.getDimension()));
+                                                     paramType.getDimension(),
+                                                     paramType.isConstQualifiedValue()));
     }
     if (lazyPointer || ptr_element != objects.end()) {
             res = PrinterUtils::C_NULL;
     }
     return std::make_shared<JustValueView>(
-        PrinterUtils::initializePointer(paramType.baseType(), res, paramType.getDimension()));
+        PrinterUtils::initializePointer(paramType.baseType(), res, paramType.getDimension(),
+                                        paramType.isConstQualifiedValue()));
 }
 
 bool Tests::MethodDescription::operator==(const Tests::MethodDescription &other) const {

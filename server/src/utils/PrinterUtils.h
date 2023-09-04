@@ -75,6 +75,8 @@ namespace PrinterUtils {
 
     std::string getFieldAccess(const std::string &objectName, const types::Field &field);
 
+    std::string getConstQualifier(bool constQualifiedValue);
+
     std::string fillVarName(std::string const &temp, std::string const &varName);
 
     void appendIndicesToVarName(std::string &varName, const std::vector<size_t> &sizes, size_t offset);
@@ -95,11 +97,13 @@ namespace PrinterUtils {
 
     std::string initializePointer(const std::string &type,
                                   const std::string &value,
-                                  size_t additionalPointersCount);
+                                  size_t additionalPointersCount,
+                                  bool pointerToConstQualifiedValue);
 
     std::string initializePointerToVar(const std::string &type,
                                        const std::string &varName,
-                                       size_t additionalPointersCount);
+                                       size_t additionalPointersCount,
+                                       bool pointerToConstQualifiedValue);
 
     std::string generateNewVar(int cnt);
 

@@ -27,7 +27,7 @@ namespace PrinterUtils {
     }
 
     std::string getterDecl(const std::string &returnTypeName,
-                                   const std::string &wrapperName) {
+                           const std::string &wrapperName) {
         std::string gName = getterName(wrapperName);
         return StringUtils::stringFormat("%s %s()", returnTypeName, gName);
     }
@@ -44,6 +44,10 @@ namespace PrinterUtils {
             return objectName + "." + fieldName;
         }
         return StringUtils::stringFormat("access_private::%s(%s)", fieldName, objectName);
+    }
+
+    std::string getConstQualifier(bool constQualifiedValue) {
+        return constQualifiedValue ? "const " : "";
     }
 
     std::string fillVarName(std::string const &access, std::string const &varName) {
@@ -66,21 +70,25 @@ namespace PrinterUtils {
 
     std::string initializePointer(const std::string &type,
                                   const std::string &value,
-                                  size_t additionalPointersCount) {
+                                  size_t additionalPointersCount,
+                                  bool pointerToConstQualifiedValue) {
         if (value == C_NULL || std::stoull(value) == 0) {
             return C_NULL;
         } else {
             std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
-            return StringUtils::stringFormat("(%s%s) 0x%lx", type, additionalPointers,
+            std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
+            return StringUtils::stringFormat("(%s%s%s) 0x%lx", qualifier, type, additionalPointers,
                                              std::stoull(value));
         }
     }
 
     std::string initializePointerToVar(const std::string &type,
                                        const std::string &varName,
-                                       size_t additionalPointersCount) {
+                                       size_t additionalPointersCount,
+                                       bool pointerToConstQualifiedValue) {
         std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
-        return StringUtils::stringFormat("(%s%s) &%s", type, additionalPointers, varName);
+        std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
+        return StringUtils::stringFormat("(%s%s%s) &%s", qualifier, type, additionalPointers, varName);
     }
 
     std::string generateNewVar(int cnt) {
