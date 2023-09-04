@@ -66,16 +66,31 @@ namespace printer {
         }
     }
 
-    static void removeLinkerFlag(std::string &argument, std::string const &flag) {
+    static bool removeLinkerFlag(std::string &argument, std::string const &flag, bool isFlagNext) {
         auto options = StringUtils::split(argument, ',');
         size_t erased = CollectionUtils::erase_if(options, [&flag](std::string const &option) {
-            return StringUtils::startsWith(option, flag);
+            return StringUtils::startsWith(option, flag + '=');
         });
-        if (erased == 0) {
-            return;
+        std::vector<std::string> result;
+        for (std::string const &option : options) {
+            if (option == flag) {
+                isFlagNext = true;
+                erased++;
+                continue;
+            }
+            if (isFlagNext && option != "-Wl") {
+                isFlagNext = false;
+                erased++;
+                continue;
+            }
+            result.push_back(option);
         }
-        argument = StringUtils::joinWith(options, ",");
+        if (erased == 0) {
+            return false;
+        }
+        argument = StringUtils::joinWith(result, ",");
         eraseIfWlOnly(argument);
+        return isFlagNext;
     }
 
     // transforms -Wl,<arg>,<arg2>... to <arg> <arg2>...
@@ -92,27 +107,12 @@ namespace printer {
         argument = StringUtils::joinWith(options, " ");
     }
 
-    static void removeScriptFlag(std::string &argument) {
-        removeLinkerFlag(argument, "--version-script");
+    static bool removeScriptFlag(std::string &argument, bool isFlagNext) {
+        return removeLinkerFlag(argument, "--version-script", isFlagNext);
     }
 
-    static void removeSonameFlag(std::string &argument) {
-        auto options = StringUtils::split(argument, ',');
-        bool isSonameNext = false;
-        std::vector<std::string> result;
-        for (std::string const &option : options) {
-            if (option == "-soname") {
-                isSonameNext = true;
-                continue;
-            }
-            if (isSonameNext) {
-                isSonameNext = false;
-                continue;
-            }
-            result.push_back(option);
-        }
-        argument = StringUtils::joinWith(result, ",");
-        eraseIfWlOnly(argument);
+    static bool removeSonameFlag(std::string &argument, bool isFlagNext) {
+        return removeLinkerFlag(argument, "-soname", isFlagNext);
     }
 
     NativeMakefilePrinter::NativeMakefilePrinter(
@@ -378,9 +378,10 @@ namespace printer {
                        StringUtils::startsWith(argument, libraryDirOption) ||
                        StringUtils::startsWith(argument, linkFlag);
             });
+            bool isScriptNext = false, isSonameNext = false;
             for (std::string &argument : dynamicLinkCommand.getCommandLine()) {
-                removeScriptFlag(argument);
-                removeSonameFlag(argument);
+                isScriptNext = removeScriptFlag(argument, isScriptNext);
+                isSonameNext = removeSonameFlag(argument, isSonameNext);
             }
             dynamicLinkCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
             dynamicLinkCommand.addFlagsToBegin(
@@ -539,9 +540,10 @@ namespace printer {
                                 CompilationUtils::getCompilerName(linkCommand.getBuildTool())));
                     }
                     std::vector <std::string> libraryDirectoriesFlags;
+                    bool isScriptNext = false, isSonameNext = false;
                     for (std::string &argument : linkCommand.getCommandLine()) {
-                        removeScriptFlag(argument);
-                        removeSonameFlag(argument);
+                        isScriptNext = removeScriptFlag(argument, isScriptNext);
+                        isSonameNext = removeSonameFlag(argument, isSonameNext);
                         auto optionalLibraryAbsolutePath =
                                 getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
