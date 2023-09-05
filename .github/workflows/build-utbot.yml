@@ -86,8 +86,8 @@ jobs:
         run: |
           export VERSION=$(date '+%Y.%m').$GITHUB_RUN_NUMBER
           export RUN_INFO=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          chmod +x docker/action-scripts/build-utbot.sh
-          ./docker/action-scripts/build-utbot.sh
+          chmod +x docker/action-scripts/build-clean-utbot.sh
+          ./docker/action-scripts/build-clean-utbot.sh
       - name: Run Integration Tests
         run: |
           chmod +x docker/action-scripts/build-vsix.sh
@@ -137,8 +137,8 @@ jobs:
 
       - name: Build UTBot
         run: |
-          chmod +x docker/action-scripts/build-utbot.sh
-          ./docker/action-scripts/build-utbot.sh
+          chmod +x docker/action-scripts/build-clean-utbot.sh
+          ./docker/action-scripts/build-clean-utbot.sh
 
       - name: Generate tests
         run: |
