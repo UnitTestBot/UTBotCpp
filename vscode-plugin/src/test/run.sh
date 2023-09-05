@@ -14,7 +14,7 @@ echo "VSCODE_VERSION_DIR=$VSCODE_VERSION_DIR"
 export DISPLAY=':99.0'
 Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
 
-$PROJECT_DIR/server/build/utbot server > /dev/null 2>&1 &
+$UTBOT_ALL/server-install/utbot server > /dev/null 2>&1 &
 
 #Executing the test suite
 #TODO: fetch workspace folders automatically from .vscode/launch.json
