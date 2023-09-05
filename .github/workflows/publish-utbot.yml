@@ -77,8 +77,8 @@ jobs:
           ./docker/action-scripts/build-clion-plugin.sh
       - name: build UTBot
         run: |
-          chmod +x docker/action-scripts/build-utbot.sh
-          ./docker/action-scripts/build-utbot.sh
+          chmod +x docker/action-scripts/build-clean-utbot.sh
+          ./docker/action-scripts/build-clean-utbot.sh
         shell: bash
       - name: prepare UTBot release for Ubuntu
         run: |
