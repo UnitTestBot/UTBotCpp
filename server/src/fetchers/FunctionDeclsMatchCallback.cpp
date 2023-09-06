@@ -173,8 +173,13 @@ void FunctionDeclsMatchCallback::addFunctionPointer(
             LOG_S(WARNING) << "Type '" << name << "' fetch as function pointer but can't get functionType";
         }
     } else if (type.isArrayOfPointersToFunction()) {
-        functionPointers[name] = ParamsHandler::getFunctionPointerDeclaration(
-                qualType->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>(), name,
-                sourceManager, true);
+        const clang::FunctionType *functionType = qualType->getPointeeType()->getPointeeType()->getAs<clang::FunctionType>();
+        if (functionType) {
+            functionPointers[name] = ParamsHandler::getFunctionPointerDeclaration(
+                    functionType, name,
+                    sourceManager, true);
+        } else {
+            LOG_S(WARNING) << "Type '" << name << "' fetch as function pointer but can't get functionType";
+        }
     }
 }
