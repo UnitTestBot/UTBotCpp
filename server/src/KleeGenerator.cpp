@@ -97,8 +97,9 @@ static std::string getUTBotClangCompilerPath(fs::path clientCompilerPath) {
     }
 }
 
-static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
+static const std::unordered_set <std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
         "--coverage",
+        "-lgcov",
         "-fbranch-target-load-optimize",
         "-fcx-fortran-rules",
         "-fipa-cp-clone",
