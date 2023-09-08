@@ -251,7 +251,7 @@ namespace {
         static auto coverageAndResultsWriter =
             std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, true, ErrorMode::FAILING, false };
+        utbot::SettingsContext settingsContext{ true, true, 15, 0, true, true, ErrorMode::FAILING, false, false};
         coverageGenerator.generate(true, settingsContext);
         EXPECT_FALSE(coverageGenerator.hasExceptions());
     }
@@ -350,10 +350,10 @@ namespace {
 
         static auto coverageAndResultsWriter =
                 std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
-        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(),
-                                                       coverageAndResultsWriter.get() };
+        CoverageAndResultsGenerator coverageGenerator{runRequest.get(),
+                                                      coverageAndResultsWriter.get()};
         utbot::SettingsContext settingsContext{
-                true, false, 45, 30, false, true, ErrorMode::FAILING, false
+                true, false, 45, 30, false, true, ErrorMode::FAILING, false, false
         };
         coverageGenerator.generate(false, settingsContext);
 

@@ -513,6 +513,11 @@
 					"default": false,
 					"markdownDescription": "%unittestbot.testsGeneration.differentVariablesOfTheSameType.description%"
 				},
+				"unittestbot.testsGeneration.skipObjectWithoutSource": {
+					"type": "boolean",
+					"default": false,
+					"markdownDescription": "%unittestbot.testsGeneration.skipObjectWithoutSource.description%"
+				},
 				"unittestbot.testsGeneration.errorMode": {
 					"type": "string",
 					"enum": [

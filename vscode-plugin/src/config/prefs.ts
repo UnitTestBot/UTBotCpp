@@ -48,6 +48,8 @@ export class Prefs {
 
     public static DIFF_VARS_PREF = 'unittestbot.testsGeneration.differentVariablesOfTheSameType';
 
+    public static SKIP_OBJECT_PREF = 'unittestbot.testsGeneration.skipObjectWithoutSource';
+
 
     public static isLocalHost(): boolean {
         const host = Prefs.getAsset(Prefs.HOST_PREF);
@@ -86,7 +88,8 @@ export class Prefs {
         .setUsedeterministicsearcher(Prefs.useDeterministicSearcher())
         .setUsestubs(Prefs.useStubs())
         .setErrormode(Prefs.errorMode())
-        .setDifferentvariablesofthesametype(Prefs.differentVariablesOfTheSameType());
+        .setDifferentvariablesofthesametype(Prefs.differentVariablesOfTheSameType())
+        .setSkipObjectWithoutSource(Prefs.SkipObjectWithoutSource);
         return settingsContext;
     }
 
@@ -403,5 +406,9 @@ export class Prefs {
 
     public static differentVariablesOfTheSameType(): boolean {
         return this.getAssetBase(Prefs.DIFF_VARS_PREF, true);
+    }
+
+    public static skipObjectWithoutSource(): boolean {
+        return this.getAssetBase(Prefs.SKIP_OBJECT_PREF, true);
     }
 }

@@ -246,6 +246,7 @@ namespace Commands {
         [[nodiscard]] ErrorMode getErrorMode() const;
 
         [[nodiscard]] bool doDifferentVariablesOfTheSameType() const;
+        [[nodiscard]] bool getSkipObjectWithoutSource() const;
 
     private:
         CLI::Option_group *settingsContextOptions;
@@ -257,6 +258,7 @@ namespace Commands {
         bool noStubs = false;
         ErrorMode errorMode = ErrorMode::FAILING;
         bool differentVariablesOfTheSameType = false;
+        bool skipObjectWithoutSource = false;
     };
 };
 

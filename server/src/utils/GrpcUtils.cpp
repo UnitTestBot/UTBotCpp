@@ -37,7 +37,8 @@ namespace GrpcUtils {
                           bool useDeterministicSearcher,
                           bool useStubs,
                           ErrorMode errorMode,
-                          bool differentVariablesOfTheSameType) {
+                          bool differentVariablesOfTheSameType,
+                          bool skipObjectWithoutSource) {
         auto result = std::make_unique<testsgen::SettingsContext>();
         result->set_generateforstaticfunctions(generateForStaticFunctions);
         result->set_verbose(verbose);
@@ -47,6 +48,7 @@ namespace GrpcUtils {
         result->set_usestubs(useStubs);
         result->set_errormode(errorMode);
         result->set_differentvariablesofthesametype(differentVariablesOfTheSameType);
+        result->set_skipobjectwithoutsource(skipObjectWithoutSource);
         return result;
     }
 

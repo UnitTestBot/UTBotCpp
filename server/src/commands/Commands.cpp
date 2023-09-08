@@ -416,6 +416,10 @@ bool Commands::SettingsContextOptionGroup::doDifferentVariablesOfTheSameType() c
     return differentVariablesOfTheSameType;
 }
 
+bool Commands::SettingsContextOptionGroup::getSkipObjectWithoutSource() const {
+    return skipObjectWithoutSource;
+}
+
 Commands::RunTestsCommands::RunTestsCommands(Commands::MainCommands &commands) {
     runCommand = commands.getRunTestsCommand();
 
