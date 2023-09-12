@@ -69,10 +69,6 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         fs::path jsonFile = compileCommand.at("file").get<std::string>();
         fs::path sourceFile = Paths::getCCJsonFileFullPath(jsonFile, directory);
 
-        if (!Paths::isSourceFile(sourceFile)){
-            continue;
-        }
-
         std::vector<std::string> jsonArguments;
         if (compileCommand.contains("command")) {
             std::string command = compileCommand.at("command");
@@ -87,6 +83,13 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         objectInfo->command = utbot::CompileCommand(jsonArguments, directory, sourceFile);
         objectInfo->command.removeWerror();
         fs::path outputFile = objectInfo->getOutputFile();
+
+        if (!Paths::isSourceFile(sourceFile)) {
+            LOG_S(INFO) << "Skip non C/C++ file: \"" << sourceFile << "\"";
+            ignoredOutput.insert(outputFile);
+            continue;
+        }
+
         fs::path kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, projectContext.projectPath,
                                                                    Paths::getUTBotFiles(projectContext));
         fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
@@ -171,7 +174,7 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
         for (nlohmann::json const &jsonFile: linkCommand.at("files")) {
             auto filename = jsonFile.get<std::string>();
             fs::path currentFile = Paths::getCCJsonFileFullPath(filename, command.getDirectory());
-            if (Paths::skipFile(currentFile)){
+            if (ignoredOutput.count(currentFile)) {
                 continue;
             }
             targetInfo->addFile(currentFile);
@@ -180,8 +183,8 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
                     !CollectionUtils::containsKey(objectFileInfos,
                                                   relative(currentFile, directory))) {
                     throw CompilationDatabaseException(
-                        "compile_commands.json doesn't contain a command for object file " +
-                        currentFile.string());
+                            "compile_commands.json doesn't contain a command for object file " +
+                            currentFile.string());
                 }
                 if (CollectionUtils::containsKey(objectFileInfos, currentFile)) {
                     objectFileInfos[currentFile]->linkUnit = output;

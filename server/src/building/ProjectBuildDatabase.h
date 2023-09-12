@@ -19,7 +19,7 @@ public:
     ProjectBuildDatabase(fs::path buildCommandsJsonPath, fs::path serverBuildDir,
                          utbot::ProjectContext projectContext);
 
-    ProjectBuildDatabase(utbot::ProjectContext projectContext);
+    explicit ProjectBuildDatabase(utbot::ProjectContext projectContext);
 };
 
 
