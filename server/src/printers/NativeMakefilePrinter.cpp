@@ -20,11 +20,11 @@ namespace printer {
     using StringUtils::stringFormat;
 
     static const std::string STUB_OBJECT_FILES_NAME = "STUB_OBJECT_FILES";
-    static const std::string STUB_OBJECT_FILES = "$(STUB_OBJECT_FILES)";
+    static const std::string STUB_OBJECT_FILES = "$(" + STUB_OBJECT_FILES_NAME + ")";
 
     static const std::string FPIC_FLAG = "-fPIC";
     static const std::vector<std::string> SANITIZER_NEEDED_FLAGS = {
-        "-g", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls"
+            "-g", "-fno-omit-frame-pointer", "-fno-optimize-sibling-calls"
     };
     static const std::string STATIC_FLAG = "-static";
     static const std::string SHARED_FLAG = "-shared";

@@ -62,11 +62,13 @@ namespace utbot {
     }
 
     bool LinkCommand::isArchiveCommand() const {
-        return StringUtils::contains(getBuildTool().filename().c_str(), "ar");
+        return StringUtils::contains(getBuildTool().filename().c_str(), "ld") ||
+               StringUtils::contains(getBuildTool().filename().c_str(), "ar");
     }
 
     bool LinkCommand::isSharedLibraryCommand() const {
-        return CollectionUtils::contains(commandLine, "-shared");
+        return StringUtils::contains(getBuildTool().filename().c_str(), "ld") ||
+               CollectionUtils::contains(commandLine, "-shared");
     }
 
     void LinkCommand::initOutput() {
