@@ -240,6 +240,7 @@ protected:
     const utbot::ProjectContext projectContext;
     CollectionUtils::MapFileTo<std::vector<std::shared_ptr<ObjectFileInfo>>> sourceFileInfos;
     CollectionUtils::MapFileTo<std::shared_ptr<ObjectFileInfo>> objectFileInfos;
+    CollectionUtils::FileSet ignoredOutput;
     CollectionUtils::MapFileTo<std::shared_ptr<TargetInfo>> targetInfos;
     CollectionUtils::MapFileTo<std::vector<fs::path>> objectFileTargets;
 

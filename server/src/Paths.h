@@ -102,8 +102,6 @@ namespace Paths {
 
     bool isSubPathOf(const fs::path &base, const fs::path &sub);
 
-    bool skipFile(const fs::path &file);
-
     fs::path longestCommonPrefixPath(const fs::path &a, const fs::path &b);
 
     static inline fs::path replaceExtension(const fs::path &path, const std::string &newExt) {
