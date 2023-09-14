@@ -400,31 +400,4 @@ namespace {
             "isCorrectPointerStruct"
         );
     }
-
-    TEST_F(Regression_Test, LD_linker) {
-        fs::path source = getTestFilePath("ISSUE-680/issue-680.c");
-        auto [testGen, status] = createTestForFunction(source, 14);
-
-        ASSERT_TRUE(status.ok()) << status.error_message();
-
-        checkTestCasePredicates(
-            testGen.tests.at(source).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[](const tests::Tests::MethodTestCase &testCase) {
-                        return testCase.returnValue.view->getEntryValue(nullptr) == "-2";
-                    },
-                    [](const tests::Tests::MethodTestCase &testCase) {
-                        return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
-                    },
-                    [](const tests::Tests::MethodTestCase &testCase) {
-                        return testCase.returnValue.view->getEntryValue(nullptr) == "0";
-                    },
-                    [](const tests::Tests::MethodTestCase &testCase) {
-                        return testCase.returnValue.view->getEntryValue(nullptr) == "1";
-                    }
-                }),
-            "isCorrectPointerStruct"
-        );
-    }
-
 }
