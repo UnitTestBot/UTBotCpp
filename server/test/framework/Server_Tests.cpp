@@ -1574,6 +1574,43 @@ namespace {
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
+    TEST_F(Server_Test, Linkage_LD) {
+        std::string suite = "linkage-ld";
+        setSuite(suite);
+        static const std::string issue_c = getTestFilePath("issue-638.c");
+        auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 30, ErrorMode::FAILING);
+        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), issue_c);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests, 2);
+
+        auto testFilter = GrpcUtils::createTestFilterForProject();
+        auto runRequest = createCoverageAndResultsRequest(
+            projectName, suitePath, suitePath / "tests",
+            buildDirRelativePath, std::move(testFilter));
+        auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING, false};
+        coverageGenerator.generate(false, settingsContext);
+
+        ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());
+
+        auto resultMap = coverageGenerator.getTestResultMap();
+        auto tests = coverageGenerator.getTestsToLaunch();
+
+        ASSERT_FALSE(resultMap.empty());
+        EXPECT_EQ(resultMap.getNumberOfTests(), 2);
+
+        testUtils::checkStatuses(resultMap, tests);
+
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 2}};
+        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
+    }
+
     TEST_F(Server_Test, Assert_Fail) {
         std::string suite = "error";
         setSuite(suite);

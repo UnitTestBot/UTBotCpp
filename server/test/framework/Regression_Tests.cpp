@@ -400,5 +400,4 @@ namespace {
             "isCorrectPointerStruct"
         );
     }
-
 }
