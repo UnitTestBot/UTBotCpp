@@ -51,6 +51,7 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
         fillTargetInfoParents();
         createClangCompileCommandsJson();
     } catch (const std::exception &e) {
+        LOG_S(ERROR) << e.what();
         return;
     }
 }
@@ -90,8 +91,17 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
             continue;
         }
 
-        fs::path kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, projectContext.projectPath,
-                                                                   Paths::getUTBotFiles(projectContext));
+        fs::path kleeFilePathTemplate;
+        if (Paths::isSubPathOf(projectContext.projectPath, sourceFile)) {
+            kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, projectContext.projectPath,
+                                                              Paths::getUTBotFiles(projectContext));
+        } else {
+            LOG_S(WARNING)
+            << "Source file " << sourceFile << " outside of project root " << projectContext.projectPath;
+            kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, fs::path("/"),
+                                                              Paths::getUTBotFiles(projectContext) / "outside_of_project");
+        }
+
         fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
         objectInfo->kleeFilesInfo = std::make_shared<KleeFilesInfo>(kleeFile);
 
