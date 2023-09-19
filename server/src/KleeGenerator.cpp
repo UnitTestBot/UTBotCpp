@@ -97,9 +97,21 @@ static std::string getUTBotClangCompilerPath(fs::path clientCompilerPath) {
     }
 }
 
-static const std::unordered_set <std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
+static const std::unordered_set<std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE = {
         "--coverage",
         "-lgcov",
+        "-ftest-coverage",
+        "-fprofile-abs-path",
+        "-fprofile-dir",
+        "-fprofile-generate",
+        "-fprofile-info-section",
+        "-fprofile-note",
+        "-fprofile-prefix-path",
+        "-fprofile-prefix-map",
+        "-fprofile-update",
+        "-fprofile-filter-files",
+        "-fprofile-exclude-files",
+        "-fprofile-reproducible",
         "-fbranch-target-load-optimize",
         "-fcx-fortran-rules",
         "-fipa-cp-clone",
@@ -114,6 +126,9 @@ static const std::unordered_set <std::string> UNSUPPORTED_FLAGS_AND_OPTIONS_KLEE
         "-fno-tree-sinkclang-10",
         "-fpredictive-commoning",
         "-fprofile-dir",
+        "-fprofile-arcs",
+        "-p",
+        "-pg",
         "-freschedule-modulo-scheduled-loops",
         "-fsched2-use-superblocks",
         "-fsel-sched-reschedule-pipelined",

@@ -114,7 +114,7 @@ namespace Paths {
     }
 
     fs::path getCCJsonFileFullPath(const std::string &filename, const fs::path &directory) {
-        fs::path path1 = fs::path(filename);
+        fs::path path1(filename);
         fs::path path2 = fs::weakly_canonical(directory / path1);
         return fs::exists(path2) ? path2 : path1;
     }
