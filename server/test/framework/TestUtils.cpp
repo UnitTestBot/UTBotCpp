@@ -324,8 +324,11 @@ namespace testUtils {
                 "rm -rf build_clang && mkdir -p build_clang && cd build_clang && "
                 "export CC=%s && export CXX=%s",
                 Paths::getUTBotClang(), Paths::getUTBotClangPP());
-        default:
-            throw CompilationDatabaseException("Test build not implemented for current compiler");
+        default: {
+            std::string message = "Test build not implemented for current compiler";
+            LOG_S(ERROR) << message;
+            throw CompilationDatabaseException(message);
+        }
         }
     }
 
@@ -335,23 +338,26 @@ namespace testUtils {
         std::string result;
         std::string interceptor;
         switch (buildCommandsTool) {
-        case BuildCommandsTool::CMAKE_BUILD_COMMANDS_TOOL:
-            result += StringUtils::stringFormat(
-                "%s -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_EXPORT_LINK_COMMANDS=ON ..",
-                Paths::getCMake());
-            interceptor = "";
-            break;
-        case BuildCommandsTool::BEAR_BUILD_COMMANDS_TOOL:
-            result += StringUtils::stringFormat("%s ..", Paths::getCMake());
-            interceptor = Paths::getBear();
-            break;
-        case BuildCommandsTool::MAKE_BUILD_COMMANDS_TOOL:
-            result += "cd ..";
-            interceptor = Paths::getBear();
-            break;
-        default:
-            throw CompilationDatabaseException(
-                "Test build not implemented for current build commands tool");
+            case BuildCommandsTool::CMAKE_BUILD_COMMANDS_TOOL:
+                result += StringUtils::stringFormat(
+                        "%s -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_EXPORT_LINK_COMMANDS=ON ..",
+                        Paths::getCMake());
+                interceptor = "";
+                break;
+            case BuildCommandsTool::BEAR_BUILD_COMMANDS_TOOL:
+                result += StringUtils::stringFormat("%s ..", Paths::getCMake());
+                interceptor = Paths::getBear();
+                break;
+            case BuildCommandsTool::MAKE_BUILD_COMMANDS_TOOL:
+                result += "cd ..";
+                interceptor = Paths::getBear();
+                break;
+            default: {
+                std::string message =
+                        "Test build not implemented for current build commands tool"
+                LOG_S << message;
+                throw CompilationDatabaseException();
+            }
         }
         if (build) {
             result += StringUtils::stringFormat(" && %s %s -j8", interceptor, Paths::getMake());

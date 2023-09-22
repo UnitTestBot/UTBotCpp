@@ -6,8 +6,9 @@ namespace RequestEnvironment {
 
     const std::string &getClientId() {
         if (!clientId.has_value()) {
-            throw std::runtime_error(
-                "Client id was not initialized. Did you forget to call \"setThreadOptions\"?");
+            //TODO: Add more logs
+            std::string message = "Client id was not initialized. Did you forget to call \"setThreadOptions\"?";
+            throw std::runtime_error(message);
         }
         return clientId.value();
     }

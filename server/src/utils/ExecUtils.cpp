@@ -4,6 +4,7 @@ namespace ExecUtils {
     void throwIfCancelled() {
         auto context = RequestEnvironment::getServerContext();
         if (context && context->IsCancelled()) {
+            LOG_S(ERROR) << "Cancel";
             throw CancellationException();
         }
     }

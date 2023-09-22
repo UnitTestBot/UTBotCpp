@@ -9,7 +9,9 @@
 
 CPipe::CPipe() {
     if (pipe(fd)) {
-        throw std::runtime_error("Failed to create pipe");
+        std::string message = "Failed to create pipe";
+        LOG_S(ERROR) << message;
+        throw std::runtime_error(message);
     }
 }
 

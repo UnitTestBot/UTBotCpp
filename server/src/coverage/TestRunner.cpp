@@ -51,7 +51,8 @@ std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
                                                                 "see: \"%s\"",
                                                                 cmdGetAllTests.getFailedCommand(),
                                                                 logFilePath.value()));
-
+        std::string message = err.;
+        LOG_S(ERROR) << message;
         throw ExecutionProcessException(err, logFilePath.value());
     }
     if (out.empty()) {

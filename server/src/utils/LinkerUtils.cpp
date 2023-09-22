@@ -16,9 +16,12 @@ namespace LinkerUtils {
             return Paths::addSuffix(output, suffixForParentOfStubs);
         case BuildResult::Type::NO_STUBS:
             return output;
-        case BuildResult::Type::NONE:
-            throw UnImplementedException(StringUtils::stringFormat(
-                "Applying suffix for file %s which has invalid type", output));
+        case BuildResult::Type::NONE: {
+            std::string message = StringUtils::stringFormat(
+                    "Applying suffix for file %s which has invalid type", output);
+            LOG_S(ERROR) << message;
+            throw UnImplementedException(message);
+        }
         }
     }
 }

@@ -246,7 +246,8 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
             if (lineTestGen->needToAddPathFlag()) {
                 LOG_S(DEBUG) << "Added test line flag for file " << lineInfo->filePath;
                 fs::path flagFilePath =
-                        printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath), &testGen)
+                        printer::KleePrinter(&typesHandler, nullptr, Paths::getSourceLanguage(lineInfo->filePath),
+                                             &testGen)
                                 .addTestLineFlag(lineInfo, lineInfo->forAssert, testGen.projectContext);
                 pathSubstitution = {lineTestGen->filePath, flagFilePath};
             }
@@ -265,7 +266,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         auto selectedTargets = linker.getSelectedTargets();
         SourceToHeaderRewriter(testGen.projectContext, testGen.getTargetBuildDatabase()->compilationDatabase,
                                fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
-            .generateTestHeaders(testGen.tests, stubGen, selectedTargets, testGen.progressWriter);
+                .generateTestHeaders(testGen.tests, stubGen, selectedTargets, testGen.progressWriter);
         KleeRunner kleeRunner{testGen.projectContext, testGen.settingsContext};
         bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
         auto generationStartTime = std::chrono::steady_clock::now();
@@ -315,11 +316,14 @@ std::shared_ptr<LineInfo> Server::TestsGenServiceImpl::getLineInfo(LineTestGen &
                              lineTestGen.compileCommandsJsonPath);
     stmtFinder.findFunction();
     if (!stmtFinder.getLineInfo().initialized) {
-        throw NoTestGeneratedException(
-                "Maybe you tried to generate tests placing cursor on invalid line.");
+        LOG_S(ERROR) << "Cant generate for this line\n"
+                     << stmtFinder.getLineInfo().stmtString;
+        throw NoTestGeneratedException("Maybe you tried to generate tests placing cursor on invalid line.");
     }
     if (isSameType<AssertionTestGen>(lineTestGen) &&
         !StringUtils::contains(stmtFinder.getLineInfo().stmtString, "assert")) {
+        LOG_S(ERROR) << "No assert found on this line\n"
+                     << stmtFinder.getLineInfo().stmtString;
         throw NoTestGeneratedException("No assert found on this line.");
     }
     auto lineInfo = std::make_shared<LineInfo>(stmtFinder.getLineInfo());
@@ -343,6 +347,7 @@ std::string extractMessage(const loguru::Message &message) {
 void Server::logToClient(void *channel, const loguru::Message &message) {
     auto data = reinterpret_cast<WriterData *>(channel);
     if (data == nullptr) {
+        LOG_S(ERROR) << "Couldn't handle logging to client, data is null";
         throw BaseException("Couldn't handle logging to client, data is null");
     }
     std::vector<char> thread_name(LOGURU_BUFFER_SIZE);
@@ -361,6 +366,7 @@ void Server::logToClient(void *channel, const loguru::Message &message) {
 void Server::gtestLog(void *channel, const loguru::Message &message) {
     auto data = reinterpret_cast<WriterData *>(channel);
     if (data == nullptr) {
+        LOG_S(ERROR) << "Can't interpret gtest log channel";
         throw BaseException("Can't interpret gtest log channel");
     }
     std::vector<char> thread_name(LOGURU_BUFFER_SIZE);
@@ -661,6 +667,10 @@ Status Server::TestsGenServiceImpl::GetProjectTargets(ServerContext *context,
     } catch (CompilationDatabaseException const &e) {
         LOG_S(ERROR) << "Compilation database error: " << e.what();
         return failedToLoadCDbStatus(e);
+    } catch (std::exception const &e) {
+        std::string message = StringUtils::formatBuffer("Error during construct compilation database: %s", e.what());
+        LOG_S(ERROR) << message;
+        return {StatusCode::UNKNOWN, message};
     }
     return Status::OK;
 }
@@ -690,7 +700,7 @@ Status Server::TestsGenServiceImpl::GetFileTargets(ServerContext *context,
 
 RequestLockMutex &Server::TestsGenServiceImpl::getLock() {
     std::string const &client = RequestEnvironment::getClientId();
-    auto[iterator, inserted] = locks.try_emplace(client);
+    auto [iterator, inserted] = locks.try_emplace(client);
     return iterator->second;
 }
 

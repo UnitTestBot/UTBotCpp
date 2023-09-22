@@ -38,7 +38,9 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
                       fs::canonical(_buildCommandsJsonPath / "compile_commands.json"),
                       std::move(_projectContext)) {
     if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
-        throw CompilationDatabaseException("Couldn't open link_commands.json or compile_commands.json files");
+        std::string message = "Couldn't open link_commands.json or compile_commands.json files";
+        LOG_S(ERROR) << message;
+        throw CompilationDatabaseException(messsage);
     }
 
     try {
@@ -192,9 +194,11 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
                 if (!CollectionUtils::containsKey(objectFileInfos, currentFile) &&
                     !CollectionUtils::containsKey(objectFileInfos,
                                                   relative(currentFile, directory))) {
-                    throw CompilationDatabaseException(
+                    std::string message =
                             "compile_commands.json doesn't contain a command for object file " +
-                            currentFile.string());
+                            currentFile.string();
+                    LOG_S(ERROR) << message;
+                    throw CompilationDatabaseException(message);
                 }
                 if (CollectionUtils::containsKey(objectFileInfos, currentFile)) {
                     objectFileInfos[currentFile]->linkUnit = output;
@@ -261,10 +265,12 @@ void ProjectBuildDatabase::fillTargetInfoParents() {
     }
     for (auto &[library, parents]: parentTargets) {
         if (!CollectionUtils::containsKey(targetInfos, library)) {
-            throw CompilationDatabaseException(
+            std::string message =
                     "link_commands.json doesn't contain a command for building library: " +
                     library.string() + "\nReferenced from command for: " +
-                    (parents.empty() ? "none" : parents[0].string()));
+                    (parents.empty() ? "none" : parents[0].string());
+            LOG_S(ERROR) << message;
+            throw CompilationDatabaseException(message);
         }
         targetInfos[library]->parentLinkUnits = std::move(parents);
     }

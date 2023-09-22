@@ -108,6 +108,7 @@ namespace printer {
         }
         return ss;
     }
+
     void Printer::printAlignmentIfExists(const std::optional<uint64_t> &alignment) {
         if (alignment.has_value()) {
             ss << stringFormat("__attribute__ ((aligned(%llu)))", alignment) << " ";
