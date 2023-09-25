@@ -1,21 +1,58 @@
-name: Publish wiki
+name: Documentation
+
 on:
-  workflow_dispatch:
-    branches: [main]
+  push:
+    branches:
+      - main
     paths:
-      - wiki
-      - .github/workflows/publish-wiki.yml
-concurrency:
-  group: publish-wiki
-  cancel-in-progress: true
-permissions:
-  contents: write
+      - "docs/**"
+  repository_dispatch:
+    types: [docs]
+  gollum:
+
+env:
+  GIT_AUTHOR_NAME: Actionbot
+  GIT_AUTHOR_EMAIL: actions@github.com
+  SYNC_CHANGES_REPO_NAME: docs-sync
+
 jobs:
-  publish-wiki:
+  job-sync-docs-to-wiki:
     runs-on: ubuntu-latest
+    if: github.event_name != 'gollum'
     steps:
-      - uses: actions/checkout@v3
-      - uses: impresscms-dev/strip-markdown-extensions-from-links-action@v1.0.0
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+      - name: Sync docs to wiki
+        uses: UnitTestBot/wiki-sync-action@main
         with:
-          path: wiki
-      - uses: Andrew-Chen-Wang/github-wiki-action@v4
+          source: docs
+          destination: wiki
+          token: ${{ secrets.ACCESS_TOKEN }}
+          gitAuthorName: ${{ env.GIT_AUTHOR_NAME }}
+          gitAuthorEmail: ${{ env.GIT_AUTHOR_EMAIL }}
+
+  job-sync-wiki-to-docs:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'gollum'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }} # allows us to push back to repo
+      - name: Sync Wiki to Docs
+        uses: UnitTestBot/wiki-sync-action@main
+        with:
+          source: wiki
+          destination: docs
+          token: ${{ secrets.ACCESS_TOKEN }}
+          gitAuthorName: ${{ env.GIT_AUTHOR_NAME }}
+          gitAuthorEmail: ${{ env.GIT_AUTHOR_EMAIL }}
+          branch: wiki_branch
+      - name: Create PR for success
+        run: |
+          BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+          if [[ "$BRANCH" != "main" ]]; then
+            gh pr create --fill
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.ACCESS_TOKEN }}
