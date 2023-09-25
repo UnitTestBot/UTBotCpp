@@ -668,7 +668,7 @@ Status Server::TestsGenServiceImpl::GetProjectTargets(ServerContext *context,
         LOG_S(ERROR) << "Compilation database error: " << e.what();
         return failedToLoadCDbStatus(e);
     } catch (std::exception const &e) {
-        std::string message = StringUtils::formatBuffer("Error during construct compilation database: %s", e.what());
+        std::string message = StringUtils::stringFormat("Error during construct compilation database: %s", e.what());
         LOG_S(ERROR) << message;
         return {StatusCode::UNKNOWN, message};
     }

@@ -40,7 +40,7 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
     if (!fs::exists(linkCommandsJsonPath) || !fs::exists(compileCommandsJsonPath)) {
         std::string message = "Couldn't open link_commands.json or compile_commands.json files";
         LOG_S(ERROR) << message;
-        throw CompilationDatabaseException(messsage);
+        throw CompilationDatabaseException(message);
     }
 
     try {

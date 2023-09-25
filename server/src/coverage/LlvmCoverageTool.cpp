@@ -155,7 +155,7 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
     CoverageMap coverageMap;
     fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
     if (!fs::exists(covJsonPath)) {
-        std::string message = "Can't found coverage.json at " << covJsonPath.string()
+        std::string message = StringUtils::stringFormat("Can't found coverage.json at %s", covJsonPath.string());
         LOG_S(ERROR) << message;
         throw CoverageGenerationException(message);
     }

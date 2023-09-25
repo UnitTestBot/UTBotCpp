@@ -26,7 +26,7 @@ fs::path CompilationDatabase::initBuildCompilerPath() {
             return compilerPath;
         }
     }
-    std::strin message = "Cannot detect compiler";
+    std::string message = "Cannot detect compiler";
     LOG_S(ERROR) << message;
     throw CompilationDatabaseException(message);
 }

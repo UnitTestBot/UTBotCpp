@@ -353,10 +353,9 @@ namespace testUtils {
                 interceptor = Paths::getBear();
                 break;
             default: {
-                std::string message =
-                        "Test build not implemented for current build commands tool"
-                LOG_S << message;
-                throw CompilationDatabaseException();
+                std::string message = "Test build not implemented for current build commands tool";
+                LOG_S(ERROR) << message;
+                throw CompilationDatabaseException(message);
             }
         }
         if (build) {

@@ -154,7 +154,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
         case TypeKind::UNKNOWN: {
             std::string errorMessage = "Unrecognized field of type '" + field.type.typeName() +
                                        "' in struct '" + curStruct.name + "'.";
-            LOG_S(ERROR) << message;
+            LOG_S(ERROR) << errorMessage;
             throw UnImplementedException(errorMessage);
         }
         default:
