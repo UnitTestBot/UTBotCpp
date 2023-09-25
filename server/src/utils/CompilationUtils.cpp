@@ -20,6 +20,7 @@ namespace CompilationUtils {
         auto compilationDatabase = CompilationDatabase::autoDetectFromDirectory(
             clangCompileCommandsJsonPath.string(), errorMessage);
         if (!errorMessage.empty()) {
+            LOG_S(ERROR) << errorMessage;
             throw CompilationDatabaseException(errorMessage);
         }
         return compilationDatabase;
@@ -64,8 +65,11 @@ namespace CompilationUtils {
                 return "build_clang";
             case CompilerName::CLANGXX:
                 return "build_clangxx";
-            default:
-                throw CompilationDatabaseException("Build directory for your compiler could not be determined");
+            default: {
+                std::string message = "Build directory for your compiler could not be determined";
+                LOG_S(ERROR) << message;
+                throw CompilationDatabaseException(message);
+            }
         }
     }
 
@@ -74,7 +78,9 @@ namespace CompilationUtils {
         fs::path compileCommandsJsonPath = projectContext.buildDir() / jsonFileName;
         fs::create_directories(Paths::getUTBotBuildDir(projectContext));
         if (!fs::exists(compileCommandsJsonPath)) {
-            throw CompilationDatabaseException("Can't find " + compileCommandsJsonPath.string());
+            std::string message = "Can't find " + compileCommandsJsonPath.string();
+            LOG_S(ERROR) << message;
+            throw CompilationDatabaseException(message);
         }
         std::ifstream ifs(compileCommandsJsonPath);
         json json = json::parse(ifs);
@@ -179,8 +185,11 @@ namespace CompilationUtils {
                 return Paths::getUTBotClang();
             case CompilerName::CLANGXX:
                 return Paths::getUTBotClangPP();
-            default:
-                throw CompilationDatabaseException("Couldn't get bundled compiler path for current compiler name");
+            default: {
+                std::string message = "Couldn't get bundled compiler path for current compiler name";
+                LOG_S(ERROR) << message;
+                throw CompilationDatabaseException(message);
+            }
         }
     }
 

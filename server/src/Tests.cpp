@@ -164,27 +164,33 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const std::vec
 
     for (size_t curPos = offsetInBits; curPos < offsetInBits + arraySizeInBits; curPos += elementLenInBits) {
         switch (typesHandler.getTypeKind(baseType)) {
-        case TypeKind::STRUCT_LIKE:
-            views.push_back(structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(baseType), curPos, usage));
-            break;
-        case TypeKind::ENUM:
-            views.push_back(enumView(byteArray, typesHandler.getEnumInfo(type), curPos, elementLenInBits));
-            break;
-        case TypeKind::PRIMITIVE:
-            views.push_back(primitiveView(byteArray, baseType, curPos, elementLenInBits));
-            break;
-        case TypeKind::OBJECT_POINTER:
-        case TypeKind::ARRAY:
-            LOG_S(ERROR) << "Invariant ERROR: base type is pointer/array: " << type.typeName();
-            // No break here
-        case TypeKind::UNKNOWN:
-            throw UnImplementedException(
-                std::string("Arrays don't support element type: " + type.typeName())
-            );
-        default:
-            std::string message = "Missing case for this TypeKind in switch";
-            LOG_S(ERROR) << message;
-            throw NoSuchTypeException(message);
+            case TypeKind::STRUCT_LIKE: {
+                views.push_back(
+                        structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(baseType), curPos, usage));
+                break;
+            }
+            case TypeKind::ENUM: {
+                views.push_back(enumView(byteArray, typesHandler.getEnumInfo(type), curPos, elementLenInBits));
+                break;
+            }
+            case TypeKind::PRIMITIVE: {
+                views.push_back(primitiveView(byteArray, baseType, curPos, elementLenInBits));
+                break;
+            }
+            case TypeKind::OBJECT_POINTER:
+            case TypeKind::ARRAY:
+                LOG_S(ERROR) << "Invariant ERROR: base type is pointer/array: " << type.typeName();
+                // No break here
+            case TypeKind::UNKNOWN: {
+                std::string message = "Arrays don't support element type: " + type.typeName();
+                LOG_S(ERROR) << message;
+                throw UnImplementedException(message);
+            }
+            default: {
+                std::string message = "Missing case for this TypeKind in switch";
+                LOG_S(ERROR) << message;
+                throw NoSuchTypeException(message);
+            }
         }
     }
 
@@ -240,14 +246,16 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::arrayView(const std::vector<c
                 break;
             case TypeKind::OBJECT_POINTER:
             case TypeKind::ARRAY:
-            case TypeKind::UNKNOWN:
-                throw UnImplementedException(
-                    std::string("Arrays don't support element type: " + type.typeName())
-                );
-            default:
+            case TypeKind::UNKNOWN: {
+                std::string message = "Arrays don't support element type: " + type.typeName();
+                LOG_S(ERROR) << message;
+                throw UnImplementedException(message);
+            }
+            default: {
                 std::string message = "Missing case for this TypeKind in switch";
                 LOG_S(ERROR) << message;
                 throw NoSuchTypeException(message);
+            }
         }
     }
     return std::make_shared<ArrayValueView>(subViews);
@@ -384,16 +392,17 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
             case TypeKind::FUNCTION_POINTER:
                 subViews.push_back(functionPointerView(curStruct.name, field.name));
                 break;
-            case TypeKind::UNKNOWN:
+            case TypeKind::UNKNOWN: {
                 // TODO: pointers
-                throw UnImplementedException(
-                    std::string("Structs don't support fields of type: " + field.type.typeName())
-                );
-
-            default:
+                std::string message = "Structs don't support fields of type: " + field.type.typeName();
+                LOG_S(ERROR) << message;
+                throw UnImplementedException(message);
+            }
+            default: {
                 std::string message = "Missing case for this TypeKind in switch";
                 LOG_S(ERROR) << message;
                 throw NoSuchTypeException(message);
+            }
         }
 
         if (!dirtyInitializedField && sizeOfFieldToInitUnion < fieldLen &&
@@ -646,7 +655,9 @@ void KTestObjectParser::assignTypeUnnamedVar(
 
         if (testCase.objects[curType.jsonInd].is_lazy) {
             if (types::TypesHandler::baseTypeIsVoid(paramType)) {
-                throw UnImplementedException("Lazy variable has baseType=void");
+                std::string message = "Lazy variable has baseType=void";
+                LOG_S(ERROR) << message;
+                throw UnImplementedException(message);
             }
 
             usages[curType.jsonInd] = types::PointerUsage::LAZY;
@@ -1220,8 +1231,11 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
                 return arrayView(rawData, kleeParam.pointers, paramType.baseTypeObj(),
                                  SizeUtils::bytesToBits(rawData.size()), 0, usage);
             }
-        case TypeKind::UNKNOWN:
-            throw UnImplementedException("No such type");
+        case TypeKind::UNKNOWN: {
+            std::string message = "No such type";
+            LOG_S(ERROR) << message;
+            throw UnImplementedException(message);
+        }
         default: {
             std::string message = "Missing case for this TypeKind in switch";
             LOG_S(ERROR) << message;

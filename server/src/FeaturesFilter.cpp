@@ -177,9 +177,10 @@ void FeaturesFilter::filter(utbot::SettingsContext const &settingsContext,
     }
     LOG_S(DEBUG) << statsMessage.str();
     if (!hasSupportedMethods && throwIfZeroFunctions) {
-        throw NoTestGeneratedException("Couldn't find any supported methods. "
-                                       "Please check if source directories are specified correctly. "
-                                       "See logs for more details about unsupported functions.");
+        std::string message = "Couldn't find any supported methods. "
+                              "Please check if source directories are specified correctly.";
+        LOG_S(ERROR) << message;
+        throw NoTestGeneratedException(message);
     }
 }
 

@@ -200,6 +200,7 @@ namespace StringUtils {
         } else if (s == "true") {
             return true;
         }
+        LOG_S(ERROR) << "Wrong bool value: " + s;
         throw std::invalid_argument("Wrong bool value: " + s);
     }
 

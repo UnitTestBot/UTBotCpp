@@ -109,7 +109,10 @@ bool Synchronizer::removeStubIfSourceAbsent(const StubOperator &stub) const {
             fs::remove(stub.getStubPath(testGen->projectContext));
             return true;
         } catch (const fs::filesystem_error &e) {
-            std::string message = StringUtils::stringFormat("Failed to delete stub file '%s'", stub.getStubPath(testGen->projectContext));
+            std::string message = StringUtils::stringFormat("Failed to delete stub file: '%s'",
+                                                            stub.getStubPath(testGen->projectContext));
+            LOG_S(ERROR) << message
+                         << e.what();
             throw FileSystemException(message, e);
         }
         return false;

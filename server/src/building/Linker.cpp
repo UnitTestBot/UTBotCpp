@@ -46,8 +46,9 @@ fs::path Linker::getSourceFilePath() {
     } else if (auto snippetTestGen = dynamic_cast<SnippetTestGen *>(&testGen)) {
         return snippetTestGen->filePath;
     } else {
-        throw BaseException(
-            "Couldn't handle test generation of current type in function getSourcePath");
+        std::string message = "Couldn't handle test generation of current type in function getSourcePath";
+        LOG_S(ERROR) << message;
+        throw BaseException(message);
     }
 }
 
@@ -241,6 +242,7 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
         for (auto &[fileName, tests] : testGen.tests) {
             if (!tests.isFilePresentedInCommands) {
                 if (isForOneFile()) {
+                    LOG_S(ERROR) << FileNotPresentedInCommandsException::createMessage(fileName);
                     throw FileNotPresentedInCommandsException(fileName);
                 } else {
                     LOG_S(WARNING) << FileNotPresentedInCommandsException::createMessage(fileName);
@@ -305,10 +307,14 @@ std::vector<tests::TestMethod> Linker::getTestMethods() {
         }
     }
     if (!isAnyOneLinked) {
-        throw CompilationDatabaseException("Couldn't link any files");
+        std::string message = "Couldn't link any files";
+        LOG_S(ERROR) << message;
+        throw CompilationDatabaseException(message);
     }
     if (testMethods.empty()) {
-        throw NoTestGeneratedException("Couldn't generate tests for any method");
+        std::string message = "Couldn't generate tests for any method";
+        LOG_S(ERROR) << message;
+        throw NoTestGeneratedException(message);
     }
     return testMethods;
 }
@@ -343,8 +349,9 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     LOG_S(DEBUG) << logStream.str();
     for (const auto &[objectFile, bitcodeFile] : bitcodeFiles) {
         if (!fs::exists(bitcodeFile)) {
-            throw CompilationDatabaseException("Trying to link file that doesn't exist: " +
-                                               bitcodeFile.string());
+            std::string message = "Trying to link file that doesn't exist: " + bitcodeFile.string();
+            LOG_S(ERROR) << message;
+            throw CompilationDatabaseException(message);
         }
     }
 
@@ -390,6 +397,7 @@ Result<Linker::LinkResult> Linker::link(const CollectionUtils::MapFileTo<fs::pat
     bool success = irParser.parseModule(targetBitcode, testGen.tests);
     if (!success) {
         std::string message = StringUtils::stringFormat("Couldn't parse module: %s", targetBitcode);
+        LOG_S(ERROR) << message;
         throw CompilationDatabaseException(message);
     }
 

@@ -15,7 +15,9 @@ TargetBuildDatabase::TargetBuildDatabase(BuildDatabase *baseBuildDatabase, const
         if (new_target.has_value()) {
             target = new_target.value();
         } else {
-            throw CompilationDatabaseException("Can't find target: " + targetOrSourcePath);
+            std::string message = "Can't find target: " + targetOrSourcePath;
+            LOG_S(ERROR) << message;
+            throw CompilationDatabaseException(message);
         }
     }
 

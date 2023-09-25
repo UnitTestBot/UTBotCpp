@@ -77,6 +77,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                 LOG_S(WARNING) << FileNotPresentedInCommandsException::createMessage(filePath);
                 return;
             } else {
+                LOG_S(ERROR) << FileNotPresentedInCommandsException::createMessage(filePath);
                 throw FileNotPresentedInCommandsException(filePath);
             }
         }
@@ -85,6 +86,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
                 LOG_S(WARNING) << FileNotPresentedInArtifactException::createMessage(filePath);
                 return;
             } else {
+                LOG_S(ERROR) << FileNotPresentedInArtifactException::createMessage(filePath);
                 throw FileNotPresentedInArtifactException(filePath);
             }
         }

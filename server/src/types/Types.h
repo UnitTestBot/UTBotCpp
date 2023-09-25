@@ -672,7 +672,9 @@ namespace types {
             if (CollectionUtils::containsKey(someMap, id)) {
                 return someMap.at(id);
             }
-            throw NoSuchTypeException(StringUtils::stringFormat("Type with id=%llu can't be found.", id));
+            std::string message = StringUtils::stringFormat("Type with id=%llu can't be found.", id);
+            LOG_S(ERROR) << message;
+            throw NoSuchTypeException(message);
         }
     };
 

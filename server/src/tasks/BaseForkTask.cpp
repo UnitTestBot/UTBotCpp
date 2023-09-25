@@ -141,6 +141,7 @@ void BaseForkTask::checkForExist(pid_t pid) {
 
 void BaseForkTask::throwIfNoSuchProcess() {
     if (errno == ESRCH) {
+        LOG_S(ERROR) << "NO such process";
         throw NoSuchProcessException(strerror(errno));
     }
 }

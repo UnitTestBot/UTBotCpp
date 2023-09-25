@@ -27,7 +27,8 @@ KleeGenerator::KleeGenerator(BaseTestGen *testGen, types::TypesHandler &typesHan
         fs::create_directories(this->testGen->serverBuildDir);
         fs::create_directories(Paths::getLogDir(this->testGen->projectContext.projectName));
     } catch (const fs::filesystem_error &e) {
-        throw FileSystemException("create_directories failed", e);
+        LOG_S(ERROR) << StringUtils::stringFormat("Create_directories failed: %s", e.what());
+        throw FileSystemException("Create_directories failed", e);
     }
 }
 
@@ -208,6 +209,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
                 "Couldn't get command for klee file: %s\n"
                 "Please check if directory is in source directories in UTBot extension settings: %s",
                 sourceFilePath, hintPath.parent_path().string());
+        LOG_S(ERROR) << message;
         throw BaseException(std::move(message));
     }
     auto &command = optionalCommand.value();
@@ -287,7 +289,11 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                     LOG_S(MAX) << "Klee filepath: " << outFiles.back();
                 } else {
                     if (lineInfo) {
-                        throw BaseException("Couldn't compile klee file for current line.");
+                        std::string message = StringUtils::stringFormat(
+                                "Couldn't compile klee file for current line: %s:%d-%d", lineInfo->filePath,
+                                lineInfo->begin, lineInfo->end);
+                        LOG_S(ERROR) << message;
+                        throw BaseException(message);
                     }
                     auto tempKleeFilePath = Paths::addSuffix(kleeFilePath, "_temp");
                     fs::copy(kleeFilePath, tempKleeFilePath, fs::copy_options::overwrite_existing);
@@ -327,7 +333,10 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                     if (kleeBitcodeFile.isSuccess()) {
                         outFiles.emplace_back(kleeBitcodeFile.getOpt().value());
                     } else {
-                        throw BaseException("Couldn't compile klee file from correct methods.");
+                        std::string message = StringUtils::stringFormat(
+                                "Couldn't compile klee file from correct methods");
+                        LOG_S(ERROR) << message;
+                        throw BaseException(message);
                     }
                 }
             });

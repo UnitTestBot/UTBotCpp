@@ -343,7 +343,9 @@ int types::Type::indexOfFirstPointerInTypeKinds() const {
         }
         index++;
     }
-    throw BaseException("Couldn't find pointer in type " + typeName());
+    std::string message = "Couldn't find pointer in type " + typeName();
+    LOG_S(ERROR) << message;
+    throw BaseException(message);
 }
 
 bool types::Type::isOneDimensionPointer() const {
@@ -633,8 +635,9 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
     if (isPointerToFunction(type)) {
         return SizeUtils::bytesToBits(sizeof(char *));
     }
-
-    throw UnImplementedException("Type is unknown for: " + type.typeName());
+    std::string message = "Type is unknown for: " + type.typeName();
+    LOG_S(ERROR) << message;
+    throw UnImplementedException(message);
 }
 
 std::string types::TypesHandler::removeConstPrefix(const TypeName &type) {

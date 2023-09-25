@@ -82,13 +82,16 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             auto res = makefileCommand.run();
             if (res.status == 0) {
                 if (res.output.empty()) {
-                    throw CoverageGenerationException(
-                            "Coverage result empty. See logs for more information.");
+                    std::string message = "Coverage result empty. See logs for more information.";
+                    LOG_S(ERROR) << message;
+                    throw CoverageGenerationException(message);
                 }
                 return StringUtils::split(res.output, '\n').back();
             }
-            throw CoverageGenerationException(
-                "Coverage generation failed. See logs for more information.");
+            std::string message =
+                    "Coverage generation failed. See logs for more information.";
+            LOG_S(ERROR) << message;
+            throw CoverageGenerationException(message);
         });
 
     fs::path mainProfdataPath = Paths::getMainProfdataPath(projectContext);
@@ -122,12 +125,14 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             std::unordered_set<std::string>>(testFilenames, [this](fs::path const &testFilePath) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
             if (!fs::exists(sourcePath)) {
-                throw CoverageGenerationException(
-                    "Coverage generation: Source file `"
-                    + sourcePath.string()
-                    + "` does not exist. Wrongly restored from test file `"
-                    + testFilePath.string()
-                    + "`.");
+                std::string message =
+                        "Coverage generation: Source file `"
+                        + sourcePath.string()
+                        + "` does not exist. Wrongly restored from test file `"
+                        + testFilePath.string()
+                        + "`.";
+                LOG_S(ERROR) << message;
+                throw CoverageGenerationException(message);
             }
             return sourcePath.string();
         });
@@ -150,8 +155,9 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
     CoverageMap coverageMap;
     fs::path covJsonPath = Paths::getCoverageJsonPath(projectContext);
     if (!fs::exists(covJsonPath)) {
-        LOG_S(ERROR) << "Can't found coverage.json at " << covJsonPath.string();
-        throw CoverageGenerationException("Can't found coverage.json at " + covJsonPath.string());
+        std::string message = StringUtils::stringFormat("Can't found coverage.json at %s", covJsonPath.string());
+        LOG_S(ERROR) << message;
+        throw CoverageGenerationException(message);
     }
     try {
         LOG_S(INFO) << "Reading coverage.json";
@@ -191,7 +197,9 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
 
         return coverageMap;
     } catch (const std::exception &e) {
-        throw CoverageGenerationException("Can't parse coverage.json at " + covJsonPath.string());
+        std::string message = "Can't parse coverage.json at " + covJsonPath.string();
+        LOG_S(ERROR) << message;
+        throw CoverageGenerationException(message);
     }
 }
 

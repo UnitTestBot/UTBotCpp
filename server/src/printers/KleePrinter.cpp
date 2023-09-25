@@ -55,7 +55,9 @@ void KleePrinter::genOpenFiles(const tests::Tests::MethodDescription &testMethod
         if (param.type.isFilePointer()) {
             std::string strFileName(1, fileName++);
             if (fileName > 'A' + types::Type::symFilesCount) {
-                throw UnImplementedException("Number of files is too much.");
+                std::string message = "Number of files is too much.";
+                LOG_S(ERROR) << message;
+                throw UnImplementedException(message);
             }
 
             strDeclareVar(param.type.typeName(), param.name,

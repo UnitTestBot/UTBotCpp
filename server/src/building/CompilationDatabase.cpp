@@ -26,7 +26,9 @@ fs::path CompilationDatabase::initBuildCompilerPath() {
             return compilerPath;
         }
     }
-    throw CompilationDatabaseException("Cannot detect compiler");
+    std::string message = "Cannot detect compiler";
+    LOG_S(ERROR) << message;
+    throw CompilationDatabaseException(message);
 }
 
 const clang::tooling::CompilationDatabase &

@@ -15,6 +15,8 @@ namespace FileSystemUtils {
         try {
             fs::create_directories(parentPath);
         } catch (const fs::filesystem_error &e) {
+            LOG_S(ERROR) << "create_directories failed, path: " + parentPath.string()
+                         << e.what();
             throw FileSystemException("create_directories failed, path: " + parentPath.string(), e);
         }
         std::ofstream os(path);
@@ -23,13 +25,16 @@ namespace FileSystemUtils {
             std::error_code ec;
             ec.assign(errno, std::system_category());
             auto error = fs::filesystem_error("writing to file failed, file: " + path.string(), ec);
+            LOG_S(ERROR) << "writing to file failed, file: " + path.string();
             throw FileSystemException(error);
         }
     }
 
     void removeAll(const fs::path &path) {
         if (path == fs::current_path().root_path()) {
-            throw BaseException("Couldn't remove files from root directory.");
+            std::string message = "Couldn't remove files from root directory.";
+            LOG_S(ERROR) << message;
+            throw BaseException(message);
         }
         fs::remove_all(path);
     }

@@ -25,8 +25,11 @@ std::unique_ptr<CoverageTool> getCoverageTool(const std::string &compileCommands
     case CompilerName::CLANG:
     case CompilerName::CLANGXX:
         return std::make_unique<LlvmCoverageTool>(projectContext, progressWriter);
-    default:
-        throw CoverageGenerationException("Coverage tool for your compiler is not implemented");
+    default: {
+        std::string message = "Coverage tool for your compiler is not implemented";
+        LOG_S(ERROR) << message;
+        throw CoverageGenerationException(message);
+    }
     }
 }
 

@@ -37,7 +37,9 @@ namespace StringUtils {
         size_t size = snprintf(nullptr, 0, format.c_str(), internal::extractCString(std::forward<Args>(args))...) +
                       1; // Extra space for '\0'
         if (size <= 0) {
-            throw std::runtime_error("Error during formatting.");
+            std::string message = "Error during formatting.";
+            LOG_S(ERROR) << message;
+            throw std::runtime_error(message);
         }
         formatBuffer.resize(std::max(formatBuffer.size(), size));
         snprintf(formatBuffer.data(), size, format.c_str(), internal::extractCString(std::forward<Args>(args))...);
