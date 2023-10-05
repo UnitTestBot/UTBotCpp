@@ -148,8 +148,8 @@ namespace printer {
                                  const Tests::MethodTestCase &testCase,
                                  bool verbose);
 
-        void printStubVariables(const Tests::MethodDescription &methodDescription,
-                                const Tests::MethodTestCase &testCase);
+        void printStubVariablesForParam(const Tests::MethodDescription &methodDescription,
+                                        const Tests::MethodTestCase &testCase);
 
         void printPointerParameter(const tests::Tests::MethodDescription &methodDescription,
                                    const Tests::MethodTestCase &testCase,

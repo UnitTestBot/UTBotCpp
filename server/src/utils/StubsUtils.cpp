@@ -12,11 +12,6 @@ namespace StubsUtils {
         } else {
             stubName = stubName.substr(1);
         }
-        return stubName;
-    }
-
-    std::string getStubSymbolicVarName(const std::string &methodName) {
-        std::string stubName = methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
         StringUtils::replaceColon(stubName);
         return stubName;
     }
@@ -32,5 +27,21 @@ namespace StubsUtils {
         }
         StringUtils::replaceColon(stubName);
         return stubName;
+    }
+
+    std::string getStubSymbolicVarName(const std::string &methodName, const std::string &parentMethodName) {
+        std::string stubName;
+        if (!parentMethodName.empty()) {
+            stubName = parentMethodName + "_";
+        }
+        stubName += methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
+        StringUtils::replaceColon(stubName); //TODO has problem for stubs
+        return stubName;
+    }
+
+    std::string tryGetMethodNameFromStubSymbolic(const std::string &symbolicName) {
+        std::string methodName = symbolicName.substr(
+                0, symbolicName.size() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.size());
+        return methodName;
     }
 }

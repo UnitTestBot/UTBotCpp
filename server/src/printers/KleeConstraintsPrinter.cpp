@@ -125,11 +125,12 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
                                       access,
                                       field.type,
                                       isStruct ? state.endString : false,
-                                      state.depth + 1 };
-        std::string stubFunctionName = StubsUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name);
+                                      state.depth + 1};
+        std::string stubFunctionName = StubsUtils::getFunctionPointerAsStructFieldStubName(curStruct.name, field.name,
+                                                                                           false);
         switch (typesHandler->getTypeKind(field.type)) {
-        case TypeKind::STRUCT_LIKE:
-            genConstraintsForStruct(newState);
+            case TypeKind::STRUCT_LIKE:
+                genConstraintsForStruct(newState);
             break;
         case TypeKind::ENUM:
             genConstraintsForEnum(newState);

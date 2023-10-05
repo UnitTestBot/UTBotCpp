@@ -206,10 +206,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         types::TypesHandler typesHandler{testGen.types, sizeContext};
         testGen.progressWriter->writeProgress("Generating stub files", 0.0);
         StubGen stubGen(testGen);
-
-        Synchronizer synchronizer(&testGen, &sizeContext);
-        synchronizer.synchronize(typesHandler);
-
+        {
+            Synchronizer synchronizer(&testGen, &sizeContext);
+            synchronizer.synchronize(typesHandler);
+        }
         std::shared_ptr<LineInfo> lineInfo = nullptr;
         auto lineTestGen = dynamic_cast<LineTestGen *>(&testGen);
 
@@ -253,9 +253,10 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
             }
         }
         auto generator = std::make_shared<KleeGenerator>(&testGen, typesHandler, pathSubstitution);
-
-        ReturnTypesFetcher returnTypesFetcher{&testGen};
-        returnTypesFetcher.fetch(testGen.progressWriter, synchronizer.getTargetSourceFiles());
+        {
+            ReturnTypesFetcher returnTypesFetcher(&testGen);
+            returnTypesFetcher.fetch(testGen.progressWriter);
+        }
         LOG_S(DEBUG) << "Temporary build directory path: " << testGen.serverBuildDir;
         generator->buildKleeFiles(testGen.tests, lineInfo);
         generator->handleFailedFunctions(testGen.tests);
@@ -562,8 +563,10 @@ Status Server::TestsGenServiceImpl::ProcessProjectStubsRequest(BaseTestGen *test
                     testGen->compileCommandsJsonPath, false);
 
     fetcher.fetchWithProgress(testGen->progressWriter, logMessage);
-    Synchronizer synchronizer(testGen, &sizeContext);
-    synchronizer.synchronize(typesHandler);
+    {
+        Synchronizer synchronizer(testGen, &sizeContext);
+        synchronizer.synchronize(typesHandler);
+    }
     stubsWriter->writeResponse(testGen->synchronizedStubs, testGen->projectContext.testDirPath);
     return Status::OK;
 }

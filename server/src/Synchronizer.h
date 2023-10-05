@@ -27,29 +27,33 @@ class Synchronizer {
 
     [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getOutdatedStubs() const;
 
-    long long getFileOutdatedTime(const fs::path &filePath) const;
+    [[nodiscard]] long long getFileOutdatedTime(const fs::path &filePath) const;
 
-    bool isProbablyOutdatedStubs(const fs::path &srcFilePath) const;
+    [[nodiscard]] bool isProbablyOutdatedStubs(const fs::path &srcFilePath) const;
 
-    bool isProbablyOutdatedWrappers(const fs::path &srcFilePath) const;
+    [[nodiscard]] bool isProbablyOutdatedWrappers(const fs::path &srcFilePath) const;
 
-    bool removeStubIfSourceAbsent(const StubOperator &stub) const;
+    [[nodiscard]] bool removeStubIfSourceAbsent(const StubOperator &stub) const;
 
     void synchronizeStubs(std::unordered_set<StubOperator, HashUtils::StubHash> &outdatedStubs,
                           const types::TypesHandler &typesHandler);
+
     void synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths,
                              const types::TypesHandler &typesHandler) const;
 
     std::shared_ptr<CompilationDatabase>
     createStubsCompilationDatabase(
-        std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
-        const fs::path &ccJsonStubDirPath) const;
+            std::unordered_set<StubOperator, HashUtils::StubHash> &stubFiles,
+            const fs::path &ccJsonStubDirPath) const;
 
-    void prepareDirectory(fs::path const& stubDirectory);
+    void prepareDirectory(fs::path const &stubDirectory);
 
     static std::unordered_set<StubOperator, HashUtils::StubHash>
 
     getStubSetFromSources(const CollectionUtils::FileSet &paths);
+
+    [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getStubsFiles() const;
+
 public:
     static std::unordered_set<StubOperator, HashUtils::StubHash>
 
@@ -60,10 +64,6 @@ public:
     Synchronizer(BaseTestGen *testGen, types::TypesHandler::SizeContext *sizeContext);
 
     void synchronize(const types::TypesHandler &typesHandler);
-
-    [[nodiscard]] const CollectionUtils::FileSet &getTargetSourceFiles() const;
-    [[nodiscard]] const CollectionUtils::FileSet &getProjectSourceFiles() const;
-    [[nodiscard]] std::unordered_set<StubOperator, HashUtils::StubHash> getStubsFiles() const;
 };
 
 

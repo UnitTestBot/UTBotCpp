@@ -209,10 +209,11 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const std::vec
     return std::make_shared<ArrayValueView>(views);
 }
 
-std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(const std::optional<std::string> &scopeName,
-                                                                            const std::string &methodName, const std::string &paramName) {
+std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(
+        const std::optional <std::string> &scopeName,
+        const std::string &methodName, const std::string &paramName) {
     std::string value =
-        StubsUtils::getFunctionPointerStubName(scopeName, methodName, paramName).substr(1);
+            StubsUtils::getFunctionPointerStubName(scopeName, methodName, paramName, false).substr(1);
     return std::make_shared<FunctionPointerView>(value);
 }
 
@@ -1165,20 +1166,20 @@ void KTestObjectParser::processStubParamValue(
     const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
     std::vector<RawKleeParam> &rawKleeParams) {
     for (const auto &kleeParam : rawKleeParams) {
-        if (StringUtils::endsWith(kleeParam.paramName, PrinterUtils::KLEE_SYMBOLIC_SUFFIX)) {
-            std::string methodName = kleeParam.paramName.substr(
-                0, kleeParam.paramName.size() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.size());
+        std::string methodName = StubsUtils::tryGetMethodNameFromStubSymbolic(kleeParam.paramName);
+        if (!methodName.empty()) {
             if (!CollectionUtils::containsKey(methodNameToReturnTypeMap, methodName)) {
                 LOG_S(WARNING) << "Method name \"" << methodName << "\" was not fetched, skipping";
                 continue;
             }
-            auto type = typesHandler.getReturnTypeToCheck(methodNameToReturnTypeMap.at(methodName));
-            Tests::TypeAndVarName typeAndVarName{ type, kleeParam.paramName };
+            auto type = types::Type::createArray(
+                    typesHandler.getReturnTypeToCheck(methodNameToReturnTypeMap.at(methodName)));
+            Tests::TypeAndVarName typeAndVarName{type, kleeParam.paramName};
             auto testParamView =
-                testParameterView(kleeParam, typeAndVarName, types::PointerUsage::PARAMETER,
-                                  testCaseDescription.objects, testCaseDescription.lazyReferences);
+                    testParameterView(kleeParam, typeAndVarName, types::PointerUsage::PARAMETER,
+                                      testCaseDescription.objects, testCaseDescription.lazyReferences);
             testCaseDescription.stubValues.emplace_back(kleeParam.paramName, 0, testParamView);
-            testCaseDescription.stubValuesTypes.emplace_back(type, kleeParam.paramName, 0);
+            testCaseDescription.stubValuesTypes.emplace_back(type, kleeParam.paramName, std::nullopt);
         }
     }
 }

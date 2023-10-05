@@ -51,6 +51,10 @@ public:
 
     std::shared_ptr<TargetBuildDatabase> getTargetBuildDatabase();
 
+    const CollectionUtils::FileSet &getTargetSourceFiles() const;
+
+    const CollectionUtils::FileSet &getProjectSourceFiles() const;
+
     std::shared_ptr<const BuildDatabase::ObjectFileInfo>
     getClientCompilationUnitInfo(const fs::path &path, bool fullProject = false) const;
 

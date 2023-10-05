@@ -3,8 +3,10 @@
 #include <utility>
 #include "utils/StubsUtils.h"
 
-void StubsStorage::registerFunctionPointerStub(const std::string &methodName, std::shared_ptr<types::FunctionInfo> functionInfo) {
-    _functionPointers[StubsUtils::getStubSymbolicVarName(methodName + "_" + functionInfo->name)] = std::move(functionInfo);
+void StubsStorage::registerFunctionPointerStub(const std::string &methodName,
+                                               std::shared_ptr<types::FunctionInfo> functionInfo) {
+    _functionPointers[StubsUtils::getStubSymbolicVarName(functionInfo->name, methodName)] = std::move(
+            functionInfo);
 }
 
 std::optional<std::shared_ptr<types::FunctionInfo>>

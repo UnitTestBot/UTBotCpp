@@ -10,9 +10,12 @@
 class StubsStorage {
 public:
     void registerFunctionPointerStub(const std::string &methodName, std::shared_ptr<types::FunctionInfo>);
-    std::optional<std::shared_ptr<types::FunctionInfo>> getFunctionPointerByKTestObjectName(const std::string &objectName);
+
+    std::optional<std::shared_ptr<types::FunctionInfo>>
+    getFunctionPointerByKTestObjectName(const std::string &objectName);
+
 private:
-    std::unordered_map<std::string, std::shared_ptr<types::FunctionInfo>> _functionPointers;
+    std::unordered_map<std::string, std::shared_ptr<types::FunctionInfo>> _functionPointers{};
 };
 
 

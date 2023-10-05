@@ -388,15 +388,17 @@ namespace printer {
                                                  const types::TypesHandler &typesHandler,
                                                  const std::string &prefix,
                                                  const std::string &suffix,
-                                                 const std::string &methodName,
-                                                 const std::string &nameForStub,
+                                                 const std::string &parentMethodName,
                                                  bool makeStatic) {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(nameForStub);
+        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodCopy.name, parentMethodName);
+        if (methodCopy.name != StubsUtils::tryGetMethodNameFromStubSymbolic(stubSymbolicVarName)) {
+            LOG_S(WARNING) << "Can't generate symbolic value for \"" << stubSymbolicVarName << "\" function";
+            return ss;
+        }
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
-            stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName + "_" + nameForStub);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -541,14 +543,15 @@ namespace printer {
         }
     }
 
-    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
+    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription &testMethod) {
         std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
-        for (const auto& testCase: testMethod.testCases) {
+        for (const auto &testCase: testMethod.testCases) {
             for (size_t i = 0; i < testCase.stubValues.size(); i++) {
-                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
+                std::string utype = testCase.stubValuesTypes[i].type.usedType();
+                symbolicNamesToTypesMap[testCase.stubValues[i].name + "[]"] = utype.substr(0, utype.size() - 1);
             }
         }
-        for (const auto& [name, type]: symbolicNamesToTypesMap) {
+        for (const auto &[name, type]: symbolicNamesToTypesMap) {
             strDeclareVar("extern \"C\" " + type, name);
         }
     }
@@ -564,7 +567,7 @@ namespace printer {
             strTypedefFunctionPointer(*fInfo, typedefName);
         }
         strStubForMethod(tests::Tests::MethodDescription::fromFunctionInfo(*fInfo), *typesHandler,
-                         stubName, "stub", methodName, fInfo->name, makeStatic);
+                         stubName, "stub", methodName, makeStatic);
     }
 
     void
