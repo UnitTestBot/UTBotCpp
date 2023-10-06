@@ -118,8 +118,7 @@ std::string SourceToHeaderRewriter::generateStubHeader(const tests::Tests &tests
     << "Stubs feature for C++ sources has not been tested thoroughly; some problems may occur";
     auto sourceDeclarations = generateSourceDeclarations(sourceFilePath, true, false);
     long long creationTime = TimeUtils::convertFileToSystemClock(fs::file_time_type::clock::now())
-            .time_since_epoch()
-            .count();
+            .time_since_epoch().count();
     printer::StubsPrinter stubsPrinter(Paths::getSourceLanguage(sourceFilePath));
     stubsPrinter.ss << StringUtils::stringFormat(
             "//%s\n"
@@ -129,7 +128,7 @@ std::string SourceToHeaderRewriter::generateStubHeader(const tests::Tests &tests
             "%s\n",
             std::to_string(creationTime), Copyright::GENERATED_C_CPP_FILE_HEADER,
             sourceDeclarations.externalDeclarations);
-    for (const auto &[methodName, methodDescription] : tests.methods) {
+    for (const auto &[methodName, methodDescription]: tests.methods) {
         std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName, "");
         if (!types::TypesHandler::omitMakeSymbolic(methodDescription.returnType)) {
             stubsPrinter.strDeclareArrayVar(types::Type::createArray(methodDescription.returnType), stubSymbolicVarName,

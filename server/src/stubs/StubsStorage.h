@@ -11,6 +11,7 @@ class StubsStorage {
 public:
     void registerStub(const std::string &methodName, std::shared_ptr<types::FunctionInfo>,
                       std::optional<fs::path> stubsHeaderPath = std::nullopt);
+
     std::optional<std::shared_ptr<types::FunctionInfo>>
     getFunctionInfoByKTestObjectName(const std::string &objectName) const;
 

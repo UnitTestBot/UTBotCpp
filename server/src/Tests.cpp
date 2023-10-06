@@ -28,10 +28,10 @@ const Tests::MethodParam &tests::Tests::getStdinMethodParam() {
 }
 
 Tests::MethodDescription::MethodDescription()
-        : suiteTestCases{{ Tests::DEFAULT_SUITE_NAME, std::vector<int>() },
-                         { Tests::ERROR_SUITE_NAME,   std::vector<int>() }},
-          codeText{{ Tests::DEFAULT_SUITE_NAME, std::string() },
-                   { Tests::ERROR_SUITE_NAME,   std::string() }},
+        : suiteTestCases{{Tests::DEFAULT_SUITE_NAME, std::vector<int>()},
+                         {Tests::ERROR_SUITE_NAME,   std::vector<int>()}},
+          codeText{{Tests::DEFAULT_SUITE_NAME, std::string()},
+                   {Tests::ERROR_SUITE_NAME,   std::string()}},
           modifiers{} {
     stubsParamStorage = std::make_shared<StubsStorage>();
     stubsStorage = std::make_shared<StubsStorage>();
@@ -211,7 +211,7 @@ std::shared_ptr<ArrayValueView> KTestObjectParser::multiArrayView(const std::vec
 }
 
 std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(
-        const std::optional <std::string> &scopeName,
+        const std::optional<std::string> &scopeName,
         const std::string &methodName, const std::string &paramName) {
     std::string value =
             StubsUtils::getFunctionPointerStubName(scopeName, methodName, paramName, false).substr(1);
@@ -747,16 +747,15 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
 
 void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                           const Tests::MethodDescription &methodDescription) {
-    for (auto const &obj : testCase.objects) {
+    for (auto const &obj: testCase.objects) {
         std::optional<std::shared_ptr<FunctionInfo>>
                 maybeFunctionInfo = methodDescription.stubsParamStorage->getFunctionInfoByKTestObjectName(obj.name);
-//                maybeFunctionInfo = methodDescription.stubsStorage->getFunctionPointerByKTestObjectName(obj.name);
         if (maybeFunctionInfo.has_value()) {
             types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
             std::shared_ptr<AbstractValueView> stubView =
-                testParameterView({ obj.name, obj.bytes, obj.pointers }, { stubType, obj.name },
-                                  PointerUsage::PARAMETER, testCase.objects,
-                                  testCase.lazyReferences, methodDescription);
+                    testParameterView({obj.name, obj.bytes, obj.pointers}, {stubType, obj.name},
+                                      PointerUsage::PARAMETER, testCase.objects,
+                                      testCase.lazyReferences, methodDescription);
             testCase.stubParamValues.emplace_back(obj.name, 0, stubView);
             testCase.stubParamTypes.emplace_back(stubType, obj.name, std::nullopt);
         }
@@ -990,19 +989,19 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
         const auto kleeResParam =
                 getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
         auto paramType = methodDescription.returnType.maybeReturnArray()
-                             ? methodDescription.returnType
-                             : methodDescription.returnType.baseTypeObj();
-        const Tests::TypeAndVarName returnParam = { paramType, KleeUtils::RESULT_VARIABLE_NAME };
+                         ? methodDescription.returnType
+                         : methodDescription.returnType.baseTypeObj();
+        const Tests::TypeAndVarName returnParam = {paramType, KleeUtils::RESULT_VARIABLE_NAME};
         const auto testReturnView = testParameterView(
-            kleeResParam, returnParam, PointerUsage::RETURN, testCaseDescription.objects,
-            testCaseDescription.lazyReferences, methodDescription);
+                kleeResParam, returnParam, PointerUsage::RETURN, testCaseDescription.objects,
+                testCaseDescription.lazyReferences, methodDescription);
         testCaseDescription.returnValue = {
-            KleeUtils::RESULT_VARIABLE_NAME,
-            types::TypesHandler::isObjectPointerType(methodDescription.returnType), testReturnView
+                KleeUtils::RESULT_VARIABLE_NAME,
+                types::TypesHandler::isObjectPointerType(methodDescription.returnType), testReturnView
         };
     } else {
-        testCaseDescription.returnValue = { KleeUtils::RESULT_VARIABLE_NAME, false,
-                                            std::make_shared<VoidValueView>() };
+        testCaseDescription.returnValue = {KleeUtils::RESULT_VARIABLE_NAME, false,
+                                           std::make_shared<VoidValueView>()};
     }
 
     const auto kleePathFlagIterator = getKleeParam(rawKleeParams, KLEE_PATH_FLAG);
@@ -1182,13 +1181,13 @@ void KTestObjectParser::processStubParamValue(
     }
 }
 
-    std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
-    const KTestObjectParser::RawKleeParam &kleeParam,
-    const Tests::TypeAndVarName &param,
-    PointerUsage usage,
-    const std::vector<UTBotKTestObject> &objects,
-    std::vector<InitReference> &initReferences,
-    const std::optional<const Tests::MethodDescription> &testingMethod) {
+std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
+        const KTestObjectParser::RawKleeParam &kleeParam,
+        const Tests::TypeAndVarName &param,
+        PointerUsage usage,
+        const std::vector<UTBotKTestObject> &objects,
+        std::vector<InitReference> &initReferences,
+        const std::optional<const Tests::MethodDescription> &testingMethod) {
     const auto &rawData = kleeParam.rawData;
     const auto &paramType = param.type;
     switch (typesHandler.getTypeKind(paramType)) {

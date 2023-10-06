@@ -47,16 +47,16 @@ StubGen::findStubFilesBySignatures(const std::vector<tests::Tests::MethodDescrip
     fetcher.fetchWithProgress(testGen.progressWriter, "Finding stub files", true);
     CollectionUtils::FileSet stubFilesSet;
     auto signatureNamesSet = CollectionUtils::transformTo<std::unordered_set<std::string>>(
-        signatures,
-        [&](const tests::Tests::MethodDescription &signature) { return signature.name; });
-    for (const auto &[filePath, stub] : stubFilesMap) {
-        for (const auto &[methodName, methodDescription] : stub.methods) {
+            signatures,
+            [&](const tests::Tests::MethodDescription &signature) { return signature.name; });
+    for (const auto &[filePath, stub]: stubFilesMap) {
+        for (const auto &[methodName, methodDescription]: stub.methods) {
             if (CollectionUtils::contains(signatureNamesSet, methodName)) {
                 stubFilesSet.insert(filePath);
                 auto stubInfo = std::make_shared<types::FunctionInfo>(methodDescription.toFunctionInfo());
-                for (auto &[_, tests] : testGen.tests) {
-                    for (auto &[_, method] : tests.methods) {
-                        method.stubsStorage->registerStub("", stubInfo, ((fs::path)filePath).replace_extension(".h"));
+                for (auto &[_, tests]: testGen.tests) {
+                    for (auto &[_, method]: tests.methods) {
+                        method.stubsStorage->registerStub("", stubInfo, ((fs::path) filePath).replace_extension(".h"));
                     }
                 }
             }

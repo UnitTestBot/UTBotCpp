@@ -15,9 +15,6 @@ namespace StubsUtils {
                                                         bool omitSuffix);
 
     std::string getStubSymbolicVarName(const std::string &methodName, const std::string &parentMethodName);
-
-    std::string tryGetMethodNameFromStubSymbolic(const std::string &symbolicName);
-
 }
 
 #endif //UTBOTCPP_STUBUTILS_H

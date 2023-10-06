@@ -82,6 +82,7 @@ private:
     std::shared_ptr<FileToStringSet> structsDeclared = std::make_shared<FileToStringSet>();
 public:
     [[nodiscard]] std::shared_ptr<FileToStringSet> getStructsToDeclare() const;
+
 private:
     // For functions
     bool fetchFunctionBodies;

@@ -35,13 +35,7 @@ namespace StubsUtils {
             stubName = parentMethodName + "_";
         }
         stubName += methodName + PrinterUtils::KLEE_SYMBOLIC_SUFFIX;
-        StringUtils::replaceColon(stubName); //TODO has problem for stubs
+        StringUtils::replaceColon(stubName);
         return stubName;
-    }
-
-    std::string tryGetMethodNameFromStubSymbolic(const std::string &symbolicName) {
-        std::string methodName = symbolicName.substr(
-                0, symbolicName.size() - PrinterUtils::KLEE_SYMBOLIC_SUFFIX.size());
-        return methodName;
     }
 }

@@ -202,8 +202,6 @@ namespace printer {
                                          const Tests::MethodDescription& testMethod,
                                          bool forKlee);
 
-//        void writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod);
-
         void writeStubsForStructureFields(const Tests &tests);
 
         void writeStubsForParameters(const Tests &tests);

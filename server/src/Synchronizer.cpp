@@ -227,7 +227,7 @@ Synchronizer::createStubsCompilationDatabase(StubSet &stubFiles,
 void Synchronizer::synchronizeWrappers(const CollectionUtils::FileSet &outdatedSourcePaths,
                                        const types::TypesHandler &typesHandler) const {
     auto sourceFilesNeedToRegenerateWrappers = outdatedSourcePaths;
-    for (fs::path const &sourceFilePath : testGen->getTargetSourceFiles()) {
+    for (fs::path const &sourceFilePath: testGen->getTargetSourceFiles()) {
         if (!CollectionUtils::contains(sourceFilesNeedToRegenerateWrappers, sourceFilePath)) {
             auto wrapperFilePath =
                 Paths::getWrapperFilePath(testGen->projectContext, sourceFilePath);
