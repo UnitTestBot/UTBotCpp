@@ -33,6 +33,7 @@ Tests::MethodDescription::MethodDescription()
           codeText{{ Tests::DEFAULT_SUITE_NAME, std::string() },
                    { Tests::ERROR_SUITE_NAME,   std::string() }},
           modifiers{} {
+    stubsParamStorage = std::make_shared<StubsStorage>();
     stubsStorage = std::make_shared<StubsStorage>();
 }
 
@@ -747,8 +748,9 @@ size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndNam
 void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                           const Tests::MethodDescription &methodDescription) {
     for (auto const &obj : testCase.objects) {
-        std::optional<std::shared_ptr<FunctionInfo>> maybeFunctionInfo =
-            methodDescription.stubsStorage->getFunctionPointerByKTestObjectName(obj.name);
+        std::optional<std::shared_ptr<FunctionInfo>>
+                maybeFunctionInfo = methodDescription.stubsParamStorage->getFunctionInfoByKTestObjectName(obj.name);
+//                maybeFunctionInfo = methodDescription.stubsStorage->getFunctionPointerByKTestObjectName(obj.name);
         if (maybeFunctionInfo.has_value()) {
             types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
             std::shared_ptr<AbstractValueView> stubView =
@@ -983,10 +985,10 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
         processSymbolicFiles(testCaseDescription, rawKleeParams);
     }
 
-    processStubParamValue(testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
+    processStubParamValue(methodDescription, testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
         const auto kleeResParam =
-            getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
+                getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
         auto paramType = methodDescription.returnType.maybeReturnArray()
                              ? methodDescription.returnType
                              : methodDescription.returnType.baseTypeObj();
@@ -1162,29 +1164,25 @@ void KTestObjectParser::processParamPostValue(Tests::TestCaseDescription &testCa
 }
 
 void KTestObjectParser::processStubParamValue(
-    Tests::TestCaseDescription &testCaseDescription,
-    const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-    std::vector<RawKleeParam> &rawKleeParams) {
-    for (const auto &kleeParam : rawKleeParams) {
-        std::string methodName = StubsUtils::tryGetMethodNameFromStubSymbolic(kleeParam.paramName);
-        if (!methodName.empty()) {
-            if (!CollectionUtils::containsKey(methodNameToReturnTypeMap, methodName)) {
-                LOG_S(WARNING) << "Method name \"" << methodName << "\" was not fetched, skipping";
-                continue;
-            }
-            auto type = types::Type::createArray(
-                    typesHandler.getReturnTypeToCheck(methodNameToReturnTypeMap.at(methodName)));
-            Tests::TypeAndVarName typeAndVarName{type, kleeParam.paramName};
+        const Tests::MethodDescription &methodDescription,
+        Tests::TestCaseDescription &testCaseDescription,
+        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+        std::vector<RawKleeParam> &rawKleeParams) {
+    for (const auto &kleeParam: rawKleeParams) {
+        auto maybeFunctionInfo = methodDescription.stubsStorage->getFunctionInfoByKTestObjectName(kleeParam.paramName);
+        if (maybeFunctionInfo.has_value()) {
+            types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
+            Tests::TypeAndVarName typeAndVarName{stubType, kleeParam.paramName};
             auto testParamView =
                     testParameterView(kleeParam, typeAndVarName, types::PointerUsage::PARAMETER,
                                       testCaseDescription.objects, testCaseDescription.lazyReferences);
             testCaseDescription.stubValues.emplace_back(kleeParam.paramName, 0, testParamView);
-            testCaseDescription.stubValuesTypes.emplace_back(type, kleeParam.paramName, std::nullopt);
+            testCaseDescription.stubValuesTypes.emplace_back(stubType, kleeParam.paramName, std::nullopt);
         }
     }
 }
 
-std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
+    std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
     const KTestObjectParser::RawKleeParam &kleeParam,
     const Tests::TypeAndVarName &param,
     PointerUsage usage,

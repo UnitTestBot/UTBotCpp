@@ -200,15 +200,14 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
     for (const StubOperator &outdatedStub : outdatedStubs) {
         fs::path stubPath = outdatedStub.getStubPath(testGen->projectContext);
         Tests const &methodDescription = stubFilesMap[stubPath];
+        tests::Tests tests = StubGen::mergeSourceFileIntoStub(
+                methodDescription, sourceFilesMap.at(outdatedStub.getSourceFilePath()));
         if (outdatedStub.isHeader()) {
-            std::string code = sourceToHeaderRewriter.generateStubHeader(outdatedStub.getSourceFilePath());
+            std::string code = sourceToHeaderRewriter.generateStubHeader(tests, outdatedStub.getSourceFilePath());
             testGen->synchronizedStubs.emplace_back(stubPath, code);
         } else {
-            tests::Tests newStubFile = StubGen::mergeSourceFileIntoStub(
-                methodDescription, sourceFilesMap.at(outdatedStub.getSourceFilePath()));
             printer::StubsPrinter stubsPrinter(Paths::getSourceLanguage(stubPath));
-            Stubs stubFile =
-                stubsPrinter.genStubFile(newStubFile, typesHandler, testGen->projectContext);
+            Stubs stubFile = stubsPrinter.genStubFile(tests, typesHandler, testGen->projectContext);
             testGen->synchronizedStubs.emplace_back(stubFile);
         }
     }
