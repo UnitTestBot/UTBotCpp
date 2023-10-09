@@ -419,13 +419,15 @@ void KleePrinter::genParamsDeclarations(
 bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod,
                                       const Tests::MethodParam &param) {
     std::string stubFunctionName =
-        StubsUtils::getFunctionPointerStubName(testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
-                                                 testMethod.name, param.name);
+            StubsUtils::getFunctionPointerStubName(
+                    testMethod.isClassMethod() ? std::make_optional(testMethod.classObj->name) : std::nullopt,
+                    testMethod.name, param.name, false);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(testMethod.name, param.name, false), param.name,
                       stubFunctionName, param.alignment);
     } else if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
-        strDeclareArrayOfFunctionPointerVar(getTypedefFunctionPointer(testMethod.name, param.name, false), param.name, stubFunctionName);
+        strDeclareArrayOfFunctionPointerVar(getTypedefFunctionPointer(testMethod.name, param.name, false), param.name,
+                                            stubFunctionName);
     } else if (types::TypesHandler::isObjectPointerType(param.type)) {
         return genPointerParamDeclaration(param);
     } else if (types::TypesHandler::isArrayType(param.type)) {

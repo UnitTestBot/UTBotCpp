@@ -53,17 +53,11 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
             }
         }
 
-        if (!typesHandler.omitMakeSymbolic(methodCopy.returnType)) {
-            std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(method.name);
-            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
-                               types::PointerUsage::PARAMETER);
-        }
-	
-	if (methodCopy.sourceBody) {
+        if (methodCopy.sourceBody) {
             strFunctionDecl(methodCopy, " ");
             ss << methodCopy.sourceBody.value() << NL;
         } else {
-            strStubForMethod(methodCopy, typesHandler, "", "", "", methodCopy.name);
+            strStubForMethod(methodCopy, typesHandler, "", "", "", false);
         };
         ss << NL;
     }

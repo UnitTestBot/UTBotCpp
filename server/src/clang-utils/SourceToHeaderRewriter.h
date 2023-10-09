@@ -59,7 +59,7 @@ public:
 
     std::string generateTestHeader(const fs::path &sourceFilePath, const Tests &test, bool externFromStub);
 
-    std::string generateStubHeader(const fs::path &sourceFilePath);
+    std::string generateStubHeader(const tests::Tests &tests, const fs::path &sourceFilePath);
 
     std::string generateWrapper(const fs::path &sourceFilePath);
 

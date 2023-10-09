@@ -77,14 +77,22 @@ std::shared_ptr<TargetBuildDatabase> BaseTestGen::getTargetBuildDatabase() {
     return targetBuildDatabase;
 }
 
+const CollectionUtils::FileSet &BaseTestGen::getTargetSourceFiles() const {
+    return getTargetBuildDatabase()->compilationDatabase->getAllFiles();
+}
+
+const CollectionUtils::FileSet &BaseTestGen::getProjectSourceFiles() const {
+    return getProjectBuildDatabase()->compilationDatabase->getAllFiles();
+}
+
 std::shared_ptr<const BuildDatabase::ObjectFileInfo>
 BaseTestGen::getClientCompilationUnitInfo(const fs::path &path, bool fullProject) const {
     std::shared_ptr<const BuildDatabase::ObjectFileInfo> objectFileInfo;
     if (targetBuildDatabase->hasUnitInfo(path) || !fullProject) {
         objectFileInfo = targetBuildDatabase->getClientCompilationUnitInfo(path);
     } else {
-        objectFileInfo = projectBuildDatabase->getClientCompilationUnitInfo(path);
         LOG_S(WARNING) << "Can't find in target: " << path;
+        objectFileInfo = projectBuildDatabase->getClientCompilationUnitInfo(path);
     }
     return objectFileInfo;
 }

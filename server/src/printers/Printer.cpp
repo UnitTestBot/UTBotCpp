@@ -388,15 +388,13 @@ namespace printer {
                                                  const types::TypesHandler &typesHandler,
                                                  const std::string &prefix,
                                                  const std::string &suffix,
-                                                 const std::string &methodName,
-                                                 const std::string &nameForStub,
+                                                 const std::string &parentMethodName,
                                                  bool makeStatic) {
         auto methodCopy = method;
         methodCopy.name = method.name;
 
-        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(nameForStub);
+        std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodCopy.name, parentMethodName);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
-            stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName + "_" + nameForStub);
             strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
                                types::PointerUsage::PARAMETER);
         }
@@ -533,23 +531,11 @@ namespace printer {
                                                        bool forKlee) {
         std::string scopeName = (forKlee ? testMethod.getClassName().value_or("") : "");
         std::string prefix = PrinterUtils::getKleePrefix(forKlee);
-        for (const auto &[name, pointerFunctionStub] : testMethod.functionPointers) {
+        for (const auto &[name, pointerFunctionStub]: testMethod.functionPointers) {
             std::string stubName = StubsUtils::getFunctionPointerStubName(scopeName, testMethod.name, name, true);
-            testMethod.stubsStorage->registerFunctionPointerStub(testMethod.name, pointerFunctionStub);
+            testMethod.stubsParamStorage->registerStub(testMethod.name, pointerFunctionStub, std::nullopt);
             writeStubForParam(typesHandler, pointerFunctionStub, testMethod.name, stubName, true,
                               forKlee);
-        }
-    }
-
-    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
-        std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
-        for (const auto& testCase: testMethod.testCases) {
-            for (size_t i = 0; i < testCase.stubValues.size(); i++) {
-                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
-            }
-        }
-        for (const auto& [name, type]: symbolicNamesToTypesMap) {
-            strDeclareVar("extern \"C\" " + type, name);
         }
     }
 
@@ -564,7 +550,7 @@ namespace printer {
             strTypedefFunctionPointer(*fInfo, typedefName);
         }
         strStubForMethod(tests::Tests::MethodDescription::fromFunctionInfo(*fInfo), *typesHandler,
-                         stubName, "stub", methodName, fInfo->name, makeStatic);
+                         stubName, "stub", methodName, makeStatic);
     }
 
     void

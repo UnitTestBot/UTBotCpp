@@ -36,12 +36,14 @@ namespace {
         fs::path sum_stub_c = getTestFilePath(testDirName + "/stubs/lib/calc/sum_stub.c");
 
         fs::path testsDirPath = getTestFilePath("tests");
-        utbot::ProjectContext projectContext{ projectName, suitePath, testsDirPath,
-                                              buildDirRelativePath, clientProjectPath };
+        utbot::ProjectContext projectContext{projectName, suitePath, testsDirPath,
+                                             buildDirRelativePath, clientProjectPath};
         fs::path sum_test_cpp =
                 Paths::sourcePathToTestPath(projectContext, calc_sum_c);
+        fs::path foreign_bar_test_cpp =
+                Paths::sourcePathToTestPath(projectContext, foreign_bar_c);
 
-        std::vector<fs::path> modifiedSourceFiles = { literals_foo_c, calc_sum_h, calc_sum_c };
+        std::vector<fs::path> modifiedSourceFiles = {literals_foo_c, calc_sum_h, calc_sum_c};
 
         void SetUp() override {
             clearTestDirectory();
@@ -177,6 +179,27 @@ namespace {
                     return Paths::sourcePathToStubPath(testGen.projectContext, path);
                 });
         EXPECT_EQ(expectedStubFiles, result.getOpt().value());
+    }
+
+    TEST_F(Stub_Test, Run_Tests_mltimodule_Lib) {
+        auto request = testUtils::createFileRequest(projectName, suitePath, buildDirRelativePath,
+                                                    srcPaths, foreign_bar_c, foreign_bar_c, true);
+
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests), 2);
+
+        auto testFilter = GrpcUtils::createTestFilterForFile(foreign_bar_test_cpp);
+        auto runRequest = testUtils::createCoverageAndResultsRequest(
+                projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
+
+        static auto coverageAndResultsWriter =
+                std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
+        CoverageAndResultsGenerator coverageGenerator{runRequest.get(), coverageAndResultsWriter.get()};
+        utbot::SettingsContext settingsContext{true, true, 15, 0, true, true, ErrorMode::FAILING, false};
+        coverageGenerator.generate(true, settingsContext);
+        EXPECT_FALSE(coverageGenerator.hasExceptions());
     }
 
     TEST_F(Stub_Test, File_Tests_With_Stubs) {

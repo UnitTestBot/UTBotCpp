@@ -64,6 +64,12 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << NL;
 
+    if (!tests.methods.empty()) {
+        for (const auto &stubsHeader: tests.methods.begin()->second.stubsStorage->getStubsHeaders()) {
+            strInclude(stubsHeader) << NL;
+        }
+    }
+
     strDeclareSetOfVars(tests.externVariables);
 
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
@@ -171,7 +177,6 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
     int testNum = 0;
 
     writeStubsForFunctionParams(typesHandler, methodDescription, false);
-    writeExternForSymbolicStubs(methodDescription);
 
     methodDescription.stubsText = ss.str();
     resetStream();
@@ -358,8 +363,8 @@ void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDes
     }
 }
 
-void TestsPrinter::printStubVariables(const Tests::MethodDescription &methodDescription,
-                                      const Tests::MethodTestCase &testCase) {
+void TestsPrinter::printStubVariablesForParam(const Tests::MethodDescription &methodDescription,
+                                              const Tests::MethodTestCase &testCase) {
     for (int i = 0; i < testCase.stubParamValues.size(); i++) {
         auto stub = testCase.stubParamValues[i];
         types::Type stubType = testCase.stubParamTypes[i].type;
@@ -378,8 +383,8 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
+    printStubVariablesForParam(methodDescription, testCase);
     printClassObject(methodDescription, testCase);
-    printStubVariables(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, false);
     printLazyVariables(methodDescription, testCase, false);
     printLazyReferences(methodDescription, testCase, false);
@@ -457,8 +462,8 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         ss << NL;
     }
 
-    std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes };
-    std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = { testCase.stubParamValues, testCase.stubParamValues };
+    std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes};
+    std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = {testCase.stubValues, testCase.stubParamValues};
 
     for (int j = 0; j < types.size(); j++) {
         if (!types[j].empty()) {
@@ -512,7 +517,7 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
                                     const Tests::TestCaseParamValue &value,
                                     bool needDeclaration) {
     std::string stubFunctionName = StubsUtils::getFunctionPointerStubName(method.getClassTypeName(),
-                                                                          method.name, param.name);
+                                                                          method.name, param.name, false);
     if (types::TypesHandler::isPointerToFunction(param.type)) {
         strDeclareVar(getTypedefFunctionPointer(method.name, param.name, false), param.name,
                       stubFunctionName);
@@ -676,7 +681,7 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
     if (types::TypesHandler::isArrayOfPointersToFunction(param.type)) {
         auto type = getTypedefFunctionPointer(methodDescription.name, param.name, false);
         std::string stubName = StubsUtils::getFunctionPointerStubName(
-            methodDescription.getClassTypeName(), methodDescription.name, param.name);
+                methodDescription.getClassTypeName(), methodDescription.name, param.name, false);
         strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
     } else if (types::TypesHandler::isCStringType(param.type)) {
         strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER,

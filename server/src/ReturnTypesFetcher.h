@@ -18,7 +18,7 @@ public:
     explicit ReturnTypesFetcher(BaseTestGen *testGen) : testGen(testGen) {
     }
 
-    void fetch(ProgressWriter *const progressWriter, const CollectionUtils::FileSet &allFiles);
+    void fetch(const ProgressWriter *progressWriter);
 };
 
 
