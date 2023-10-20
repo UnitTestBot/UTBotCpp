@@ -22,6 +22,9 @@ FunctionDeclsMatchCallback::FunctionDeclsMatchCallback(const Fetcher *parent,
 void FunctionDeclsMatchCallback::run(const MatchFinder::MatchResult &Result) {
     ExecUtils::throwIfCancelled();
     if (const FunctionDecl *FS = ClangUtils::getFunctionOrConstructor(Result)) {
+        if (FS->isTemplated()) {
+            return;
+        }
         ExecUtils::throwIfCancelled();
         SourceManager &sourceManager = Result.Context->getSourceManager();
         fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);

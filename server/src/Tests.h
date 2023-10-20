@@ -888,8 +888,7 @@ namespace tests {
     std::enable_if_t<std::is_floating_point<T>::value, std::string>
     primitiveValueToString(T value) {
         std::stringstream ss;
-        ss << std::scientific;
-        ss << value;
+        ss << std::scientific << value;
         return ss.str();
     }
 

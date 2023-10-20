@@ -74,7 +74,7 @@ RUN git clone --single-branch --branch "release/${LLVM_VERSION_MAJOR}.x" --depth
 WORKDIR $UTBOT_ALL/llvm-project
 RUN mkdir build && cd build \
     && $UTBOT_CMAKE_BINARY \
-    -DCMAKE_BUILD_TYPE="Release" \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_BINUTILS_INCDIR=$UTBOT_ALL/llvm_gold_plugin \
@@ -125,7 +125,7 @@ RUN cd $UTBOT_ALL/grpc && git submodule update --init
 RUN cd $UTBOT_ALL/grpc \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
+  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
   && make -j`nproc` \
   && make install \
   && cd $UTBOT_ALL \
@@ -142,9 +142,9 @@ USER utbot
 
 # Install z3
 USER root
-RUN git clone --single-branch -b z3-4.8.7 --depth=1 https://github.com/Z3Prover/z3.git $UTBOT_ALL/z3-src
+RUN git clone --single-branch -b z3-4.8.17 --depth=1 https://github.com/Z3Prover/z3.git $UTBOT_ALL/z3-src
 RUN cd $UTBOT_ALL/z3-src && mkdir build && cd build && \
-    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
+    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
     $UTBOT_CMAKE_BINARY --build . --target install && \
     cd $UTBOT_ALL && \
     rm -rf $UTBOT_ALL/z3-src
@@ -171,7 +171,7 @@ RUN npm config set strict-ssl false
 RUN npm cache clean -f
 RUN sudo -E npm install -g n
 RUN echo insecure > ~/.curlrc
-RUN sudo -E n stable
+RUN sudo -E n 16
 RUN sudo -E apt remove -y --purge nodejs npm
 
 # Install cmake which can generate link_commands.json. Installing cmake the second time in order to build base image faster since this cmake may be changed frequently.

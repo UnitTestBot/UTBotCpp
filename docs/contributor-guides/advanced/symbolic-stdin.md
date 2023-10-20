@@ -249,7 +249,7 @@ TEST(regression, check_password_test_10)
 In the previous version, UnitTestBot didn't preprocess functions that were using `stdin` before sending the bitcode to 
 KLEE. Having added the interactive mode, we faced difficulties: KLEE couldn't work with multiple entry points 
 that used `stdin` in one launch. The fact is that KLEE substitutes the original entry point to POSIX wrapper, which 
-initializes environment and adds the `stdin`, `stdin-stat`, `stdin-read`, and `model-version` symbolic variables. 
+initializes environment and adds the `stdin`, `stdin_stat`, `stdin_read`, and `model_version` symbolic variables. 
 Then KLEE launches this wrapper as if the wrapper was the initial entry point.
 
 UnitTestBot doesn't use these KLEE wrappers now. Instead, UnitTestBot creates the POSIX wrapper for every 

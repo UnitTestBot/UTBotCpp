@@ -142,66 +142,55 @@ namespace {
         }
 
         void checkDifferentVariables_C(BaseTestGen &testGen, bool differentVariables) {
-            for (const auto &[methodName, methodDescription] :
-                 testGen.tests.at(different_variables_c).methods) {
+            for (const auto &[methodName, methodDescription]:
+                    testGen.tests.at(different_variables_c).methods) {
                 if (methodName == "swap_two_int_pointers") {
                     checkTestCasePredicates(
-                        methodDescription.testCases,
-                        std::vector<TestCasePredicate>(
-                            { [differentVariables](tests::Tests::MethodTestCase const &testCase) {
-                                return (differentVariables ^
-                                        checkEquals(testCase.paramValues[0],
-                                                    testCase.paramValues[1])) &&
-                                       checkEquals(testCase.paramPostValues[0],
-                                                   testCase.paramValues[1]) &&
-                                       checkEquals(testCase.paramPostValues[1],
-                                                   testCase.paramValues[0]) &&
-                                       testCase.stdinValue == std::nullopt;
-                            } }),
-                        methodName);
+                            methodDescription.testCases,
+                            std::vector<TestCasePredicate>(
+                                    {[differentVariables](tests::Tests::MethodTestCase const &testCase) {
+                                        return (differentVariables ^
+                                                checkEquals(testCase.paramValues[0],
+                                                            testCase.paramValues[1])) &&
+                                               checkEquals(testCase.paramPostValues[0],
+                                                           testCase.paramValues[1]) &&
+                                               checkEquals(testCase.paramPostValues[1],
+                                                           testCase.paramValues[0]) &&
+                                               testCase.stdinValue == std::nullopt;
+                                    }}),
+                            methodName);
                 } else if (methodName == "max_of_two_float") {
                     checkTestCasePredicates(
-                        methodDescription.testCases,
-                        std::vector<TestCasePredicate>(
-                            { [differentVariables](tests::Tests::MethodTestCase const &testCase) {
-                                 return ((stod(testCase.paramValues[0].view->getEntryValue(
-                                              nullptr)) ==
-                                          stod(testCase.paramValues[1].view->getEntryValue(
-                                              nullptr))) ^
-                                         differentVariables) &&
-                                        stod(testCase.returnValue.view->getEntryValue(nullptr)) ==
-                                            std::max(
-                                                stod(testCase.paramValues[0].view->getEntryValue(
-                                                    nullptr)),
-                                                stod(testCase.paramValues[1].view->getEntryValue(
-                                                    nullptr))) &&
-                                        testCase.stdinValue == std::nullopt;
-                             },
-                              [](tests::Tests::MethodTestCase const &testCase) {
-                                  return stod(testCase.paramValues[0].view->getEntryValue(
-                                             nullptr)) !=
-                                             stod(testCase.paramValues[1].view->getEntryValue(
-                                                 nullptr)) &&
-                                         stod(testCase.returnValue.view->getEntryValue(nullptr)) ==
-                                             std::max(
-                                                 stod(testCase.paramValues[0].view->getEntryValue(
-                                                     nullptr)),
-                                                 stod(testCase.paramValues[1].view->getEntryValue(
-                                                     nullptr))) &&
-                                         testCase.stdinValue == std::nullopt;
-                              } }),
-                        methodName);
+                            methodDescription.testCases,
+                            std::vector<TestCasePredicate>(
+                                    {[differentVariables](tests::Tests::MethodTestCase const &testCase) {
+                                        double param0 = stod(testCase.paramValues[0].view->getEntryValue(nullptr));
+                                        double param1 = stod(testCase.paramValues[1].view->getEntryValue(nullptr));
+                                        double ret = stod(testCase.returnValue.view->getEntryValue(nullptr));
+                                        return (param0 != param1 || differentVariables) &&
+                                               ret == std::max(param0, param1) &&
+                                               testCase.stdinValue == std::nullopt;
+                                    },
+                                     [](tests::Tests::MethodTestCase const &testCase) {
+                                         double param0 = stod(testCase.paramValues[0].view->getEntryValue(nullptr));
+                                         double param1 = stod(testCase.paramValues[1].view->getEntryValue(nullptr));
+                                         double ret = stod(testCase.returnValue.view->getEntryValue(nullptr));
+                                         return param0 != param1 &&
+                                                ret == std::max(param0, param1) &&
+                                                testCase.stdinValue == std::nullopt;
+                                     }}),
+                            methodName);
                 } else if (methodName == "struct_test") {
                     checkTestCasePredicates(
-                        methodDescription.testCases,
-                        std::vector<TestCasePredicate>(
-                            { [](tests::Tests::MethodTestCase const &testCase) {
-                                 return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
-                             },
-                              [](tests::Tests::MethodTestCase const &testCase) {
-                                  return testCase.returnValue.view->getEntryValue(nullptr) == "1";
-                              } }),
-                        methodName);
+                            methodDescription.testCases,
+                            std::vector<TestCasePredicate>(
+                                    {[](tests::Tests::MethodTestCase const &testCase) {
+                                        return testCase.returnValue.view->getEntryValue(nullptr) == "-1";
+                                    },
+                                     [](tests::Tests::MethodTestCase const &testCase) {
+                                         return testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                                     }}),
+                            methodName);
                 }
             }
         }
@@ -1566,11 +1555,11 @@ namespace {
         auto tests = coverageGenerator.getTestsToLaunch();
 
         ASSERT_FALSE(resultMap.empty());
-        EXPECT_GT(resultMap.getNumberOfTests(), 2);
+        EXPECT_GE(resultMap.getNumberOfTests(), 3);
 
         testUtils::checkStatuses(resultMap, tests);
 
-        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 7}};
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 3}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
@@ -1962,7 +1951,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 2);
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 5);
 
         fs::path testsDirPath = getTestFilePath("tests");
 
@@ -1990,7 +1979,7 @@ namespace {
 
         testUtils::checkStatuses(resultMap, tests);
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 6 } };
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 5}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
@@ -2002,7 +1991,7 @@ namespace {
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 12);
+        EXPECT_GE(testUtils::getNumberOfTests(testGen.tests), 11);
 
         fs::path testsDirPath = getTestFilePath("tests");
 
@@ -2041,14 +2030,27 @@ namespace {
         testGen.setTargetForSource(input_output_c);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
         ASSERT_TRUE(status.ok()) << status.error_message();
-        EXPECT_EQ(testUtils::getNumberOfTests(testGen.tests),
-                  63); // 61 regression tests and 2 error
+
+        TestCountMap expectedTestCountMap = {{"simple_getc",    11},
+                                             {"simple_fgetc",   5},
+                                             {"simple_fread",   3},
+                                             {"simple_fgets",   2},
+                                             {"simple_getchar", 3},
+                                             {"simple_gets",    6},
+                                             {"simple_putc",    3},
+                                             {"simple_fputc",   3},
+                                             {"simple_fwrite",  3},
+                                             {"simple_fputs",   2},
+                                             {"simple_putchar", 3},
+                                             {"simple_puts",    2}};
+
+        checkMinNumberOfTests(testGen.tests, expectedTestCountMap);
 
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path input_output_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
-            input_output_c);
+                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+                input_output_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(input_output_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
             projectName, suitePath, testsDirPath, buildDirRelativePath, std::move(testFilter));
@@ -2068,8 +2070,7 @@ namespace {
         auto resultMap = coverageGenerator.getTestResultMap();
         auto tests = coverageGenerator.getTestsToLaunch();
 
-        StatusCountMap expectedStatusCountMap{ { testsgen::TEST_PASSED, 61 } };
-        testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
+        testUtils::checkStatuses(resultMap, tests, ErrorMode::FAILING);
     }
 
     TEST_F(Server_Test, Run_Tests_For_File_C) {

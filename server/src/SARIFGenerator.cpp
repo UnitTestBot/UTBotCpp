@@ -66,9 +66,9 @@ namespace sarif {
                         if (lineInDescriptor.empty() || lineInDescriptor[0] == '#')
                             continue;
                         if (isspace(lineInDescriptor[0])) {
-                            if (key == "Stack") {
+                            if (key == "ExecutionStack") {
                                 const std::regex stack_regex(
-                                    R"regex(\s+#(.*) in ([^ ]*) [(][^)]*[)] at ([^:]*):(\d+))regex");
+                                    R"regex(\s+#(.*) in ([^ ]*)[(][^)]*[)] at ([^:]*):(\d+))regex");
                                 std::smatch stack_match;
                                 if (!std::regex_match(lineInDescriptor, stack_match, stack_regex)) {
                                     LOG_S(ERROR) << "wrong `Stack` line: " << lineInDescriptor;
@@ -129,10 +129,10 @@ namespace sarif {
                             if (pos == std::string::npos) {
                                 LOG_S(ERROR) << "no key:" << lineInDescriptor;
                             } else {
-                                if (key == "Stack") {
+                                if (key == "ExecutionStack") {
                                     // Check stack validity
                                     if (firstCallInStack) {
-                                        LOG_S(ERROR) << "no visible stack in descriptor:" << descriptor;
+                                        LOG_S(ERROR) << "no visible ExecutionStack in descriptor:" << descriptor;
                                     } else {
                                         canAddThisTestToSARIF = true;
                                     }
@@ -147,7 +147,7 @@ namespace sarif {
                                     result["kind"] = "fail";
                                 } else if (key == ERROR_ID_KEY) {
                                     result["ruleId"] = value;
-                                } else if (key == "Stack") {
+                                } else if (key == "ExecutionStack") {
                                     stackLocations = json();
                                     codeFlowsLocations = json();
                                 } else if (key == TEST_FILE_KEY) {

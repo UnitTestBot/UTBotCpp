@@ -161,15 +161,15 @@ namespace PrinterUtils {
     }
 
     std::string getFileParamKTestJSON(char fileName) {
-        return StringUtils::stringFormat("%c-data", fileName);
+        return StringUtils::stringFormat("%c_data", fileName);
     }
 
     std::string getFileReadBytesParamKTestJSON(char fileName) {
-        return StringUtils::stringFormat("%c-data-read", fileName);
+        return StringUtils::stringFormat("%c_data_read", fileName);
     }
 
     std::string getFileWriteBytesParamKTestJSON(char fileName) {
-        return StringUtils::stringFormat("%c-data-write", fileName);
+        return StringUtils::stringFormat("%c_data_write", fileName);
     }
 
     void removeThreadLocalQualifiers(std::string &decl) {
