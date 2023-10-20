@@ -9,21 +9,23 @@
 
 namespace testUtils {
     static std::string getMessageForTestCaseNotMatching(
-        size_t predicateNumber,
-        const std::string &functionName,
-        const std::vector<std::vector<std::shared_ptr<tests::AbstractValueView>>> &parameters,
-        const std::vector<std::shared_ptr<tests::AbstractValueView>> &returnValues) {
+            size_t predicateNumber,
+            const std::string &functionName,
+            const std::vector<tests::Tests::MethodTestCase> &testCases,
+            const std::vector<bool> &mask) {
         std::stringstream ss;
         ss << "Predicates don't match test cases:\n";
         ss << "\tNot found test case for predicate at position:" << predicateNumber << "\n";
         ss << "\tFunction name: " << functionName << "\n";
         ss << "\tRemaining non-matched test cases:\n";
-        for (size_t i = 0; i < parameters.size(); i++) {
-            ss << "\t\tParameters values: ";
-            for (const auto &param : parameters[i]) {
-                ss << param->getEntryValue(nullptr) << " ";
+        for (size_t i = 0; i < mask.size(); i++) {
+            if (mask[i]) {
+                ss << "\t\tParameters values: ";
+                for (const auto &param: testCases[i].paramValues) {
+                    ss << param.view->getEntryValue(nullptr) << " ";
+                }
+                ss << "\n\t\tReturn value: " << testCases[i].returnValue.view->getEntryValue(nullptr) << "\n";
             }
-            ss << "\n\t\tReturn value: " << returnValues[i]->getEntryValue(nullptr) << "\n";
         }
         return ss.str();
     }
@@ -32,35 +34,22 @@ namespace testUtils {
                                  const std::vector<TestCasePredicate> &predicates,
                                  const std::string &functionName) {
         EXPECT_GE(testCases.size(), predicates.size())
-            << " Number of test cases (" << testCases.size()
-            << ") less than"
-               " number of predicates ("
-            << predicates.size() << ") for function " << functionName << ".";
-        std::vector<std::vector<std::shared_ptr<tests::AbstractValueView>>> params;
-        std::vector<std::shared_ptr<tests::AbstractValueView>> returnValues;
-        for (const auto &testCase : testCases) {
-            params.emplace_back();
-            for (const auto &p : testCase.paramValues) {
-                params.back().push_back(p.view);
-            }
-            returnValues.push_back(testCase.returnValue.view);
-        }
+                            << " Number of test cases (" << testCases.size()
+                            << ") less than"
+                               " number of predicates ("
+                            << predicates.size() << ") for function " << functionName << ".";
+        std::vector<bool> mask(testCases.size(), true);
         for (size_t p_i = 0; p_i < predicates.size(); p_i++) {
             const auto &predicate = predicates[p_i];
-            int ind = -1;
+            bool flag = false;
             for (size_t i = 0; i < testCases.size(); i++) {
                 if (predicate(testCases[i])) {
-                    ind = i;
+                    flag = true;
+                    mask[i] = false;
                     break;
                 }
             }
-            EXPECT_NE(-1, ind) << getMessageForTestCaseNotMatching(p_i, functionName, params,
-                                                                   returnValues);
-            if (ind == -1) {
-                return;
-            }
-            params.erase(params.begin() + ind);
-            returnValues.erase(returnValues.begin() + ind);
+            EXPECT_TRUE(flag) << getMessageForTestCaseNotMatching(p_i, functionName, testCases, mask);
         }
     }
 
@@ -205,11 +194,30 @@ namespace testUtils {
                             << "Number of test cases in \"" << fileName << "\" not equal to predicate";
     }
 
-    void
-    checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number) {
+    void checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number) {
         size_t testCounter = getNumberOfTestsForFile(testGen, fileName);
         EXPECT_LE(number, testCounter)
                             << "Number of test cases in \"" << fileName << "\" not equal to predicate";
+    }
+
+    void checkMinNumberOfTests(const tests::TestsMap &tests, const TestCountMap &expectedTestCountMap) {
+        TestCountMap actualTestCountMap;
+
+        for (const auto &[filename, cases]: tests) {
+            for (const auto &[methodName, methodDescription]: cases.methods) {
+                auto it = actualTestCountMap.find(methodName);
+                if (it == actualTestCountMap.end()) {
+                    actualTestCountMap.insert({methodName, 1});
+                } else {
+                    it->second += 1;
+                }
+            }
+        }
+        for (const auto &[methodName, count]: expectedTestCountMap) {
+            auto it = actualTestCountMap.find(methodName);
+            ASSERT_TRUE(it != actualTestCountMap.end());
+            ASSERT_GE(count, it->second);
+        }
     }
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,

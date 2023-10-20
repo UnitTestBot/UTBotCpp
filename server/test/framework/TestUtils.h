@@ -20,6 +20,7 @@ using ReturnValue = const std::shared_ptr<tests::AbstractValueView> &;
 using TestCasePredicate = std::function<bool(tests::Tests::MethodTestCase)>;
 using CoverageLines = CollectionUtils::MapFileTo<std::set<int>>;
 using StatusCountMap = std::unordered_map<testsgen::TestStatus, int>;
+using TestCountMap = std::map<std::string, size_t>;
 
 namespace testUtils {
     enum BuildCommandsTool {
@@ -59,8 +60,9 @@ namespace testUtils {
 
     void checkNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
 
-    void
-    checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
+    void checkMinNumberOfTestsInFile(const BaseTestGen &testGen, std::string fileName, size_t number);
+
+    void checkMinNumberOfTests(const tests::TestsMap &tests, const TestCountMap &expectedTestCountMap);
 
     std::unique_ptr<SnippetRequest> createSnippetRequest(const std::string &projectName,
                                                          const fs::path &projectPath,

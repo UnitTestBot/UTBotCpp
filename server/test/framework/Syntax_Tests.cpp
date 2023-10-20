@@ -264,15 +264,15 @@ namespace {
                         {[](const tests::Tests::MethodTestCase& testCase) {
                             std::cout << testCase.paramValues[0].view->getEntryValue(nullptr) << std::endl;
                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == 0;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find(", 'a'") != std::string::npos;
                         },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == std::string::npos;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'a', ") == 0;
                          },
                          [](const tests::Tests::MethodTestCase& testCase) {
                              return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1
-                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("{{'\\0', ") == 0;
+                                && testCase.paramValues[0].view->getEntryValue(nullptr).find("'a'") == std::string::npos;
                          }
                         }),
                 "extract_bit");
@@ -512,17 +512,19 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                    std::string expectedString = StringUtils::stringFormat("{%s, {%s, %s}, 0}",
-                                                                      PrinterUtils::C_NULL, PrinterUtils::C_NULL, PrinterUtils::C_NULL);
-                  return testCase.returnValue.view->getEntryValue(nullptr) ==  expectedString &&
-                        testCase.paramValues[0].view->getEntryValue(nullptr) == expectedString &&
-                        testCase.globalPostValues[0].view->getEntryValue(nullptr) == expectedString;
-                }
-                }),
-            "check_double_pointer");
+                testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            std::string expectedString = StringUtils::stringFormat("{%s, {%s, %s}",
+                                                                                   PrinterUtils::C_NULL,
+                                                                                   PrinterUtils::C_NULL,
+                                                                                   PrinterUtils::C_NULL);
+                            return testCase.paramValues[0].view->getEntryValue(nullptr).find(expectedString) == 0 &&
+                                   testCase.globalPostValues[0].view->getEntryValue(nullptr) ==
+                                   testCase.returnValue.view->getEntryValue(nullptr);
+                        }
+                        }),
+                "check_double_pointer");
     }
 
     TEST_F(Syntax_Test, Booleans_as_Parameters_Test) {
@@ -599,13 +601,13 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return testCase.paramValues[0].view->getEntryValue(nullptr) == "0" && stoll(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                }
-                }),
-            "void_pointer_int_usage");
+                testGen.tests.at(pointer_parameters_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.isError();
+                        }
+                        }),
+                "void_pointer_int_usage");
     }
 
     TEST_F(Syntax_Test, Enum_Pointer_as_Parameter_Test) {
@@ -1112,15 +1114,17 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(nullptr), 'a');
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) != 0 && testUtils::cmpChars(testCase.returnValue.view->getEntryValue(nullptr), 'b');
-                 }
-                })
+                testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) == 0 &&
+                                   testUtils::cmpChars(testCase.returnValue.view->getEntryValue(nullptr), 'a');
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) != 0 &&
+                                    testUtils::cmpChars(testCase.returnValue.view->getEntryValue(nullptr), 'b');
+                         }
+                        })
         );
     }
 
@@ -1130,17 +1134,21 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) < stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                      stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) < stoi(testCase.returnValue.view->getSubViews()[1]->getEntryValue(nullptr));
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >= stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
-                          stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) >= stoi(testCase.returnValue.view->getSubViews()[1]->getEntryValue(nullptr));
-                 }
-                })
+                testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) <
+                                   stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                   stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) <
+                                   stoi(testCase.returnValue.view->getSubViews()[1]->getEntryValue(nullptr));
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) >=
+                                    stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) &&
+                                    stoi(testCase.returnValue.view->getSubViews()[0]->getEntryValue(nullptr)) <
+                                    stoi(testCase.returnValue.view->getSubViews()[1]->getEntryValue(nullptr));
+                         }
+                        })
         );
     }
 
@@ -1447,18 +1455,27 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-            testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 8;
-                 },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
-                 }
-                })
+                testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.stubParamValues.size() &&
+                                   testCase.paramValues[1].view->getEntryValue(nullptr) == "'a'" &&
+                                   stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                           nullptr)) ==
+                                   stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.stubParamValues.size() &&
+                                    testCase.paramValues[1].view->getEntryValue(nullptr) == "'b'" &&
+                                    stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                            nullptr)) + 8 ==
+                                    stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.stubParamValues.empty() &&
+                                    stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                         }
+                        })
         );
     }
 
@@ -1467,15 +1484,15 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-            testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
-                 }
-                })
+                testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.returnValue.view->getEntryValue(nullptr) == "'\\0'";
+                         }
+                        })
         );
     }
 
@@ -1484,18 +1501,38 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-            testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 6;
-                },
-                [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                }
-                })
+                testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.stubParamValues.size() &&
+                                   testCase.paramValues[1].view->getSubViews().size() >= 1 &&
+                                   testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(nullptr) == "'z'" &&
+                                   stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                           nullptr)) ==
+                                   stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.stubParamValues.size() &&
+                                    testCase.paramValues[1].view->getSubViews().size() >= 1 &&
+                                    testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(nullptr) == "'a'" &&
+                                    stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                            nullptr)) + 6 ==
+                                    stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             if (testCase.paramValues[1].view->getSubViews().empty()) {
+                                 return false;
+                             }
+                             std::string param1 = testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(
+                                     nullptr);
+                             int stubRes = stoi(
+                                     testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                             nullptr));
+                             return testCase.stubParamValues.size() &&
+                                    param1 != "'a'" && param1 != "'z'" &&
+                                    stubRes * stubRes == stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                         }
+                        })
         );
     }
 
@@ -1504,18 +1541,35 @@ namespace {
 
         ASSERT_TRUE(status.ok()) << status.error_message();
         checkTestCasePredicates(
-            testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 12;
-                },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
-                 },
-                 [] (const tests::Tests::MethodTestCase& testCase) {
-                   return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 0;
-                 }
-                })
+                testGen.tests.at(functions_as_params_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.stubParamValues.size() &&
+                                   testCase.paramValues[1].view->getSubViews().size() >= 1 &&
+                                   testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(nullptr) == "1" &&
+                                   stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                           nullptr)) + 12 ==
+                                   stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.stubParamValues.size() &&
+                                    testCase.paramValues[1].view->getSubViews().size() >= 2 &&
+                                    testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(nullptr) != "1" &&
+                                    testCase.paramValues[1].view->getSubViews()[1]->getEntryValue(nullptr) == "34" &&
+                                    stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                            nullptr)) + 1 ==
+                                    stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return testCase.stubParamValues.size() &&
+                                    testCase.paramValues[1].view->getSubViews().size() >= 2 &&
+                                    testCase.paramValues[1].view->getSubViews()[0]->getEntryValue(nullptr) != "1" &&
+                                    testCase.paramValues[1].view->getSubViews()[1]->getEntryValue(nullptr) != "34" &&
+                                    stoi(testCase.stubParamValues.front().view->getSubViews().front()->getEntryValue(
+                                            nullptr)) ==
+                                    stoi(testCase.returnValue.view->getEntryValue(nullptr));
+                         }
+                        })
         );
     }
 
@@ -1740,7 +1794,8 @@ namespace {
                 testGen.tests.at(floats_special_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>(
                         {[](const tests::Tests::MethodTestCase &testCase) {
-                            return testCase.paramValues[0].view->getEntryValue(nullptr) == "NAN";
+                            return testCase.paramValues[0].view->getEntryValue(nullptr).find("NAN") !=
+                                   std::string::npos;
                         }}));
     }
 
@@ -1752,15 +1807,21 @@ namespace {
 
         printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::C);
         const auto &tests = testGen.tests.at(floats_special_c)
-                                .methods.begin().value().testCases;
+                .methods.begin().value().testCases;
         checkTestCasePredicates(
-            tests, std::vector<TestCasePredicate>(
-                       { [](const tests::Tests::MethodTestCase &testCase) {
-                            return testCase.paramValues[0].view->getEntryValue(nullptr) == "NAN";
-                         },
+                tests, std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return testCase.paramValues[0].view->getEntryValue(nullptr).find("NAN") !=
+                                   std::string::npos;
+                        },
                          [](const tests::Tests::MethodTestCase &testCase) {
-                             return testCase.paramValues[0].view->getEntryValue(nullptr) == "0.000000e+00L";
-                         } }));
+                             return testCase.paramValues[0].view->getEntryValue(nullptr).find("NAN") ==
+                                    std::string::npos &&
+                                    testCase.paramValues[0].view->getEntryValue(nullptr).find("INFINITY") ==
+                                    std::string::npos &&
+                                    testCase.paramValues[0].view->getEntryValue(nullptr).find("e") !=
+                                    std::string::npos;
+                         }}));
     }
 
     TEST_F(Syntax_Test, Floats_Special_Values_Inf) {
@@ -2463,36 +2524,49 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
         printer::TestsPrinter testsPrinter(testGen.projectContext, nullptr, utbot::Language::CXX);
         const auto &tests = testGen.tests.at(simple_class_cpp)
-                                .methods.begin().value().testCases;
+                .methods.begin().value().testCases;
         testUtils::checkRegexp(tests[0].paramValues[0].view->getEntryValue(&testsPrinter),
                                "[{]"
                                "\n    /[*][.]x = [*]/.+,"
                                "\n    /[*][.]y = [*]/.+"
                                "\n[}]");
 
-        testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 5);
+        testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 4);
 
         checkTestCasePredicates(
-              tests,
-              std::vector<TestCasePredicate>(
-                      {[] (const tests::Tests::MethodTestCase& testCase) {
-                        return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&
-                               testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) == "0";
-                      }, [] (const tests::Tests::MethodTestCase& testCase) {
-                        return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&
-                               testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) == "0";
-                      }, [] (const tests::Tests::MethodTestCase& testCase) {
-                        return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&
-                               testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) == "0";
-                      }, [] (const tests::Tests::MethodTestCase& testCase) {
-                        return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&
-                               testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) == "0";
-                      }, [] (const tests::Tests::MethodTestCase& testCase) {
-                        return testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) == "0" &&
-                               testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) == "0";
-                      }
-                      }),
-              "change_class_by_ref_cpp");
+                tests,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues.front().view->getSubViews()[0]->getEntryValue(nullptr)) <
+                                   0 &&
+                                   testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) ==
+                                   "0" &&
+                                   testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) ==
+                                   "0";
+                        }, [](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues.front().view->getSubViews()[0]->getEntryValue(nullptr)) >
+                                   0 &&
+                                   testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) ==
+                                   "0" &&
+                                   testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) ==
+                                   "0";
+                        }, [](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues.front().view->getSubViews()[1]->getEntryValue(nullptr)) <
+                                   0 &&
+                                   testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) ==
+                                   "0" &&
+                                   testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) ==
+                                   "0";
+                        }, [](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.paramValues.front().view->getSubViews()[1]->getEntryValue(nullptr)) <
+                                   0 &&
+                                   testCase.paramPostValues.front().view->getSubViews()[0]->getEntryValue(nullptr) ==
+                                   "0" &&
+                                   testCase.paramPostValues.front().view->getSubViews()[1]->getEntryValue(nullptr) ==
+                                   "0";
+                        }
+                        }),
+                "change_class_by_ref_cpp");
     }
 
     TEST_F(Syntax_Test, Change_class_by_ref_2_cpp) {
@@ -2922,7 +2996,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, return_and_get_params_cpp) {
+    TEST_F(Syntax_Test, rvalue_params_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 28);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2930,35 +3004,42 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 3);
 
         checkTestCasePredicates(
-            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) % 5 == 0;
-                    },
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) % 5 == 0;
-                    }
-                })
+                testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {
+                                [](const tests::Tests::MethodTestCase &testCase) {
+                                    return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) % 5 == 0 &&
+                                           testCase.returnValue.view->getEntryValue(nullptr) == "1";
+                                },
+                                [](const tests::Tests::MethodTestCase &testCase) {
+                                    return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) % 5 == 0 &&
+                                           testCase.returnValue.view->getEntryValue(nullptr) == "2";
+                                },
+                                [](const tests::Tests::MethodTestCase &testCase) {
+                                    return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) % 5 != 0 &&
+                                           stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) % 5 != 0 &&
+                                           testCase.returnValue.view->getEntryValue(nullptr) == "0";
+                                }
+                        })
         );
+    }
+
+    TEST_F(Syntax_Test, return_rvalue_cpp) {
+        auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 62);
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases, 1);
 
         checkTestCasePredicates(
-            testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
-                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
-                    },
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues[1].view->getEntryValue(nullptr)) ==
-                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
-                    },
-                    [] (const tests::Tests::MethodTestCase& testCase) {
-                        return stoi(testCase.paramValues[0].view->getEntryValue(nullptr)) + stoi(testCase.paramValues[1].view->getEntryValue(nullptr))==
-                               stoi(testCase.returnValue.view->getEntryValue(nullptr));
-                    }
-                })
+                testGen.tests.at(rvalue_reference_cpp).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>({
+                                                       [](const tests::Tests::MethodTestCase &testCase) {
+                                                           return testCase.classPreValues.value().view->getSubViews()[4]->getEntryValue(
+                                                                   nullptr) ==
+                                                                  testCase.returnValue.view->getEntryValue(nullptr);
+                                                       }
+                                               })
         );
     }
 

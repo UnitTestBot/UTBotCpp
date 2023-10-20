@@ -675,7 +675,7 @@ void KTestObjectParser::assignTypeUnnamedVar(
             curType.paramValue.lazyValues.emplace_back(name, std::nullopt, testParamView);
         }
 
-        for (auto const &[offset, indObj, indexOffset] : testCase.objects[curType.jsonInd].pointers) {
+        for (auto const &[offset, indObj, indexOffset]: testCase.objects[curType.jsonInd].pointers) {
             if (indexOffset != 0) {
                 continue;
             }
@@ -1065,12 +1065,12 @@ void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseDescription &t
 
 void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription,
                                              const std::vector<RawKleeParam> &rawKleeParams) {
-    auto &&read = getKleeParamOrThrow(rawKleeParams, "stdin-read");
+    auto &&read = getKleeParamOrThrow(rawKleeParams, KleeUtils::STDIN_READ_NAME);
     std::string &&view =
-        testParameterView(read, { types::Type::longlongType(), "stdin-read" },
-                          types::PointerUsage::PARAMETER, testCaseDescription.objects,
-                          testCaseDescription.lazyReferences)
-            ->getEntryValue(nullptr);
+            testParameterView(read, {types::Type::longlongType(), KleeUtils::STDIN_READ_NAME},
+                              types::PointerUsage::PARAMETER, testCaseDescription.objects,
+                              testCaseDescription.lazyReferences)
+                    ->getEntryValue(nullptr);
     if (view == "0LL") {
         return;
     } else {
@@ -1080,7 +1080,7 @@ void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCas
             LOG_S(ERROR) << message;
             throw UnImplementedException(message);
         }
-        auto &&stdinBuffer = getKleeParamOrThrow(rawKleeParams, "stdin");
+        auto &&stdinBuffer = getKleeParamOrThrow(rawKleeParams, KleeUtils::STDIN_NAME);
         auto &&testParamView = stringLiteralView(stdinBuffer.rawData, usedStdinBytesCount);
         testCaseDescription.stdinValue = Tests::TestCaseParamValue(types::Type::getStdinParamName(),
                                                                    std::nullopt, testParamView);

@@ -13,10 +13,10 @@ int get_sign_union(union IntBytesUnion st) {
 }
 
 int extract_bit(union ShortBytesUnion x) {
-    if (x.bytes[0] > 0) {
+    if (x.bytes[0] == 'a') {
         return 0;
     }
-    if (x.bytes[1] > 0) {
+    if (x.bytes[1] == 'a') {
         return 1;
     }
     return -1;

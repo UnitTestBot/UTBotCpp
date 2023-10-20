@@ -222,7 +222,7 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
         "--utbot",
         "--posix-runtime",
         "--skip-not-lazy-initialized",
-        "--type-system=CXX",
+        "--min-number-elements-li=1",
         "--fp-runtime",
         "--only-output-states-covering-new",
         "--allocate-determ",
@@ -235,10 +235,12 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
         "--check-overshift=false",
         "--skip-not-symbolic-objects",
         "--use-tbaa",
+        "--ubsan-runtime",
         "--output-dir=" + kleeOut.string()
     };
     if (Paths::isCXXFile(testMethod.sourceFilePath)) {
-        argvData.emplace_back("--libcxx=true");
+        argvData.emplace_back("--use-advanced-type-system=true");
+//        argvData.emplace_back("--libcxx=true");
     }
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");

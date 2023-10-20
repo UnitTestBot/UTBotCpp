@@ -19,13 +19,13 @@ int remainder(const int &&value) {
     }
 }
 
-int &&return_and_get_rvalue_reference(int &&first, int &&second) {
+int get_rvalue_reference(int &&first, int &&second) {
     if (first % 5 == 0) {
-        return std::move(first);
+        return 1;
     } else if (second % 5 == 0) {
-        return std::move(second);
+        return 2;
     } else {
-        return std::move(first + second);
+        return 0;
     }
 }
 
@@ -44,16 +44,20 @@ int get_rvalue_custom_struct_as_param(Box &&box) {
     }
 }
 
-Box::Box() {
+Box::Box() : count(1) {
     length = 1.5;
     width = 0.5;
     height = 2.5;
     volume = height * width * length;
 }
 
-Box::Box(double length_, double width_, double height_, double volume_) {
+Box::Box(double length_, double width_, double height_, double volume_, int count_) : count(count_) {
     length = length_;
     width = width_;
     height = height_;
     volume = volume_;
+}
+
+int &&Box::return_rvalue_reference() {
+    return std::move(count);
 }

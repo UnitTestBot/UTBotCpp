@@ -114,7 +114,7 @@ types::Type types::Type::baseTypeObj(size_t depth) const {
     type.mKinds.erase(type.mKinds.begin(), type.mKinds.begin() + depth);
     type.dimension = type.getDimension();
     type.mTypeId = mBaseTypeId;
-    type.mBaseTypeId = {};
+    type.mBaseTypeId = mBaseTypeId;
     return type;
 }
 
