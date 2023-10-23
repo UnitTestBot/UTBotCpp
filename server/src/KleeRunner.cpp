@@ -285,7 +285,7 @@ void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMet
             std::vector<char *> cargv, cenvp;
             std::vector<std::string> tmp;
             ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
-            LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+            LOG_S(DEBUG) << "Klee command: " + StringUtils::joinWith(argvData, " ");
             MEASURE_FUNCTION_EXECUTION_TIME
 
             RunKleeTask task(cargv.size(), cargv.data(), settingsContext.timeoutPerFunction);
@@ -341,7 +341,7 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         std::vector<std::string> tmp;
         ExecUtils::toCArgumentsPtr(argvData, tmp, cargv, cenvp, false);
 
-        LOG_S(DEBUG) << "Klee command :: " + StringUtils::joinWith(argvData, " ");
+        LOG_S(DEBUG) << "Klee command: " + StringUtils::joinWith(argvData, " ");
         MEASURE_FUNCTION_EXECUTION_TIME
 
         RunKleeTask task(cargv.size(),
