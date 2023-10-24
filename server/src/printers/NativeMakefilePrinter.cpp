@@ -250,7 +250,6 @@ namespace printer {
         }
 
         compileCommand.setOptimizationLevel(OPTIMIZATION_FLAG);
-        compileCommand.addEnvironmentVariable("C_INCLUDE_PATH", "$UTBOT_LAUNCH_INCLUDE_PATH");
         compileCommand.addFlagToBegin(FPIC_FLAG);
         compileCommand.addFlagsToBegin(SANITIZER_NEEDED_FLAGS);
         compileCommand.addFlagsToBegin(

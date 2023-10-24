@@ -70,7 +70,8 @@ ExecUtils::ExecutionResult BaseForkTask::run() {
                 status = TIMEOUT_CODE;
             }
             if (!ignoreErrors && status && status != TIMEOUT_CODE) {
-                LOG_S(ERROR) << "Exit status: " << status;
+                LOG_S(ERROR) << "Exit status '" << processName << "': " << status;
+                LOG_S(ERROR) << "Output: " << output;
                 LOG_S(ERROR) << "See details in " << logFilePath;
             }
             LOG_IF_S(DEBUG, status == 0) << "Exit status: 0";

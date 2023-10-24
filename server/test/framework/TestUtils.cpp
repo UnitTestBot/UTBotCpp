@@ -325,7 +325,7 @@ namespace testUtils {
         case CompilationUtils::CompilerName::GCC:
             return StringUtils::stringFormat(
                 "rm -rf build_gcc && mkdir -p build_gcc && cd build_gcc && "
-                "export CC=%s && export CXX=%s && export C_INCLUDE_PATH=$UTBOT_LAUNCH_INCLUDE_PATH",
+                "export CC=%s && export CXX=%s",
                 Paths::getGcc(), Paths::getGpp());
         case CompilationUtils::CompilerName::CLANG:
             return StringUtils::stringFormat(
