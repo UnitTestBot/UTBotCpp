@@ -539,6 +539,18 @@ namespace printer {
         }
     }
 
+    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
+        std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
+        for (const auto& testCase: testMethod.testCases) {
+            for (size_t i = 0; i < testCase.stubValues.size(); i++) {
+                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
+            }
+        }
+        for (const auto& [name, type]: symbolicNamesToTypesMap) {
+            strDeclareVar("extern \"C\" " + type, name);
+        }
+    }
+
     void printer::Printer::writeStubForParam(const types::TypesHandler *typesHandler,
                                              const std::shared_ptr<types::FunctionInfo> &fInfo,
                                              const std::string &methodName,

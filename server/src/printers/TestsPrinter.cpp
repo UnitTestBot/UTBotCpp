@@ -64,12 +64,6 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << NL;
 
-    if (!tests.methods.empty()) {
-        for (const auto &stubsHeader: tests.methods.begin()->second.stubsStorage->getStubsHeaders()) {
-            strInclude(stubsHeader) << NL;
-        }
-    }
-
     strDeclareSetOfVars(tests.externVariables);
 
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
@@ -177,6 +171,7 @@ void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
     int testNum = 0;
 
     writeStubsForFunctionParams(typesHandler, methodDescription, false);
+    writeExternForSymbolicStubs(methodDescription);
 
     methodDescription.stubsText = ss.str();
     resetStream();
