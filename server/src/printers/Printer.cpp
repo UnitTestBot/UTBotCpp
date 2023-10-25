@@ -125,7 +125,8 @@ namespace printer {
                                                           types::PointerUsage usage,
                                                           std::optional<std::string_view> value,
                                                           std::optional<uint64_t> alignment,
-                                                          bool complete) {
+                                                          bool complete,
+                                                          ExternType externType) {
         auto baseType = type.baseType();
         std::string arrayName{ name.data(), name.length() };
 
@@ -135,6 +136,18 @@ namespace printer {
         }
 
         ss << LINE_INDENT();
+        switch (externType) {
+            case ExternType::C :
+                if (getLanguage() == utbot::Language::CXX) {
+                    ss << "extern \"C\" ";
+                    break;
+                }
+            case ExternType::SAME_LANGUAGE :
+                ss << "extern ";
+                break;
+            case ExternType::NONE :
+                break;
+        }
         printAlignmentIfExists(alignment);
         ss << baseType << " " << arrayName;
         std::vector<size_t> sizes = type.arraysSizes(usage);
@@ -539,15 +552,16 @@ namespace printer {
         }
     }
 
-    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription& testMethod) {
-        std::unordered_map<std::string, std::string> symbolicNamesToTypesMap;
-        for (const auto& testCase: testMethod.testCases) {
+    void printer::Printer::writeExternForSymbolicStubs(const Tests::MethodDescription &testMethod) {
+        std::unordered_map<std::string, types::Type> symbolicNamesToTypesMap;
+        for (const auto &testCase: testMethod.testCases) {
             for (size_t i = 0; i < testCase.stubValues.size(); i++) {
-                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type.usedType();
+                symbolicNamesToTypesMap[testCase.stubValues[i].name] = testCase.stubValuesTypes[i].type;
             }
         }
-        for (const auto& [name, type]: symbolicNamesToTypesMap) {
-            strDeclareVar("extern \"C\" " + type, name);
+        for (const auto &[name, type]: symbolicNamesToTypesMap) {
+            strDeclareArrayVar(type, name, types::PointerUsage::PARAMETER, std::nullopt, std::nullopt, true,
+                               ExternType::C);
         }
     }
 
