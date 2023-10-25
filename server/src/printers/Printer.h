@@ -81,12 +81,19 @@ namespace printer {
 
         Stream strDeclareAbsError(SRef name);
 
+        enum ExternType {
+            NONE,
+            SAME_LANGUAGE,
+            C
+        };
+
         Stream strDeclareArrayVar(const types::Type& type,
                                   std::string_view name,
                                   types::PointerUsage usage,
                                   std::optional<std::string_view> value = std::nullopt,
                                   std::optional<uint64_t> alignment = std::nullopt,
-                                  bool complete = true);
+                                  bool complete = true,
+                                  ExternType externType = ExternType::NONE);
 
         Stream strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars);
 
