@@ -1564,6 +1564,22 @@ namespace {
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 
+    TEST_F(Server_Test, precompiled_obj) {
+        std::string suite = "precompiled";
+        setSuite(suite);
+        static const std::string source2_c = getTestFilePath("source2.c");
+        auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 30,
+                                                   ErrorMode::FAILING, false, true);
+        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
+        auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
+
+        Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkMinNumberOfTests(testGen.tests, 1);
+    }
+
     TEST_F(Server_Test, Linkage_LD) {
         std::string suite = "linkage-ld";
         setSuite(suite);
@@ -1584,7 +1600,7 @@ namespace {
             buildDirRelativePath, std::move(testFilter));
         auto coverageAndResultsWriter = std::make_unique<ServerCoverageAndResultsWriter>(nullptr);
         CoverageAndResultsGenerator coverageGenerator{ runRequest.get(), coverageAndResultsWriter.get() };
-        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING, false};
+        utbot::SettingsContext settingsContext{ true, true, 45, 0, true, false, ErrorMode::FAILING, false, false};
         coverageGenerator.generate(false, settingsContext);
 
         ASSERT_TRUE(coverageGenerator.getCoverageMap().empty());

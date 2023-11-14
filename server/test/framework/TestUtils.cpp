@@ -229,12 +229,13 @@ namespace testUtils {
                                                          bool verbose,
                                                          int kleeTimeout,
                                                          ErrorMode errorMode,
-                                                         bool differentVariables) {
+                                                         bool differentVariables,
+                                                         bool skipPrecompiled) {
         auto projectContext = GrpcUtils::createProjectContext(
                 projectName, projectPath, projectPath / "tests", buildDirRelativePath);
         auto settingsContext =
                 GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode,
-                                                 differentVariables, false);
+                                                 differentVariables, skipPrecompiled);
         return GrpcUtils::createProjectRequest(std::move(projectContext),
                                                std::move(settingsContext),
                                                srcPaths,
