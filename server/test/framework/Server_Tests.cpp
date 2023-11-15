@@ -1567,7 +1567,7 @@ namespace {
     TEST_F(Server_Test, precompiled_obj) {
         std::string suite = "precompiled";
         setSuite(suite);
-        static const std::string source2_c = getTestFilePath("source2.c");
+        static const std::string source2_c = getTestFilePath("source.c");
         auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 30,
                                                    ErrorMode::FAILING, false, true);

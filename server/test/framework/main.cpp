@@ -71,10 +71,10 @@ int main(int argc, char **argv) {
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("object-file"), clang,
                                            testUtils::MAKE_BUILD_COMMANDS_TOOL);
 
-        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("precompiled"), clang,
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("linkage-ld"), clang,
                                            testUtils::MAKE_BUILD_COMMANDS_TOOL);
 
-        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("linkage-ld"), clang,
+        testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("precompiled"), clang,
                                            testUtils::MAKE_BUILD_COMMANDS_TOOL);
 
         testUtils::tryExecGetBuildCommands(testUtils::getRelativeTestSuitePath("small-project"), gcc);

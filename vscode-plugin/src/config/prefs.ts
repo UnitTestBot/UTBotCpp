@@ -89,7 +89,7 @@ export class Prefs {
         .setUsestubs(Prefs.useStubs())
         .setErrormode(Prefs.errorMode())
         .setDifferentvariablesofthesametype(Prefs.differentVariablesOfTheSameType())
-        .setSkipObjectWithoutSource(Prefs.SkipObjectWithoutSource);
+        .setSkipobjectwithoutsource(Prefs.skipObjectWithoutSource());
         return settingsContext;
     }
 

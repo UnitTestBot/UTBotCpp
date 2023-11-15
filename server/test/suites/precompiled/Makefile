@@ -3,10 +3,10 @@
 all: exe
 
 clean:
-	rm source2.o exe
+	rm source.o exe
 
-source2.o: source2.c
-	clang -c -o source2.o source2.c
+source.o: source.c
+	clang -c -o source.o source.c
 
-exe: source2.o
-	clang -o exe ../object-file/source1.o source2.o
+exe: source.o
+	clang -o exe ../linkage-ld/issue-638.o source.o
