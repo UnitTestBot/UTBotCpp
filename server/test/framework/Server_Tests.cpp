@@ -1567,11 +1567,17 @@ namespace {
     TEST_F(Server_Test, precompiled_obj) {
         std::string suite = "precompiled";
         setSuite(suite);
-        static const std::string source2_c = getTestFilePath("source.c");
+        static const std::string source_c = getTestFilePath("source.c");
         auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
                                                    GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 30,
+                                                   ErrorMode::FAILING, false, false);
+        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source_c);
+        EXPECT_THROW(FileTestGen(*request, writer.get(), TESTMODE), CompilationDatabaseException);
+
+        projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+                                                   GrpcUtils::UTBOT_AUTO_TARGET_PATH, false, false, 30,
                                                    ErrorMode::FAILING, false, true);
-        auto request = GrpcUtils::createFileRequest(std::move(projectRequest), source2_c);
+        request = GrpcUtils::createFileRequest(std::move(projectRequest), source_c);
         auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
 
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
