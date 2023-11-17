@@ -21,7 +21,8 @@ namespace utbot {
                         bool useDeterministicSearcher,
                         bool useStubs,
                         testsgen::ErrorMode errorMode,
-                        bool differentVariablesOfTheSameType);
+                        bool differentVariablesOfTheSameType,
+                        bool skipObjectWithoutSource);
 
         const bool generateForStaticFunctions;
         const bool verbose;
@@ -30,6 +31,7 @@ namespace utbot {
         const bool useStubs;
         testsgen::ErrorMode errorMode;
         const bool differentVariablesOfTheSameType;
+        const bool skipObjectWithoutSource;
     };
 }
 

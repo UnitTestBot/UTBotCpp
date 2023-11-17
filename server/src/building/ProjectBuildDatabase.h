@@ -7,7 +7,7 @@ class ProjectBuildDatabase : public BuildDatabase {
 private:
     void initObjects(const nlohmann::json &compileCommandsJson);
 
-    void initInfo(const nlohmann::json &linkCommandsJson);
+    void initInfo(const nlohmann::json &linkCommandsJson, bool skipObjectWithoutSource);
 
     void filterInstalledFiles();
 
@@ -17,9 +17,9 @@ private:
 
 public:
     ProjectBuildDatabase(fs::path buildCommandsJsonPath, fs::path serverBuildDir,
-                         utbot::ProjectContext projectContext);
+                         utbot::ProjectContext projectContext, bool skipObjectWithoutSource);
 
-    explicit ProjectBuildDatabase(utbot::ProjectContext projectContext);
+    explicit ProjectBuildDatabase(utbot::ProjectContext projectContext, bool skipObjectWithoutSource);
 };
 
 

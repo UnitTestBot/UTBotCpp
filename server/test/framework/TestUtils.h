@@ -78,7 +78,8 @@ namespace testUtils {
                                                          bool verbose = true,
                                                          int kleeTimeout = 60,
                                                          ErrorMode errorMode = ErrorMode::FAILING,
-                                                         bool differentVariables = false);
+                                                         bool differentVariables = false,
+                                                         bool skipPrecompiled = false);
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,

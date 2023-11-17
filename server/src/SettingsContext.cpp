@@ -10,27 +10,31 @@ namespace utbot {
                                      bool useDeterministicSearcher,
                                      bool useStubs,
                                      testsgen::ErrorMode errorMode,
-                                     bool differentVariablesOfTheSameType)
-        : generateForStaticFunctions(generateForStaticFunctions),
-          verbose(verbose),
-          timeoutPerFunction(timeoutPerFunction > 0
-                                 ? std::make_optional(std::chrono::seconds{ timeoutPerFunction })
+                                     bool differentVariablesOfTheSameType,
+                                     bool skipObjectWithoutSource)
+            : generateForStaticFunctions(generateForStaticFunctions),
+              verbose(verbose),
+              timeoutPerFunction(timeoutPerFunction > 0
+                                 ? std::make_optional(std::chrono::seconds{timeoutPerFunction})
                                  : std::nullopt),
-         timeoutPerTest(timeoutPerTest > 0
-         ? std::make_optional(std::chrono::seconds{ timeoutPerTest })
-         : std::nullopt),
-          useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs),
-          errorMode(errorMode),
-          differentVariablesOfTheSameType (differentVariablesOfTheSameType) {
+              timeoutPerTest(timeoutPerTest > 0
+                             ? std::make_optional(std::chrono::seconds{timeoutPerTest})
+                             : std::nullopt),
+              useDeterministicSearcher(useDeterministicSearcher), useStubs(useStubs),
+              errorMode(errorMode),
+              differentVariablesOfTheSameType(differentVariablesOfTheSameType),
+              skipObjectWithoutSource(skipObjectWithoutSource) {
     }
+
     SettingsContext::SettingsContext(const testsgen::SettingsContext &settingsContext)
-        : SettingsContext(settingsContext.generateforstaticfunctions(),
+            : SettingsContext(settingsContext.generateforstaticfunctions(),
                           settingsContext.verbose(),
                           settingsContext.timeoutperfunction(),
                           settingsContext.timeoutpertest(),
                           settingsContext.usedeterministicsearcher(),
                           settingsContext.usestubs(),
                           settingsContext.errormode(),
-                          settingsContext.differentvariablesofthesametype()) {
+                          settingsContext.differentvariablesofthesametype(),
+                          settingsContext.skipobjectwithoutsource()) {
     }
 }

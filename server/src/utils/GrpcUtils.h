@@ -29,7 +29,8 @@ namespace GrpcUtils {
                           bool useDeterministicSearcher,
                           bool useStubs,
                           ErrorMode errorMode,
-                          bool differentVariablesOfTheSameType);
+                          bool differentVariablesOfTheSameType,
+                          bool skipObjectWithoutSource);
 
     std::unique_ptr<testsgen::SnippetRequest>
     createSnippetRequest(std::unique_ptr<testsgen::ProjectContext> projectContext,

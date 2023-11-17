@@ -31,7 +31,8 @@ static std::string tryConvertOptionToPath(const std::string &possibleFilePath, c
 
 ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
                                            fs::path _serverBuildDir,
-                                           utbot::ProjectContext _projectContext) :
+                                           utbot::ProjectContext _projectContext,
+                                           bool skipObjectWithoutSource) :
         BuildDatabase(_serverBuildDir,
                       _buildCommandsJsonPath,
                       fs::canonical(_buildCommandsJsonPath / "link_commands.json"),
@@ -47,7 +48,7 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
         auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
         auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
         initObjects(compileCommandsJson);
-        initInfo(linkCommandsJson);
+        initInfo(linkCommandsJson, skipObjectWithoutSource);
         filterInstalledFiles();
         addLocalSharedLibraries();
         fillTargetInfoParents();
@@ -58,9 +59,10 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
     }
 }
 
-ProjectBuildDatabase::ProjectBuildDatabase(utbot::ProjectContext projectContext) : ProjectBuildDatabase(
+ProjectBuildDatabase::ProjectBuildDatabase(utbot::ProjectContext projectContext, bool skipObjectWithoutSource)
+        : ProjectBuildDatabase(
         CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext),
-        Paths::getUTBotBuildDir(projectContext), std::move(projectContext)) {
+        Paths::getUTBotBuildDir(projectContext), std::move(projectContext), skipObjectWithoutSource) {
 }
 
 
@@ -154,7 +156,7 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
     }
 }
 
-void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
+void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson, bool skipObjectWithoutSource) {
     for (nlohmann::json const &linkCommand: linkCommandsJson) {
         fs::path directory = linkCommand.at("directory").get<std::string>();
         std::vector<std::string> jsonArguments;
@@ -189,7 +191,6 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
             if (ignoredOutput.count(currentFile)) {
                 continue;
             }
-            targetInfo->addFile(currentFile);
             if (Paths::isObjectFile(currentFile)) {
                 if (!CollectionUtils::containsKey(objectFileInfos, currentFile) &&
                     !CollectionUtils::containsKey(objectFileInfos,
@@ -197,6 +198,10 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
                     std::string message =
                             "compile_commands.json doesn't contain a command for object file " +
                             currentFile.string();
+                    if (skipObjectWithoutSource) {
+                        LOG_S(WARNING) << message;
+                        continue;
+                    }
                     LOG_S(ERROR) << message;
                     throw CompilationDatabaseException(message);
                 }
@@ -207,6 +212,7 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson) {
                     objectFileInfos[relative(currentFile, directory)]->linkUnit = output;
                 }
             }
+            targetInfo->addFile(currentFile);
         }
         targetInfo->commands.emplace_back(command);
     }

@@ -588,7 +588,8 @@ Status Server::TestsGenServiceImpl::PrintModulesContent(ServerContext *context,
 
     utbot::ProjectContext projectContext{*request};
     fs::path serverBuildDir = Paths::getUTBotBuildDir(projectContext);
-    std::shared_ptr<ProjectBuildDatabase> buildDatabase = std::make_shared<ProjectBuildDatabase>(projectContext);
+    std::shared_ptr<ProjectBuildDatabase> buildDatabase =
+            std::make_shared<ProjectBuildDatabase>(projectContext, true);
     StubSourcesFinder(buildDatabase).printAllModules();
     return Status::OK;
 }
@@ -663,7 +664,7 @@ Status Server::TestsGenServiceImpl::GetProjectTargets(ServerContext *context,
 
     try {
         utbot::ProjectContext projectContext{request->projectcontext()};
-        auto buildDatabase = std::make_shared<ProjectBuildDatabase>(projectContext);
+        auto buildDatabase = std::make_shared<ProjectBuildDatabase>(projectContext, true);
         std::vector<fs::path> targets = buildDatabase->getAllTargetPaths();
         ProjectTargetsWriter targetsWriter(response);
         targetsWriter.writeResponse(projectContext, targets);
@@ -690,7 +691,7 @@ Status Server::TestsGenServiceImpl::GetFileTargets(ServerContext *context,
 
     try {
         utbot::ProjectContext projectContext{request->projectcontext()};
-        auto buildDatabase = std::make_shared<ProjectBuildDatabase>(projectContext);
+        auto buildDatabase = std::make_shared<ProjectBuildDatabase>(projectContext, true);
         fs::path path = request->path();
         auto targetPaths = buildDatabase->getTargetPathsForSourceFile(path);
         FileTargetsWriter targetsWriter{response};

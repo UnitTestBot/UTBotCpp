@@ -10,6 +10,7 @@
    "unittestbot.testsGeneration.generateForStaticFunctions.description": "True, if you want UTBot to generate tests for static functions. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#generate-for-static-functions)",
    "unittestbot.testsGeneration.errorMode.description": "Choose the option: \"Failing\" means that error tests have runtime error, \"Passing\" means that no tests have runtime error.",
    "unittestbot.testsGeneration.differentVariablesOfTheSameType.description": "True, if you want signature variables of the same type to have different value in generated tests.",
+   "unittestbot.testsGeneration.skipObjectWithoutSource.description": "True, if you don't want get error for object files that not has compile info.",
    "unittestbot.visual.showTestResults.description": "True, if you want UTBot to display whether test passed/failed. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#show-test-results)",
    "unittestbot.stubs.useStubs.description": "True, if you want UTBot to use generated stubs from <testsDir>/stubs folder instead real files. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#use-stubs)",
    "unittestbot.advanced.enableDeveloperMode.description": "Enables hidden commands for debug. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#enable-developer-mode)",

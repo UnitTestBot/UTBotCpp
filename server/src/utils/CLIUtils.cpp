@@ -63,7 +63,8 @@ createSettingsContextByOptions(const SettingsContextOptionGroup &settingsContext
         settingsContextOptionGroup.isDeterministicSearcherUsed(),
         settingsContextOptionGroup.withStubs(),
         settingsContextOptionGroup.getErrorMode(),
-        settingsContextOptionGroup.doDifferentVariablesOfTheSameType());
+        settingsContextOptionGroup.doDifferentVariablesOfTheSameType(),
+        settingsContextOptionGroup.getSkipObjectWithoutSource());
 }
 
 std::vector<fs::path> getSourcePaths(const ProjectContextOptionGroup &projectContextOptions,

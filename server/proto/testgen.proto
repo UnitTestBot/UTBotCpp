@@ -106,6 +106,7 @@ message SettingsContext {
     bool useStubs = 6;
     ErrorMode errorMode = 7;
     bool differentVariablesOfTheSameType = 8;
+    bool skipObjectWithoutSource = 9;
 }
 
 message SnippetRequest {
