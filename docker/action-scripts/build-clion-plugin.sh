@@ -3,6 +3,5 @@
 set -e
 
 cd clion-plugin
-./gradlew assemble
+./gradlew --no-daemon buildPlugin
 rm -rf /root/.gradle
-
