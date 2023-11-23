@@ -382,6 +382,13 @@ std::string SourceToHeaderMatchCallback::decorate(std::string_view name) const {
     return forStubHeader ? std::string(name) : NameDecorator::decorate(name);
 }
 
+const std::string GNUPREREQ = "!__GNUC_PREREQ (7, 0) || defined __cplusplus";
+const std::set<std::string> TypedefEscapeMap = {
+        "_Float32",
+        "_Float64",
+        "_Float32x",
+        "_Float64x"
+};
 
 void SourceToHeaderMatchCallback::print(const NamedDecl *decl, const PrintingPolicy &policy) const {
     if (externalStream == nullptr) {
@@ -394,8 +401,20 @@ void SourceToHeaderMatchCallback::print(const NamedDecl *decl, const PrintingPol
     }
     auto name = decl->getNameAsString();
     auto decoratedName = decorate(name);
+    const auto it = TypedefEscapeMap.find(name);
     auto declaration = getRenamedDeclarationAsString(decl, policy, decoratedName);
-    *externalStream << declaration << ";\n";
+    if (it != TypedefEscapeMap.end()) {
+        *externalStream << "#ifdef __GNUC__\n"
+                        << "#  include <features.h>\n"
+                        << "#  if " << GNUPREREQ << "\n"
+                        <<  declaration << ";\n"
+                        << "#  endif" << "\n"
+                        << "#else" << "\n"
+                        <<  declaration << ";\n"
+                        << "#endif" << "\n";
+    } else {
+        *externalStream << declaration << ";\n";
+    }
     if (pAlignmentAttr) {
         *externalStream << "#pragma pack(pop)\n";
     }
