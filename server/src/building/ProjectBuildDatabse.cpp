@@ -103,11 +103,22 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
             LOG_S(WARNING)
             << "Source file " << sourceFile << " outside of project root " << projectContext.projectPath;
             kleeFilePathTemplate = Paths::createNewDirForFile(sourceFile, fs::path("/"),
-                                                              Paths::getUTBotFiles(projectContext) / "outside_of_project");
+                                                              Paths::getUTBotFiles(projectContext) /
+                                                              "outside_of_project");
         }
 
         fs::path kleeFile = Paths::addSuffix(kleeFilePathTemplate, "_klee");
         objectInfo->kleeFilesInfo = std::make_shared<KleeFilesInfo>(kleeFile);
+
+        if (CollectionUtils::containsKey(objectFileInfos, outputFile) && Paths::isObjectFile(outputFile)) {
+            auto previusInfo = objectFileInfos[outputFile];
+            if (previusInfo->command.getCommandLine() == objectInfo->command.getCommandLine()) {
+                LOG_S(WARNING) << "Skip duplicate compile command for object file: " << outputFile;
+            } else {
+                LOG_S(WARNING) << "Skip second compile command for object file: " << outputFile;
+            }
+            continue;
+        }
 
         if (CollectionUtils::containsKey(objectFileInfos, outputFile) ||
             CollectionUtils::containsKey(targetInfos, outputFile)) {

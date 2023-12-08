@@ -13,7 +13,7 @@ void GlobalVariableUsageMatchCallback::run(const MatchFinder::MatchResult &Resul
     checkUsage(Result);
 }
 
-static std::unordered_set<std::string> BLACK_LIST = { "stdin", "stdout", "stderr" };
+static std::unordered_set<std::string> BLACK_LIST = {"stdin", "stdout", "stderr"};
 
 void GlobalVariableUsageMatchCallback::checkUsage(const MatchFinder::MatchResult &Result) {
     if (const auto *pVarDecl =
@@ -50,7 +50,7 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
     clang::SourceManager &sourceManager = functionDecl->getASTContext().getSourceManager();
     fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     auto const &[iterator, inserted] =
-        usages.emplace(varDecl->getNameAsString(), functionDecl->getNameAsString());
+            usages.emplace(varDecl->getNameAsString(), functionDecl->getNameAsString());
     auto const &usage = *iterator;
 
     LOG_S(MAX) << "Found usage of global variable \'" << usage.variableName << "\' in function \'"
@@ -73,21 +73,21 @@ void GlobalVariableUsageMatchCallback::handleUsage(const clang::FunctionDecl *fu
 }
 
 GlobalVariableUsageMatchCallback::Usage::Usage(std::string variableName, std::string functionName)
-    : variableName(std::move(variableName)), functionName(std::move(functionName)) {
+        : variableName(std::move(variableName)), functionName(std::move(functionName)) {
 }
 
 bool GlobalVariableUsageMatchCallback::Usage::operator==(
-    const GlobalVariableUsageMatchCallback::Usage &rhs) const {
+        const GlobalVariableUsageMatchCallback::Usage &rhs) const {
     return variableName == rhs.variableName && functionName == rhs.functionName;
 }
 
 bool GlobalVariableUsageMatchCallback::Usage::operator!=(
-    const GlobalVariableUsageMatchCallback::Usage &rhs) const {
+        const GlobalVariableUsageMatchCallback::Usage &rhs) const {
     return !(rhs == *this);
 }
 
 std::size_t GlobalVariableUsageMatchCallback::UsageHash::operator()(
-    const GlobalVariableUsageMatchCallback::Usage &usage) const {
+        const GlobalVariableUsageMatchCallback::Usage &usage) const {
     size_t seed = 0;
     HashUtils::hashCombine(seed, usage.variableName, usage.functionName);
     return seed;
