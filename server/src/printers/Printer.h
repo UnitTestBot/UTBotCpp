@@ -29,7 +29,7 @@ namespace printer {
         typedef const std::vector<std::string> &VSRef;
         typedef std::stringstream &Stream;
 
-        std::stringstream ss;
+        std::stringstream ss{};
         int tabsDepth = 0;
         int commentDepth = 0;
         utbot::Language srcLanguage = utbot::Language::UNKNOWN;

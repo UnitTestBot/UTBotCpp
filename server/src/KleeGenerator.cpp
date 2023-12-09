@@ -153,8 +153,10 @@ KleeGenerator::getCompileCommandForKlee(const fs::path &hintPath,
     }
     command.setSourcePath(srcFilePath);
 
-    auto outFilePath = (forStub ? testGen->getProjectBuildDatabase()->getBitcodeFile(compilationUnitInfo->getOutputFile())
-                                : testGen->getTargetBuildDatabase()->getBitcodeFile(compilationUnitInfo->getOutputFile()));
+    auto outFilePath = (forStub ? testGen->getProjectBuildDatabase()->getBitcodeFile(
+            compilationUnitInfo->getOutputFile())
+                                : testGen->getTargetBuildDatabase()->getBitcodeFile(
+                    compilationUnitInfo->getOutputFile()));
     fs::create_directories(outFilePath.parent_path());
     command.setOutput(outFilePath);
     command.setOptimizationLevel("-O0");
@@ -227,7 +229,7 @@ Result<fs::path> KleeGenerator::defaultBuild(const fs::path &hintPath,
 
     auto makefileCommand = MakefileUtils::MakefileCommand(testGen->projectContext, makefile,
                                                           printer::DefaultMakefilePrinter::TARGET_BUILD);
-    auto[out, status, _] = makefileCommand.run();
+    auto [out, status, _] = makefileCommand.run();
     if (status != 0) {
         LOG_S(ERROR) << "Compilation for " << sourceFilePath << " failed.\n"
                      << "Command: \"" << commandWithChangingDirectory.toString() << "\"\n"
@@ -264,7 +266,8 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
                                                     const std::shared_ptr<LineInfo> &lineInfo) {
     std::vector<fs::path> outFiles;
     LOG_S(DEBUG) << "Building generated klee files...";
-    printer::KleePrinter kleePrinter(&typesHandler, testGen->getTargetBuildDatabase(), utbot::Language::UNKNOWN, testGen);
+    printer::KleePrinter kleePrinter(&typesHandler, testGen->getTargetBuildDatabase(), utbot::Language::UNKNOWN,
+                                     testGen);
     ExecUtils::doWorkWithProgress(
             testsMap, testGen->progressWriter, "Building generated klee files",
             [&](auto const &it) {
@@ -344,14 +347,14 @@ std::vector<fs::path> KleeGenerator::buildKleeFiles(const tests::TestsMap &tests
 }
 
 void KleeGenerator::parseKTestsToFinalCode(
-    const utbot::ProjectContext &projectContext,
-    tests::Tests &tests,
-    const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-    const std::vector<MethodKtests> &kleeOutput,
-    const std::shared_ptr<LineInfo> &lineInfo,
-    bool verbose,
-    ErrorMode errorMode) {
-    for (const auto &batch : kleeOutput) {
+        const utbot::ProjectContext &projectContext,
+        tests::Tests &tests,
+        const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
+        const std::vector<MethodKtests> &kleeOutput,
+        const std::shared_ptr<LineInfo> &lineInfo,
+        bool verbose,
+        ErrorMode errorMode) {
+    for (const auto &batch: kleeOutput) {
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());
         tests::KTestObjectParser KTestObjectParser(typesHandler);
@@ -375,12 +378,12 @@ void KleeGenerator::parseKTestsToFinalCode(
             continue;
         }
         auto predicate =
-            lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
+                lineInfo ? lineInfo->predicateInfo : std::optional<LineInfo::PredicateInfo>{};
         testsPrinter.genCode(methodDescription, predicate, verbose, errorMode);
     }
 
     printer::HeaderPrinter(Paths::getSourceLanguage(tests.sourceFilePath))
-        .print(tests.testHeaderFilePath, tests.sourceFilePath, tests.headerCode);
+            .print(tests.testHeaderFilePath, tests.sourceFilePath, tests.headerCode);
     testsPrinter.joinToFinalCode(tests, tests.testHeaderFilePath);
     LOG_S(DEBUG) << "Generated code for " << tests.methods.size() << " tests";
 }
