@@ -51,7 +51,7 @@ namespace Commands {
         unsigned int port = 0;
         fs::path logPath;
 
-        loguru::NamedVerbosity verbosity;
+        loguru::NamedVerbosity verbosity = loguru::Verbosity_INFO;
         static const std::map<std::string, loguru::NamedVerbosity> verbosityMap;
     };
 
