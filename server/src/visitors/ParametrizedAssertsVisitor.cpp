@@ -90,7 +90,7 @@ namespace visitor {
                                    PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                    additionalPointersCount);
             printer->strDeclareVar(type.typeName(),
-                                       PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
+                                   PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), value);
         } else {
             printer->ss << value << NL;
         }
@@ -110,7 +110,8 @@ namespace visitor {
                                        additionalPointersCount);
                 const auto &gtestMacro = predicateMapping.at(predicate);
                 auto signature =
-                        processExpect(type, gtestMacro, {view->getEntryValue(printer), getDecorateActualVarName(access)});
+                        processExpect(type, gtestMacro,
+                                      {view->getEntryValue(printer), getDecorateActualVarName(access)});
                 signature = changeSignatureToNullCheck(signature, type, view, access);
                 printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true,
                                          0, std::nullopt, inUnion);
@@ -121,7 +122,8 @@ namespace visitor {
             }
             const auto &gtestMacro = predicateMapping.at(predicate);
             auto signature = processExpect(type, gtestMacro,
-                                           {getDecorateActualVarName(access), view->getEntryValue(printer)});
+                                           {getDecorateActualVarName(access),
+                                            PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED)});
             signature = changeSignatureToNullCheck(signature, type, view, access);
             printer->strFunctionCall(signature.name, signature.args, SCNL, std::nullopt, true, 0,
                                      std::nullopt, inUnion);
