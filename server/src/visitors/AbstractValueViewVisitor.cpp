@@ -76,6 +76,7 @@ namespace visitor {
             visitArrayElementAfter(newType, newName, newView, newAccess, depth + 1);
         }
     }
+
     void AbstractValueViewVisitor::visitCString(const types::Type &type,
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
