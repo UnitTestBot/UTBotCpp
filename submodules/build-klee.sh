@@ -28,6 +28,7 @@ $UTBOT_CMAKE_BINARY -G Ninja \
   -DKLEE_LIBCXX_INCLUDE_DIR=$UTBOT_ALL/libcxx/install/include/c++/v1 \
   -DENABLE_KLEE_EH_CXX=TRUE \
   -DKLEE_LIBCXXABI_SRC_DIR=$UTBOT_ALL/libcxx/libcxxabi \
+  -DKLEE_RUNTIME_BUILD_TYPE="Release+Debug+Asserts" \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
   ..
 
