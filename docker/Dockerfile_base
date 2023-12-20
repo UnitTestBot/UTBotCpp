@@ -94,6 +94,9 @@ RUN sudo -E pip3 install tabulate==0.8.7 \
                          lit==0.11.0.post1 \
                          wllvm==1.3.1
 
+ENV CFLAGS="-gdwarf-4"
+ENV CXXFLAGS="-gdwarf-4"
+
 WORKDIR $UTBOT_ALL/llvm-project
 RUN mkdir libcxx_build && cd libcxx_build \
     && export CC=wllvm \

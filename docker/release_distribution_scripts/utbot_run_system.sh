@@ -52,6 +52,8 @@ export LD_LIBRARY_PATH=$UTBOT_ALL/install/lib:$UTBOT_ALL/debs-install/lib/x86_64
 export GENERAL_INCLUDES=$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include:$UTBOT_ALL/debs-install/usr/local/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/include
 export C_INCLUDE_PATH=GENERAL_INCLUDES${C_INCLUDE_PATH:+:${C_INCLUDE_PATH}}
 export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:GENERAL_INCLUDES${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}
+export CFLAGS="-gdwarf-4 $CFLAGS"
+export CXXFLAGS="-gdwarf-4 $CXXFLAGS"
 export LDFLAGS="-fuse-ld=gold $LDFLAGS"
 
 # This function moves dev version of libc into $UTBOT_ALL/debs-install directory
