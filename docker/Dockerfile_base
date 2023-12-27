@@ -82,6 +82,7 @@ RUN mkdir build && cd build \
     -DLLVM_ENABLE_RTTI=ON \
     -DLLVM_ENABLE_EH=ON \
     -DLLVM_TARGETS_TO_BUILD="host" \
+    -DLLVM_INSTALL_UTILS=ON \
     -DLLVM_ENABLE_PROJECTS="clang;libclc;lld;lldb;clang-tools-extra" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libc;libcxx;libcxxabi" \
     -G "Ninja" ../llvm \
