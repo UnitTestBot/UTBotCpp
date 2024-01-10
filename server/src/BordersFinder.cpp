@@ -1,11 +1,10 @@
 #include "BordersFinder.h"
 
-#include "Paths.h"
 #include "clang-utils/ASTPrinter.h"
 #include "clang-utils/Matchers.h"
+#include "clang-utils/ClangUtils.h"
 #include "utils/CollectionUtils.h"
 #include "utils/CompilationUtils.h"
-#include "clang-utils/ClangUtils.h"
 
 #include "loguru.h"
 
@@ -117,11 +116,11 @@ BordersFinder::Borders BordersFinder::getFunctionBordersLines(const SourceManage
 }
 
 BordersFinder::Borders BordersFinder::getStmtBordersLines(const SourceManager &srcMng, const Stmt *st) {
-    return getStmtBordersLinesDynamic(srcMng, clang::ast_type_traits::DynTypedNode::create(*st));
+    return getStmtBordersLinesDynamic(srcMng, clang::DynTypedNode::create(*st));
 }
 
 BordersFinder::Borders BordersFinder::getStmtBordersLinesDynamic(const SourceManager &srcMng,
-                                                                 const clang::ast_type_traits::DynTypedNode st) {
+                                                                 const clang::DynTypedNode st) {
     auto sourceRange = st.getSourceRange();
     return getBorders(srcMng, sourceRange);
 }

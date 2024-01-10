@@ -1,5 +1,6 @@
 #include "AlignmentFetcher.h"
 
+#include <clang/AST/Expr.h>
 #include <clang/AST/Attr.h>
 
 using namespace clang;

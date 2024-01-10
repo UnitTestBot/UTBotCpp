@@ -92,7 +92,7 @@ namespace visitor {
                 printer->strAssignVar(name, value);
             }
         } else {
-            printer->ss << value << NL;
+            printer->ss << value << printer::NL;
         }
     }
 

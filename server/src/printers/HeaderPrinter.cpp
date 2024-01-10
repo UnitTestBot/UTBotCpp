@@ -11,10 +11,10 @@ namespace printer {
         processHeader(Include(true, "cstring"));
         processHeader(Include(true, "unistd.h"));
         processHeader(Include(true, "stdio.h"));
-        ss << NL;
-        ss << PrinterUtils::redirectStdin << NL;
-        ss << PrinterUtils::writeToFile << NL;
-        ss << PrinterUtils::fromBytes << NL;
+        ss << printer::NL;
+        ss << PrinterUtils::redirectStdin << printer::NL;
+        ss << PrinterUtils::writeToFile << printer::NL;
+        ss << PrinterUtils::fromBytes << printer::NL;
         ss << PrinterUtils::constCast;
         headerCode += ss.str();
         FileSystemUtils::writeToFile(testHeaderFilePath, headerCode);

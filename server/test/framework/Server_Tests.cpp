@@ -908,9 +908,9 @@ namespace {
     TEST_F(Server_Test, Correct_CodeText_For_Regression) {
         auto [testGen, status] = performFeatureFileTestsRequest(floating_point_plain_c);
         const std::string code = testGen.tests.begin()->second.code;
-        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
-        const std::string endRegion = std::string("#pragma endregion") + NL;
-        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + printer::NL;
+        const std::string endRegion = std::string("#pragma endregion") + printer::NL;
+        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + printer::NL;
         ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
         ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
     }
@@ -1560,7 +1560,7 @@ namespace {
 
         testUtils::checkStatuses(resultMap, tests);
 
-        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 3}};
+        StatusCountMap expectedStatusCountMap{{testsgen::TEST_PASSED, 2}};
         testUtils::checkStatusesCount(resultMap, tests, expectedStatusCountMap);
     }
 

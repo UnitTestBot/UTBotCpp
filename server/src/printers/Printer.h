@@ -14,13 +14,13 @@
 #include <unordered_map>
 #include <vector>
 
-#define NL "\n"
-#define SCNL ";" NL
-#define BNL "{" NL
-#define IND "i"
-#define TAB "    "
-
 namespace printer {
+    const std::string NL = "\n";
+    const std::string SCNL = ";" + NL;
+    const std::string BNL = "{" + NL;
+    const std::string IND = "i";
+    const std::string TAB = "    ";
+
     using tests::Tests;
 
     class Printer {

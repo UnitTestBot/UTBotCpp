@@ -14,7 +14,7 @@ namespace visitor {
                                              const std::string &access,
                                              int depth) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
-        printer->strForBound(IND, size) << printer->LB();
+        printer->strForBound(printer::IND, size) << printer->LB();
         AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
         printer->ss << printer->RB();
     }
