@@ -211,9 +211,15 @@ RUN wget https://github.com/agauniyal/rang/releases/download/v3.1.0/rang.hpp -P 
 COPY building_dependencies/runtime_env.sh /home/utbot/.bashrc
 COPY building_dependencies/runtime_env.sh /root/.bashrc
 
-# Install uclibc
+# We need to install version 2, because KLEE uses two. 
+# Install uclibc-32
 RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc
-WORKDIR $UTBOT_ALL/klee-uclibc
+WORKDIR $UTBOT_ALL/klee-uclibc-32
+RUN ./configure --make-llvm-lib && make KLEE_CFLAGS="-m32" -j`nproc`
+
+# Install uclibc-64
+RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc
+WORKDIR $UTBOT_ALL/klee-uclibc-64
 RUN ./configure --make-llvm-lib && make -j`nproc`
 
 # Download library for access private members
