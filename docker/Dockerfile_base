@@ -213,12 +213,12 @@ COPY building_dependencies/runtime_env.sh /root/.bashrc
 
 # We need to install version 2, because KLEE uses two. 
 # Install uclibc-32
-RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc
+RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc-32
 WORKDIR $UTBOT_ALL/klee-uclibc-32
 RUN ./configure --make-llvm-lib && make KLEE_CFLAGS="-m32" -j`nproc`
 
 # Install uclibc-64
-RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc
+RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc-64
 WORKDIR $UTBOT_ALL/klee-uclibc-64
 RUN ./configure --make-llvm-lib && make -j`nproc`
 
