@@ -14,11 +14,6 @@
 #include <string>
 #include <utility>
 
-
-//namespace clang {
-//    namespace ast_type_traits {}
-//}
-
 class BordersFinder : public clang::ast_matchers::MatchFinder::MatchCallback {
 public:
     BordersFinder(const fs::path &filePath,

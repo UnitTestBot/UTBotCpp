@@ -70,7 +70,7 @@ WORKDIR /home/utbot
 USER root
 ARG LLVM_VERSION_MAJOR
 RUN mkdir $UTBOT_ALL/llvm_gold_plugin
-COPY building_dependencies/llvm_gold_plugin/plugin-api.h $UTBOT_ALL/llvm_gold_plugin
+RUN wget -P $UTBOT_ALL/llvm_gold_plugin https://raw.githubusercontent.com/bminor/binutils-gdb/fd67aa1129fd006ad49ed5ecb2b063705211553a/include/plugin-api.h
 RUN git clone --single-branch --branch "release/${LLVM_VERSION_MAJOR}.x" --depth 1 "https://github.com/llvm/llvm-project.git" $UTBOT_ALL/llvm-project
 WORKDIR $UTBOT_ALL/llvm-project
 RUN mkdir build && cd build \
@@ -211,7 +211,7 @@ RUN wget https://github.com/agauniyal/rang/releases/download/v3.1.0/rang.hpp -P 
 COPY building_dependencies/runtime_env.sh /home/utbot/.bashrc
 COPY building_dependencies/runtime_env.sh /root/.bashrc
 
-# We need to install version 2, because KLEE uses two. 
+# We need to install version 32 and 64 for klee.
 # Install uclibc-32
 RUN git clone -b klee_uclibc_v1.2 https://github.com/klee/klee-uclibc.git $UTBOT_ALL/klee-uclibc-32
 WORKDIR $UTBOT_ALL/klee-uclibc-32
