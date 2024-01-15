@@ -1,7 +1,7 @@
 # This script clears out all the unnecessary files from the release build
 
 # Need just clang-10, llvm-cov, llvm-profdata and cmake in $UTBOT_INSTALL_DIR/bin
-cd $UTBOT_INSTALL_DIR/bin && find -type f \( -name "*" ! -name "llvm-cov" ! -name "llvm-profdata"  ! -name "llvm-nm" ! -name "clang" ! -name "clang++" ! -name "clang-10" ! -name cmake \) -delete
+cd $UTBOT_INSTALL_DIR/bin && find -type f \( -name "*" ! -name "llvm-cov" ! -name "llvm-profdata"  ! -name "llvm-nm" ! -name "clang" ! -name "clang++" ! -name "clang-14" ! -name cmake \) -delete
 
 # Delete all broken links. Don't need to delete clang which is a link (not broken) to clang-10
 find $UTBOT_INSTALL_DIR/bin/ -xtype l -delete
