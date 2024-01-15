@@ -67,7 +67,7 @@ std::unique_ptr<llvm::Module> IRParser::getModule(const fs::path &rootBitcode,
         try {
             // catch Fatal error into LLVM IR parser
             llvm::ScopedFatalErrorHandler scopedHandler([](void *user_data,
-                                                           const std::string &reason,
+                                                           const char *reason,
                                                            bool gen_crash_diag) {
                 LOG_S(ERROR) << "Fatal error into LLVM. " << reason;
                 throw LLVMException(reason);

@@ -484,6 +484,7 @@ void SourceToHeaderMatchCallback::renameAnonymousReturnTypeDecl(const TagDecl *t
 void SourceToHeaderMatchCallback::replaceAnonymousEnumTypeName(std::string &strDecl,
                                                                const std::string &typeName) const {
     StringUtils::replaceFirst(strDecl, "enum (anonymous)", typeName);
+    StringUtils::replaceFirst(strDecl, "enum (unnamed)", typeName);
 }
 
 bool SourceToHeaderMatchCallback::isAnonymousEnumDecl(const clang::TagDecl *tagDecl) const {

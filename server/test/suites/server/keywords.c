@@ -1,6 +1,5 @@
-#include "keywords.h"
-
 #include <stdlib.h>
+#include "keywords.h"
 
 extern int get_size_of_data(struct data d) {
     return sizeof(d);

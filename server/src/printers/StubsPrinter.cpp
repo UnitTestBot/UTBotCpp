@@ -18,15 +18,15 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
                                  .time_since_epoch()
                                  .count();
     strComment(std::to_string(creationTime));
-    strComment("Please, do not change the line above") << NL;
+    strComment("Please, do not change the line above") << printer::NL;
     writeCopyrightHeader();
-    ss << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
-    ss << LINE_INDENT() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << NL;
-    ss << "#endif" << NL;
+    ss << "#ifdef " << PrinterUtils::KLEE_MODE << printer::NL;
+    ss << LINE_INDENT() << "extern void klee_make_symbolic(void *addr, unsigned long long nbytes, const char *name);" << printer::NL;
+    ss << "#endif" << printer::NL;
     strInclude(Paths::sourcePathToHeaderInclude(tests.sourceFilePath));
-    ss << NL;
-    ss << "#pragma GCC visibility push (default)" << NL;
-    strDefine(PrinterUtils::C_NULL, "((void*)0)") << NL;
+    ss << printer::NL;
+    ss << "#pragma GCC visibility push (default)" << printer::NL;
+    strDefine(PrinterUtils::C_NULL, "((void*)0)") << printer::NL;
     for (const auto &[_, method] : tests.methods) {
         auto methodCopy = method;
         auto returnMangledName = PrinterUtils::getReturnMangledName(methodCopy.name);
@@ -55,13 +55,13 @@ Stubs printer::StubsPrinter::genStubFile(const tests::Tests &tests,
 
         if (methodCopy.sourceBody) {
             strFunctionDecl(methodCopy, " ");
-            ss << methodCopy.sourceBody.value() << NL;
+            ss << methodCopy.sourceBody.value() << printer::NL;
         } else {
             strStubForMethod(methodCopy, typesHandler, "", "", "", false);
         };
-        ss << NL;
+        ss << printer::NL;
     }
-    ss << "#pragma GCC visibility pop" << NL;
+    ss << "#pragma GCC visibility pop" << printer::NL;
     stubFile.code = ss.str();
     return stubFile;
 }

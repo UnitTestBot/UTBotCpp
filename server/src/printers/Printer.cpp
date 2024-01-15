@@ -39,12 +39,12 @@ namespace printer {
     Printer::Stream &printer::Printer::strInclude(const std::string &header, bool isAngled) {
         char begin = isAngled ? '<' : '\"';
         char end = isAngled ? '>' : '\"';
-        ss << LINE_INDENT() << "#include " << begin << header << end << NL;
+        ss << LINE_INDENT() << "#include " << begin << header << end << printer::NL;
         return ss;
     }
 
     std::stringstream &printer::Printer::strDefine(std::string_view from, std::string_view to) {
-        ss << "#define " << from << " " << to << NL;
+        ss << "#define " << from << " " << to << printer::NL;
         return ss;
     }
 
@@ -53,7 +53,7 @@ namespace printer {
     }
 
     Printer::Stream &printer::Printer::strIncludeSystem(const std::string &header) {
-        ss << LINE_INDENT() << "#include <" << header << ">" << NL;
+        ss << LINE_INDENT() << "#include <" << header << ">" << printer::NL;
         return ss;
     }
 
@@ -116,7 +116,7 @@ namespace printer {
     }
 
     Printer::Stream &printer::Printer::strDeclareAbsError(const std::string &name) {
-        ss << LINE_INDENT() << "static const float " << name << " = 1e-6;" << NL;
+        ss << LINE_INDENT() << "static const float " << name << " = 1e-6;" << printer::NL;
         return ss;
     }
 
@@ -290,12 +290,12 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strComment(const std::string &comment) {
-        ss << LINE_INDENT() << "// " << comment << NL;
+        ss << LINE_INDENT() << "// " << comment << printer::NL;
         return ss;
     }
 
     Printer::Stream &Printer::commentBlockSeparator() {
-        ss << LINE_INDENT() << "//////////////////////////////////////////// " << NL;
+        ss << LINE_INDENT() << "//////////////////////////////////////////// " << printer::NL;
         return ss;
     }
 
@@ -389,9 +389,9 @@ namespace printer {
 
     std::stringstream& Printer::checkOverflowStubArray(const std::string &cntCall) {
         ss << LINE_INDENT() << "if (" << cntCall << " == " <<
-           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << NL;
+           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << printer::NL;
         tabsDepth++;
-        ss << LINE_INDENT() << cntCall << "--;" << NL;
+        ss << LINE_INDENT() << cntCall << "--;" << printer::NL;
         ss << RB();
         return ss;
     }
@@ -427,7 +427,7 @@ namespace printer {
         std::string returnValue;
         if (types::TypesHandler::omitMakeSymbolic(method.returnType)) {
             returnValue = typesHandler.getDefaultValueForType(methodCopy.returnType, getLanguage());
-            strReturn(returnValue) << RB() << NL;
+            strReturn(returnValue) << RB() << printer::NL;
             return ss;
         }
 
@@ -435,7 +435,7 @@ namespace printer {
         strDeclareVar("static int", firstTimeCallVar, "1");
         const std::string cntCall = "cntCall";
         strDeclareVar("static int", cntCall, "0");
-        ss << LINE_INDENT() << "#ifdef " << PrinterUtils::KLEE_MODE << NL;
+        ss << LINE_INDENT() << "#ifdef " << PrinterUtils::KLEE_MODE << printer::NL;
         tabsDepth++;
         ss << LINE_INDENT() << "if (" << firstTimeCallVar << " == 1)" << LB();
         strAssignVar(firstTimeCallVar, "0");
@@ -450,12 +450,12 @@ namespace printer {
         ss << preferWriter.ss.str();
         ss << RB();
         tabsDepth--;
-        ss << LINE_INDENT() << "#endif" << NL;
+        ss << LINE_INDENT() << "#endif" << printer::NL;
 
         checkOverflowStubArray(cntCall);
 
         returnValue = stubSymbolicVarName + "[" + cntCall + "++]";
-        strReturn(returnValue) << RB() << NL;
+        strReturn(returnValue) << RB() << printer::NL;
         return ss;
     }
 
@@ -476,7 +476,7 @@ namespace printer {
         tabsDepth++;
         strAssignVar(arrayName + "[i]", stubFunctionName);
         tabsDepth--;
-        ss << LINE_INDENT() << "}" << NL;
+        ss << LINE_INDENT() << "}" << printer::NL;
         return ss;
     }
 
@@ -584,9 +584,9 @@ namespace printer {
                                       const std::function<bool(
                                               tests::Tests::MethodDescription const &)> &methodFilter) {
         if (srcLanguage == utbot::Language::CXX) {
-            ss << NL;
+            ss << printer::NL;
             strInclude("access_private.hpp");
-            ss << NL;
+            ss << printer::NL;
             std::unordered_set<uint64_t> checkedOnPrivate;
             for (const auto &[methodName, testMethod]: tests.methods) {
                 if (!methodFilter(testMethod)) {
@@ -602,7 +602,7 @@ namespace printer {
                     }
                 }
             }
-            ss << NL;
+            ss << printer::NL;
         }
     }
 
@@ -622,7 +622,7 @@ namespace printer {
                                                     type.typeName(),
                                                     field.type.typeName(),
                                                     field.name);
-                    ss << NL;
+                    ss << printer::NL;
                 }
                 addAccessor(typesHandler, field.type, checkedOnPrivate);
             }
@@ -646,12 +646,12 @@ namespace printer {
         std::string name = structName + "." + field.name + "[i]";
         strAssignVar(name, stubName);
         tabsDepth--;
-        ss << LINE_INDENT() << "}" << NL;
+        ss << LINE_INDENT() << "}" << printer::NL;
     }
 
     void Printer::writeStubsForStructureFields(const Tests &tests) {
         if (!tests.stubs.empty()) {
-            ss << tests.stubs << NL;
+            ss << tests.stubs << printer::NL;
         }
     }
 
@@ -660,7 +660,7 @@ namespace printer {
             if (methodDescription.stubsText.empty()) {
                 continue;
             }
-            ss << methodDescription.stubsText << NL;
+            ss << methodDescription.stubsText << printer::NL;
         }
     }
 
@@ -679,7 +679,7 @@ namespace printer {
     }
 
     void Printer::writeCopyrightHeader() {
-        ss << Copyright::GENERATED_C_CPP_FILE_HEADER << NL;
+        ss << Copyright::GENERATED_C_CPP_FILE_HEADER << printer::NL;
     }
 
     Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars) {

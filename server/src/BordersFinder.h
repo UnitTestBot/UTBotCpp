@@ -5,6 +5,7 @@
 #include "LineInfo.h"
 #include "building/CompilationDatabase.h"
 
+#include <clang/AST/ASTTypeTraits.h>
 #include <clang/ASTMatchers/ASTMatchFinder.h>
 #include <clang/ASTMatchers/ASTMatchers.h>
 #include <clang/Tooling/Tooling.h>
@@ -31,6 +32,7 @@ public:
 private:
     unsigned line;
     LineInfo lineInfo{};
+
     struct Borders {
         struct Position {
             unsigned line;
@@ -39,13 +41,14 @@ private:
         Position start;
         Position end;
 
-        friend bool operator<(const Borders& lhs, const Borders& rhs) {
+        friend bool operator<(const Borders &lhs, const Borders &rhs) {
             return (rhs.start.line < lhs.start.line ||
-                   (rhs.start.line == lhs.start.line && rhs.start.column <= lhs.start.column)) &&
+                    (rhs.start.line == lhs.start.line && rhs.start.column <= lhs.start.column)) &&
                    (rhs.end.line > lhs.start.line ||
-                   (rhs.end.line == lhs.start.line && rhs.end.column >= lhs.start.column));
+                    (rhs.end.line == lhs.start.line && rhs.end.column >= lhs.start.column));
         }
     };
+
     std::optional<Borders> classBorder;
     ClangToolRunner clangToolRunner;
 
@@ -53,7 +56,7 @@ private:
 
     Borders getStmtBordersLines(const clang::SourceManager &srcMng, const clang::Stmt *st);
 
-    Borders getStmtBordersLinesDynamic(const clang::SourceManager &srcMng, clang::ast_type_traits::DynTypedNode st);
+    Borders getStmtBordersLinesDynamic(const clang::SourceManager &srcMng, clang::DynTypedNode st);
 
     [[nodiscard]] bool containsLine(Borders b) const;
 

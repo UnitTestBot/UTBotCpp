@@ -4,7 +4,7 @@
 export UTBOT_ALL=/utbot_distr
 export UTBOT_INSTALL_DIR=$UTBOT_ALL/install
 export UTBOT_CMAKE_BINARY=$UTBOT_INSTALL_DIR/bin/cmake
-export C_INCLUDE_PATH=$UTBOT_INSTALL_DIR/lib/clang/10.0.0/include/:$UTBOT_ALL/gtest/googletest/include
+export C_INCLUDE_PATH=$UTBOT_ALL/gtest/googletest/include
 export LLVM_INCLUDE_DIRS=$UTBOT_ALL/llvm/llvm
 export CMAKE_CXX_STANDARD=17
 export CMAKE_CXX_STANDARD_REQUIRED=ON
@@ -15,7 +15,7 @@ export NODE_TLS_REJECT_UNAUTHORIZED=0
 # KLEE env
 export COVERAGE=0
 export USE_TCMALLOC=1
-export LLVM_VERSION=10.0
+export LLVM_VERSION=14.0
 export ENABLE_OPTIMIZED=1
 export ENABLE_DEBUG=1
 export DISABLE_ASSERTIONS=0
@@ -33,6 +33,8 @@ export CXX=$UTBOT_INSTALL_DIR/bin/clang++
 export CPATH=$CPATH:$UTBOT_ALL/klee/include
 export LD_LIBRARY_PATH=$UTBOT_INSTALL_DIR/lib
 export LDFLAGS='-fuse-ld=gold'
+export CFLAGS="$CFLAGS -gdwarf-4"
+export CXXFLAGS="$CXXFLAGS -gdwarf-4"
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH
 
 if [ -z "${VERSION}" ]

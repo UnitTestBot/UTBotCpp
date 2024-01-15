@@ -1576,9 +1576,9 @@ namespace {
     TEST_F(Syntax_Test, Correct_CodeText_For_Regression_And_Error) {
         auto [testGen, status] = createTestForFunction(structs_with_pointers_c, 78);
         const std::string code = testGen.tests.begin()->second.code;
-        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + NL;
-        const std::string endRegion = std::string("#pragma endregion") + NL;
-        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + NL;
+        const std::string beginRegressionRegion = "#pragma region " + Tests::DEFAULT_SUITE_NAME + printer::NL;
+        const std::string endRegion = std::string("#pragma endregion") + printer::NL;
+        const std::string beginErrorRegion = "#pragma region " + Tests::ERROR_SUITE_NAME + printer::NL;
         ASSERT_TRUE(code.find(beginRegressionRegion) != std::string::npos) << "No regression begin region";
         ASSERT_TRUE(code.find(endRegion) != std::string::npos) << "No regression end region";
         ASSERT_TRUE(code.find(beginErrorRegion) != std::string::npos) << "No error begin region";

@@ -62,19 +62,19 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     resetStream();
     writeCopyrightHeader();
     genHeaders(tests, generatedHeaderPath);
-    ss << NL;
+    ss << printer::NL;
 
     strDeclareSetOfVars(tests.externVariables);
 
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 
     for (const auto &commentBlock : tests.commentBlocks) {
-        strComment(commentBlock) << NL;
+        strComment(commentBlock) << printer::NL;
     }
     writeStubsForStructureFields(tests);
-    ss << NL;
+    ss << printer::NL;
     writeStubsForParameters(tests);
-    ss << NL;
+    ss << printer::NL;
 
     tests.regressionMethodsNumber = printSuiteAndReturnMethodsCount(Tests::DEFAULT_SUITE_NAME, tests.methods);
     tests.errorMethodsNumber = printSuiteAndReturnMethodsCount(Tests::ERROR_SUITE_NAME, tests.methods);
@@ -145,7 +145,7 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
     })) {
         return 0;
     }
-    ss << "#pragma region " << suiteName << NL;
+    ss << "#pragma region " << suiteName << printer::NL;
     std::uint32_t count = 0;
     for (const auto &[methodName, methodDescription] : methods) {
         if (methodDescription.codeText.at(suiteName).empty()) {
@@ -154,7 +154,7 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
         count += methodDescription.suiteTestCases.at(suiteName).size();
         ss << methodDescription.codeText.at(suiteName);
     }
-    ss << "#pragma endregion" << NL;
+    ss << "#pragma endregion" << printer::NL;
     return count;
 }
 
@@ -248,10 +248,10 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     }
     if (testCase.errorInfo.errorType == ErrorType::ASSERTION_FAILURE) {
         ss << LINE_INDENT() << "/*"
-           << LINE_INDENT() << testCase.errorInfo.failureBody << NL
-           << LINE_INDENT() << "FILE: " << testCase.errorInfo.fileWithFailure.string() << NL
-           << LINE_INDENT() << "LINE: " << testCase.errorInfo.lineWithFailure << NL
-           << LINE_INDENT() << "*/" << NL;
+           << LINE_INDENT() << testCase.errorInfo.failureBody << printer::NL
+           << LINE_INDENT() << "FILE: " << testCase.errorInfo.fileWithFailure.string() << printer::NL
+           << LINE_INDENT() << "LINE: " << testCase.errorInfo.lineWithFailure << printer::NL
+           << LINE_INDENT() << "*/" << printer::NL;
     }
 
     TestsPrinter::verboseFunctionCall(methodDescription, testCase, errorMode);
@@ -260,10 +260,10 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
     if (testCase.isError()) {
         printFailAssertion(errorMode);
     } else {
-        ss << NL;
+        ss << printer::NL;
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
     }
-    ss << RB() << NL;
+    ss << RB() << printer::NL;
 }
 
 void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescription,
@@ -287,7 +287,7 @@ void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescrip
                                            testCase.getFileByName(fileName).data });
     }
     if (numInitFiles != 0) {
-        ss << NL;
+        ss << printer::NL;
     }
 }
 
@@ -317,7 +317,7 @@ void TestsPrinter::openFiles(const Tests::MethodDescription &methodDescription,
         fileName++;
     }
     if (fileName != 'A') {
-        ss << NL;
+        ss << printer::NL;
     }
 }
 
@@ -331,7 +331,7 @@ void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDesc
         for (const auto &paramValue : testCase.paramValues) {
             printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
         }
-        ss << NL;
+        ss << printer::NL;
     }
 }
 
@@ -354,7 +354,7 @@ void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDes
         for (const auto &lazy : testCase.lazyReferences) {
             strAssignVar(lazy.varName, lazy.typeName);
         }
-        ss << NL;
+        ss << printer::NL;
     }
 }
 
@@ -384,11 +384,11 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printLazyVariables(methodDescription, testCase, false);
     printLazyReferences(methodDescription, testCase, false);
     parametrizedAsserts(methodDescription, testCase, predicateInfo, errorMode);
-    ss << RB() << NL;
+    ss << RB() << printer::NL;
 }
 
 void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath) {
-    strInclude(generatedHeaderPath.filename()) << NL;
+    strInclude(generatedHeaderPath.filename()) << printer::NL;
 
     strInclude("gtest/gtest.h");
 
@@ -454,7 +454,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
                 verboseParameter(methodDescription, param, value, false);
             }
         }
-        ss << NL;
+        ss << printer::NL;
     }
 
     std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes};
@@ -476,7 +476,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
                     verboseParameter(methodDescription, param, value, false);
                 }
             }
-            ss << NL;
+            ss << printer::NL;
         }
     }
 
@@ -485,7 +485,7 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
     }
     printClassObject(methodDescription, testCase);
     printFunctionParameters(methodDescription, testCase, true);
-    ss << NL;
+    ss << printer::NL;
 }
 
 void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &methodDescription,
@@ -557,7 +557,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
         visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
             .visit(expectedType, PrinterUtils::EXPECTED, testCase.returnValue.view.get(), std::nullopt);
     }
-    ss << NL;
+    ss << printer::NL;
 }
 
 void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDescription,
@@ -599,19 +599,19 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
     }
 
     if (!methodDescription.globalParams.empty()) {
-        ss << NL;
+        ss << printer::NL;
         strComment("Check global variables");
         globalParamsAsserts(methodDescription, testCase);
     }
 
     if (methodDescription.isClassMethod()) {
-        ss << NL;
+        ss << printer::NL;
         strComment("Check class fields mutation");
         classAsserts(methodDescription, testCase);
     }
 
     if (!testCase.paramPostValues.empty()) {
-        ss << NL;
+        ss << printer::NL;
         strComment("Check function parameters");
         changeableParamsAsserts(methodDescription, testCase);
     }
@@ -726,7 +726,7 @@ void TestsPrinter::markTestedFunctionCallIfNeed(const std::string &name,
         // cannot generate stack for error
         return;
     }
-    ss << sarif::PREFIX_FOR_JSON_PATH << name << "," << testCase.testIndex << NL;
+    ss << sarif::PREFIX_FOR_JSON_PATH << name << "," << testCase.testIndex << printer::NL;
 }
 
 std::vector<std::string>
@@ -825,7 +825,7 @@ void printer::TestsPrinter::parametrizedInitializeSymbolicStubs(const Tests::Met
 void TestsPrinter::printFailAssertion(ErrorMode errorMode) {
     switch (errorMode) {
         case ErrorMode::FAILING:
-            ss << NL;
+            ss << printer::NL;
             ss << LINE_INDENT()
                << "FAIL() << \"Unreachable point or the function was supposed to fail, but \"\n"
                << LINE_INDENT() << LINE_INDENT()
@@ -845,7 +845,7 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     auto subViews = view->getSubViews();
     std::stringstream structuredValuesWithPrefixes;
 
-    structuredValuesWithPrefixes << (view->isAnonymous() ? "/* { */" : "{") << NL;
+    structuredValuesWithPrefixes << (view->isAnonymous() ? "/* { */" : "{") << printer::NL;
     ++printer->tabsDepth;
 
     const size_t fieldIndexToInitUnion = view->getFieldIndexToInitUnion();
@@ -856,7 +856,7 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
         if (i != 0) {
             if (isStruct)
                 structuredValuesWithPrefixes << ",";
-            structuredValuesWithPrefixes << NL;
+            structuredValuesWithPrefixes << printer::NL;
         }
 
         bool printInComment = !(isStruct || fieldIndexToInitUnion == i);
@@ -874,7 +874,7 @@ std::string printer::MultiLinePrinter::print(TestsPrinter *printer,
     }
 
     --printer->tabsDepth;
-    structuredValuesWithPrefixes << NL
+    structuredValuesWithPrefixes << printer::NL
                                  << printer->LINE_INDENT()
                                  << (view->isAnonymous() ? "/* } */" : "}");
 

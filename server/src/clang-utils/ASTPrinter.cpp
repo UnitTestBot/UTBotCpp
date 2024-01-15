@@ -16,8 +16,8 @@ std::string ASTPrinter::getSourceText(clang::SourceRange sourceRange,
 }
 
 std::string ASTPrinter::getSourceTextMacro(clang::SourceRange sourceRange,
-                                      const clang::SourceManager &sourceManager,
-                                      const clang::LangOptions &langOpts) {
+                                           const clang::SourceManager &sourceManager,
+                                           const clang::LangOptions &langOpts) {
     auto charRange = clang::Lexer::getAsCharRange(sourceRange, sourceManager, langOpts);
     auto stringRep = clang::Lexer::getSourceText(charRange, sourceManager, langOpts);
     return stringRep.str();
@@ -27,5 +27,6 @@ std::string ASTPrinter::getSourceTextRaw(clang::SourceRange sourceRange,
                                          const clang::SourceManager &sourceManager,
                                          const clang::LangOptions &langOpts) {
 
-    return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(sourceRange), sourceManager, langOpts);
+    return clang::Lexer::getSourceText(clang::CharSourceRange::getCharRange(sourceRange), sourceManager,
+                                       langOpts).str();
 }

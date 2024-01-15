@@ -28,7 +28,8 @@ bool TypeVisitor::TraverseType(clang::QualType type) {
             kinds.push_back(std::make_shared<ArrayType>(size, false));
         } else {
             uint64_t id = ::types::Type::getIdFromCanonicalType(curType);
-            bool unnamed = StringUtils::contains(curTypeString, "anonymous at");
+            bool unnamed = StringUtils::contains(curTypeString, "anonymous at") ||
+                           StringUtils::contains(curTypeString, "unnamed at");
             bool constQualified = canonicalType.getNonReferenceType().isConstQualified();
             SimpleType::ReferenceType referenceType = SimpleType::ReferenceType::NotReference;
             if (canonicalType->isLValueReferenceType()) {

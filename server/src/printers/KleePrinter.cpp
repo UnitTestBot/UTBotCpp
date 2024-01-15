@@ -46,7 +46,7 @@ void KleePrinter::writePosixWrapper(const Tests &tests,
     strFunctionCall(PrinterUtils::POSIX_CHECK_STDIN_READ, {});
     strReturn(KleeUtils::RESULT_VARIABLE_NAME);
     closeBrackets(1);
-    ss << NL;
+    ss << printer::NL;
 }
 
 void KleePrinter::genOpenFiles(const tests::Tests::MethodDescription &testMethod) {
@@ -94,7 +94,7 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
     genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
     strReturn("0");
     closeBrackets(1);
-    ss << NL;
+    ss << printer::NL;
 }
 
 fs::path KleePrinter::writeTmpKleeFile(
@@ -142,8 +142,8 @@ fs::path KleePrinter::writeTmpKleeFile(
         strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG, "0");
     }
 
-    strInclude("klee/klee.h") << NL;
-    ss << CALLOC_DECLARATION << NL;
+    strInclude("klee/klee.h") << printer::NL;
+    ss << CALLOC_DECLARATION << printer::NL;
     writeStubsForStructureFields(tests);
     writeAccessPrivateMacros(typesHandler, tests, false,
                              [methodFilter, onlyForOneClass, onlyForOneFunction, testedMethod, testedClass](
@@ -156,7 +156,7 @@ fs::path KleePrinter::writeTmpKleeFile(
                              });
 
     strDeclareSetOfVars(tests.externVariables);
-    ss << NL;
+    ss << printer::NL;
 
     for (const auto &[methodName, testMethod]: tests.methods) {
         if (!methodFilter(testMethod)) {
@@ -305,19 +305,19 @@ std::string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineIn
         }
         if (lineCounter == lineInfo->begin + lineInfo->insertAfter + 1) {
             if (lineInfo->wrapInBrackets) {
-                ss << "}" << NL;
+                ss << "}" << printer::NL;
             }
         }
         if (lineCounter == lineInfo->begin) {
             if (needAssertion) {
                 ss << "#pragma push_macro(\"assert\")\n";
-                ss << "#define assert(expr) if (!(expr)) {" << PrinterUtils::KLEE_PATH_FLAG << " = 1;}" << NL;
+                ss << "#define assert(expr) if (!(expr)) {" << PrinterUtils::KLEE_PATH_FLAG << " = 1;}" << printer::NL;
             }
         }
-        ss << currentLine << NL;
+        ss << currentLine << printer::NL;
         if (lineCounter == lineInfo->begin) {
             if (needAssertion) {
-                ss << "#pragma pop_macro(\"assert\")" << NL;
+                ss << "#pragma pop_macro(\"assert\")" << printer::NL;
             }
         }
         lineCounter++;

@@ -4,6 +4,8 @@
 #include <filesystem>
 #include <vector>
 
+#include <llvm/ADT/StringRef.h>
+
 namespace fs {
 
     using file_time_type = std::filesystem::file_time_type;
@@ -20,6 +22,8 @@ namespace fs {
         path(const std::string &s) : path_(normalizedTrimmed(s)) {}
 
         path(const char *s) : path_(normalizedTrimmed(s)) {}
+
+        path(llvm::StringRef s) : path_(normalizedTrimmed(s.str())) {}
 
         path root_path() const {
             return path(path_.root_path());

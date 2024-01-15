@@ -55,7 +55,7 @@ void KleeConstraintsPrinter::genConstraintsForPrimitive(const ConstraintsState &
 }
 
 void KleeConstraintsPrinter::noConstraints(const std::string &cause) {
-    ss << LINE_INDENT() << "// No constraints for " << cause << NL;
+    ss << LINE_INDENT() << "// No constraints for " << cause << printer::NL;
 }
 
 void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state) {

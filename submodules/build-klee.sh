@@ -15,7 +15,6 @@ $UTBOT_CMAKE_BINARY -G Ninja \
   -DENABLE_POSIX_RUNTIME=TRUE \
   -DENABLE_FLOATING_POINT=TRUE \
   -DENABLE_FP_RUNTIME=TRUE \
-  -DLLVM_CONFIG_BINARY=$UTBOT_INSTALL_DIR/bin/llvm-config \
   -DLLVMCC=/utbot_distr/install/bin/clang \
   -DLLVMCXX=/utbot_distr/install/bin/clang++ \
   -DENABLE_UNIT_TESTS=TRUE \
