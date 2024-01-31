@@ -48,7 +48,17 @@ ProjectBuildDatabase::ProjectBuildDatabase(fs::path _buildCommandsJsonPath,
         auto linkCommandsJson = JsonUtils::getJsonFromFile(linkCommandsJsonPath);
         auto compileCommandsJson = JsonUtils::getJsonFromFile(compileCommandsJsonPath);
         initObjects(compileCommandsJson);
+        for (const auto i: sourceFileInfos) {
+            LOG_S(MAX) << "Source: " << i.first << " Objects: "
+                       << StringUtils::joinWith(CollectionUtils::transformTo<std::vector<std::string>>
+                                                        (i.second, [](const std::shared_ptr<ObjectFileInfo> &s) {
+                                                            return s->getOutputFile();
+                                                        }), ", ");
+        }
         initInfo(linkCommandsJson, skipObjectWithoutSource);
+        for (const auto i: targetInfos) {
+            LOG_S(MAX) << "Target: " << i.first << " Files: " << StringUtils::joinWith(i.second->files, ", ");
+        }
         filterInstalledFiles();
         addLocalSharedLibraries();
         fillTargetInfoParents();
@@ -81,6 +91,7 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         } else {
             jsonArguments = std::vector<std::string>(compileCommand.at("arguments"));
         }
+        LOG_S(INFO) << "Processing build command: " << StringUtils::joinWith(jsonArguments, " ");
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
                        [&directory](const std::string &argument) {
                            return tryConvertOptionToPath(argument, directory);
@@ -177,8 +188,13 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson, bool
         } else {
             jsonArguments = std::vector<std::string>(linkCommand.at("arguments"));
         }
-        if (StringUtils::endsWith(jsonArguments[0], "ranlib") ||
-            StringUtils::endsWith(jsonArguments[0], "cmake")) {
+        LOG_S(INFO) << "Processing link command: " << StringUtils::joinWith(jsonArguments, " ");
+        if (StringUtils::endsWith(jsonArguments[0], "ranlib")) {
+            LOG_S(INFO) << "Skip ranlib command";
+            continue;
+        }
+        if (StringUtils::endsWith(jsonArguments[0], "cmake")) {
+            LOG_S(INFO) << "Skip cmake command";
             continue;
         }
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
@@ -190,6 +206,10 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson, bool
 
         utbot::LinkCommand command(jsonArguments, directory);
         fs::path const &output = command.getOutput();
+        if (output.empty()) {
+            LOG_S(WARNING) << "Empty output of command: " << command.toString();
+        }
+
         auto targetInfo = targetInfos[output];
         if (targetInfo == nullptr) {
             targetInfo = targetInfos[output] = std::make_shared<TargetInfo>();
