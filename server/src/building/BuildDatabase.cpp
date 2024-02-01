@@ -256,7 +256,7 @@ fs::path BuildDatabase::getRootForSource(const fs::path &path) const {
     if (Paths::isSourceFile(normalizedPath)) {
         if (!CollectionUtils::containsKey(sourceFileInfos, normalizedPath)) {
             std::string message =
-                    "No executable or library found for current source file in link_commands.json: " + path.string();
+                    "No source file found in compile_commands.json: " + path.string();
             LOG_S(ERROR) << message;
             throw CompilationDatabaseException(message);
         }
@@ -273,7 +273,7 @@ fs::path BuildDatabase::getRootForSource(const fs::path &path) const {
     } else {
         if (!CollectionUtils::containsKey(targetInfos, normalizedPath)) {
             std::string message =
-                    "No executable or library found for current source file in link_commands.json: " + path.string();
+                    "No executable or library found in link_commands.json: " + path.string();
             LOG_S(ERROR) << message;
             throw CompilationDatabaseException(message);
         }
@@ -287,7 +287,7 @@ fs::path BuildDatabase::getRootForSource(const fs::path &path) const {
 }
 
 fs::path BuildDatabase::getRootForFirstSource() const {
-    if (sourceFileInfos.empty()){
+    if (sourceFileInfos.empty()) {
         std::string message = "Source files not found";
         LOG_S(ERROR) << message;
         throw CompilationDatabaseException(message);
@@ -459,7 +459,7 @@ bool BuildDatabase::ObjectFileInfo::is32bits() const {
 }
 
 fs::path BuildDatabase::TargetInfo::getOutput() const {
-    if (commands.empty()){
+    if (commands.empty()) {
         std::string message = "There are no targets";
         LOG_S(ERROR) << message;
         throw CompilationDatabaseException(message);

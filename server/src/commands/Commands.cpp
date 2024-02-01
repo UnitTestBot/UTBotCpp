@@ -2,6 +2,7 @@
 
 #include "utils/StringUtils.h"
 #include "utils/CLIUtils.h"
+#include "loguru.h"
 #include "config.h"
 
 uint32_t Commands::threadsPerUser = 0;
@@ -9,19 +10,26 @@ uint32_t Commands::kleeProcessNumber = 0;
 
 Commands::MainCommands::MainCommands(CLI::App &app) {
     app.set_help_all_flag("--help-all", "Expand all help");
-    app.add_flag_function("--version", [](int count){
+    app.add_flag_function("--version", [](int count) {
         std::cout << PROJECT_NAME << " " << PROJECT_VERSION << std::endl;
         if (strlen(RUN_INFO)) {
             std::cout << "Build by " << RUN_INFO << std::endl;
         }
         exit(0);
     }, "Get UTBotCpp version and build detail");
+
+    app.add_option("-v,--verbosity", verbosity, "Logger verbosity.")
+            ->type_name(" ENUM:value in {" +
+                        StringUtils::joinWith(CollectionUtils::getKeys(verbosityMap), "|") + "}")
+            ->transform(CLI::CheckedTransformer(verbosityMap, CLI::ignore_case));
+    app.add_option("--log", logPath, "Path to folder with logs.");
+
     serverCommand = app.add_subcommand("server", "Launch UTBot server.");
     generateCommand =
-        app.add_subcommand("generate", "Generate unit tests and/or stubs.")->require_subcommand();
+            app.add_subcommand("generate", "Generate unit tests and/or stubs.")->require_subcommand();
     runTestsCommand = app.add_subcommand("run", "Launch unit tests and generate coverage info.");
     allCommand = app.add_subcommand(
-        "all", "Sequential launch of 'generate stubs' -> 'generate project' -> 'run'.");
+            "all", "Sequential launch of 'generate stubs' -> 'generate project' -> 'run'.");
     app.require_subcommand(0, 1);
 }
 
@@ -45,25 +53,20 @@ CLI::App *Commands::MainCommands::getAllCommand() {
 Commands::ServerCommandOptions::ServerCommandOptions(CLI::App *command) {
     command->add_option("-p,--port", port, "Port server run on.");
     command->add_option("-j", threadsPerUser, "Maximum number of threads per user.");
-    command->add_option("--log", logPath, "Path to folder with logs.");
-    command->add_option("-v,--verbosity", verbosity, "Logger verbosity.")
-        ->type_name(" ENUM:value in {" +
-                    StringUtils::joinWith(CollectionUtils::getKeys(verbosityMap), "|") + "}")
-        ->transform(CLI::CheckedTransformer(verbosityMap, CLI::ignore_case));
     command->add_option("--klee-process-number", kleeProcessNumber,
                         "Number of threads for KLEE in interactive mode");
 }
 
-fs::path Commands::ServerCommandOptions::getLogPath() {
+fs::path Commands::MainCommands::getLogPath() {
     return logPath;
+}
+
+loguru::NamedVerbosity Commands::MainCommands::getVerbosity() {
+    return verbosity;
 }
 
 unsigned int Commands::ServerCommandOptions::getPort() {
     return port;
-}
-
-loguru::NamedVerbosity Commands::ServerCommandOptions::getVerbosity() {
-    return verbosity;
 }
 
 unsigned int Commands::ServerCommandOptions::getThreadsPerUser() {
@@ -74,7 +77,7 @@ unsigned int Commands::ServerCommandOptions::getKleeProcessNumber() {
     return kleeProcessNumber;
 }
 
-const std::map<std::string, loguru::NamedVerbosity> Commands::ServerCommandOptions::verbosityMap = {
+const std::map<std::string, loguru::NamedVerbosity> Commands::MainCommands::verbosityMap = {
     { "trace", loguru::NamedVerbosity::Verbosity_MAX },
     { "debug", loguru::NamedVerbosity::Verbosity_1 },
     { "info", loguru::NamedVerbosity::Verbosity_INFO },

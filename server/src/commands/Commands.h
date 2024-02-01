@@ -27,8 +27,15 @@ namespace Commands {
 
         CLI::App *getAllCommand();
 
+        fs::path getLogPath();
+
+        loguru::NamedVerbosity getVerbosity();
 
     private:
+        loguru::NamedVerbosity verbosity = loguru::Verbosity_INFO;
+        fs::path logPath;
+        static const std::map<std::string, loguru::NamedVerbosity> verbosityMap;
+
         CLI::App *serverCommand;
         CLI::App *generateCommand;
         CLI::App *runTestsCommand;
@@ -38,10 +45,6 @@ namespace Commands {
     struct ServerCommandOptions {
         explicit ServerCommandOptions(CLI::App *command);
 
-        fs::path getLogPath();
-
-        loguru::NamedVerbosity getVerbosity();
-
         unsigned int getPort();
 
         unsigned int getThreadsPerUser();
@@ -49,10 +52,6 @@ namespace Commands {
         unsigned int getKleeProcessNumber();
     private:
         unsigned int port = 0;
-        fs::path logPath;
-
-        loguru::NamedVerbosity verbosity = loguru::Verbosity_INFO;
-        static const std::map<std::string, loguru::NamedVerbosity> verbosityMap;
     };
 
 

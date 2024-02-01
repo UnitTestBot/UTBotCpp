@@ -110,6 +110,9 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
     // PARSE RESULTS
     app.parse(argc, argv);
 
+    CLIUtils::setupLogger(mainCommands.getLogPath(),
+                          mainCommands.getVerbosity());
+
     if (app.got_subcommand(mainCommands.getGenerateCommand())) {
         auto sourcePaths =
             getSourcePaths(projectGenerateContext, generateCommandsOptions.getSrcPaths());
@@ -244,8 +247,6 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
         LOG_S(INFO) << "Successfully finished.";
     } else {
-        CLIUtils::setupLogger(serverCommandOptions.getLogPath(),
-                              serverCommandOptions.getVerbosity());
         Server server;
         if (serverCommandOptions.getPort() != 0) {
             server.run(serverCommandOptions.getPort());
