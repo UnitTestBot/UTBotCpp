@@ -11,7 +11,7 @@ fi
 
 #Prompt kill all running UTBot servers with same port
 IFS=";"
-RUNNING=$( ps aux | grep "utbot server" | grep -v grep | grep "\-\-port $UTBOT_PORT" )
+RUNNING=$( ps aux | grep "utbot .*server" | grep -v grep | grep "\-\-port $UTBOT_PORT" )
 
 if test -n "$RUNNING"
 then

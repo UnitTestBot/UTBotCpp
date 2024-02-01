@@ -6,7 +6,7 @@ set -e
 sudo apt update && sudo apt install -y build-essential cmake
 
 # install clang
-sudo apt update && sudo apt -y install clang-10
+sudo apt update && sudo apt -y install clang-14
 
 #install git for gtest
 sudo apt install -y software-properties-common
