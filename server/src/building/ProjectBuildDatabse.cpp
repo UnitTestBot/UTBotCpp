@@ -91,7 +91,7 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
         } else {
             jsonArguments = std::vector<std::string>(compileCommand.at("arguments"));
         }
-        LOG_S(INFO) << "Processing build command: " << StringUtils::joinWith(jsonArguments, " ");
+        LOG_S(MAX) << "Processing build command: " << StringUtils::joinWith(jsonArguments, " ");
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
                        [&directory](const std::string &argument) {
                            return tryConvertOptionToPath(argument, directory);
@@ -188,13 +188,13 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson, bool
         } else {
             jsonArguments = std::vector<std::string>(linkCommand.at("arguments"));
         }
-        LOG_S(INFO) << "Processing link command: " << StringUtils::joinWith(jsonArguments, " ");
+        LOG_S(MAX) << "Processing link command: " << StringUtils::joinWith(jsonArguments, " ");
         if (StringUtils::endsWith(jsonArguments[0], "ranlib")) {
-            LOG_S(INFO) << "Skip ranlib command";
+            LOG_S(MAX) << "Skip ranlib command";
             continue;
         }
         if (StringUtils::endsWith(jsonArguments[0], "cmake")) {
-            LOG_S(INFO) << "Skip cmake command";
+            LOG_S(MAX) << "Skip cmake command";
             continue;
         }
         std::transform(jsonArguments.begin(), jsonArguments.end(), jsonArguments.begin(),
