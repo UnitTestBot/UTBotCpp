@@ -668,7 +668,7 @@ namespace printer {
         return srcLanguage;
     }
 
-    std::string Printer::getConstQualifier(const types::Type& type) {
+    std::string Printer::getConstQualifier(const types::Type &type) {
         std::string constQualifier;
         if (auto simpleType = dynamic_cast<SimpleType *>(type.kinds().back().get())) {
             if (simpleType->isConstQualified()) {
@@ -683,7 +683,7 @@ namespace printer {
     }
 
     Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars) {
-        for (const auto &var : vars) {
+        for (const auto &var: vars) {
             if (var.type.isArray()) {
                 strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
             } else {
@@ -691,5 +691,9 @@ namespace printer {
             }
         }
         return ss;
+    }
+
+    void Printer::genInitCall() {
+        strFunctionCall("InitValues", {});
     }
 }

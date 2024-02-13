@@ -220,6 +220,7 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
         testCase.testName = getTestName(methodDescription, testNum);
         testHeader(testCase);
         redirectStdin(methodDescription, testCase, verbose);
+        genInitCall();
         if (verbose) {
             genVerboseTestCase(methodDescription, testCase, predicateInfo, errorMode);
         } else {
