@@ -22,7 +22,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends 
 RUN echo "check_certificate = off" > /etc/wgetrc
 
 # We use C++ 17 for UnitTestBot, it is available in gcc-9; default gcc for ubuntu:18.04 is gcc-7
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]] ; then RUN add-apt-repository ppa:ubuntu-toolchain-r/test ; fi
 RUN apt update && apt install -y --no-install-recommends gcc-9 g++-9 gcc-multilib g++-multilib gcc-9-multilib g++-9-multilib
 
 # Set gcc-9 as default gcc version
@@ -172,11 +172,9 @@ RUN if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]] ; then apt update && apt install 
 RUN apt update && apt install -y --no-install-recommends nodejs npm openssh-server net-tools gdb vim-nox rsync
 RUN pip3 install git+https://chromium.googlesource.com/external/gyp
 
-# Update node and npm since defaults on ubuntu:18.04 have reached end of life
-RUN npm config set strict-ssl false
+# Update node and npm
 RUN npm cache clean -f
 RUN sudo -E npm install -g n
-RUN echo insecure > ~/.curlrc
 RUN sudo -E n 16
 RUN sudo -E apt remove -y --purge nodejs npm
 

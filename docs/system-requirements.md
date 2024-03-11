@@ -10,14 +10,14 @@
 
 To install UnitTestBot C/C++ _client_, it is OK to have a Linux, macOS, or Windows machine.
 
-To install UnitTestBot C/C++ _server_, you need Ubuntu 18.04–20.04.
+To install UnitTestBot C/C++ _server_, you need Ubuntu 20.04.
 
-| OS                         | Client             | Server                          |
-|:---------------------------|:-------------------|:--------------------------------|
-| Ubuntu 18.04–20.04         | :heavy_check_mark: | :heavy_check_mark:              |
-| other Linux distributions  | :heavy_check_mark: | via Docker                      |
-| macOS                      | :heavy_check_mark: | via Docker                      |
-| Windows                    | :heavy_check_mark: | via WSL only or WSL with Docker |
+| OS                        | Client             | Server                          |
+|:--------------------------|:-------------------|:--------------------------------|
+| Ubuntu 20.04              | :heavy_check_mark: | :heavy_check_mark:              |
+| other Linux distributions | :heavy_check_mark: | via Docker                      |
+| macOS                     | :heavy_check_mark: | via Docker                      |
+| Windows                   | :heavy_check_mark: | via WSL only or WSL with Docker |
 
 ## IDE
 

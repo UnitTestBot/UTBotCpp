@@ -32,7 +32,7 @@ export CC=$UTBOT_INSTALL_DIR/bin/clang
 export CXX=$UTBOT_INSTALL_DIR/bin/clang++
 export CPATH=$CPATH:$UTBOT_ALL/klee/include
 export LD_LIBRARY_PATH=$UTBOT_INSTALL_DIR/lib
-export LDFLAGS='-fuse-ld=gold'
+export LDFLAGS='-fuse-ld=gold -L/usr/lib/x86_64-linux-gnu'
 export CFLAGS="$CFLAGS -gdwarf-4"
 export CXXFLAGS="$CXXFLAGS -gdwarf-4"
 export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$UTBOT_ALL/bear/bin:$UTBOT_ALL/klee/bin:$UTBOT_INSTALL_DIR/bin:$PATH

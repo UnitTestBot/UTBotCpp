@@ -16,7 +16,7 @@ More info on [wiki](https://github.com/UnitTestBot/UTBotCpp/wiki)
 
 ## How to install and use UTBot
 
-For now, you can only use UTBot under Ubuntu 18.04 and above.
+For now, you can only use UTBot under Ubuntu 20.04 and above.
 Navigate to the [**Releases**](https://github.com/UnitTestBot/UTBotCpp/releases) GitHub page and download last version of UTBot.
 
 UTBot is distrbuted as an archive that contains:

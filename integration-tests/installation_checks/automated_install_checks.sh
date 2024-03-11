@@ -13,7 +13,7 @@ WORK_DIR=$(pwd)
 EXPECTED_PID_FILE_LOCATION=${WORK_DIR}/utbot_distr/server-install/utbot.pid
 OS_DESCRIPTION_FILE=/etc/os-release
 declare -a SUPPORTED_DISTRIBUTIONS=("ubuntu")
-declare -a SUPPORTED_UBUNTU_RELEASES=("18.04" "18.10" "19.04" "19.10" "20.04" "20.10" "21.04" "21.10")
+declare -a SUPPORTED_UBUNTU_RELEASES=("20.04")
 
 # COMMON FUNCTIONS:
 log (){

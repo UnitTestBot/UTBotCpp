@@ -1,4 +1,4 @@
-# Set up Docker and run a container with Ubuntu 18.04
+# Set up Docker and run a container with Ubuntu 20.04
 
 Install Docker using the instructions for your OS:
 
@@ -6,11 +6,11 @@ Install Docker using the instructions for your OS:
 * [Windows](install-docker-windows)
 * [macOS](https://pilsniak.com/how-to-install-docker-on-mac-os-using-brew) (external link)
 
-Run a Docker container with Ubuntu 18.04:
+Run a Docker container with Ubuntu 20.04:
 
 1. Create a container:
 ```bash
-docker container create -i -t -p 5522:22 -p 5521:2121 --name utbot ubuntu:18.04
+docker container create -i -t -p 5522:22 -p 5521:2121 --name utbot ubuntu:20.04
 docker start utbot
 ```
 2. Navigate to a container:

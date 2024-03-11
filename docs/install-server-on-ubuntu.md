@@ -1,6 +1,6 @@
-# Install UnitTestBot C/C++ server on Ubuntu 18.04–20.04
+# Install UnitTestBot C/C++ server on Ubuntu 20.04
 
-Whether you have Ubuntu 18.04–20.04 on your computer, Ubuntu 18.04 in WSL or a Docker container, follow the 
+Whether you have Ubuntu 20.04 on your computer, Ubuntu 20.04 in WSL or a Docker container, follow the 
 instructions to install the UnitTestBot C/C++ server.
 
 1. Download a ZIP archive with the release artifact:
