@@ -18,7 +18,7 @@ RUN echo "Set disable_coredump false" >> /etc/sudo.conf
 WORKDIR docker
 
 # Install required system packages
-RUN apt update \
+RUN apt update
 RUN apt install -y --no-install-recommends sudo file python3-dateutil wget fakeroot libssl-dev build-essential \
       software-properties-common
 RUN echo "check_certificate = off" > /etc/wgetrc
