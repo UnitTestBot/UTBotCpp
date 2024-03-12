@@ -18,7 +18,9 @@ RUN echo "Set disable_coredump false" >> /etc/sudo.conf
 WORKDIR docker
 
 # Install required system packages
-RUN apt update && DEBIAN_FRONTEND=noninteractive apt -y --no-install-recommends install sudo file python3-dateutil wget fakeroot libssl-dev build-essential software-properties-common
+RUN apt update \
+RUN apt install -y --no-install-recommends sudo file python3-dateutil wget fakeroot libssl-dev build-essential \
+      software-properties-common
 RUN echo "check_certificate = off" > /etc/wgetrc
 
 # We use C++ 17 for UnitTestBot, it is available in gcc-9; default gcc for ubuntu:18.04 is gcc-7
@@ -31,22 +33,15 @@ RUN sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 100
 RUN sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-9 100
 
 # install git
-RUN apt install -y software-properties-common
-RUN apt update
-RUN add-apt-repository -y ppa:git-core/ppa
-RUN apt update
-RUN apt install -y git libcurl4-openssl-dev
+RUN apt install -y software-properties-common git libcurl4-openssl-dev
 
 # install others apt
-RUN apt install -y --no-install-recommends ninja-build python3-setuptools
-RUN apt install -y --no-install-recommends curl libcap-dev libncurses5-dev unzip libtcmalloc-minimal4 libgoogle-perftools-dev libsqlite3-dev doxygen python3-pip
-RUN apt -y install autoconf libtool
+RUN apt install -y --no-install-recommends ninja-build python3-setuptools curl libcap-dev libncurses5-dev unzip \
+      libtcmalloc-minimal4 libgoogle-perftools-dev libsqlite3-dev doxygen python3-pip autoconf libtool
 
 # install vscode dependencies
-RUN apt install -y libxshmfence1 libglu1
-RUN apt install -y libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 libgbm-dev libnss3-dev libxss-dev
-RUN apt install -y libasound2
-RUN apt install -y xvfb
+RUN apt install -y libxshmfence1 libglu1 libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 \
+      libgbm-dev libnss3-dev libxss-dev libasound2 xvfb
 
 RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
 
@@ -75,7 +70,7 @@ RUN git clone --single-branch --branch "release/${LLVM_VERSION_MAJOR}.x" --depth
 WORKDIR $UTBOT_ALL/llvm-project
 RUN mkdir build && cd build \
     && $UTBOT_CMAKE_BINARY \
-    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR \
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_BINUTILS_INCDIR=$UTBOT_ALL/llvm_gold_plugin \
@@ -83,7 +78,7 @@ RUN mkdir build && cd build \
     -DLLVM_ENABLE_EH=ON \
     -DLLVM_TARGETS_TO_BUILD="host" \
     -DLLVM_INSTALL_UTILS=ON \
-    -DLLVM_ENABLE_PROJECTS="clang;libclc;lld;lldb;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;libclc;lld" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libc;libcxx;libcxxabi" \
     -G "Ninja" ../llvm \
     && $UTBOT_CMAKE_BINARY --build . --target install
@@ -110,7 +105,7 @@ RUN mkdir libcxx_build && cd libcxx_build \
     -DLIBCXX_ENABLE_THREADS:BOOL=OFF \
     -DLIBCXX_ENABLE_SHARED:BOOL=ON \
     -DLIBCXXABI_ENABLE_THREADS:BOOL=OFF \
-    -DCMAKE_BUILD_TYPE:STRING=Release \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
     -DLLVM_TARGETS_TO_BUILD=host \
     -DCMAKE_INSTALL_PREFIX=$UTBOT_ALL/libcxx/install \
     -DLIBCXX_ENABLE_STATIC_ABI_LIBRARY:BOOL=ON ../llvm \
@@ -131,7 +126,7 @@ RUN cd $UTBOT_ALL/grpc && git submodule update --init
 RUN cd $UTBOT_ALL/grpc \
   && mkdir -p cmake/build \
   && cd cmake/build \
-  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
+  && $UTBOT_CMAKE_BINARY -DgRPC_INSTALL=ON -DgRPC_BUILD_TESTS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR ../.. \
   && make -j`nproc` \
   && make install \
   && cd $UTBOT_ALL \
@@ -150,7 +145,7 @@ USER utbot
 USER root
 RUN git clone --single-branch -b z3-4.8.17 --depth=1 https://github.com/Z3Prover/z3.git $UTBOT_ALL/z3-src
 RUN cd $UTBOT_ALL/z3-src && mkdir build && cd build && \
-    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
+    $UTBOT_CMAKE_BINARY -G "Ninja" -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=$UTBOT_INSTALL_DIR .. && \
     $UTBOT_CMAKE_BINARY --build . --target install && \
     cd $UTBOT_ALL && \
     rm -rf $UTBOT_ALL/z3-src
@@ -222,6 +217,8 @@ RUN ./configure --make-llvm-lib && make -j`nproc`
 
 # Download library for access private members
 RUN git clone https://github.com/martong/access_private.git $UTBOT_ALL/access_private
+
+RUN apt autoclean
 
 RUN chsh -s /bin/bash utbot
 EXPOSE 2020
