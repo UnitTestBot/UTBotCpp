@@ -4,6 +4,8 @@
 set -e
 set -o pipefail
 
+export OPERATING_SYSTEM_TAG=$(eval lsb_release -sr)
+
 # Downloading apt-rdepends tool which can get all the dependencies for a package
 apt-get update && apt-get  -y --no-install-recommends install apt-rdepends && apt-get update
 rm -rf /tmp/debian_dependencies && mkdir -p /tmp/debian_dependencies && cd /tmp/debian_dependencies
@@ -13,6 +15,9 @@ shopt -s expand_aliases
 alias grepdepends='grep -v "^ " | grep -v "^libc-dev$" | grep -v "^debconf-2.0$" | grep -v "^libc6$" | grep -v "^libunwind8-dev$" | grep -v "^awk$"'
 # Get all the dependencies of utbot
 apt-rdepends libsqlite3-dev libgoogle-perftools-dev libssl-dev libssl1.0-dev python3-pip gzip make gcc-9 g++-9 | grepdepends > all.txt
+if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]]; then
+  apt-rdepends libssl1.0-dev | grepdepends >> all.txt
+fi
 # Get all the dependencies of libc6-dev
 apt-rdepends libc6-dev | grepdepends > debian-libc-dev.txt
 # Get all the dependencies of utbot except all the dependencies of libc6-dev
