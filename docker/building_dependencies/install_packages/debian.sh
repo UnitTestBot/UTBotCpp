@@ -14,7 +14,7 @@ shopt -s expand_aliases
 # A grep command which clears out the output of apt-rdepends
 alias grepdepends='grep -v "^ " | grep -v "^libc-dev$" | grep -v "^debconf-2.0$" | grep -v "^libc6$" | grep -v "^libunwind8-dev$" | grep -v "^awk$"'
 # Get all the dependencies of utbot
-apt-rdepends libsqlite3-dev libgoogle-perftools-dev libssl-dev libssl1.0-dev python3-pip gzip make gcc-9 g++-9 | grepdepends > all.txt
+apt-rdepends libsqlite3-dev libgoogle-perftools-dev libssl-dev python3-pip gzip make gcc-9 g++-9 | grepdepends > all.txt
 if [[ "$OPERATING_SYSTEM_TAG" = "18.04" ]]; then
   apt-rdepends libssl1.0-dev | grepdepends >> all.txt
 fi
