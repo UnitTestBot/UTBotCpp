@@ -1,6 +1,6 @@
 # Install UnitTestBot C/C++ server: Windows
 
-To install the UnitTestBot C/C++ server, you need Ubuntu 18.04–20.04.
+To install the UnitTestBot C/C++ server, you need Ubuntu 20.04.
 
 If you have a Windows machine, you have two options:
 * [Local installation via Windows Subsystem for Linux (WSL)](windows-local)

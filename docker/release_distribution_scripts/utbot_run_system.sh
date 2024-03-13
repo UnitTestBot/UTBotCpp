@@ -8,10 +8,10 @@ os_tag=$(lsb_release -i | cut -f2)
 os_version=$(lsb_release -r | cut -f2)
 major_os_version=${os_version%%.*}
 
-if [ "$os_tag" != "Ubuntu" ] || [ "$major_os_version" -lt "18" ]
+if [ "$os_tag" != "Ubuntu" ] || [ "$major_os_version" -lt "20" ]
 then
     echo "warning: $(lsb_release -d | cut -f2) unsupported system"
-    echo "UTBotCPP support ubuntu 18.04 and above"
+    echo "UTBotCPP support ubuntu 20.04 and above"
     read -r -p "Are want to continue? [y/N] " response
     if ! [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
     then
@@ -52,9 +52,7 @@ export LD_LIBRARY_PATH=$UTBOT_ALL/install/lib:$UTBOT_ALL/debs-install/lib/x86_64
 export GENERAL_INCLUDES=$UTBOT_ALL/debs-install/usr/lib/gcc/x86_64-linux-gnu/9/include:$UTBOT_ALL/debs-install/usr/local/include:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu:$UTBOT_ALL/debs-install/usr/include
 export C_INCLUDE_PATH=GENERAL_INCLUDES${C_INCLUDE_PATH:+:${C_INCLUDE_PATH}}
 export CPLUS_INCLUDE_PATH=$UTBOT_ALL/debs-install/usr/include/c++/9:$UTBOT_ALL/debs-install/usr/include/x86_64-linux-gnu/c++/9:$UTBOT_ALL/debs-install/usr/include/c++/9/backward:GENERAL_INCLUDES${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}
-export CFLAGS="$CFLAGS -gdwarf-4"
-export CXXFLAGS="$CXXFLAGS -gdwarf-4"
-export LDFLAGS="-fuse-ld=gold $LDFLAGS"
+export LDFLAGS="-fuse-ld=gold -L$UTBOT_ALL/debs-install/lib/x86_64-linux-gnu"
 
 # This function moves dev version of libc into $UTBOT_ALL/debs-install directory
 # Prerequisites: path/to/directory should exist

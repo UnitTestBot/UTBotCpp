@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 # use bash as default shell
 
 SHELL ["/bin/bash", "--login", "-c"]

@@ -11,8 +11,7 @@ needed dependencies such as Git, LLVM, GRPC, GoogleTest and others. **base_env**
 dates. If you are developing the tool, you are most likely to need the most recent version
 from [here](https://github.com/UnitTestBot/UTBotCpp/pkgs/container/utbotcpp%2Fbase_env).
 
-Supported and tested development configuration are Ubuntu 18.04 / 20.04 or Windows Subsystem for Linux (Ubuntu 18.04 /
-20.04).
+Supported and tested development configuration are Ubuntu 20.04 or Windows Subsystem for Linux (Ubuntu 20.04).
 
 1. Install docker for [Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
    or [WSL+Ubuntu](https://docs.docker.com/desktop/windows/wsl/)

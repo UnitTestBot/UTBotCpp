@@ -2,7 +2,7 @@
 
 Get ready for creating a Docker container:
 
-1. Make sure you have created a WSL container with Ubuntu 18.04:
+1. Make sure you have created a WSL container with Ubuntu 20.04:
 ```bash
 wsl --list --verbose
 ```
