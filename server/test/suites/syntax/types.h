@@ -61,4 +61,6 @@ int void_pointer(void * a);
 // This function should be skipped, as structs with unions are not supported.
 struct UnsupportedStruct3 structWithUnion(int a);
 
+unsigned __int128 int128_mult(unsigned long long a, unsigned long long b);
+
 #endif //SIMPLE_TEST_PROJECT_OTHER_TYPES_h

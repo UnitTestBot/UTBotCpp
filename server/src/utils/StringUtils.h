@@ -87,6 +87,18 @@ namespace StringUtils {
     T stot(const std::string&) {
         return T();
     }
+    template<> int stot(const std::string& s);
+    template<> long stot(const std::string& s);
+    template<> long long stot(const std::string& s);
+    template<> unsigned int stot(const std::string& s);
+    template<> unsigned long stot(const std::string& s);
+    template<> unsigned long long stot(const std::string& s);
+    template<> float stot(const std::string& s);
+    template<> double stot(const std::string& s);
+    template<> long double stot(const std::string& s);
+    template<> bool stot(const std::string& s);
+    template<> __int128 stot(const std::string& s);
+    template<> unsigned __int128 stot(const std::string& s);
 
     std::string wrapQuotations(const std::string &s);
 }
