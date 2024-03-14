@@ -41,7 +41,7 @@ RUN apt install -y --no-install-recommends ninja-build python3-setuptools curl l
 
 # install vscode dependencies
 RUN apt install -y libxshmfence1 libglu1 libgconf-2-4 libatk1.0-0 libatk-bridge2.0-0 libgdk-pixbuf2.0-0 libgtk-3-0 \
-      libgbm-dev libnss3-dev libxss-dev libasound2 xvfb
+      libgbm-dev libnss3-dev libxss-dev libasound2 xvfb dbus-x11
 
 RUN mkdir $UTBOT_ALL && cd $UTBOT_ALL
 
