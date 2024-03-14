@@ -236,7 +236,9 @@ namespace printer {
 
         static std::string getConstQualifier(const types::Type &type);
 
-        void genInitCall();
+        void genInitCall(const tests::Tests::MethodDescription &testMethod);
+
+        void genTearDownCall(const tests::Tests::MethodDescription &testMethod);
 
     private:
         Stream strMemcpyImpl(std::string_view dest, std::string_view src, bool needDereference);

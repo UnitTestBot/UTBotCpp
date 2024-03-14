@@ -693,7 +693,11 @@ namespace printer {
         return ss;
     }
 
-    void Printer::genInitCall() {
-        strFunctionCall("InitValues", {});
+    void Printer::genInitCall(const tests::Tests::MethodDescription &testMethod) {
+        strFunctionCall("_init_mocks", {});
+    }
+
+    void Printer::genTearDownCall(const tests::Tests::MethodDescription &testMethod) {
+        strFunctionCall("_teardown_mocks", {});
     }
 }

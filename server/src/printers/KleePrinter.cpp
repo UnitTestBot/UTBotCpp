@@ -81,7 +81,7 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
 
     writeStubsForFunctionParams(typesHandler, testMethod, true);
     declTestEntryPoint(tests, testMethod, isWrapped);
-    genInitCall();
+    genInitCall(testMethod);
     genOpenFiles(testMethod);
     genGlobalParamsDeclarations(testMethod);
     genParamsDeclarations(testMethod, filterAllWithoutFile);
@@ -94,6 +94,7 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
     }
     genGlobalsKleeAssumes(testMethod);
     genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
+    genTearDownCall(testMethod);
     strReturn("0");
     closeBrackets(1);
     ss << printer::NL;
