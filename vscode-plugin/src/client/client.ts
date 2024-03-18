@@ -242,12 +242,12 @@ export class Client {
 
     private async writeLog(responseAny: any): Promise<void> {
         const logEntry = responseAny as LogEntry;
-        utbotUI.channels().outputServerLogChannel.append(logEntry.getMessage());
+        utbotUI.channels().outputServerLogChannel.append(logEntry.toString());
     }
 
     private async writeGTestLog(responseAny: any): Promise<void> {
         const gtestEntry = responseAny as LogEntry;
-        utbotUI.channels().outputGTestChannel.appendLine(gtestEntry.getMessage());
+        utbotUI.channels().outputGTestChannel.appendLine(gtestEntry.toString());
     }
 
     private async provideLogChannel(): Promise<void> {
@@ -776,10 +776,9 @@ export class Client {
         }, this.DEFAULT_TIMEOUT);
         serverResponse.on('data', async responseAny => {
             const response = responseAny as T;
-            const logEntry = response as LogEntry;
             started.value = true;
             await this.handleResponse(response, progressKey, resolve, responseHandler);
-            utbotUI.channels().outputServerLogChannel.append(logEntry.getMessage());
+            utbotUI.channels().outputServerLogChannel.append(response.toString());
         })
             .on('error', (err) => {
                 started.value = true;

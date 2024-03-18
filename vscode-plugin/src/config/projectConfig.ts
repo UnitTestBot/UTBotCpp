@@ -62,10 +62,10 @@ export class ProjectConfig {
                 return this.handleJsonFilesNotFound(response.getType());
             }
             case ProjectConfigStatus.BUILD_DIR_CREATION_FAILED: {
-                return this.createBuildDirFailed(response.getMessage());
+                return this.createBuildDirFailed(response.toString());
             }
             case ProjectConfigStatus.BUILD_DIR_SAME_AS_PROJECT: { 
-                const message = response.getMessage();
+                const message = response.toString();
                 logger.warn(message);
                 messages.showWarningMessage(`${message}. 
                                                     Please, follow the [guilde](${ProjectConfig.guideUri}) to configure project.`);
@@ -121,7 +121,7 @@ export class ProjectConfig {
                 return this.configure(ConfigMode.CHECK);
             }
             case ProjectConfigStatus.BUILD_DIR_CREATION_FAILED: {
-                return this.createBuildDirFailed(response.getMessage());
+                return this.createBuildDirFailed(response.toString());
             }
             default: {
                 this.handleUnexpectedResponse();
@@ -150,7 +150,7 @@ export class ProjectConfig {
                                 return true;
                             }
                             case ProjectConfigStatus.RUN_JSON_GENERATION_FAILED: {
-                                const message = `UTBot tried to configure project, but failed with following message: "${response.getMessage()}"`;
+                                const message = `UTBot tried to configure project, but failed with following message: "${response.toString()}"`;
                                 logger.warn(message);
                                 messages.showWarningMessage(`${message}.
                                                             Please, follow the [guide](${ProjectConfig.guideUri}) to configure project.`);

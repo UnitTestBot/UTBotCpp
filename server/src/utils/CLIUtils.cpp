@@ -36,7 +36,7 @@ void CLIUtils::setupLogger(const std::string &logPath,
     CLIUtils::setOptPath(logPath, Paths::logPath);
     const fs::path symLink = Paths::getSymLinkPathToLogLatest();
     const std::string logfile_path_string = std::string(Paths::getUtbotLogAllFilePath());
-    loguru::add_file(logfile_path_string.data(), loguru::Append, loguru::Verbosity_MAX);
+    loguru::add_file(logfile_path_string.data(), loguru::Append, verbosity);
     std::filesystem::remove(symLink.string());
     std::filesystem::create_symlink(logfile_path_string, symLink.string());
 
