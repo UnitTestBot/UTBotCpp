@@ -16,13 +16,13 @@ export class ProjectConfig {
     private readonly projectName: string;
     private readonly projectPath: string;
     private readonly buildDirRelativePath: string;
-    private readonly ithPath: string;
+    private readonly itfPath: string;
     private readonly cmakeOptions: Array<string>;
 
     constructor(private readonly client: Client) {
         this.projectName = Prefs.getProjectName();
         [this.projectPath, this.buildDirRelativePath] = Prefs.getBuildDirPath();
-        this.ithPath = Prefs.getITFPath();
+        this.itfPath = Prefs.getITFPath();
         this.cmakeOptions = Prefs.getCmakeOptions();
     }
 
@@ -92,7 +92,7 @@ export class ProjectConfig {
         return utbotUI.progresses().withProgress<ProjectConfigResponse>(async (progressKey, token) => {
             utbotUI.progresses().report(progressKey, "Check project configuration...");
             const responseHandler = new DummyResponseHandler<ProjectConfigResponse>();
-            return this.client.checkProjectConfigurationRequest(this.projectName, this.projectPath, this.buildDirRelativePath, this.ithPath, this.cmakeOptions, configMode, progressKey, token, responseHandler);
+            return this.client.checkProjectConfigurationRequest(this.projectName, this.projectPath, this.buildDirRelativePath, this.itfPath, this.cmakeOptions, configMode, progressKey, token, responseHandler);
         });
     }
 

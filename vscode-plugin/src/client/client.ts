@@ -385,7 +385,7 @@ export class Client {
         projectName: string,
         projectPath: string,
         buildDirRelativePath: string,
-        ithPath: string,
+        itfPath: string,
         cmakeOptions: Array<string>,
         configMode: ConfigMode,
         progressKey: utbotUI.ProgressKey,
@@ -397,7 +397,7 @@ export class Client {
             projectContext.setProjectpath(projectPath);
             projectContext.setBuilddirrelativepath(buildDirRelativePath);
             projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
-            projectContext.setIthpath(ithPath);
+            projectContext.setItfpath(itfPath);
             const projectConfigRequest = new ProjectConfigRequest();
             projectConfigRequest.setProjectcontext(projectContext);
             projectConfigRequest.setConfigmode(configMode);

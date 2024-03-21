@@ -9,25 +9,29 @@ namespace utbot {
                                    fs::path projectPath,
                                    fs::path testDirPath,
                                    fs::path buildDirRelativePath,
-                                   fs::path clientProjectPath)
+                                   fs::path clientProjectPath,
+                                   fs::path itfPath)
             : projectName(std::move(projectName)), projectPath(std::move(projectPath)),
               testDirPath(std::move(testDirPath)),
               buildDirRelativePath(std::move(buildDirRelativePath)),
-              clientProjectPath(clientProjectPath) {}
+              clientProjectPath(clientProjectPath),
+              itfPath(itfPath) {}
 
     ProjectContext::ProjectContext(const testsgen::ProjectContext &projectContext)
-        : ProjectContext(projectContext.projectname(),
-                         projectContext.projectpath(),
-                         projectContext.testdirpath(),
-                         projectContext.builddirrelativepath(),
-                         projectContext.clientprojectpath()) {}
+            : ProjectContext(projectContext.projectname(),
+                             projectContext.projectpath(),
+                             projectContext.testdirpath(),
+                             projectContext.builddirrelativepath(),
+                             projectContext.clientprojectpath(),
+                             projectContext.itfpath()) {}
 
     ProjectContext::ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir)
-        : projectName(request.projectcontext().projectname()),
-          projectPath(request.projectcontext().projectpath()),
-          testDirPath(request.projectcontext().testdirpath()),
-          buildDirRelativePath(request.projectcontext().builddirrelativepath()),
-          clientProjectPath(request.projectcontext().clientprojectpath()) {}
+            : projectName(request.projectcontext().projectname()),
+              projectPath(request.projectcontext().projectpath()),
+              testDirPath(request.projectcontext().testdirpath()),
+              buildDirRelativePath(request.projectcontext().builddirrelativepath()),
+              clientProjectPath(request.projectcontext().clientprojectpath()),
+              itfPath(request.projectcontext().itfpath()) {}
 
     fs::path ProjectContext::buildDir() const {
         return projectPath / buildDirRelativePath;
