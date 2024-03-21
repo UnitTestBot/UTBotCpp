@@ -505,6 +505,9 @@ namespace tests {
             SuiteNameToCodeTextMap codeText;
             std::string paramsString;
 
+            std::string initFunction;
+            std::string teardownFunction;
+
             types::Type returnType;
             bool hasIncompleteReturnType = false;
 

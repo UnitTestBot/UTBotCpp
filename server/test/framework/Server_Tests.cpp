@@ -1289,7 +1289,7 @@ namespace {
 
             testDirPath = getTestFilePath(pregeneratedTestsRelativeDir);
             projectContext = std::make_unique<utbot::ProjectContext>(
-                projectName, suitePath, testDirPath, buildDirRelativePath, clientProjectPath);
+                projectName, suitePath, testDirPath, buildDirRelativePath, clientProjectPath, "");
 
             basic_functions_c = getTestFilePath("basic_functions.c");
             simple_loop_uncovered_c = getTestFilePath("simple_loop_uncovered.c");
@@ -1644,7 +1644,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 11);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath, clientProjectPath);
+                                                                      buildDirRelativePath, clientProjectPath, "");
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_asserts_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1692,7 +1692,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 11);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath, clientProjectPath);
+                                                                      buildDirRelativePath, clientProjectPath, "");
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_asserts_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1738,7 +1738,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 8);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath, clientProjectPath);
+                                                                      buildDirRelativePath, clientProjectPath, "");
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_exceptions_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1784,7 +1784,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 8);
 
         auto projectContext = std::make_unique<utbot::ProjectContext>(projectName, suitePath, suitePath / "tests",
-                                                                      buildDirRelativePath, clientProjectPath);
+                                                                      buildDirRelativePath, clientProjectPath, "");
         auto testFilter = GrpcUtils::createTestFilterForFile(
                 Paths::sourcePathToTestPath(*projectContext, methods_with_exceptions_cpp));
         auto runRequest = createCoverageAndResultsRequest(
@@ -1941,7 +1941,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path linked_list_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             linked_list_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(linked_list_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -1979,7 +1979,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path tree_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             tree_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(tree_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2019,7 +2019,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path complex_structs_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             complex_structs_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(complex_structs_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2072,7 +2072,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path input_output_test_cpp = Paths::sourcePathToTestPath(
-                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
                 input_output_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(input_output_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2110,7 +2110,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path file_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             file_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(file_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2148,7 +2148,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path hard_linked_list_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             hard_linked_list_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(hard_linked_list_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2186,7 +2186,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path multi_dim_pointers_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             multi_dim_pointers_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(multi_dim_pointers_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2224,7 +2224,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path struct_with_union_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             struct_with_union_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(struct_with_union_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2262,7 +2262,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path structs_with_pointers_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             structs_with_pointers_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(structs_with_pointers_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2300,7 +2300,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path thread_local_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+            utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
             thread_local_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(thread_local_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(

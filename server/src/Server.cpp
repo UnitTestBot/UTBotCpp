@@ -32,6 +32,7 @@
 #include "utils/stats/TestsGenerationStats.h"
 #include "utils/stats/TestsExecutionStats.h"
 #include "utils/TypeUtils.h"
+#include "utils/JsonUtils.h"
 #include "building/ProjectBuildDatabase.h"
 
 #include <thread>
@@ -237,6 +238,13 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
         StubsCollector(typesHandler).collect(testGen.tests);
+
+        JsonUtils::getJsonFromFile(testGen.projectContext.itfPath);
+        for (auto &[path, tests]: testGen.tests) {
+            for (auto &[methodName, methodDescription]: tests.methods) {
+
+            }
+        }
 
         PathSubstitution pathSubstitution = {};
         if (lineTestGen != nullptr) {
