@@ -89,6 +89,7 @@ message ProjectContext {
     string testDirPath = 3;
     string buildDirRelativePath = 4;
     string clientProjectPath = 5;
+    string ithPath = 6;
 }
 
 enum ErrorMode {

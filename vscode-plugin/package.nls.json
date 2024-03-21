@@ -6,6 +6,7 @@
    "unittestbot.paths.cmakeOptions.description": "Options passed to CMake command. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#cmake-options)",
    "unittestbot.paths.testsDirectory.description": "Relative path to directory in which tests will be generated. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#tests-directory)",
    "unittestbot.paths.sourceDirectories.description": "Relative paths to directories, that are marked as source directories. Please, prefer using UTBot Explorer View instead of raw settings. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#source-directories)",
+   "unittestbot.paths.initialTeardownFunctions.description":  "Relative paths to json, that contains list of initial and teardown functions",
    "unittestbot.testsGeneration.verboseFormatting.description": "If set to true, tests will be formatted in more detailed form. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#verbose-formatting)",
    "unittestbot.testsGeneration.generateForStaticFunctions.description": "True, if you want UTBot to generate tests for static functions. [Learn more](https://github.com/UnitTestBot/UTBotCpp/wiki/vscode-extension-settings#generate-for-static-functions)",
    "unittestbot.testsGeneration.errorMode.description": "Choose the option: \"Failing\" means that error tests have runtime error, \"Passing\" means that no tests have runtime error.",

@@ -404,14 +404,15 @@ namespace tests {
             std::shared_ptr<AbstractValueView> view;
             std::vector<MethodParam> lazyParams;
             std::vector<TestCaseParamValue> lazyValues;
+
             TestCaseParamValue() = default;
 
             TestCaseParamValue(std::string _name,
                                const std::optional<size_t> &_alignment,
                                std::shared_ptr<AbstractValueView> _view)
-                : name(std::move(_name)),
-                  alignment(_alignment),
-                  view(std::move(_view)) {}
+                    : name(std::move(_name)),
+                      alignment(_alignment),
+                      view(std::move(_view)) {}
         };
 
         struct FileInfo {

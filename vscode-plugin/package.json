@@ -498,6 +498,11 @@
 					"default": "",
 					"markdownDescription": "%unittestbot.paths.sourceDirectories.description%"
 				},
+				"unittestbot.paths.initialTeardownFunctions": {
+					"type": "string",
+					"default": "",
+					"markdownDescription": "%unittestbot.paths.initialTeardownFunctions.description%"
+				},
 				"unittestbot.testsGeneration.verboseFormatting": {
 					"type": "boolean",
 					"default": false,
