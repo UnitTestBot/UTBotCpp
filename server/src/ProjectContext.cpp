@@ -14,8 +14,9 @@ namespace utbot {
             : projectName(std::move(projectName)), projectPath(std::move(projectPath)),
               testDirPath(std::move(testDirPath)),
               buildDirRelativePath(std::move(buildDirRelativePath)),
-              clientProjectPath(clientProjectPath),
-              itfPath(itfPath) {}
+              clientProjectPath(std::move(clientProjectPath)),
+              itfPath(std::move(itfPath)) {
+    }
 
     ProjectContext::ProjectContext(const testsgen::ProjectContext &projectContext)
             : ProjectContext(projectContext.projectname(),
@@ -26,12 +27,10 @@ namespace utbot {
                              projectContext.itfpath()) {}
 
     ProjectContext::ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir)
-            : projectName(request.projectcontext().projectname()),
-              projectPath(request.projectcontext().projectpath()),
-              testDirPath(request.projectcontext().testdirpath()),
-              buildDirRelativePath(request.projectcontext().builddirrelativepath()),
-              clientProjectPath(request.projectcontext().clientprojectpath()),
-              itfPath(request.projectcontext().itfpath()) {}
+            : ProjectContext(request.projectcontext().projectname(), request.projectcontext().projectpath(),
+                             request.projectcontext().testdirpath(), request.projectcontext().builddirrelativepath(),
+                             request.projectcontext().clientprojectpath(),
+                             request.projectcontext().itfpath()) {}
 
     fs::path ProjectContext::buildDir() const {
         return projectPath / buildDirRelativePath;

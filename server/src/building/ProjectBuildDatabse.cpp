@@ -9,7 +9,7 @@
 #include "Paths.h"
 
 static std::string tryConvertToFullPath(const std::string &possibleFilePath, const fs::path &dirPath) {
-    fs::path fullFilePath = Paths::getCCJsonFileFullPath(possibleFilePath, dirPath);
+    fs::path fullFilePath = Paths::getFileFullPath(possibleFilePath, dirPath);
     return fs::exists(fullFilePath) ? fullFilePath.string() : possibleFilePath;
 }
 
@@ -82,7 +82,7 @@ void ProjectBuildDatabase::initObjects(const nlohmann::json &compileCommandsJson
 
         fs::path directory = compileCommand.at("directory").get<std::string>();
         fs::path jsonFile = compileCommand.at("file").get<std::string>();
-        fs::path sourceFile = Paths::getCCJsonFileFullPath(jsonFile, directory);
+        fs::path sourceFile = Paths::getFileFullPath(jsonFile, directory);
 
         std::vector<std::string> jsonArguments;
         if (compileCommand.contains("command")) {
@@ -218,7 +218,7 @@ void ProjectBuildDatabase::initInfo(const nlohmann::json &linkCommandsJson, bool
         }
         for (nlohmann::json const &jsonFile: linkCommand.at("files")) {
             auto filename = jsonFile.get<std::string>();
-            fs::path currentFile = Paths::getCCJsonFileFullPath(filename, command.getDirectory());
+            fs::path currentFile = Paths::getFileFullPath(filename, command.getDirectory());
             if (ignoredOutput.count(currentFile)) {
                 continue;
             }

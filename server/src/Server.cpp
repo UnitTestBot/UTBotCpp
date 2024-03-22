@@ -239,10 +239,39 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
         StubsCollector(typesHandler).collect(testGen.tests);
 
-        JsonUtils::getJsonFromFile(testGen.projectContext.itfPath);
-        for (auto &[path, tests]: testGen.tests) {
-            for (auto &[methodName, methodDescription]: tests.methods) {
+        if(!testGen.projectContext.itfPath.empty()) {
+            try {
+                fs::path fullFilePath = Paths::getFileFullPath(testGen.projectContext.itfPath,
+                                                               testGen.projectContext.projectPath);
+                if (!fs::exists(fullFilePath)) {
+                    std::string message = "File with init and teardown functions, doesn't exists";
+                    LOG_S(ERROR) << message;
+                    throw EnvironmentException(message);
+                }
+                LOG_S(INFO) << "Use init and teardown functions from: " << fullFilePath;
+                nlohmann::json itfJson = JsonUtils::getJsonFromFile(fullFilePath);
+                auto defaultInitIt = itfJson.find("default init");
+                std::string defaultInitial = itfJson.value("default init", "");
+                std::string defaultTeardown = itfJson.value("default teardown", "");
 
+                std::optional<nlohmann::json> initJson = std::nullopt;
+                if (itfJson.contains("init")) {
+                    initJson = itfJson.at("init");
+                }
+
+                std::optional<nlohmann::json> teardownJson = std::nullopt;
+                if (itfJson.contains("teardown")) {
+                    teardownJson = itfJson.at("teardown");
+                }
+                for (auto it: testGen.tests) {
+                    for (auto methodIt: it.second.methods) {
+                        methodIt.second.initFunction = initJson->value(methodIt.first, defaultInitial);
+                        methodIt.second.teardownFunction = teardownJson->value(methodIt.first, defaultTeardown);
+                    }
+                }
+            } catch (const std::exception &e) {
+                LOG_S(ERROR) << e.what();
+                throw EnvironmentException(e.what());
             }
         }
 
@@ -635,7 +664,10 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
+    LOG_S(ERROR) << "ITF request path: " << request->projectcontext().itfpath();
     utbot::ProjectContext utbotProjectContext{request->projectcontext()};
+    LOG_S(ERROR) << "ITF request2 path: " << utbotProjectContext.itfPath;
+
     fs::path buildDirPath =
             fs::path(utbotProjectContext.projectPath) / utbotProjectContext.buildDirRelativePath;
     switch (request->configmode()) {

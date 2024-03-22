@@ -157,7 +157,7 @@ void BuildDatabase::addLibrariesForCommand(utbot::BaseCommand &command,
                     name = sharedLibraryFiles.at(name).at(libraryDir);
                 }
             }
-            fs::path fullPath = Paths::getCCJsonFileFullPath(name, libraryDir);
+            fs::path fullPath = Paths::getFileFullPath(name, libraryDir);
             if (CollectionUtils::containsKey(targetInfos, fullPath)) {
                 info.addFile(fullPath);
                 LOG_IF_S(WARNING, objectFiles) << "Object file " << command.getOutput()

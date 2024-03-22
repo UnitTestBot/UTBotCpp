@@ -115,9 +115,9 @@ namespace utbot {
         auto it = findOutput();
         if (it != commandLine.end()) {
             this->output = it;
-            *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
+            *this->output = Paths::getFileFullPath(*it, this->directory);
         } else {
-            auto path = Paths::getCCJsonFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
+            auto path = Paths::getFileFullPath(Paths::replaceExtension(*this->sourcePath, ".o"), this->directory);
             this->output = std::next(addFlagsToBegin({"-o", path}));
         }
     }

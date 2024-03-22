@@ -13,7 +13,7 @@
 namespace printer {
     using StringUtils::stringFormat;
 
-    Printer::Printer(utbot::Language srcLanguage) : srcLanguage(srcLanguage){
+    Printer::Printer(utbot::Language srcLanguage) : srcLanguage(srcLanguage) {
     }
 
     bool Printer::needDecorate() const {
@@ -128,7 +128,7 @@ namespace printer {
                                                           bool complete,
                                                           ExternType externType) {
         auto baseType = type.baseType();
-        std::string arrayName{ name.data(), name.length() };
+        std::string arrayName{name.data(), name.length()};
 
         if (needDecorate()) {
             baseType = NameDecorator::decorate(baseType);
@@ -157,7 +157,7 @@ namespace printer {
         if (isLiteral) {
             ss << "[]";
         } else {
-            for (auto size : sizes) {
+            for (auto size: sizes) {
                 ss << "[" << size << "]";
             }
         }
@@ -186,16 +186,16 @@ namespace printer {
     }
 
     Printer::Stream &Printer::strFunctionDecl(
-        const std::string &returnType,
-        const std::string &functionName,
-        const std::vector<types::Type> &paramTypes,
-        const std::vector<std::string> &paramValues,
-        const std::string &end,
-        const std::vector<std::string> &modifiers,
-        const tests::Tests::MethodDescription::FPointerMap &fullDeclSubstitutions,
-        bool isVariadic) {
+            const std::string &returnType,
+            const std::string &functionName,
+            const std::vector<types::Type> &paramTypes,
+            const std::vector<std::string> &paramValues,
+            const std::string &end,
+            const std::vector<std::string> &modifiers,
+            const tests::Tests::MethodDescription::FPointerMap &fullDeclSubstitutions,
+            bool isVariadic) {
         ss << LINE_INDENT();
-        for (const auto &modifier : modifiers) {
+        for (const auto &modifier: modifiers) {
             ss << modifier << " ";
         }
         ss << returnType << " " << functionName << "(";
@@ -203,7 +203,8 @@ namespace printer {
         for (auto i = 0; i < n; i++) {
             bool named = false;
             if (CollectionUtils::containsKey(fullDeclSubstitutions, paramValues[i])) {
-                ss << getTypedefFunctionPointer(functionName, paramValues[i], paramTypes[i].isArrayOfPointersToFunction());
+                ss << getTypedefFunctionPointer(functionName, paramValues[i],
+                                                paramTypes[i].isArrayOfPointersToFunction());
             } else {
                 if (paramTypes[i].isPointerToArray()) {
                     auto decomposedType = StringUtils::split(paramTypes[i].usedType(), '*');
@@ -281,7 +282,7 @@ namespace printer {
                                               bool needTabs) {
         strTabIf(needTabs);
         std::vector<std::string> parameters;
-        for (const auto &param : method.params) {
+        for (const auto &param: method.params) {
             parameters.push_back(param.getFunctionParamDecl());
         }
         auto classObjName = method.getClassName();
@@ -309,7 +310,7 @@ namespace printer {
 
     std::string Printer::constrMultiIndex(const std::string &arrayName, const std::vector<std::string> &indexes) {
         std::string element = arrayName;
-        for (const auto &index : indexes) {
+        for (const auto &index: indexes) {
             element = constrIndex(element, index);
         }
         return element;
@@ -317,7 +318,7 @@ namespace printer {
 
     std::string Printer::constrMultiIndex(const std::string &arrayName, const std::vector<size_t> &indexes) {
         std::vector<std::string> strIndexes;
-        for (size_t index : indexes) {
+        for (size_t index: indexes) {
             strIndexes.push_back(std::to_string(index));
         }
         return constrMultiIndex(arrayName, strIndexes);
@@ -387,9 +388,10 @@ namespace printer {
         return ss;
     }
 
-    std::stringstream& Printer::checkOverflowStubArray(const std::string &cntCall) {
+    std::stringstream &Printer::checkOverflowStubArray(const std::string &cntCall) {
         ss << LINE_INDENT() << "if (" << cntCall << " == " <<
-           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {" << printer::NL;
+           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {"
+           << printer::NL;
         tabsDepth++;
         ss << LINE_INDENT() << cntCall << "--;" << printer::NL;
         ss << RB();
@@ -446,7 +448,7 @@ namespace printer {
         printer::KleeConstraintsPrinter preferWriter(temp.get(), srcLanguage);
         preferWriter.setTabsDepth(tabsDepth);
         preferWriter.genConstraints(
-            {types::Type::createArray(method.returnType), stubSymbolicVarName, std::nullopt});
+                {types::Type::createArray(method.returnType), stubSymbolicVarName, std::nullopt});
         ss << preferWriter.ss.str();
         ss << RB();
         tabsDepth--;
@@ -463,14 +465,14 @@ namespace printer {
         auto pointer = (needAmpersand ? "&" : "") + varName;
         auto size = "sizeof(" + varName + ")";
         auto name = "\"" + pseudoName + "\"";
-        strFunctionCall("klee_make_symbolic", { pointer, size, name });
+        strFunctionCall("klee_make_symbolic", {pointer, size, name});
         return ss;
     }
 
     std::stringstream &Printer::strDeclareArrayOfFunctionPointerVar(
-        const std::string &arrayType, const std::string &arrayName, const std::string &stubFunctionName) {
+            const std::string &arrayType, const std::string &arrayName, const std::string &stubFunctionName) {
         size_t size =
-            types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
+                types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strDeclareVar(arrayType, arrayName + "[" + std::to_string(size) + "]");
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
@@ -483,13 +485,14 @@ namespace printer {
     std::stringstream &Printer::strTypedefFunctionPointer(const types::FunctionInfo &method,
                                                           const std::string &name) {
         auto paramTypes =
-            CollectionUtils::transform(method.params, [](const auto &param) { return param.type; });
+                CollectionUtils::transform(method.params, [](const auto &param) { return param.type; });
         ss << LINE_INDENT() << "typedef ";
         strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(*%s)", name), paramTypes,
                         std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         if (method.isArray) {
             ss << LINE_INDENT() << "typedef ";
-            strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(**%s)", name + "_arr"), paramTypes,
+            strFunctionDecl(method.returnType.usedType(), StringUtils::stringFormat("(**%s)", name + "_arr"),
+                            paramTypes,
                             std::vector<std::string>(paramTypes.size(), ""), "") << SCNL;
         }
         return ss;
@@ -509,19 +512,19 @@ namespace printer {
 
         size_t pointerSize = types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
         auto typeObject = types::TypesHandler::isVoid(param.type.baseTypeObj())
-                              ? types::Type::minimalScalarPointerType(2)
-                              : param.type;
+                          ? types::Type::minimalScalarPointerType(2)
+                          : param.type;
         auto baseType = typeObject.baseType();
         auto type = stringFormat("%s%s **", getConstQualifier(typeObject), baseType);
         std::string value =
-            stringFormat("(%s) calloc(%zu, sizeof(%s *))", type, pointerSize + 1, baseType);
+                stringFormat("(%s) calloc(%zu, sizeof(%s *))", type, pointerSize + 1, baseType);
         if (needDeclare) {
             strDeclareVar(type, param.name, value);
         } else {
             strAssignVar(param.name, value);
         }
 
-        auto iterators = printForLoopsAndReturnLoopIterators({ pointerSize });
+        auto iterators = printForLoopsAndReturnLoopIterators({pointerSize});
         auto indexing = constrMultiIndex(iterators);
         strAssignVar(param.name + indexing, param.underscoredName() + indexing);
         closeBrackets(1);
@@ -533,9 +536,9 @@ namespace printer {
     Printer::strMemcpyImpl(std::string_view dest, std::string_view src, bool needDereference) {
         using namespace std::string_literals;
         std::string destArg = stringFormat("(void *) %s%.*s", (needDereference ? "&"s : ""s),
-                                      dest.length(), dest.data());
+                                           dest.length(), dest.data());
         std::string count = stringFormat("%s(%.*s)", SIZEOF, src.length(), src.data());
-        strFunctionCall(MEMCPY, { destArg, std::string(src), count });
+        strFunctionCall(MEMCPY, {destArg, std::string(src), count});
         return ss;
     }
 
@@ -616,7 +619,7 @@ namespace printer {
                               std::unordered_set<uint64_t> &checkedOnPrivate) {
         if (!checkedOnPrivate.count(type.getId()) && typesHandler->isStructLike(type)) {
             checkedOnPrivate.insert(type.getId());
-            for (const auto& field : typesHandler->getStructInfo(type).fields) {
+            for (const auto &field: typesHandler->getStructInfo(type).fields) {
                 if (field.accessSpecifier != types::AccessSpecifier::AS_pubic && !field.type.isArray()) {
                     ss << StringUtils::stringFormat("ACCESS_PRIVATE_FIELD(%s, %s, %s)",
                                                     type.typeName(),
@@ -640,7 +643,7 @@ namespace printer {
                                                        const types::Field &field,
                                                        const std::string &stubName) {
         size_t size =
-            types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
+                types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
         std::string name = structName + "." + field.name + "[i]";
@@ -656,7 +659,7 @@ namespace printer {
     }
 
     void Printer::writeStubsForParameters(const Tests &tests) {
-        for (const auto &[methodName, methodDescription] : tests.methods) {
+        for (const auto &[methodName, methodDescription]: tests.methods) {
             if (methodDescription.stubsText.empty()) {
                 continue;
             }
@@ -694,10 +697,14 @@ namespace printer {
     }
 
     void Printer::genInitCall(const tests::Tests::MethodDescription &testMethod) {
-        strFunctionCall("_init_mocks", {});
+        if (!testMethod.initFunction.empty()) {
+            strFunctionCall(testMethod.initFunction, {});
+        }
     }
 
     void Printer::genTearDownCall(const tests::Tests::MethodDescription &testMethod) {
-        strFunctionCall("_teardown_mocks", {});
+        if (!testMethod.teardownFunction.empty()) {
+            strFunctionCall(testMethod.teardownFunction, {});
+        }
     }
 }

@@ -431,6 +431,7 @@ export class Client {
             projectContext.setTestdirpath(Prefs.getTestsDirPath());
             projectContext.setBuilddirrelativepath(buildDir[1]);
             projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
+            projectContext.setItfpath(Prefs.getITFPath());
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());
 
