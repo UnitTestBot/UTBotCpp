@@ -1,0 +1,10 @@
+{
+  "default init": "",
+  "default teardown": "",
+  "init": {
+    "init_global": "_init_vals"
+  },
+  "teardown": {
+    "init_global": ""
+  }
+}

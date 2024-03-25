@@ -49,9 +49,10 @@ void KleePrinter::writePosixWrapper(const Tests &tests,
     ss << printer::NL;
 }
 
+
 void KleePrinter::genOpenFiles(const tests::Tests::MethodDescription &testMethod) {
     char fileName = 'A';
-    for (const auto &param : testMethod.params) {
+    for (const auto &param: testMethod.params) {
         if (param.type.isFilePointer()) {
             std::string strFileName(1, fileName++);
             if (fileName > 'A' + types::Type::symFilesCount) {
@@ -62,7 +63,7 @@ void KleePrinter::genOpenFiles(const tests::Tests::MethodDescription &testMethod
 
             strDeclareVar(param.type.typeName(), param.name,
                           constrFunctionCall("fopen",
-                                             { StringUtils::wrapQuotations(strFileName), "\"r\"" },
+                                             {StringUtils::wrapQuotations(strFileName), "\"r\""},
                                              "", std::nullopt, false));
         }
     }
@@ -82,6 +83,7 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
     declTestEntryPoint(tests, testMethod, isWrapped);
     genOpenFiles(testMethod);
     genGlobalParamsDeclarations(testMethod);
+    genInitCall(testMethod);
     genParamsDeclarations(testMethod, filterAllWithoutFile);
     genPostGlobalSymbolicVariables(testMethod);
     genPostParamsSymbolicVariables(testMethod, filterAllWithoutFile);
@@ -92,6 +94,7 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
     }
     genGlobalsKleeAssumes(testMethod);
     genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
+    genTearDownCall(testMethod);
     strReturn("0");
     closeBrackets(1);
     ss << printer::NL;

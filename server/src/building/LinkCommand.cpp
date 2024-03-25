@@ -75,7 +75,7 @@ namespace utbot {
         auto it = findOutput();
         if (it != commandLine.end()) {
             this->output = it;
-            *this->output = Paths::getCCJsonFileFullPath(*it, this->directory);
+            *this->output = Paths::getFileFullPath(*it, this->directory);
         } else if (isArchiveCommand()) {
             it = std::find_if(commandLine.begin(), commandLine.end(), [](const std::string &argument) {
                 return Paths::isStaticLibraryFile(argument);

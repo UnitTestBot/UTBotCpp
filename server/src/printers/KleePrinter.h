@@ -45,7 +45,9 @@ namespace printer {
                                     bool needAssertion,
                                     const utbot::ProjectContext &projectContext);
 
-    [[nodiscard]] std::vector<std::string> getIncludePaths(const Tests &tests, const PathSubstitution &substitution) const;
+        [[nodiscard]] std::vector<std::string>
+        getIncludePaths(const Tests &tests, const PathSubstitution &substitution) const;
+
     private:
         types::TypesHandler const *typesHandler;
         BaseTestGen const *testGen;
@@ -72,7 +74,8 @@ namespace printer {
 
         bool genPointerParamDeclaration(const Tests::MethodParam &param);
 
-        void genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo);
+        void
+        genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo);
 
         void genParamsKleeAssumes(const Tests::MethodDescription &testMethod,
                                   const std::optional<PredInfo> &predicateInfo,
@@ -88,7 +91,7 @@ namespace printer {
         /*
          * Functions for constraints generation.
          */
-        void genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names = {});
+        void genConstraints(const Tests::MethodParam &param, const std::vector<std::string> &names = {});
 
         void genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare);
 
@@ -110,7 +113,8 @@ namespace printer {
                                                const std::string &testedMethod,
                                                bool onlyForOneEntity);
 
-        [[maybe_unused]] void addHeaderIncludeIfNecessary(std::unordered_set<std::string> &headers, const types::Type &type);
+        [[maybe_unused]] void
+        addHeaderIncludeIfNecessary(std::unordered_set<std::string> &headers, const types::Type &type);
 
         Stream strKleeMakeSymbolic(SRef varName, bool needAmpersand);
 
@@ -121,8 +125,8 @@ namespace printer {
         void genPostGlobalSymbolicVariables(const Tests::MethodDescription &testMethod);
 
         void genPostParamsSymbolicVariables(
-            const Tests::MethodDescription &testMethod,
-            std::function<bool(const tests::Tests::MethodParam &)> filter);
+                const Tests::MethodDescription &testMethod,
+                std::function<bool(const tests::Tests::MethodParam &)> filter);
 
         void makeBracketsForStrPredicate(const std::optional<PredInfo> &info);
 

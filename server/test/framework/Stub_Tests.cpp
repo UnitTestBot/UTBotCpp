@@ -37,7 +37,7 @@ namespace {
 
         fs::path testsDirPath = getTestFilePath("tests");
         utbot::ProjectContext projectContext{projectName, suitePath, testsDirPath,
-                                             buildDirRelativePath, clientProjectPath};
+                                             buildDirRelativePath, clientProjectPath, ""};
         fs::path sum_test_cpp =
                 Paths::sourcePathToTestPath(projectContext, calc_sum_c);
         fs::path foreign_bar_test_cpp =
@@ -117,7 +117,7 @@ namespace {
 
     TEST_F(Stub_Test, Project_Stubs_Test) {
         auto stubsWriter = std::make_unique<ServerStubsWriter>(nullptr, false);
-        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths,
+        auto request = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "",
                                             GrpcUtils::UTBOT_AUTO_TARGET_PATH, true);
         auto testGen = std::make_unique<ProjectTestGen>(*request, writer.get(), TESTMODE);
         std::vector<fs::path> stubSources = {calc_sum_c, calc_mult_c, literals_foo_c};
@@ -163,7 +163,7 @@ namespace {
 
     TEST_F(Stub_Test, Multimodule_Lib_Heuristic_Test) {
         auto request = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
-                                                       {foreign, calc, suitePath, literals},
+                                                       {foreign, calc, suitePath, literals}, "",
                                                        foreign_bar_c, true);
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
         Status status = Server::TestsGenServiceImpl::ProcessBaseTestRequest(testGen, writer.get());
@@ -342,7 +342,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path function_pointers_test_cpp = Paths::sourcePathToTestPath(
-                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath),
+                utbot::ProjectContext(projectName, suitePath, testsDirPath, buildDirRelativePath, clientProjectPath, ""),
                 function_pointers_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(function_pointers_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(

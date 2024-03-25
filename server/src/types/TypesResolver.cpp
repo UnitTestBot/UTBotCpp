@@ -105,7 +105,7 @@ void TypesResolver::resolveStructEx(const clang::RecordDecl *D, const std::strin
     fs::path filename =
             sourceManager.getFilename(sourceManager.getSpellingLoc(D->getLocation())).str();
     fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
-    structInfo.filePath = Paths::getCCJsonFileFullPath(filename, parent->buildRootPath);
+    structInfo.filePath = Paths::getFileFullPath(filename, parent->buildRootPath);
     structInfo.name = getFullname(D, canonicalType, id, sourceFilePath);
     structInfo.hasAnonymousStructOrUnion = false;
     if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::CXX) {
@@ -239,7 +239,7 @@ void TypesResolver::resolveEnum(const clang::EnumDecl *EN, const std::string &na
     types::EnumInfo enumInfo;
     fs::path sourceFilePath = ClangUtils::getSourceFilePath(sourceManager);
     enumInfo.name = getFullname(EN, canonicalType, id, sourceFilePath);
-    enumInfo.filePath = Paths::getCCJsonFileFullPath(
+    enumInfo.filePath = Paths::getFileFullPath(
             sourceManager.getFilename(EN->getLocation()).str(), parent->buildRootPath.string());
     clang::QualType promotionType = EN->getPromotionType();
     enumInfo.size = context.getTypeSize(promotionType);

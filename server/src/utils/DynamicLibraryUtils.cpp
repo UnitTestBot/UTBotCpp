@@ -14,7 +14,7 @@ namespace DynamicLibraryUtils {
                                                    const fs::path &directory) {
         if (StringUtils::startsWith(argument, libraryDirOption)) {
             fs::path relativePath = argument.substr(libraryDirOption.length());
-            fs::path absolutePath = Paths::getCCJsonFileFullPath(relativePath, directory);
+            fs::path absolutePath = Paths::getFileFullPath(relativePath, directory);
             return absolutePath;
         }
         return std::nullopt;

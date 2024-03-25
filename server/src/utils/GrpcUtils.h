@@ -19,7 +19,8 @@ namespace GrpcUtils {
     createProjectContext(const std::string &projectName,
                          const fs::path &projectPath,
                          const fs::path &testDirPath,
-                         const fs::path &buildDirRelativePath);
+                         const fs::path &buildDirRelativePath,
+                         const fs::path &itfPath);
 
     std::unique_ptr<testsgen::SettingsContext>
     createSettingsContext(bool generateForStaticFunctions,

@@ -139,15 +139,16 @@ void TestsPrinter::printFinalCodeAndAlterJson(Tests &tests) {
     }
 }
 
-std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods) {
-    if (std::all_of(methods.begin(), methods.end(), [&suiteName](const auto& method) {
+std::uint32_t
+TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &suiteName, const Tests::MethodsMap &methods) {
+    if (std::all_of(methods.begin(), methods.end(), [&suiteName](const auto &method) {
         return method.second.codeText.at(suiteName).empty();
     })) {
         return 0;
     }
     ss << "#pragma region " << suiteName << printer::NL;
     std::uint32_t count = 0;
-    for (const auto &[methodName, methodDescription] : methods) {
+    for (const auto &[methodName, methodDescription]: methods) {
         if (methodDescription.codeText.at(suiteName).empty()) {
             continue;
         }
@@ -159,12 +160,12 @@ std::uint32_t TestsPrinter::printSuiteAndReturnMethodsCount(const std::string &s
 }
 
 void TestsPrinter::genCode(Tests::MethodDescription &methodDescription,
-                           const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                           const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                            bool verbose,
                            ErrorMode errorMode) {
     resetStream();
 
-    if(needDecorate()) {
+    if (needDecorate()) {
         methodDescription.name = KleeUtils::getRenamedOperator(methodDescription.name);
     }
 
@@ -196,10 +197,10 @@ static std::string getTestName(const Tests::MethodDescription &methodDescription
     std::string renamedMethodDescription = KleeUtils::getRenamedOperator(methodDescription.name);
     StringUtils::replaceColon(renamedMethodDescription);
     std::string testBaseName = methodDescription.isClassMethod()
-                                   ? StringUtils::stringFormat("%s_%s",
-                                                               methodDescription.classObj->type.typeName(),
-                                                               renamedMethodDescription)
-                                   : renamedMethodDescription;
+                               ? StringUtils::stringFormat("%s_%s",
+                                                           methodDescription.classObj->type.typeName(),
+                                                           renamedMethodDescription)
+                               : renamedMethodDescription;
 
     return printer::Printer::concat(testBaseName, Paths::TEST_SUFFIX, testNum);
 }
@@ -210,11 +211,11 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
                                       bool verbose,
                                       int &testNum,
                                       ErrorMode errorMode) {
-    const auto& testCases = methodDescription.suiteTestCases[targetSuiteName];
+    const auto &testCases = methodDescription.suiteTestCases[targetSuiteName];
     if (testCases.empty()) {
         return;
     }
-    for (int testCaseIndex : testCases) {
+    for (int testCaseIndex: testCases) {
         ++testNum;
         Tests::MethodTestCase &testCase = methodDescription.testCases[testCaseIndex];
         testCase.testName = getTestName(methodDescription, testNum);
@@ -225,6 +226,8 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
         } else {
             genParametrizedTestCase(methodDescription, testCase, predicateInfo, errorMode);
         }
+        genTearDownCall(methodDescription);
+        ss << RB() << printer::NL;
     }
 
     methodDescription.codeText[targetSuiteName] = ss.str();
@@ -263,7 +266,6 @@ void TestsPrinter::genVerboseTestCase(const Tests::MethodDescription &methodDesc
         ss << printer::NL;
         TestsPrinter::verboseAsserts(methodDescription, testCase, predicateInfo);
     }
-    ss << RB() << printer::NL;
 }
 
 void TestsPrinter::initializeFiles(const Tests::MethodDescription &methodDescription,
@@ -377,6 +379,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
+    genInitCall(methodDescription);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     printStubVariablesForParam(methodDescription, testCase);
     printClassObject(methodDescription, testCase);
@@ -384,7 +387,6 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     printLazyVariables(methodDescription, testCase, false);
     printLazyReferences(methodDescription, testCase, false);
     parametrizedAsserts(methodDescription, testCase, predicateInfo, errorMode);
-    ss << RB() << printer::NL;
 }
 
 void TestsPrinter::genHeaders(Tests &tests, const fs::path& generatedHeaderPath) {
@@ -456,6 +458,8 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         }
         ss << printer::NL;
     }
+
+    genInitCall(methodDescription);
 
     std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes};
     std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = {testCase.stubValues, testCase.stubParamValues};

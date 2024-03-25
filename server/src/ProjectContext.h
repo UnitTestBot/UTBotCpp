@@ -17,7 +17,8 @@ public:
                    fs::path projectPath,
                    fs::path testDirPath,
                    fs::path buildDirRelativePath,
-                   fs::path serverBuildDir);
+                   fs::path serverBuildDir,
+                   fs::path itfPath);
 
     explicit ProjectContext(const testsgen::ProjectContext &projectContext);
 
@@ -30,6 +31,7 @@ public:
     const fs::path testDirPath;
     const fs::path buildDirRelativePath;
     const fs::path clientProjectPath;
+    const fs::path itfPath;
 };
 }
 

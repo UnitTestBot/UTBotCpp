@@ -32,6 +32,7 @@
 #include "utils/stats/TestsGenerationStats.h"
 #include "utils/stats/TestsExecutionStats.h"
 #include "utils/TypeUtils.h"
+#include "utils/JsonUtils.h"
 #include "building/ProjectBuildDatabase.h"
 
 #include <thread>
@@ -237,6 +238,49 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
         StubsCollector(typesHandler).collect(testGen.tests);
+        if (!testGen.projectContext.itfPath.string().empty()) {
+            try {
+                fs::path fullFilePath = Paths::getFileFullPath(testGen.projectContext.itfPath,
+                                                               testGen.projectContext.projectPath);
+                if (!fs::exists(fullFilePath)) {
+                    std::string message = "File with init and teardown functions, doesn't exists";
+                    LOG_S(ERROR) << message;
+                    throw EnvironmentException(message);
+                }
+                LOG_S(INFO) << "Use init and teardown functions from: " << fullFilePath;
+                nlohmann::json itfJson = JsonUtils::getJsonFromFile(fullFilePath);
+                auto defaultInitIt = itfJson.find("default init");
+                std::string defaultInitial = itfJson.value("default init", "");
+                std::string defaultTeardown = itfJson.value("default teardown", "");
+
+                std::optional<nlohmann::json> initJson = std::nullopt;
+                if (itfJson.contains("init")) {
+                    initJson = itfJson.at("init");
+                }
+
+                std::optional<nlohmann::json> teardownJson = std::nullopt;
+                if (itfJson.contains("teardown")) {
+                    teardownJson = itfJson.at("teardown");
+                }
+                for (tests::TestsMap::iterator it = testGen.tests.begin(); it != testGen.tests.end(); ++it) {
+                    tests::Tests &tests = it.value();
+                    for (tests::Tests::MethodsMap::iterator testsIt = tests.methods.begin();
+                         testsIt != tests.methods.end(); testsIt++) {
+                        const std::string &methodName = testsIt.key();
+                        tests::Tests::MethodDescription &method = testsIt.value();
+                        if (initJson.has_value()) {
+                            method.initFunction = initJson->value(methodName, defaultInitial);
+                        }
+                        if (teardownJson.has_value()) {
+                            method.teardownFunction = teardownJson->value(methodName, defaultTeardown);
+                        }
+                    }
+                }
+            } catch (const std::exception &e) {
+                LOG_S(ERROR) << e.what();
+                throw EnvironmentException(e.what());
+            }
+        }
 
         PathSubstitution pathSubstitution = {};
         if (lineTestGen != nullptr) {
@@ -627,7 +671,10 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
+    LOG_S(ERROR) << "ITF request path: " << request->projectcontext().itfpath();
     utbot::ProjectContext utbotProjectContext{request->projectcontext()};
+    LOG_S(ERROR) << "ITF request2 path: " << utbotProjectContext.itfPath;
+
     fs::path buildDirPath =
             fs::path(utbotProjectContext.projectPath) / utbotProjectContext.buildDirRelativePath;
     switch (request->configmode()) {

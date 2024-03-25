@@ -29,6 +29,7 @@ export class Prefs {
     public static CMAKE_OPTIONS_PREF = 'unittestbot.paths.cmakeOptions';
     public static TESTS_DIR_PREF = 'unittestbot.paths.testsDirectory';
     public static SOURCE_DIRS_PREF = 'unittestbot.paths.sourceDirectories';
+    public static ITF_PATH_PREF = 'unittestbot.paths.initialTeardownFunctions';
 
     public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.verboseFormatting";
 
@@ -260,6 +261,13 @@ export class Prefs {
         return this.getLocalSourcePaths();
     }
 
+    public static getITFPath(): string {
+        const itfPath: string = this.getAssetBase(Prefs.ITF_PATH_PREF, "");
+        if (itfPath.length === 0) {
+            return "";
+        }
+        return pathUtils.normalizeRawPosixPath(itfPath);
+    }
 
     public static async setAsset<T>(pref: string, newValue: T, raiseError: boolean = true): Promise<void> {
         try {

@@ -35,9 +35,9 @@ public:
 
     virtual std::string toString() = 0;
 
-    bool needToBeMocked() const;
+    [[nodiscard]] bool needToBeMocked() const;
 
-    bool isBatched() const;
+    [[nodiscard]] bool isBatched() const;
 
     void setTargetPath(fs::path _targetPath);
 

@@ -213,7 +213,7 @@ namespace Paths {
         return getBaseLogDir() / "clients.json";
     }
 
-    fs::path getCCJsonFileFullPath(const std::string &filename, const fs::path &directory);
+    fs::path getFileFullPath(const std::string &filename, const fs::path &directory);
 
     bool isPath(const std::string &possibleFilePath) noexcept;
     //endregion
