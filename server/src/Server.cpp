@@ -238,8 +238,7 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
         StubsCollector(typesHandler).collect(testGen.tests);
-
-        if(!testGen.projectContext.itfPath.empty()) {
+        if (!testGen.projectContext.itfPath.string().empty()) {
             try {
                 fs::path fullFilePath = Paths::getFileFullPath(testGen.projectContext.itfPath,
                                                                testGen.projectContext.projectPath);
@@ -263,10 +262,18 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                 if (itfJson.contains("teardown")) {
                     teardownJson = itfJson.at("teardown");
                 }
-                for (auto it: testGen.tests) {
-                    for (auto methodIt: it.second.methods) {
-                        methodIt.second.initFunction = initJson->value(methodIt.first, defaultInitial);
-                        methodIt.second.teardownFunction = teardownJson->value(methodIt.first, defaultTeardown);
+                for (tests::TestsMap::iterator it = testGen.tests.begin(); it != testGen.tests.end(); ++it) {
+                    tests::Tests &tests = it.value();
+                    for (tests::Tests::MethodsMap::iterator testsIt = tests.methods.begin();
+                         testsIt != tests.methods.end(); testsIt++) {
+                        const std::string &methodName = testsIt.key();
+                        tests::Tests::MethodDescription &method = testsIt.value();
+                        if (initJson.has_value()) {
+                            method.initFunction = initJson->value(methodName, defaultInitial);
+                        }
+                        if (teardownJson.has_value()) {
+                            method.teardownFunction = teardownJson->value(methodName, defaultTeardown);
+                        }
                     }
                 }
             } catch (const std::exception &e) {
