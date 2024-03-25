@@ -81,9 +81,9 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
 
     writeStubsForFunctionParams(typesHandler, testMethod, true);
     declTestEntryPoint(tests, testMethod, isWrapped);
-    genInitCall(testMethod);
     genOpenFiles(testMethod);
     genGlobalParamsDeclarations(testMethod);
+    genInitCall(testMethod);
     genParamsDeclarations(testMethod, filterAllWithoutFile);
     genPostGlobalSymbolicVariables(testMethod);
     genPostParamsSymbolicVariables(testMethod, filterAllWithoutFile);

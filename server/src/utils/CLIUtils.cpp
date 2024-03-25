@@ -47,10 +47,11 @@ std::unique_ptr<testsgen::ProjectContext>
 createProjectContextByOptions(const ProjectContextOptionGroup &projectContextOptions) {
     fs::path projectPath = projectContextOptions.getProjectPath();
     fs::path testDir =
-        Paths::normalizedTrimmed(projectPath / projectContextOptions.getTestDirectory());
+            Paths::normalizedTrimmed(projectPath / projectContextOptions.getTestDirectory());
     auto projectContext =
-        GrpcUtils::createProjectContext(projectContextOptions.getProjectName(), projectPath,
-                                        testDir, projectContextOptions.getBuildDirectory());
+            GrpcUtils::createProjectContext(projectContextOptions.getProjectName(), projectPath,
+                                            testDir, projectContextOptions.getBuildDirectory(),
+                                            projectContextOptions.getItfPath());
     return projectContext;
 }
 

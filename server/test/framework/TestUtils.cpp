@@ -224,6 +224,7 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const std::string &buildDirRelativePath,
                                                          const std::vector<fs::path> &srcPaths,
+                                                         const fs::path &itfPath,
                                                          const std::string &targetOrSourcePath,
                                                          bool useStubs,
                                                          bool verbose,
@@ -232,7 +233,7 @@ namespace testUtils {
                                                          bool differentVariables,
                                                          bool skipPrecompiled) {
         auto projectContext = GrpcUtils::createProjectContext(
-                projectName, projectPath, projectPath / "tests", buildDirRelativePath);
+                projectName, projectPath, projectPath / "tests", buildDirRelativePath, itfPath);
         auto settingsContext =
                 GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode,
                                                  differentVariables, skipPrecompiled);
@@ -253,7 +254,7 @@ namespace testUtils {
                                                    int kleeTimeout,
                                                    ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
+                                                   srcPaths, "", targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
     }
 
@@ -263,13 +264,14 @@ namespace testUtils {
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
+                                                   const fs::path &itfPath,
                                                    const std::string &targetOrSourcePath,
                                                    bool useStubs,
                                                    bool verbose,
                                                    int kleeTimeout,
                                                    ErrorMode errorMode) {
         auto projectRequest = createProjectRequest(projectName, projectPath, buildDirRelativePath,
-                                                   srcPaths, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
+                                                   srcPaths, itfPath, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         auto lineInfo = GrpcUtils::createSourceInfo(filePath, line);
         return GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
     }
@@ -286,7 +288,7 @@ namespace testUtils {
                                                      int kleeTimeout,
                                                      ErrorMode errorMode) {
         auto lineRequest = createLineRequest(projectName, projectPath, buildDirRelativePath,
-                                             srcPaths, filePath, line, targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
+                                             srcPaths, filePath, line, "", targetOrSourcePath, useStubs, verbose, kleeTimeout, errorMode);
         return GrpcUtils::createClassRequest(std::move(lineRequest));
     }
 
@@ -295,7 +297,7 @@ namespace testUtils {
                                                          const fs::path &filePath,
                                                          ErrorMode errorMode) {
         auto projectContext =
-                GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "");
+                GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "", "");
         // we actually don't pass all parameters except test directory and project name on client
         auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false, errorMode, false,
                                                                 false);
@@ -311,7 +313,7 @@ namespace testUtils {
                                     std::unique_ptr<testsgen::TestFilter> testFilter) {
         auto request = std::make_unique<CoverageAndResultsRequest>();
         auto projectContext = GrpcUtils::createProjectContext(projectName, projectPath, testDirPath,
-                                                              buildDirRelativePath);
+                                                              buildDirRelativePath, "");
         request->set_allocated_projectcontext(projectContext.release());
         request->set_allocated_testfilter(testFilter.release());
         request->set_coverage(true);

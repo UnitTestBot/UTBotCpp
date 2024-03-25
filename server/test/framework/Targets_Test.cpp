@@ -22,7 +22,7 @@ using namespace testUtils;
 
 TEST_F(TargetsTest, Valid_Target_Test_ls) {
     auto projectRequest =
-            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "ls");
+            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "", "ls");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
 
@@ -41,7 +41,7 @@ TEST_F(TargetsTest, Valid_Target_Test_ls) {
 
 TEST_F(TargetsTest, Valid_Target_Test_cat) {
     auto projectRequest =
-            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "cat");
+            createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "", "cat");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
 
@@ -59,7 +59,7 @@ TEST_F(TargetsTest, Valid_Target_Test_cat) {
 }
 
 TEST_F(TargetsTest, Valid_Target_Test_dummy) {
-    auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "dummy");
+    auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "", "dummy");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
 
@@ -71,7 +71,7 @@ TEST_F(TargetsTest, Valid_Target_Test_dummy) {
 }
 
 TEST_F(TargetsTest, Valid_Target_Test_parse) {
-    auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths);
+    auto projectRequest = createProjectRequest(projectName, suitePath, buildDirRelativePath, srcPaths, "");
     auto request = GrpcUtils::createFileRequest(std::move(projectRequest), parse_c);
     auto testGen = FileTestGen(*request, writer.get(), TESTMODE);
 
@@ -89,7 +89,7 @@ TEST_F(TargetsTest, Valid_Target_Test_parse) {
 
 TEST_F(TargetsTest, Valid_Target_Test_get_10) {
     std::unique_ptr<ProjectRequest> projectRequest = createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, srcPaths, "get_10", false, false, 15);
+            projectName, suitePath, buildDirRelativePath, srcPaths, "", "get_10", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
 
@@ -129,7 +129,7 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10) {
 
 TEST_F(TargetsTest, Valid_Target_Test_get_20) {
     std::unique_ptr<ProjectRequest> projectRequest = createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, srcPaths, "get_20", false, false, 15);
+            projectName, suitePath, buildDirRelativePath, srcPaths, "", "get_20", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
 
@@ -169,7 +169,7 @@ TEST_F(TargetsTest, Valid_Target_Test_get_20) {
 
 TEST_F(TargetsTest, Valid_Target_Test_get_10_2) {
     std::unique_ptr<ProjectRequest> projectRequest = createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, srcPaths, "get_10_2", false, false, 15);
+            projectName, suitePath, buildDirRelativePath, srcPaths, "", "get_10_2", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
 
@@ -209,7 +209,7 @@ TEST_F(TargetsTest, Valid_Target_Test_get_10_2) {
 
 TEST_F(TargetsTest, Valid_Target_Test_libshared) {
     std::unique_ptr<ProjectRequest> projectRequest = createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, srcPaths, "libshared_get.so", false, false, 15);
+            projectName, suitePath, buildDirRelativePath, srcPaths, "", "libshared_get.so", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
 
@@ -249,7 +249,7 @@ TEST_F(TargetsTest, Valid_Target_Test_libshared) {
 
 TEST_F(TargetsTest, Valid_Target_Test_get_libstatic) {
     std::unique_ptr<ProjectRequest> projectRequest = createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, srcPaths, "libstatic_get.a", false, false, 15);
+            projectName, suitePath, buildDirRelativePath, srcPaths, "", "libstatic_get.a", false, false, 15);
 
     auto testGen = ProjectTestGen(*projectRequest.get(), writer.get(), TESTMODE, true);
 

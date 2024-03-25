@@ -20,12 +20,14 @@ namespace GrpcUtils {
     createProjectContext(const std::string &projectName,
                          const fs::path &projectPath,
                          const fs::path &testDirPath,
-                         const fs::path &buildDirRelativePath) {
+                         const fs::path &buildDirRelativePath,
+                         const fs::path &itfPath) {
         auto result = std::make_unique<testsgen::ProjectContext>();
         result->set_projectname(projectName);
         result->set_projectpath(projectPath);
         result->set_testdirpath(testDirPath);
         result->set_builddirrelativepath(buildDirRelativePath);
+        result->set_itfpath(itfPath);
         return result;
     }
 
@@ -60,7 +62,7 @@ namespace GrpcUtils {
         auto result = std::make_unique<testsgen::ProjectRequest>();
         result->set_allocated_projectcontext(projectContext.release());
         result->set_allocated_settingscontext(settingsContext.release());
-        for (const auto &path : sourcePaths) {
+        for (const auto &path: sourcePaths) {
             result->add_sourcepaths(path);
         }
         if (target.has_value()) {
@@ -191,7 +193,7 @@ namespace GrpcUtils {
         projectTarget.set_name(output.filename());
         projectTarget.set_path(output);
         fs::path description =
-            fs::relative(output, projectContext.projectPath / projectContext.buildDirRelativePath);
+                fs::relative(output, projectContext.projectPath / projectContext.buildDirRelativePath);
         projectTarget.set_description(description);
     }
 

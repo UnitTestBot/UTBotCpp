@@ -221,7 +221,6 @@ void TestsPrinter::genCodeBySuiteName(const std::string &targetSuiteName,
         testCase.testName = getTestName(methodDescription, testNum);
         testHeader(testCase);
         redirectStdin(methodDescription, testCase, verbose);
-        genInitCall(methodDescription);
         if (verbose) {
             genVerboseTestCase(methodDescription, testCase, predicateInfo, errorMode);
         } else {
@@ -380,6 +379,7 @@ void TestsPrinter::genParametrizedTestCase(const Tests::MethodDescription &metho
     initializeFiles(methodDescription, testCase);
     openFiles(methodDescription, testCase);
     parametrizedInitializeGlobalVariables(methodDescription, testCase);
+    genInitCall(methodDescription);
     parametrizedInitializeSymbolicStubs(methodDescription, testCase);
     printStubVariablesForParam(methodDescription, testCase);
     printClassObject(methodDescription, testCase);
@@ -458,6 +458,8 @@ void TestsPrinter::verboseParameters(const Tests::MethodDescription &methodDescr
         }
         ss << printer::NL;
     }
+
+    genInitCall(methodDescription);
 
     std::vector<std::vector<tests::Tests::MethodParam>> types = {testCase.stubValuesTypes, testCase.stubParamTypes};
     std::vector<std::vector<tests::Tests::TestCaseParamValue>> values = {testCase.stubValues, testCase.stubParamValues};

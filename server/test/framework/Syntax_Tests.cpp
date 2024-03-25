@@ -64,6 +64,7 @@ namespace {
         fs::path rvalue_reference_cpp = getTestFilePath("function_with_rvalue_params.cpp");
         fs::path hard_linked_list_c = getTestFilePath("hard_linked_list.c");
         fs::path unsupported_class_cpp = getTestFilePath("unsupported_class.cpp");
+        fs::path inits_c = getTestFilePath("inits.c");
 
         void SetUp() override {
             clearEnv(CompilationUtils::CompilerName::CLANG);
@@ -91,9 +92,9 @@ namespace {
         }
 
         std::pair<FunctionTestGen, Status> createTestForFunction(const fs::path &pathToFile,
-                                                                 int lineNum, int kleeTimeout = 60) {
+                                                                 int lineNum, int kleeTimeout = 60, fs::path ithPath = "") {
             auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                 srcPaths, pathToFile, lineNum, pathToFile,
+                                                 srcPaths, pathToFile, lineNum, ithPath, pathToFile,
                                                  false, false, kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
@@ -3667,25 +3668,39 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(hard_linked_list_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                { [](const tests::Tests::MethodTestCase &testCase) {
-                     return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
-                 },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -2;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -3;
-                  },
-                  [](const tests::Tests::MethodTestCase &testCase) {
-                      return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
-                  } }));
+                testGen.tests.at(hard_linked_list_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -1;
+                        },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 1;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -2;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 2;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == -3;
+                         },
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 3;
+                         }}));
+    }
+
+    TEST_F(Syntax_Test, init_function) {
+        auto [testGen, status] = createTestForFunction(inits_c, 8, 60, "itf.json");
+
+        ASSERT_TRUE(status.ok()) << status.error_message();
+
+        testUtils::checkNumberOfTestsInFile(testGen, inits_c, 1);
+        checkTestCasePredicates(
+                testGen.tests.at(inits_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoi(testCase.returnValue.view->getEntryValue(nullptr)) == 42;
+                        }}));
     }
 }

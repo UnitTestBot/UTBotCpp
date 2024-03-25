@@ -28,7 +28,7 @@ namespace {
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, bool verbose = true) {
             auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
-                                                            srcPaths, pathToFile, lineNum,
+                                                            srcPaths, pathToFile, lineNum, "",
                                                             pathToFile, false, verbose, 0);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));
             auto testGen = FunctionTestGen(*request, writer.get(), TESTMODE);
@@ -40,7 +40,7 @@ namespace {
         std::pair<FolderTestGen, Status>
         createTestForFolder(const fs::path &pathToFolder, bool useStubs = true, bool verbose = true) {
             auto folderRequest = testUtils::createProjectRequest(projectName, suitePath, buildDirRelativePath,
-                                                                 srcPaths, GrpcUtils::UTBOT_AUTO_TARGET_PATH, useStubs,
+                                                                 srcPaths, "", GrpcUtils::UTBOT_AUTO_TARGET_PATH, useStubs,
                                                                  verbose, 0);
             auto request = GrpcUtils::createFolderRequest(std::move(folderRequest), pathToFolder);
             auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
@@ -89,7 +89,7 @@ namespace {
     TEST_F(Regression_Test, Incomplete_Array_Type) {
         fs::path folderPath = suitePath / "SAT-760";
         auto projectRequest = testUtils::createProjectRequest(
-            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath }, "SAT-760");
+            projectName, suitePath, buildDirRelativePath, { suitePath, folderPath }, "", "SAT-760");
         auto request = GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
         auto testGen = FolderTestGen(*request, writer.get(), TESTMODE);
 
