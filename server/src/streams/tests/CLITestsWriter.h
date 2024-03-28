@@ -12,7 +12,7 @@ public:
 
     void writeTestsWithProgress(tests::TestsMap &testMap,
                                 const std::string &message,
-                                const fs::path &testDirPath,
+                                const fs::path &testDirRelPath,
                                 std::function<void(tests::Tests &)> &&prepareTests,
                                 std::function<void()> &&prepareTotal) override;
 
@@ -21,7 +21,7 @@ public:
                      const fs::path &pathToStore) const override;
 
 private:
-    static bool writeTestFile(const tests::Tests &tests, const fs::path &testDirPath);
+    static bool writeTestFile(const tests::Tests &tests, const fs::path &testDirRelPath);
 };
 
 

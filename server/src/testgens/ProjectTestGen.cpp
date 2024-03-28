@@ -14,7 +14,7 @@ ProjectTestGen::ProjectTestGen(const testsgen::ProjectRequest &request,
                       request.settingscontext(),
                       progressWriter,
                       testMode), request(&request) {
-    fs::create_directories(projectContext.testDirPath);
+    fs::create_directories(projectContext.getTestDirAbsPath());
     compileCommandsJsonPath = CompilationUtils::substituteRemotePathToCompileCommandsJsonPath(projectContext);
     projectBuildDatabase = std::make_shared<ProjectBuildDatabase>(compileCommandsJsonPath, serverBuildDir,
                                                                   projectContext,

@@ -15,7 +15,7 @@ public:
 
     void writeTestsWithProgress(tests::TestsMap &testMap,
                                 const std::string &message,
-                                const fs::path &testDirPath,
+                                const fs::path &testDirRelPath,
                                 std::function<void(tests::Tests &)> &&prepareTests,
                                 std::function<void()> &&prepareTotal) override;
 
@@ -25,7 +25,7 @@ public:
 
 private:
     [[nodiscard]] virtual bool writeFileAndSendResponse(const tests::Tests &tests,
-                                                        const fs::path &testDirPath,
+                                                        const fs::path &testDirRelPath,
                                                         const std::string &message,
                                                         double percent,
                                                         bool isCompleted) const;

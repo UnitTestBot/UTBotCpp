@@ -51,7 +51,7 @@ createProjectContextByOptions(const ProjectContextOptionGroup &projectContextOpt
     auto projectContext =
             GrpcUtils::createProjectContext(projectContextOptions.getProjectName(), projectPath,
                                             testDir, projectContextOptions.getBuildDirectory(),
-                                            projectContextOptions.getItfPath());
+                                            projectContextOptions.getItfRelPath());
     return projectContext;
 }
 

@@ -16,7 +16,7 @@ public:
 
     virtual void writeTestsWithProgress(tests::TestsMap &testMap,
                                         const std::string &message,
-                                        const fs::path &testDirPath,
+                                        const fs::path &testDirRelPath,
                                         std::function<void(tests::Tests &)> &&prepareTests,
                                         std::function<void()> &&prepareTotal) = 0;
 

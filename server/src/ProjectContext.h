@@ -7,32 +7,45 @@
 
 namespace testsgen {
     class ProjectContext;
+
     class SnippetRequest;
 }
 
 namespace utbot {
-class ProjectContext {
-public:
-    ProjectContext(std::string projectName,
-                   fs::path projectPath,
-                   fs::path testDirPath,
-                   fs::path buildDirRelativePath,
-                   fs::path serverBuildDir,
-                   fs::path itfPath);
+    class ProjectContext {
+    public:
+        ProjectContext(std::string projectName,
+                       fs::path projectPath,
+                       fs::path clientProjectPath,
+                       fs::path testDirRelPath,
+                       fs::path reportDirRelPath,
+                       fs::path buildDirRelPath,
+                       fs::path itfRelPath);
 
-    explicit ProjectContext(const testsgen::ProjectContext &projectContext);
+        explicit ProjectContext(const testsgen::ProjectContext &projectContext);
 
-    ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir);
+        ProjectContext(const testsgen::SnippetRequest &request, fs::path serverBuildDir);
 
-    [[nodiscard]] fs::path buildDir() const;
+        [[nodiscard]] fs::path getTestDirAbsPath() const;
 
-    const std::string projectName;
-    const fs::path projectPath;
-    const fs::path testDirPath;
-    const fs::path buildDirRelativePath;
-    const fs::path clientProjectPath;
-    const fs::path itfPath;
-};
+        [[nodiscard]] fs::path getReportDirAbsPath() const;
+
+        [[nodiscard]] fs::path getBuildDirAbsPath() const;
+
+        [[nodiscard]] bool hasItfPath() const;
+
+        [[nodiscard]] fs::path getItfAbsPath() const;
+
+        const std::string projectName;
+        const fs::path projectPath;
+        const fs::path clientProjectPath;
+
+    private:
+        const fs::path testDirRelPath;
+        const fs::path reportDirRelPath;
+        const fs::path buildDirRelPath;
+        const fs::path itfRelPath;
+    };
 }
 
 

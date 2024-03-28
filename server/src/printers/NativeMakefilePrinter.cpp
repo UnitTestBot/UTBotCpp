@@ -332,7 +332,7 @@ namespace printer {
         fs::path testSourcePath = Paths::sourcePathToTestPath(testGen->projectContext, sourcePath);
         fs::path compilationDirectory = compilationUnitInfo->getDirectory();
         fs::path testObjectDir = Paths::getTestObjectDir(testGen->projectContext);
-        fs::path testSourceRelativePath = fs::relative(testSourcePath, testGen->projectContext.testDirPath);
+        fs::path testSourceRelativePath = fs::relative(testSourcePath, testGen->projectContext.getTestDirAbsPath());
         fs::path testObjectPathRelative = getRelativePath(
                 testObjectDir / Paths::addExtension(testSourceRelativePath, ".o"));
         testCompilationCommand.setOutput(
@@ -547,7 +547,7 @@ namespace printer {
                                 getLibraryAbsolutePath(argument, linkCommand.getDirectory());
                         if (optionalLibraryAbsolutePath.has_value()) {
                             const fs::path &absolutePath = optionalLibraryAbsolutePath.value();
-                            if (Paths::isSubPathOf(testGen->projectContext.buildDir(), absolutePath)) {
+                            if (Paths::isSubPathOf(testGen->projectContext.getBuildDirAbsPath(), absolutePath)) {
                                 fs::path recompiledDir =
                                         Paths::getRecompiledFile(testGen->projectContext, absolutePath);
                                 std::string directoryFlag = getLibraryDirectoryFlag(recompiledDir);

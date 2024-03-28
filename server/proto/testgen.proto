@@ -86,10 +86,11 @@ message LogEntry {
 message ProjectContext {
     string projectName = 1;
     string projectPath = 2;
-    string testDirPath = 3;
-    string buildDirRelativePath = 4;
-    string clientProjectPath = 5;
-    string itfPath = 6;
+    string clientProjectPath = 3;
+    string testDirRelPath = 4;
+    string reportDirRelPath = 5;
+    string buildDirRelPath = 6;
+    string itfRelPath = 7;
 }
 
 enum ErrorMode {

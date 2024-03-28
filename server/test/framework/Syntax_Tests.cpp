@@ -93,7 +93,7 @@ namespace {
 
         std::pair<FunctionTestGen, Status> createTestForFunction(const fs::path &pathToFile,
                                                                  int lineNum, int kleeTimeout = 60, fs::path ithPath = "") {
-            auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelativePath,
+            auto lineRequest = createLineRequest(projectName, suitePath, buildDirRelPath,
                                                  srcPaths, pathToFile, lineNum, ithPath, pathToFile,
                                                  false, false, kleeTimeout);
             auto request = GrpcUtils::createFunctionRequest(std::move(lineRequest));

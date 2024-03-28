@@ -562,7 +562,7 @@ std::shared_ptr<BuildDatabase::TargetInfo> BuildDatabase::getPriorityTarget() co
 }
 
 fs::path BuildDatabase::newDirForFile(const fs::path &file) const {
-    fs::path base = Paths::longestCommonPrefixPath(this->projectContext.buildDir(),
+    fs::path base = Paths::longestCommonPrefixPath(this->projectContext.getBuildDirAbsPath(),
                                                    this->projectContext.projectPath);
     return Paths::createNewDirForFile(file, base, this->serverBuildDir);
 }

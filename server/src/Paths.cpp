@@ -29,17 +29,17 @@ namespace Paths {
                           const std::vector<fs::path> &dirPaths,
                           const std::function<bool(const fs::path &path)> &filter) {
         CollectionUtils::FileSet filtered =
-            CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
-                return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
-                    return isSubPathOf(dirPath, path) && fs::exists(path) && filter(path);
+                CollectionUtils::filterOut(paths, [&dirPaths, &filter](const fs::path &path) {
+                    return !std::any_of(dirPaths.begin(), dirPaths.end(), [&](const fs::path &dirPath) {
+                        return isSubPathOf(dirPath, path) && fs::exists(path) && filter(path);
+                    });
                 });
-            });
         return filtered;
     }
 
     CollectionUtils::FileSet pathsToSet(const std::vector<fs::path> &paths) {
         CollectionUtils::FileSet pathSet;
-        for (const auto &p : paths) {
+        for (const auto &p: paths) {
             pathSet.insert(p);
         }
         return pathSet;
@@ -57,8 +57,8 @@ namespace Paths {
         }
         auto const &[mismatchA, mismatchB] = std::mismatch(a.begin(), a.end(), b.begin(), b.end());
         fs::path result =
-            std::accumulate(a.begin(), mismatchA, fs::path{},
-                            [](fs::path const &a, fs::path const &b) { return a / b; });
+                std::accumulate(a.begin(), mismatchA, fs::path{},
+                                [](fs::path const &a, fs::path const &b) { return a / b; });
         return result;
     }
 
@@ -68,7 +68,7 @@ namespace Paths {
             return {};
         }
         CollectionUtils::FileSet moduleFiles;
-        for (const auto &entry : fs::recursive_directory_iterator(folder)) {
+        for (const auto &entry: fs::recursive_directory_iterator(folder)) {
             if (entry.is_regular_file()) {
                 moduleFiles.insert(entry.path());
             }
@@ -78,7 +78,7 @@ namespace Paths {
 
     std::vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths) {
         std::vector<fs::path> moduleFiles;
-        for (const auto &entry : fs::recursive_directory_iterator(folder)) {
+        for (const auto &entry: fs::recursive_directory_iterator(folder)) {
             if (entry.is_regular_file() && CollectionUtils::contains(sourcePaths, entry.path())) {
                 moduleFiles.push_back(entry.path());
             }
@@ -86,7 +86,7 @@ namespace Paths {
         return moduleFiles;
     }
 
-    std::string mangle(const fs::path& path) {
+    std::string mangle(const fs::path &path) {
         std::string result = path.string();
         StringUtils::replaceAll(result, '.', '_');
         StringUtils::replaceAll(result, '/', '_');
@@ -94,7 +94,7 @@ namespace Paths {
         return result;
     }
 
-    std::string mangleExtensions(const fs::path& path) {
+    std::string mangleExtensions(const fs::path &path) {
         if (!path.has_extension()) {
             return path.string();
         }
@@ -129,19 +129,19 @@ namespace Paths {
 
     //region klee
 
-    static fs::path errorFile(const fs::path &path, std::string const& suffix) {
+    static fs::path errorFile(const fs::path &path, std::string const &suffix) {
         return replaceExtension(path, StringUtils::stringFormat(".%s.err", suffix));
     }
 
-    bool errorFileExists(const fs::path &path, std::string const& suffix) {
+    bool errorFileExists(const fs::path &path, std::string const &suffix) {
         return fs::exists(errorFile(path, suffix));
     }
 
     bool hasInternalError(const fs::path &path) {
         static const auto internalErrorSuffixes = {
-            "exec",
-            "external",
-            "xxx"
+                "exec",
+                "external",
+                "xxx"
         };
         return std::any_of(internalErrorSuffixes.begin(), internalErrorSuffixes.end(),
                            [&path](auto const &suffix) { return errorFileExists(path, suffix); });
@@ -149,21 +149,21 @@ namespace Paths {
 
     std::vector<fs::path> getErrorDescriptors(const fs::path &path) {
         static const auto internalErrorSuffixes = {
-            "abort",
-            "assert",
-            "bad_vector_access",
-            "free",
-            "overflow",
-            "undefined_behavior",
-            "ptr",
-            "readonly",
-            "reporterror",
-            "uncaught_exception",
-            "unexpected_exception"
+                "abort",
+                "assert",
+                "bad_vector_access",
+                "free",
+                "overflow",
+                "undefined_behavior",
+                "ptr",
+                "readonly",
+                "reporterror",
+                "uncaught_exception",
+                "unexpected_exception"
         };
 
         std::vector<fs::path> errFiles;
-        for (const auto &suffix : internalErrorSuffixes) {
+        for (const auto &suffix: internalErrorSuffixes) {
             if (errorFileExists(path, suffix)) {
                 errFiles.emplace_back(errorFile(path, suffix));
             }
@@ -192,14 +192,14 @@ namespace Paths {
     //region extensions
 
     utbot::Language getSourceLanguage(const fs::path &path) {
-        if(isHFile(path)) {
+        if (isHFile(path)) {
             LOG_S(WARNING) << "C language detected by .h file: " << path.string();
             return utbot::Language::C;
         }
-        if(isCFile(path)) {
+        if (isCFile(path)) {
             return utbot::Language::C;
         }
-        if(isCXXFile(path) || isHppFile(path)) {
+        if (isCXXFile(path) || isHppFile(path)) {
             return utbot::Language::CXX;
         }
         LOG_S(WARNING) << "Unknown source language of " << path.string();
@@ -214,26 +214,36 @@ namespace Paths {
     }
 
     fs::path getArtifactsRootDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.buildDir() / "utbot";
+        return projectContext.getBuildDirAbsPath() / "utbot";
     }
+
     fs::path getGTestResultsJsonPath(const utbot::ProjectContext &projectContext) {
         return getArtifactsRootDir(projectContext) / "gtest-results.json";
     }
+
     fs::path getFlagsDir(const utbot::ProjectContext &projectContext) {
         return getArtifactsRootDir(projectContext) / "flags";
     }
+
     fs::path getTestExecDir(const utbot::ProjectContext &projectContext) {
         return getArtifactsRootDir(projectContext) / "tests";
     }
+
     fs::path getMakefileDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
-        return projectContext.testDirPath / "makefiles" / getRelativeDirPath(projectContext, sourceFilePath);
+        return projectContext.getTestDirAbsPath() / "makefiles" / getRelativeDirPath(projectContext, sourceFilePath);
     }
+
     fs::path getGeneratedHeaderDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
         return getPathDirRelativeToTestDir(projectContext, sourceFilePath);
     }
 
     fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
-        return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath);
+        return projectContext.getTestDirAbsPath() / getRelativeDirPath(projectContext, sourceFilePath);
+    }
+
+    fs::path getPathDirRelativeToReportDir(const utbot::ProjectContext &projectContext,
+                                           const fs::path &sourceFilePath) {
+        return projectContext.getReportDirAbsPath() / getRelativeDirPath(projectContext, sourceFilePath);
     }
 
     fs::path getPathDirRelativeToBuildDir(const utbot::ProjectContext &projectContext,
@@ -244,26 +254,33 @@ namespace Paths {
     fs::path getRecompiledDir(const utbot::ProjectContext &projectContext) {
         return getUTBotBuildDir(projectContext) / "recompiled";
     }
+
     fs::path getTestObjectDir(const utbot::ProjectContext &projectContext) {
         return getUTBotBuildDir(projectContext) / "test_objects";
     }
+
     fs::path getCoverageDir(const utbot::ProjectContext &projectContext) {
         return getUTBotBuildDir(projectContext) / "coverage";
     }
+
     fs::path getClangCoverageDir(const utbot::ProjectContext &projectContext) {
         return getCoverageDir(projectContext) / "lcov";
     }
+
     fs::path getGccCoverageDir(const utbot::ProjectContext &projectContext) {
         return getCoverageDir(projectContext) / "gcov";
     }
+
     fs::path getTestExecutable(const utbot::ProjectContext &projectContext,
-                                const fs::path &filePath) {
+                               const fs::path &filePath) {
         return getTestExecDir(projectContext) / filePath.stem();
     }
+
     fs::path getGeneratedHeaderPath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath) {
         auto headerDir = getGeneratedHeaderDir(projectContext, sourceFilePath);
         return headerDir / replaceExtension(Paths::sourcePathToTestName(sourceFilePath), ".h");
     }
+
     fs::path getRecompiledFile(const utbot::ProjectContext &projectContext,
                                const fs::path &filePath) {
         fs::path newFilename;
@@ -271,16 +288,19 @@ namespace Paths {
             newFilename = fs::relative(filePath, projectContext.projectPath);
             newFilename = addExtension(newFilename, ".o");
         } else {
-            newFilename = fs::relative(filePath, projectContext.buildDir());
+            newFilename = fs::relative(filePath, projectContext.getBuildDirAbsPath());
         }
         return getRecompiledDir(projectContext) / newFilename;
     }
+
     fs::path getProfrawFilePath(const utbot::ProjectContext &projectContext, const std::string &testName) {
         return getClangCoverageDir(projectContext) / addExtension(testName, ".profraw");
     }
+
     fs::path getMainProfdataPath(const utbot::ProjectContext &projectContext) {
         return getClangCoverageDir(projectContext) / "main.profdata";
     }
+
     fs::path getCoverageJsonPath(const utbot::ProjectContext &projectContext) {
         return getClangCoverageDir(projectContext) / "coverage.json";
     }
@@ -306,7 +326,7 @@ namespace Paths {
     }
 
     fs::path getWrapperDirPath(const utbot::ProjectContext &projectContext) {
-        return projectContext.testDirPath / "wrapper";
+        return projectContext.getTestDirAbsPath() / "wrapper";
     }
 
     fs::path getWrapperFilePath(const utbot::ProjectContext &projectContext,
@@ -323,7 +343,7 @@ namespace Paths {
 
     fs::path sourcePathToTestPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &sourceFilePath) {
-        return projectContext.testDirPath / getRelativeDirPath(projectContext, sourceFilePath) /
+        return projectContext.getTestDirAbsPath() / getRelativeDirPath(projectContext, sourceFilePath) /
                sourcePathToTestName(sourceFilePath);
     }
 
@@ -331,18 +351,21 @@ namespace Paths {
         return addSuffix(addOrigExtensionAsSuffixAndAddNew(source, ".cpp"),
                          TEST_SUFFIX).filename();
     }
+
     fs::path testPathToSourceName(const fs::path &testFilePath) {
         return restoreExtensionFromSuffix(removeSuffix(testFilePath, TEST_SUFFIX), ".c").filename();
     }
+
     fs::path sourcePathToStubName(const fs::path &source) {
         return addSuffix(source, STUB_SUFFIX).filename();
     }
+
     fs::path getStubBitcodeFilePath(const fs::path &bitcodeFilePath) {
         return Paths::addSuffix(bitcodeFilePath, STUB_SUFFIX);
     }
 
     fs::path sourcePathToStubHeaderPath(const utbot::ProjectContext &projectContext,
-                                  const fs::path &source) {
+                                        const fs::path &source) {
         return replaceExtension(sourcePathToStubPath(projectContext, source), ".h");
     }
 
@@ -352,13 +375,13 @@ namespace Paths {
 
     fs::path sourcePathToStubPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &source) {
-        return normalizedTrimmed((projectContext.testDirPath / "stubs" / getRelativeDirPath(projectContext, source) /
-               sourcePathToStubName(source)));
+        return normalizedTrimmed((projectContext.getTestDirAbsPath() / "stubs" / getRelativeDirPath(projectContext, source) /
+                                  sourcePathToStubName(source)));
     }
 
     fs::path testPathToSourcePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &testFilePath) {
-        fs::path relative = fs::relative(testFilePath.parent_path(), projectContext.testDirPath);
+        fs::path relative = fs::relative(testFilePath.parent_path(), projectContext.getTestDirAbsPath());
         fs::path filename = testPathToSourceName(testFilePath);
         return projectContext.projectPath / relative / filename;
     }
@@ -378,13 +401,13 @@ namespace Paths {
                                   const fs::path &sourceFilePath) {
         fs::path makefileDir = getMakefileDir(projectContext, sourceFilePath);
         std::string makefileName =
-            addExtension(addSuffix(sourceFilePath.stem(), STUB_SUFFIX), MAKEFILE_EXTENSION);
+                addExtension(addSuffix(sourceFilePath.stem(), STUB_SUFFIX), MAKEFILE_EXTENSION);
         return makefileDir / makefileName;
     }
 
     std::optional<fs::path> headerPathToSourcePath(const fs::path &source) {
         if (Paths::isHeaderFile(source)) {
-            for (const std::string &extension : CXXFileExtensions) {
+            for (const std::string &extension: CXXFileExtensions) {
                 fs::path sourceFilePath = replaceExtension(source, extension);
                 if (fs::exists(sourceFilePath)) {
                     return {sourceFilePath};
@@ -401,8 +424,8 @@ namespace Paths {
     }
 
     std::optional<std::string> getRelativePathWithShellVariable(const fs::path &shellVariableForBase,
-                                                 const std::string &base,
-                                                 const std::string &source) {
+                                                                const std::string &base,
+                                                                const std::string &source) {
         std::string returnPath = source;
         if (StringUtils::startsWith(source, base)) {
             StringUtils::replaceFirst(returnPath, base, shellVariableForBase.string());
@@ -415,8 +438,8 @@ namespace Paths {
     fs::path stubPathToSourcePath(const utbot::ProjectContext &projectContext,
                                   const fs::path &stubPath) {
         fs::path sourceFilePath =
-            projectContext.projectPath /
-            fs::relative(stubPath, getStubsDirPath(projectContext));
+                projectContext.projectPath /
+                fs::relative(stubPath, getStubsDirPath(projectContext));
         return removeSuffix(sourceFilePath, STUB_SUFFIX);
     }
 

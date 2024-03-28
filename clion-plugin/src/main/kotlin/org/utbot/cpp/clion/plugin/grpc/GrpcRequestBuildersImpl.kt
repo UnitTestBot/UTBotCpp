@@ -12,7 +12,7 @@ internal data class ProjectContextBuilder(
     val projectName: String,
     val projectPath: String,
     val testDirRelativePath: String,
-    val buildDirRelativePath: String
+    val buildDirRelPath: String
 ) : GrpcRequestBuilder<Testgen.ProjectContext> {
     override fun build(remoteMapping: RemoteMapping): Testgen.ProjectContext {
         val projectNioPath = Paths.get(projectPath) // project path is not set by user, assuming it is valid
@@ -29,7 +29,7 @@ internal data class ProjectContextBuilder(
                     UTBot.message("settings.project.testsDir.wrong")
                 )
             )
-            .setBuildDirRelativePath(buildDirRelativePath)
+            .setBuildDirRelPath(buildDirRelPath)
             .setProjectName(projectName)
             .setProjectPath(remoteMapping.convertToRemote(projectPath, UTBot.message("projectPath.wrong.conversion")))
             .build()

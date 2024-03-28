@@ -10,7 +10,7 @@ public:
     }
 
     void writeResponse(const std::vector<Stubs> &synchronizedStubs,
-                       const fs::path &testDirPath) override;
+                       const fs::path &testDirRelPath) override;
 private:
     bool synchronizeCode;
 };

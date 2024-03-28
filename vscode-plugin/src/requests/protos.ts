@@ -18,7 +18,7 @@ export class Protos {
     public static projectRequestByParams(params: RequestTestsParams): ProjectRequest {
         return this.projectRequest(
             params.projectPath,
-            params.buildDirRelativePath,
+            params.buildDirRelPath,
             params.projectName,
             params.sourcePaths,
             params.synchronizeCode,
@@ -27,7 +27,7 @@ export class Protos {
 
     public static projectRequest(
         projectPath: string,
-        buildDirRelativePath: string,
+        buildDirRelPath: string,
         projectName: string,
         srcPathsList: string[],
         synchronizeCode: boolean,
@@ -37,10 +37,10 @@ export class Protos {
         const projectContext = new ProjectContext();
         projectContext.setProjectname(projectName);
         projectContext.setProjectpath(projectPath);
-        projectContext.setTestdirpath(Prefs.getTestsDirPath());
-        projectContext.setBuilddirrelativepath(buildDirRelativePath);
+        projectContext.setTestdirrelpath(Prefs.getTestDirRelativePath());
+        projectContext.setBuilddirrelpath(buildDirRelPath);
         projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
-        projectContext.setItfpath(Prefs.getITFPath());
+        projectContext.setItfrelpath(Prefs.getItfRelPath());
         projectInfo.setProjectcontext(projectContext);
         projectInfo.setSettingscontext(Prefs.getSettingsContext());
         projectInfo.setSourcepathsList(srcPathsList);

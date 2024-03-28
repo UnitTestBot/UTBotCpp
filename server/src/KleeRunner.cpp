@@ -122,7 +122,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     testsWriter->writeTestsWithProgress(
         testsMap,
         "Running klee",
-        projectContext.testDirPath,
+        projectContext.getTestDirAbsPath(),
         std::move(prepareTests),
         std::move(prepareTotal));
 }

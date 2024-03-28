@@ -20,8 +20,8 @@ void BaseTest::setCompiler(CompilationUtils::CompilerName name) {
 }
 
 void BaseTest::setBuildDirectory(const std::string &buildDirectoryName) {
-    buildDirRelativePath = buildDirectoryName;
-    buildPath = suitePath / buildDirRelativePath;
+    buildDirRelPath = buildDirectoryName;
+    buildPath = suitePath / buildDirRelPath;
 }
 
 fs::path BaseTest::getTestFilePath(const std::string &fileName) {

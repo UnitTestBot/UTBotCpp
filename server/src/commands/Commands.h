@@ -218,14 +218,14 @@ namespace Commands {
 
         [[nodiscard]] std::string getBuildDirectory() const;
 
-        [[nodiscard]] std::string getItfPath() const;
+        [[nodiscard]] std::string getItfRelPath() const;
 
     private:
         CLI::Option_group *projectContextOptions;
         fs::path projectPath;
         std::string testDir = "tests";
         std::string buildDir = "build";
-        std::string itfPath = "";
+        std::string itfRelPath = "";
     };
 
     struct SettingsContextOptionGroup {
