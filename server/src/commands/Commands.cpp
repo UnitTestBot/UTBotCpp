@@ -337,7 +337,7 @@ Commands::ProjectContextOptionGroup::ProjectContextOptionGroup(CLI::App *command
             "Relative path to build directory with compile_commands.json and/or coverage.json.", true);
 
     projectContextOptions->add_option(
-            "-i,--init-teardown-path", itfPath,
+            "-i,--init-teardown-path", itfRelPath,
             "Relative paths to json, that contains list of initial and teardown functions", true);
 }
 
@@ -364,8 +364,8 @@ std::string Commands::ProjectContextOptionGroup::getBuildDirectory() const {
     return buildDir;
 }
 
-std::string Commands::ProjectContextOptionGroup::getItfPath() const {
-    return itfPath;
+std::string Commands::ProjectContextOptionGroup::getItfRelPath() const {
+    return itfRelPath;
 }
 
 Commands::SettingsContextOptionGroup::SettingsContextOptionGroup(CLI::App *command) {

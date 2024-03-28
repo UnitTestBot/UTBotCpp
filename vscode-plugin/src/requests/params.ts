@@ -10,7 +10,7 @@ export class RequestTestsParams {
     
     constructor(
         readonly projectPath: string,
-        readonly buildDirRelativePath: string,
+        readonly buildDirRelPath: string,
         readonly projectName: string,
         readonly sourcePaths: string[],
         readonly targetPath: string,
@@ -22,7 +22,7 @@ export class RequestTestsParams {
 
 export class RequestCoverageAndResultParams {
     constructor(readonly projectPath: string,
-                readonly buildDirRelativePath: string,
+                readonly buildDirRelPath: string,
                 readonly testInfo: GTestInfo | undefined,
                 readonly progressKey: utbotUI.ProgressKey,
                 readonly cancellationToken: vs.CancellationToken) {}
@@ -30,7 +30,7 @@ export class RequestCoverageAndResultParams {
 
 export class RequestTestResultsParams {
     constructor(readonly projectPath: string,
-                readonly buildDirRelativePath: string,
+                readonly buildDirRelPath: string,
                 readonly execPath: string,
                 readonly fileName: string,
                 readonly testName: string,

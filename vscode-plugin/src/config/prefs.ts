@@ -200,26 +200,11 @@ export class Prefs {
         return this.getAssetBase(Prefs.CMAKE_OPTIONS_PREF, defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS);
     }
 
-
-    public static getTestsDirPath(): string {
-        if (this.isRemoteScenario()) {
-            return this.getRemoteTestsDirPath();
-        }
-        return this.getLocalTestsDirPath();
-    }
-
     public static getLocalTestsDirPath(): string {
         const testsDirRelative = this.getTestDirRelativePath();
         const root = vsUtils.getProjectDirByOpenedFile();
         const testsDirPath = pathUtils.fsJoin(root.fsPath, testsDirRelative);
-        return testsDirPath;
-    }
-
-    public static getRemoteTestsDirPath(): string {
-        const testsDirRelative = this.getTestDirRelativePath();
-        const root = this.getRemoteRoot();
-        const testsDirPath = path.posix.join(root, testsDirRelative);
-        return testsDirPath;
+        return testsDirPath;``
     }
 
     public static getTestDirRelativePath(): string {
@@ -261,12 +246,12 @@ export class Prefs {
         return this.getLocalSourcePaths();
     }
 
-    public static getITFPath(): string {
-        const itfPath: string = this.getAssetBase(Prefs.ITF_PATH_PREF, "");
-        if (itfPath.length === 0) {
+    public static getItfRelPath(): string {
+        const itfRelPath: string = this.getAssetBase(Prefs.ITF_PATH_PREF, "");
+        if (itfRelPath.length === 0) {
             return "";
         }
-        return pathUtils.normalizeRawPosixPath(itfPath);
+        return pathUtils.normalizeRawPosixPath(itfRelPath);
     }
 
     public static async setAsset<T>(pref: string, newValue: T, raiseError: boolean = true): Promise<void> {

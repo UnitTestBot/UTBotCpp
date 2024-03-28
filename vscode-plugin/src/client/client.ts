@@ -384,8 +384,8 @@ export class Client {
     async checkProjectConfigurationRequest(
         projectName: string,
         projectPath: string,
-        buildDirRelativePath: string,
-        itfPath: string,
+        buildDirRelPath: string,
+        itfRelPath: string,
         cmakeOptions: Array<string>,
         configMode: ConfigMode,
         progressKey: utbotUI.ProgressKey,
@@ -395,9 +395,9 @@ export class Client {
             const projectContext = new ProjectContext();
             projectContext.setProjectname(projectName);
             projectContext.setProjectpath(projectPath);
-            projectContext.setBuilddirrelativepath(buildDirRelativePath);
+            projectContext.setBuilddirrelpath(buildDirRelPath);
             projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
-            projectContext.setItfpath(itfPath);
+            projectContext.setItfrelpath(itfRelPath);
             const projectConfigRequest = new ProjectConfigRequest();
             projectConfigRequest.setProjectcontext(projectContext);
             projectConfigRequest.setConfigmode(configMode);
@@ -428,10 +428,10 @@ export class Client {
             const projectContext = new ProjectContext();
             projectContext.setProjectname(Prefs.getProjectName());
             projectContext.setProjectpath(buildDir[0]);
-            projectContext.setTestdirpath(Prefs.getTestsDirPath());
-            projectContext.setBuilddirrelativepath(buildDir[1]);
+            projectContext.setTestdirrelpath(Prefs.getTestDirRelativePath());
+            projectContext.setBuilddirrelpath(buildDir[1]);
             projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
-            projectContext.setItfpath(Prefs.getITFPath());
+            projectContext.setItfrelpath(Prefs.getItfRelPath());
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());
 
@@ -613,7 +613,7 @@ export class Client {
             `Sending project tests request \n` +
             `projectName: ${params.projectName}\n` +
             `projectPath: ${params.projectPath}\n` +
-            `buildDirRelativePath: ${params.buildDirRelativePath}\n` + 
+            `buildDirRelPath: ${params.buildDirRelPath}\n` + 
             `targetPath: ${params.targetPath}`
         );
 
@@ -644,8 +644,8 @@ export class Client {
             const projectContext = new ProjectContext();
             projectContext.setProjectname(Prefs.getProjectName());
             projectContext.setProjectpath(params.projectPath);
-            projectContext.setTestdirpath(Prefs.getTestsDirPath());
-            projectContext.setBuilddirrelativepath(params.buildDirRelativePath);
+            projectContext.setTestdirrelpath(Prefs.getTestDirRelativePath());
+            projectContext.setBuilddirrelpath(params.buildDirRelPath);
             projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
             rpcRequest.setProjectcontext(projectContext);
             rpcRequest.setSettingscontext(Prefs.getSettingsContext());

@@ -26,14 +26,14 @@ open class BaseBuildingTest {
         Paths.get(File(".").canonicalPath).resolve("../integration-tests/c-example-mini").normalize()
     protected val testsDirRelativePath = "cl-plugin-test-tests"
     protected val testsDirectoryPath: Path = projectPath.resolve(testsDirRelativePath)
-    protected val buildDirRelativePath = "build"
+    protected val buildDirRelPath = "build"
     protected val fixture: CodeInsightTestFixture = createFixture(projectPath)
     protected val project: Project
         get() = fixture.project
     val settings = project.settings.storedSettings
 
     init {
-        settings.buildDirRelativePath = buildDirRelativePath
+        settings.buildDirRelPath = buildDirRelPath
         settings.testDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
         settings.isPluginEnabled = true
         project.logger.logWriters.let {
@@ -56,7 +56,7 @@ open class BaseBuildingTest {
             projectName = project.name
             testDirPath =
                 if (isRemote) "$remotePath/$testsDirRelativePath" else this@BaseBuildingTest.testsDirectoryPath.toString()
-            buildDirRelativePath = this@BaseBuildingTest.buildDirRelativePath
+            buildDirRelPath = this@BaseBuildingTest.buildDirRelPath
         }.build()
     }
 

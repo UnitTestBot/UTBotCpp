@@ -19,7 +19,7 @@ namespace {
 
         std::pair<FunctionTestGen, Status>
         createTestForFunction(const fs::path &pathToFile, int lineNum, int kleeTimeout = 60) {
-            auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelativePath,
+            auto lineRequest = testUtils::createLineRequest(projectName, suitePath, buildDirRelPath,
                                                             srcPaths, pathToFile, lineNum, "",
                                                             pathToFile, true, false,
                                                             kleeTimeout);

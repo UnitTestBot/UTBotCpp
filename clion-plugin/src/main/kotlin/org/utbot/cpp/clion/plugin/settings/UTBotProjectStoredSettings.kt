@@ -29,7 +29,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
 
     // serialized by the ide
     data class State(
-        var buildDirRelativePath: String = DEFAULT_RELATIVE_PATH_TO_BUILD_DIR,
+        var buildDirRelPath: String = DEFAULT_RELATIVE_PATH_TO_BUILD_DIR,
         var testsDirRelativePath: String = DEFAULT_TESTS_DIR_RELATIVE_PATH,
         var targetPath: String = UTBotTarget.autoTarget.path,
         var remotePath: String = REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO,
@@ -44,7 +44,7 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         var isPluginEnabled: Boolean = false
     ) {
         fun fromSettingsModel(model: UTBotSettingsModel) {
-            buildDirRelativePath = model.projectSettings.buildDirRelativePath
+            buildDirRelPath = model.projectSettings.buildDirRelPath
             testsDirRelativePath = model.projectSettings.testsDirRelativePath
             targetPath = model.projectSettings.targetPath
             remotePath = model.projectSettings.remotePath
@@ -129,10 +129,10 @@ class UTBotProjectStoredSettings(val project: Project) : PersistentStateComponen
         else
             Paths.get(project.path).relativize(Paths.get(targetPath)).toString()
 
-    var buildDirRelativePath: String
-        get() = myState.buildDirRelativePath.stripLeadingSlashes()
+    var buildDirRelPath: String
+        get() = myState.buildDirRelPath.stripLeadingSlashes()
         set(value) {
-            myState.buildDirRelativePath = value
+            myState.buildDirRelPath = value
         }
 
     var isPluginEnabled: Boolean

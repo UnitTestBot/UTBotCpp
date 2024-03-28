@@ -18,7 +18,7 @@ class BuildOptionsStep(parentDisposable: Disposable, private val settingsModel: 
         addHtml("media/options_wizard_text.html")
         panel {
             row("Relative path to Build directory") {
-                textField().bindText(settingsModel.projectSettings::buildDirRelativePath).columns(COLUMNS_LARGE)
+                textField().bindText(settingsModel.projectSettings::buildDirRelPath).columns(COLUMNS_LARGE)
                     .validateWith(ValidationCondition(UTBot.message("validation.not.empty")) { it.text.isNotEmpty() })
             }
 

@@ -238,9 +238,9 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
 
         FeaturesFilter::filter(testGen.settingsContext, typesHandler, testGen.tests);
         StubsCollector(typesHandler).collect(testGen.tests);
-        if (!testGen.projectContext.itfPath.string().empty()) {
+        if (!testGen.projectContext.itfRelPath.string().empty()) {
             try {
-                fs::path fullFilePath = Paths::getFileFullPath(testGen.projectContext.itfPath,
+                fs::path fullFilePath = Paths::getFileFullPath(testGen.projectContext.itfRelPath,
                                                                testGen.projectContext.projectPath);
                 if (!fs::exists(fullFilePath)) {
                     std::string message = "File with init and teardown functions, doesn't exists";
@@ -671,12 +671,12 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
 
     MEASURE_FUNCTION_EXECUTION_TIME
 
-    LOG_S(ERROR) << "ITF request path: " << request->projectcontext().itfpath();
+    LOG_S(ERROR) << "ITF request path: " << request->projectcontext().itfrelpath();
     utbot::ProjectContext utbotProjectContext{request->projectcontext()};
-    LOG_S(ERROR) << "ITF request2 path: " << utbotProjectContext.itfPath;
+    LOG_S(ERROR) << "ITF request2 path: " << utbotProjectContext.itfRelPath;
 
     fs::path buildDirPath =
-            fs::path(utbotProjectContext.projectPath) / utbotProjectContext.buildDirRelativePath;
+            fs::path(utbotProjectContext.projectPath) / utbotProjectContext.buildDirRelPath;
     switch (request->configmode()) {
         case ConfigMode::CHECK:
             return UserProjectConfiguration::CheckProjectConfiguration(buildDirPath, writer);
