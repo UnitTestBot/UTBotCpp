@@ -2072,7 +2072,8 @@ namespace {
         checkMinNumberOfTests(testGen.tests, expectedTestCountMap);
 
         fs::path input_output_test_cpp = Paths::sourcePathToTestPath(
-                utbot::ProjectContext(projectName, suitePath, testsDirRelPath, reportsDirRelPath, buildDirRelPath, clientProjectPath, ""),
+                utbot::ProjectContext(projectName, suitePath, clientProjectPath, testsDirRelPath, reportsDirRelPath,
+                                      buildDirRelPath, ""),
                 input_output_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(input_output_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2225,7 +2226,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path struct_with_union_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, reportsDirRelPath, buildDirRelPath, clientProjectPath, ""),
+            utbot::ProjectContext(projectName, suitePath, clientProjectPath, testsDirPath, reportsDirRelPath, buildDirRelPath, ""),
             struct_with_union_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(struct_with_union_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
@@ -2263,7 +2264,7 @@ namespace {
         fs::path testsDirPath = getTestFilePath("tests");
 
         fs::path structs_with_pointers_test_cpp = Paths::sourcePathToTestPath(
-            utbot::ProjectContext(projectName, suitePath, testsDirPath, reportsDirRelPath, buildDirRelPath, clientProjectPath, ""),
+            utbot::ProjectContext(projectName, suitePath, clientProjectPath, testsDirPath, reportsDirRelPath, buildDirRelPath, ""),
             structs_with_pointers_c);
         auto testFilter = GrpcUtils::createTestFilterForFile(structs_with_pointers_test_cpp);
         auto runRequest = testUtils::createCoverageAndResultsRequest(
