@@ -20,13 +20,14 @@ namespace GrpcUtils {
     createProjectContext(const std::string &projectName,
                          const fs::path &projectPath,
                          const fs::path &testDirRelPath,
+                         const fs::path &reportDirRelPath,
                          const fs::path &buildDirRelPath,
                          const fs::path &itfRelPath) {
         auto result = std::make_unique<testsgen::ProjectContext>();
         result->set_projectname(projectName);
         result->set_projectpath(projectPath);
         result->set_testdirrelpath(testDirRelPath);
-        result->set_reportdirrelpath("utbot_report");
+        result->set_reportdirrelpath(reportDirRelPath);
         result->set_builddirrelpath(buildDirRelPath);
         result->set_itfrelpath(itfRelPath);
         return result;

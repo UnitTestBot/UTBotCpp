@@ -23,9 +23,9 @@ protected:
 
     CompilerName compilerName = CompilerName::CLANG;
     std::string buildDirRelPath;
-    std::string testsDirRelPath = "tests";
-    std::string reportsDirRelPath = "utbot_report";
-    std::string clientProjectPath = "";
+    std::string testsDirRelPath = Paths::UTBOT_TESTS;
+    std::string reportsDirRelPath = Paths::UTBOT_REPORT;
+    std::string clientProjectPath = Paths::UTBOT_ITF;
     fs::path buildPath;
     std::vector<fs::path> srcPaths;
 

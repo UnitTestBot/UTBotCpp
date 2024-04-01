@@ -429,18 +429,17 @@ namespace Paths {
 
     //region utbot_report
 
+    const std::string UTBOT_TESTS = "tests";
     const std::string UTBOT_REPORT = "utbot_report";
-
-    inline fs::path getUTBotReportDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.projectPath / UTBOT_REPORT;
-    }
+    const std::string UTBOT_BUILD = "build";
+    const std::string UTBOT_ITF = "";
 
     inline fs::path getGenerationStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return getUTBotReportDir(projectContext) / "generation-stats.csv";
+        return projectContext.getReportDirAbsPath() / "generation-stats.csv";
     }
 
     inline fs::path getExecutionStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return getUTBotReportDir(projectContext) / "execution-stats.csv";
+        return projectContext.getReportDirAbsPath() / "execution-stats.csv";
     }
 
     //endregion

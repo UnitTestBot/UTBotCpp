@@ -50,6 +50,7 @@ namespace Commands {
         unsigned int getThreadsPerUser();
 
         unsigned int getKleeProcessNumber();
+
     private:
         unsigned int port = 0;
     };
@@ -59,25 +60,43 @@ namespace Commands {
         explicit GenerateCommands(CLI::App *command);
 
         CLI::App *getProjectCommand();
+
         CLI::App *getStubsCommand();
+
         CLI::App *getFolderCommand();
+
         CLI::App *getFileCommand();
+
         CLI::App *getSnippetCommand();
+
         CLI::App *getFunctionCommand();
+
         CLI::App *getClassCommand();
+
         CLI::App *getLineCommand();
+
         CLI::App *getAssertionCommand();
+
         CLI::App *getPredicateCommand();
 
         bool gotProjectCommand();
+
         bool gotStubsCommand();
+
         bool gotFolderCommand();
+
         bool gotFileCommand();
+
         bool gotSnippetCommand();
+
         bool gotFunctionCommand();
+
         bool gotClassCommand();
+
         bool gotLineCommand();
+
         bool gotAssertionCommand();
+
         bool gotPredicateCommand();
 
     private:
@@ -146,7 +165,7 @@ namespace Commands {
 
         // predicate info
 
-        testsgen::ValidationType type{ testsgen::ValidationType::INT32_T };
+        testsgen::ValidationType type{testsgen::ValidationType::INT32_T};
         static const std::map<std::string, testsgen::ValidationType> validationTypeMap;
         std::string validationType;
         std::string predicate;
@@ -216,6 +235,8 @@ namespace Commands {
 
         [[nodiscard]] std::string getTestDirectory() const;
 
+        [[nodiscard]] std::string getReportDirectory() const;
+
         [[nodiscard]] std::string getBuildDirectory() const;
 
         [[nodiscard]] std::string getItfRelPath() const;
@@ -223,9 +244,10 @@ namespace Commands {
     private:
         CLI::Option_group *projectContextOptions;
         fs::path projectPath;
-        std::string testDir = "tests";
-        std::string buildDir = "build";
-        std::string itfRelPath = "";
+        std::string testRelDir = Paths::UTBOT_TESTS;
+        std::string reportRelDir = Paths::UTBOT_REPORT;
+        std::string buildRelDir = Paths::UTBOT_BUILD;
+        std::string itfRelPath = Paths::UTBOT_ITF;
     };
 
     struct SettingsContextOptionGroup {
@@ -248,6 +270,7 @@ namespace Commands {
         [[nodiscard]] ErrorMode getErrorMode() const;
 
         [[nodiscard]] bool doDifferentVariablesOfTheSameType() const;
+
         [[nodiscard]] bool getSkipObjectWithoutSource() const;
 
     private:

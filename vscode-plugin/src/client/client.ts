@@ -242,12 +242,12 @@ export class Client {
 
     private async writeLog(responseAny: any): Promise<void> {
         const logEntry = responseAny as LogEntry;
-        utbotUI.channels().outputServerLogChannel.append(logEntry.getMessage());
+        utbotUI.channels().outputServerLogChannel.append(logEntry.toString());
     }
 
     private async writeGTestLog(responseAny: any): Promise<void> {
         const gtestEntry = responseAny as LogEntry;
-        utbotUI.channels().outputGTestChannel.appendLine(gtestEntry.getMessage());
+        utbotUI.channels().outputGTestChannel.appendLine(gtestEntry.toString());
     }
 
     private async provideLogChannel(): Promise<void> {

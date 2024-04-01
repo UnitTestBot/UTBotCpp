@@ -19,6 +19,7 @@ namespace GrpcUtils {
     createProjectContext(const std::string &projectName,
                          const fs::path &projectPath,
                          const fs::path &testDirRelPath,
+                         const fs::path &reportDirRelPath,
                          const fs::path &buildDirRelPath,
                          const fs::path &itfRelPath);
 

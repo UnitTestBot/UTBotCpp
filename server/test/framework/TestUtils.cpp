@@ -233,7 +233,7 @@ namespace testUtils {
                                                          bool differentVariables,
                                                          bool skipPrecompiled) {
         auto projectContext = GrpcUtils::createProjectContext(
-                projectName, projectPath, projectPath / "tests", buildDirRelPath, itfRelPath);
+                projectName, projectPath, Paths::UTBOT_TESTS, Paths::UTBOT_REPORT, buildDirRelPath, itfRelPath);
         auto settingsContext =
                 GrpcUtils::createSettingsContext(true, verbose, kleeTimeout, 0, false, useStubs, errorMode,
                                                  differentVariables, skipPrecompiled);
@@ -296,8 +296,8 @@ namespace testUtils {
                                                          const fs::path &projectPath,
                                                          const fs::path &filePath,
                                                          ErrorMode errorMode) {
-        auto projectContext =
-                GrpcUtils::createProjectContext(projectName, projectPath, projectPath / "tests", "", "");
+        auto projectContext = GrpcUtils::createProjectContext(projectName, projectPath, Paths::UTBOT_TESTS,
+                                                              Paths::UTBOT_REPORT, "", Paths::UTBOT_ITF);
         // we actually don't pass all parameters except test directory and project name on client
         auto settingsContext = GrpcUtils::createSettingsContext(true, true, 10, 0, true, false, errorMode, false,
                                                                 false);
@@ -313,7 +313,7 @@ namespace testUtils {
                                     std::unique_ptr<testsgen::TestFilter> testFilter) {
         auto request = std::make_unique<CoverageAndResultsRequest>();
         auto projectContext = GrpcUtils::createProjectContext(projectName, projectPath, testDirRelPath,
-                                                              buildDirRelPath, "");
+                                                              Paths::UTBOT_REPORT, buildDirRelPath, "");
         request->set_allocated_projectcontext(projectContext.release());
         request->set_allocated_testfilter(testFilter.release());
         request->set_coverage(true);
