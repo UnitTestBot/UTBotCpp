@@ -37,9 +37,10 @@ export class Protos {
         const projectContext = new ProjectContext();
         projectContext.setProjectname(projectName);
         projectContext.setProjectpath(projectPath);
-        projectContext.setTestdirrelpath(Prefs.getTestDirRelativePath());
-        projectContext.setBuilddirrelpath(buildDirRelPath);
         projectContext.setClientprojectpath(vsUtils.getProjectDirByOpenedFile().fsPath);
+        projectContext.setTestdirrelpath(Prefs.getTestDirRelativePath());
+        projectContext.setReportdirrelpath(Prefs.getReportDirRelativePath());
+        projectContext.setBuilddirrelpath(buildDirRelPath);
         projectContext.setItfrelpath(Prefs.getItfRelPath());
         projectInfo.setProjectcontext(projectContext);
         projectInfo.setSettingscontext(Prefs.getSettingsContext());

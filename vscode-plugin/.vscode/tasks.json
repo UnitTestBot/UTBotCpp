@@ -11,18 +11,20 @@
 			"presentation": {
 				"reveal": "never"
 			},
+			"group": "build",
+			"label": "npm: watch",
+			"detail": "npm run lint && tsc -watch -p ./"
+		},
+		{
+			"type": "npm",
+			"script": "compile",
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			}
-			// "dependsOn": [
-			// 	"proto_gen"
-			// ]
+			},
+			"problemMatcher": [],
+			"label": "npm: compile",
+			"detail": "npm run lint && tsc -p ./"
 		}
-		// {
-		// 	"label": "proto_gen",
-		// 	"command": "./protoc.sh",
-		// 	"args": ["${workspaceFolder}/../server/proto", "${workspaceFolder}/src/proto-ts"]
-		// },
 	]
 }

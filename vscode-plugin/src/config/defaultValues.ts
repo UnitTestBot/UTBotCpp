@@ -1,9 +1,9 @@
 import * as path from 'path';
 import * as vs from 'vscode';
 import * as vsUtils from '../utils/vscodeUtils';
-import { Prefs } from './prefs';
+import {Prefs} from './prefs';
 import * as pathUtils from '../utils/pathUtils';
-import { isIP } from 'net';
+import {isIP} from 'net';
 import {isWin32} from "../utils/utils";
 
 export class DefaultConfigValues {
@@ -14,6 +14,9 @@ export class DefaultConfigValues {
     public static readonly POSSIBLE_BUILD_DIR_NAMES = ['out', 'build'];
     public static readonly POSSIBLE_TEST_DIR_NAMES = ['test'];
 
+    public static readonly DEFAULT_BUILD_DIR_NAME = "build";
+    public static readonly DEFAULT_TEST_DIR_NAME = "tests";
+
     public static readonly DEFAULT_CMAKE_OPTIONS = ['-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', '-DCMAKE_EXPORT_LINK_COMMANDS=ON'];
 
     public static toWSLPathOnWindows(path: string): string {
@@ -21,8 +24,8 @@ export class DefaultConfigValues {
             return path;
         }
         return path
-            .replace(/^(\w):|\\+/g,'/$1')
-            .replace(/^\//g,'/mnt/');
+            .replace(/^(\w):|\\+/g, '/$1')
+            .replace(/^\//g, '/mnt/');
     }
 
     public static hasConfiguredRemotePath(): boolean {
@@ -52,7 +55,7 @@ export class DefaultConfigValues {
         return DefaultConfigValues.DEFAULT_SFTP_PORT;
     }
 
-    public static getDefaultSFTPUsername(): string{
+    public static getDefaultSFTPUsername(): string {
         const username = vsUtils.getFromSftpConfig("username");
         if ((username === undefined) || (username.length === 0)) {
             return "utbot";
@@ -92,7 +95,7 @@ export class DefaultConfigValues {
     public static async getDefaultBuildDirectoryPath(): Promise<string> {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const rootPath = pathUtils.getRootPath();
-        let buildDirName = "build";
+        let buildDirName = DefaultConfigValues.DEFAULT_BUILD_DIR_NAME;
         if (!rootPath) {
             return buildDirName;
         }
@@ -107,6 +110,10 @@ export class DefaultConfigValues {
                 });
             });
         return buildDirName;
+    }
+
+    public static async getDefaultTestsDirectoryPath(): Promise<string> {
+        return DefaultConfigValues.DEFAULT_TEST_DIR_NAME;
     }
 
     public static looksLikeBuildDirectory(dirPath: string): boolean {
