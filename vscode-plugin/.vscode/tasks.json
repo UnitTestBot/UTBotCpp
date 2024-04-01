@@ -21,10 +21,15 @@
 			"group": {
 				"kind": "build",
 				"isDefault": true
-			},
-			"problemMatcher": [],
-			"label": "npm: compile",
-			"detail": "npm run lint && tsc -p ./"
+			}
+			// "dependsOn": [
+ 			// 	"proto_gen"
+ 			// ]
 		}
+		// {
+ 		// 	"label": "proto_gen",
+ 		// 	"command": "./protoc.sh",
+ 		// 	"args": ["${workspaceFolder}/../server/proto", "${workspaceFolder}/src/proto-ts"]
+ 		// },
 	]
 }

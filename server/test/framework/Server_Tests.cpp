@@ -59,7 +59,7 @@ namespace {
         void generateFiles(const fs::path &sourceFile, const fs::path &testsRelativeDir) {
             fs::path testsDirPath = getTestFilePath(testsRelativeDir);
 
-            auto projectContext = GrpcUtils::createProjectContext(projectName, suitePath, Paths::UTBOT_TESTS,
+            auto projectContext = GrpcUtils::createProjectContext(projectName, suitePath, testsDirPath,
                                                                   Paths::UTBOT_REPORT, buildDirRelPath,
                                                                   Paths::UTBOT_ITF);
 

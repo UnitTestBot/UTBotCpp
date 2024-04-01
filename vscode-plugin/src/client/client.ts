@@ -784,7 +784,7 @@ export class Client {
             const logEntry = response as LogEntry;
             started.value = true;
             await this.handleResponse(response, progressKey, resolve, responseHandler);
-            utbotUI.channels().outputServerLogChannel.append(logEntry.getMessage());
+            utbotUI.channels().outputServerLogChannel.append(logEntry.toString());
         })
             .on('error', (err) => {
                 started.value = true;
