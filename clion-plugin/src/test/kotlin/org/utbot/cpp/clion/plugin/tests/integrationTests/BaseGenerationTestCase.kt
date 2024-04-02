@@ -41,7 +41,7 @@ abstract class BaseGenerationTestCase {
         get() = project.client
 
     init {
-        project.settings.storedSettings.buildDirRelativePath = buildDirName
+        project.settings.storedSettings.buildDirRelPath = buildDirName
         project.settings.storedSettings.testDirRelativePath = projectPath.relativize(testsDirectoryPath).toString()
         project.settings.storedSettings.isPluginEnabled = true
         project.logger.logWriters.let {

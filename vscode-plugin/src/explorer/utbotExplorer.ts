@@ -1,16 +1,16 @@
 import * as vs from 'vscode';
-import { Commands } from '../config/commands';
-import { DefaultConfigValues } from "../config/defaultValues";
-import { Prefs } from '../config/prefs';
+import {Commands} from '../config/commands';
+import {DefaultConfigValues} from "../config/defaultValues";
+import {Prefs} from '../config/prefs';
 import * as pathUtils from '../utils/pathUtils';
-import { registerCommand } from '../utils/utils';
-import { UTBotElement, UTBotExplorerFile, UTBotExplorerFolder } from "./utbotExplorerElement";
-import { UtbotExplorerEventsEmitter } from "./utbotExplorerEventsEmitter";
-import { UTBotExplorerStateStorage } from "./utbotExplorerStateStorage";
-import { UTBotExplorerTargetElement } from './UTBotExplorerTargetElement';
-import { UTBotSourceFoldersProvider } from "./utbotFoldersProvider";
-import { UTBotFoldersStorage } from "./utbotFoldersStorage";
-import { UTBotTargetsProvider } from './UTBotTargetsProvider';
+import {registerCommand} from '../utils/utils';
+import {UTBotElement, UTBotExplorerFile, UTBotExplorerFolder} from "./utbotExplorerElement";
+import {UtbotExplorerEventsEmitter} from "./utbotExplorerEventsEmitter";
+import {UTBotExplorerStateStorage} from "./utbotExplorerStateStorage";
+import {UTBotExplorerTargetElement} from './UTBotExplorerTargetElement';
+import {UTBotSourceFoldersProvider} from "./utbotFoldersProvider";
+import {UTBotFoldersStorage} from "./utbotFoldersStorage";
+import {UTBotTargetsProvider} from './UTBotTargetsProvider';
 
 export class UTBotExplorer {
 
@@ -107,7 +107,7 @@ export class UTBotExplorer {
             if (paths.length > 0) {
                 await vs.workspace.openTextDocument(vs.Uri.file(paths[0]))
                     .then(async (doc) => {
-                        await vs.window.showTextDocument(doc, { preview: false });
+                        await vs.window.showTextDocument(doc, {preview: false});
                     });
             }
         });

@@ -26,7 +26,7 @@ class CreateBuildDirRequest(
             CreateBuildDirHandler(
                 client,
                 this,
-                UTBot.message("requests.buildDir.description.progress"),
+                UTBot.message("requests.buildRelDir.description.progress"),
                 cancellationJob
             ).handle()
         }

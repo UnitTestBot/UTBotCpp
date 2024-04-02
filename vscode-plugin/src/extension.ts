@@ -87,7 +87,7 @@ export async function activate(context: vs.ExtensionContext): Promise<any> {
 		});
 
 		vs.workspace.onDidChangeConfiguration(async (event) => {
-			if (event.affectsConfiguration(Prefs.BUILD_DIR_PREF)) {
+			if (event.affectsConfiguration(Prefs.BUILD_REL_DIR_PREF)) {
 				await configureProject();
 			}
 		});
@@ -239,7 +239,7 @@ export async function activate(context: vs.ExtensionContext): Promise<any> {
 				await showAllCommands();
 			}),
 			registerCommand(Commands.OpenBuildDirectory, async () => {
-				await executeCommand('workbench.action.openSettings', 'unittestbot.paths.buildDirectory');
+				await executeCommand('workbench.action.openSettings', 'unittestbot.paths.buildRelDirectory');
 			})
 		);
 	}

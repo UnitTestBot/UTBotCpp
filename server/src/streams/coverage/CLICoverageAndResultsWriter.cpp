@@ -51,7 +51,7 @@ void CLICoverageAndResultsWriter::writeResponse(const utbot::ProjectContext &pro
     }
     ss << "Totals:\n";
     ss << totals;
-    fs::path resultsFilePath = Paths::getUTBotReportDir(projectContext) / "tests-result.log";
+    fs::path resultsFilePath = projectContext.getReportDirAbsPath() / "tests-result.log";
     FileSystemUtils::writeToFile(resultsFilePath, ss.str());
     LOG_S(INFO) << ss.str();
 }

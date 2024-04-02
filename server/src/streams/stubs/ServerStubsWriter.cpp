@@ -3,8 +3,8 @@
 #include "loguru.h"
 
 void ServerStubsWriter::writeResponse(const std::vector<Stubs> &synchronizedStubs,
-                                      const fs::path &testDirPath) {
-    writeStubsFilesOnServer(synchronizedStubs, testDirPath);
+                                      const fs::path &testDirRelPath) {
+    writeStubsFilesOnServer(synchronizedStubs, testDirRelPath);
     if (!hasStream()) {
         return;
     }

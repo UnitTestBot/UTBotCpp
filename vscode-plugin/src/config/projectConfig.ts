@@ -15,14 +15,14 @@ export class ProjectConfig {
 
     private readonly projectName: string;
     private readonly projectPath: string;
-    private readonly buildDirRelativePath: string;
-    private readonly itfPath: string;
+    private readonly buildDirRelPath: string;
+    private readonly itfRelPath: string;
     private readonly cmakeOptions: Array<string>;
 
     constructor(private readonly client: Client) {
         this.projectName = Prefs.getProjectName();
-        [this.projectPath, this.buildDirRelativePath] = Prefs.getBuildDirPath();
-        this.itfPath = Prefs.getITFPath();
+        [this.projectPath, this.buildDirRelPath] = Prefs.getBuildDirPath();
+        this.itfRelPath = Prefs.getItfRelPath();
         this.cmakeOptions = Prefs.getCmakeOptions();
     }
 
@@ -92,7 +92,7 @@ export class ProjectConfig {
         return utbotUI.progresses().withProgress<ProjectConfigResponse>(async (progressKey, token) => {
             utbotUI.progresses().report(progressKey, "Check project configuration...");
             const responseHandler = new DummyResponseHandler<ProjectConfigResponse>();
-            return this.client.checkProjectConfigurationRequest(this.projectName, this.projectPath, this.buildDirRelativePath, this.itfPath, this.cmakeOptions, configMode, progressKey, token, responseHandler);
+            return this.client.checkProjectConfigurationRequest(this.projectName, this.projectPath, this.buildDirRelPath, this.itfRelPath, this.cmakeOptions, configMode, progressKey, token, responseHandler);
         });
     }
 
@@ -100,7 +100,7 @@ export class ProjectConfig {
         logger.info('Build folder not found');
 
         const yesOption = 'Create build folder';
-        return vs.window.showWarningMessage(`Build folder "${this.buildDirRelativePath}"
+        return vs.window.showWarningMessage(`Build folder "${this.buildDirRelPath}"
                 specified in [Preferences](command:unittestbot.innercommand.openBuildDirectoryConfig), does not exist.`, ...[yesOption]).then(async selection => {
             if (selection === yesOption) {
                 return this.handleBuildDirCreationRequest();

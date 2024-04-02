@@ -329,15 +329,19 @@ Commands::ProjectContextOptionGroup::ProjectContextOptionGroup(CLI::App *command
             ->required();
 
     projectContextOptions->add_option(
-            "-t,--tests-dir", testDir, "Relative path to directory in which tests will be generated.",
+            "-t,--tests-dir", testRelDir, "Relative path to directory in which tests will be generated.",
             true);
 
     projectContextOptions->add_option(
-            "-b,--build-dir", buildDir,
+            "-r,--report-dir", reportRelDir, "Relative path to directory in which sarif report will be generated.",
+            true);
+
+    projectContextOptions->add_option(
+            "-b,--build-dir", buildRelDir,
             "Relative path to build directory with compile_commands.json and/or coverage.json.", true);
 
     projectContextOptions->add_option(
-            "-i,--init-teardown-path", itfPath,
+            "-i,--init-teardown-path", itfRelPath,
             "Relative paths to json, that contains list of initial and teardown functions", true);
 }
 
@@ -357,15 +361,19 @@ fs::path Commands::ProjectContextOptionGroup::getProjectPath() const {
 }
 
 std::string Commands::ProjectContextOptionGroup::getTestDirectory() const {
-    return testDir;
+    return testRelDir;
+}
+
+std::string Commands::ProjectContextOptionGroup::getReportDirectory() const {
+    return reportRelDir;
 }
 
 std::string Commands::ProjectContextOptionGroup::getBuildDirectory() const {
-    return buildDir;
+    return buildRelDir;
 }
 
-std::string Commands::ProjectContextOptionGroup::getItfPath() const {
-    return itfPath;
+std::string Commands::ProjectContextOptionGroup::getItfRelPath() const {
+    return itfRelPath;
 }
 
 Commands::SettingsContextOptionGroup::SettingsContextOptionGroup(CLI::App *command) {

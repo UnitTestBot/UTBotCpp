@@ -71,9 +71,9 @@ namespace testUtils {
 
     std::unique_ptr<ProjectRequest> createProjectRequest(const std::string &projectName,
                                                          const fs::path &projectPath,
-                                                         const std::string &buildDirRelativePath,
+                                                         const std::string &buildDirRelPath,
                                                          const std::vector<fs::path> &srcPaths,
-                                                         const fs::path &itfPath = "",
+                                                         const fs::path &itfRelPath = "",
                                                          const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                          bool useStubs = false,
                                                          bool verbose = true,
@@ -84,7 +84,7 @@ namespace testUtils {
 
     std::unique_ptr<FileRequest> createFileRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const std::string &buildDirRelativePath,
+                                                   const std::string &buildDirRelPath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
@@ -95,11 +95,11 @@ namespace testUtils {
 
     std::unique_ptr<LineRequest> createLineRequest(const std::string &projectName,
                                                    const fs::path &projectPath,
-                                                   const std::string &buildDirRelativePath,
+                                                   const std::string &buildDirRelPath,
                                                    const std::vector<fs::path> &srcPaths,
                                                    const fs::path &filePath,
                                                    int line,
-                                                   const fs::path &itfPath = "",
+                                                   const fs::path &itfRelPath = "",
                                                    const std::string &targetOrSourcePath = GrpcUtils::UTBOT_AUTO_TARGET_PATH,
                                                    bool useStubs = false,
                                                    bool verbose = true,
@@ -108,7 +108,7 @@ namespace testUtils {
 
     std::unique_ptr<ClassRequest> createClassRequest(const std::string &projectName,
                                                      const fs::path &projectPath,
-                                                     const std::string &buildDirRelativePath,
+                                                     const std::string &buildDirRelPath,
                                                      const std::vector<fs::path> &srcPaths,
                                                      const fs::path &filePath,
                                                      int line,
@@ -121,14 +121,14 @@ namespace testUtils {
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
                                     const fs::path &projectPath,
-                                    const fs::path &testDirPath,
-                                    const fs::path &buildDirRelativePath);
+                                    const fs::path &testDirRelPath,
+                                    const fs::path &buildDirRelPath);
 
     std::unique_ptr<CoverageAndResultsRequest>
     createCoverageAndResultsRequest(const std::string &projectName,
                                     const fs::path &projectPath,
-                                    const fs::path &testDirPath,
-                                    const fs::path &buildDirRelativePath,
+                                    const fs::path &testDirRelPath,
+                                    const fs::path &buildDirRelPath,
                                     std::unique_ptr<testsgen::TestFilter> testFilter);
 
     bool cmpChars(const std::string &charAsString, char c);

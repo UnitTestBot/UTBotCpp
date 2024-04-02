@@ -211,7 +211,7 @@ void Synchronizer::synchronizeStubs(StubSet &outdatedStubs,
             testGen->synchronizedStubs.emplace_back(stubFile);
         }
     }
-    StubsWriter::writeStubsFilesOnServer(testGen->synchronizedStubs, testGen->projectContext.testDirPath);
+    StubsWriter::writeStubsFilesOnServer(testGen->synchronizedStubs, testGen->projectContext.getTestDirAbsPath());
 }
 
 std::shared_ptr<CompilationDatabase>

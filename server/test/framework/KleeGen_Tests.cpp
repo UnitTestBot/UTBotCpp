@@ -46,7 +46,7 @@ namespace {
         types::TypesHandler::SizeContext sizeContext;
         types::TypeMaps typeMaps;
         types::TypesHandler typesHandler(typeMaps, sizeContext);
-        auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelativePath, {});
+        auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelPath, {});
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
         KleeGenerator generator(&testGen, typesHandler, {});
 
@@ -63,7 +63,7 @@ namespace {
         types::TypesHandler::SizeContext sizeContext;
         types::TypeMaps typeMaps;
         types::TypesHandler typesHandler(typeMaps, sizeContext);
-        auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelativePath, {});
+        auto request = testUtils::createProjectRequest(testSuite.name, suitePath, buildDirRelPath, {});
         auto testGen = ProjectTestGen(*request, writer.get(), TESTMODE);
         KleeGenerator generator(&testGen, typesHandler, {});
 

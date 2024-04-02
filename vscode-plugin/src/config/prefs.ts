@@ -23,13 +23,15 @@ export class Prefs {
 
     public static HOST_PREF = 'unittestbot.deployment.utbotHost';
     public static PORT_PREF = 'unittestbot.deployment.utbotPort';
-    public static REMOTE_PATH_PREF = 'unittestbot.deployment.remotePath';
 
-    public static BUILD_DIR_PREF = 'unittestbot.paths.buildDirectory';
+    public static REMOTE_PATH_PREF = 'unittestbot.deployment.remotePath';
+    public static TESTS_REL_DIR_PREF = 'unittestbot.paths.testsRelDirectory';
+    public static REPORT_REL_PREF = 'unittestbot.paths.reportRelDirectory';
+    public static BUILD_REL_DIR_PREF = 'unittestbot.paths.buildRelDirectory';
+    public static ITF_REL_PATH_PREF = 'unittestbot.paths.itfRel';
+
     public static CMAKE_OPTIONS_PREF = 'unittestbot.paths.cmakeOptions';
-    public static TESTS_DIR_PREF = 'unittestbot.paths.testsDirectory';
     public static SOURCE_DIRS_PREF = 'unittestbot.paths.sourceDirectories';
-    public static ITF_PATH_PREF = 'unittestbot.paths.initialTeardownFunctions';
 
     public static VERBOSE_MODE_PREF = "unittestbot.testsGeneration.verboseFormatting";
 
@@ -178,13 +180,13 @@ export class Prefs {
     }
 
     public static getLocalBuildDirPath(): [string, string] {
-        const buildDir = this.getAsset(Prefs.BUILD_DIR_PREF);
+        const buildDir = this.getAsset(Prefs.BUILD_REL_DIR_PREF);
         const root = vsUtils.getProjectDirByOpenedFile();
         return [root.fsPath, buildDir];
     }
 
     public static getRemoteBuildDirPath(): [string, string] {
-        const buildDir = this.getAsset(Prefs.BUILD_DIR_PREF);
+        const buildDir = this.getAsset(Prefs.BUILD_REL_DIR_PREF);
         const root = this.getRemoteRoot();
         return [root, buildDir];
     }
@@ -200,14 +202,6 @@ export class Prefs {
         return this.getAssetBase(Prefs.CMAKE_OPTIONS_PREF, defcfg.DefaultConfigValues.DEFAULT_CMAKE_OPTIONS);
     }
 
-
-    public static getTestsDirPath(): string {
-        if (this.isRemoteScenario()) {
-            return this.getRemoteTestsDirPath();
-        }
-        return this.getLocalTestsDirPath();
-    }
-
     public static getLocalTestsDirPath(): string {
         const testsDirRelative = this.getTestDirRelativePath();
         const root = vsUtils.getProjectDirByOpenedFile();
@@ -215,15 +209,13 @@ export class Prefs {
         return testsDirPath;
     }
 
-    public static getRemoteTestsDirPath(): string {
-        const testsDirRelative = this.getTestDirRelativePath();
-        const root = this.getRemoteRoot();
-        const testsDirPath = path.posix.join(root, testsDirRelative);
-        return testsDirPath;
+    public static getTestDirRelativePath(): string {
+        const testDirRaw = this.getAsset(Prefs.TESTS_REL_DIR_PREF);
+        return pathUtils.normalizeRawPosixPath(testDirRaw);
     }
 
-    public static getTestDirRelativePath(): string {
-        const testDirRaw = this.getAsset(Prefs.TESTS_DIR_PREF);
+    public static getReportDirRelativePath(): string {
+        const testDirRaw = this.getAsset(Prefs.REPORT_REL_PREF);
         return pathUtils.normalizeRawPosixPath(testDirRaw);
     }
 
@@ -261,12 +253,12 @@ export class Prefs {
         return this.getLocalSourcePaths();
     }
 
-    public static getITFPath(): string {
-        const itfPath: string = this.getAssetBase(Prefs.ITF_PATH_PREF, "");
-        if (itfPath.length === 0) {
+    public static getItfRelPath(): string {
+        const itfRelPath: string = this.getAssetBase(Prefs.ITF_REL_PATH_PREF, "");
+        if (itfRelPath.length === 0) {
             return "";
         }
-        return pathUtils.normalizeRawPosixPath(itfPath);
+        return pathUtils.normalizeRawPosixPath(itfRelPath);
     }
 
     public static async setAsset<T>(pref: string, newValue: T, raiseError: boolean = true): Promise<void> {
@@ -356,7 +348,7 @@ export class Prefs {
     }
 
     public static async setBuildDirectory(path: string): Promise<void> {
-        await this.setAsset(Prefs.BUILD_DIR_PREF, path);
+        await this.setAsset(Prefs.BUILD_REL_DIR_PREF, path);
     }
 
     public static async setCmakeOptions(options: string): Promise<void> {
@@ -365,7 +357,7 @@ export class Prefs {
     }
 
     public static getBuildDirectory(): string {
-        return this.getAsset(Prefs.BUILD_DIR_PREF);
+        return this.getAsset(Prefs.BUILD_REL_DIR_PREF);
     }
 
     public static isVerboseTestModeSet(): boolean {
@@ -396,7 +388,7 @@ export class Prefs {
             errorMode = ErrorMode.PASSING;
         } else {
             errorMode = ErrorMode.FAILING;
-        } 
+        }
         return errorMode;
     }
 

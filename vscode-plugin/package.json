@@ -470,11 +470,11 @@
 					"default": "",
 					"markdownDescription": "%unittestbot.deployment.remotePath.description%"
 				},
-				"unittestbot.paths.buildDirectory": {
+				"unittestbot.paths.buildRelDirectory": {
 					"type": "string",
 					"default": "build",
 					"minLength": 1,
-					"markdownDescription": "%unittestbot.paths.buildDirectory.description%"
+					"markdownDescription": "%unittestbot.paths.buildRelDirectory.description%"
 				},
 				"unittestbot.paths.cmakeOptions": {
 					"type": "array",
@@ -487,21 +487,27 @@
 					],
 					"markdownDescription": "%unittestbot.paths.cmakeOptions.description%"
 				},
-				"unittestbot.paths.testsDirectory": {
+				"unittestbot.paths.testsRelDirectory": {
 					"type": "string",
 					"default": "tests",
 					"minLength": 1,
-					"markdownDescription": "%unittestbot.paths.testsDirectory.description%"
+					"markdownDescription": "%unittestbot.paths.testsRelDirectory.description%"
+				},
+				"unittestbot.paths.reportRelDirectory": {
+					"type": "string",
+					"default": "utbot_report",
+					"minLength": 1,
+					"markdownDescription": "%unittestbot.paths.reportRelDirectory.description%"
 				},
 				"unittestbot.paths.sourceDirectories": {
 					"type": "string",
 					"default": "",
 					"markdownDescription": "%unittestbot.paths.sourceDirectories.description%"
 				},
-				"unittestbot.paths.initialTeardownFunctions": {
+				"unittestbot.paths.itfRel": {
 					"type": "string",
 					"default": "",
-					"markdownDescription": "%unittestbot.paths.initialTeardownFunctions.description%"
+					"markdownDescription": "%unittestbot.paths.itfRel.description%"
 				},
 				"unittestbot.testsGeneration.verboseFormatting": {
 					"type": "boolean",

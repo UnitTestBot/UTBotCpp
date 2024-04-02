@@ -12,9 +12,9 @@ class StubsWriter : public utbot::ServerWriter<testsgen::StubsResponse> {
 public:
     explicit StubsWriter(grpc::ServerWriter<testsgen::StubsResponse> *writer);
 
-    virtual void writeResponse(const std::vector<Stubs> &synchronizedStubs, const fs::path &testDirPath) = 0;
+    virtual void writeResponse(const std::vector<Stubs> &synchronizedStubs, const fs::path &testDirRelPath) = 0;
 
-    static void writeStubsFilesOnServer(const std::vector<Stubs> &stubs, const fs::path &testDirPath);
+    static void writeStubsFilesOnServer(const std::vector<Stubs> &stubs, const fs::path &testDirRelPath);
 
 };
 

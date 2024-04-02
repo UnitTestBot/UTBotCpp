@@ -44,9 +44,9 @@ std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
     auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile,
                                                          printer::DefaultMakefilePrinter::TARGET_RUN,
                                                          "--gtest_list_tests", {"GTEST_FILTER=*"});
-    auto[out, status, _] = cmdGetAllTests.run(projectContext.buildDir(), false);
+    auto[out, status, _] = cmdGetAllTests.run(projectContext.getBuildDirAbsPath(), false);
     if (status != 0) {
-        auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.buildDir(), true);
+        auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.getBuildDirAbsPath(), true);
         progressWriter->writeProgress(StringUtils::stringFormat("command %s failed.\n"
                                                                 "see: \"%s\"",
                                                                 cmdGetAllTests.getFailedCommand(),
@@ -81,8 +81,8 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
         //for project
         std::vector<UnitTest> result;
 
-        if (fs::exists(projectContext.testDirPath)) {
-            FileSystemUtils::RecursiveDirectoryIterator directoryIterator(projectContext.testDirPath);
+        if (fs::exists(projectContext.getTestDirAbsPath())) {
+            FileSystemUtils::RecursiveDirectoryIterator directoryIterator(projectContext.getTestDirAbsPath());
             ExecUtils::doWorkWithProgress(
                 directoryIterator, progressWriter, "Building tests",
                 [this, &result](fs::directory_entry const &directoryEntry) {
@@ -116,7 +116,7 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
                     }
                 });
         } else {
-            LOG_S(WARNING) << "Test folder doesn't exist: " << projectContext.testDirPath;
+            LOG_S(WARNING) << "Test folder doesn't exist: " << projectContext.getTestDirAbsPath();
         }
         return result;
     }
@@ -176,7 +176,7 @@ bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs
         auto command = MakefileUtils::MakefileCommand(projectContext, makefile,
                                                       printer::DefaultMakefilePrinter::TARGET_BUILD, "", {});
         LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
-        auto[out, status, logFilePath] = command.run(projectContext.buildDir(), true);
+        auto[out, status, logFilePath] = command.run(projectContext.getBuildDirAbsPath(), true);
         if (status != 0) {
             return false;
         }
@@ -198,7 +198,7 @@ size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const
 testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command,
                                                const std::optional <std::chrono::seconds> &testTimeout) {
     fs::remove(Paths::getGTestResultsJsonPath(projectContext));
-    auto res = command.runCommand.run(projectContext.buildDir(), true, true, testTimeout);
+    auto res = command.runCommand.run(projectContext.getBuildDirAbsPath(), true, true, testTimeout);
     GTestLogger::log(res.output);
     testsgen::TestResultObject testRes;
     testRes.set_testfilepath(command.unitTest.testFilePath);

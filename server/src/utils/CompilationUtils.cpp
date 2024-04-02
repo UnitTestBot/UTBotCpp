@@ -75,7 +75,7 @@ namespace CompilationUtils {
 
     void substituteRemotePathToCCJsonForFile(const utbot::ProjectContext &projectContext,
                                              const std::string &jsonFileName) {
-        fs::path compileCommandsJsonPath = projectContext.buildDir() / jsonFileName;
+        fs::path compileCommandsJsonPath = projectContext.getBuildDirAbsPath() / jsonFileName;
         fs::create_directories(Paths::getUTBotBuildDir(projectContext));
         if (!fs::exists(compileCommandsJsonPath)) {
             std::string message = "Can't find " + compileCommandsJsonPath.string();

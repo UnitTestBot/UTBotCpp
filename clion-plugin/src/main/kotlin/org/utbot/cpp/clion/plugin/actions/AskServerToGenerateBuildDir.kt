@@ -8,7 +8,7 @@ import org.utbot.cpp.clion.plugin.utils.activeProject
 import org.utbot.cpp.clion.plugin.utils.client
 import testsgen.Testgen
 
-class AskServerToGenerateBuildDir : UTBotBaseAction(UTBot.message("projectConfigure.generate.buildDir")) {
+class AskServerToGenerateBuildDir : UTBotBaseAction(UTBot.message("projectConfigure.generate.buildRelDir")) {
 
     override fun actionPerformed(e: AnActionEvent) = CreateBuildDirRequest(
         GrpcRequestBuilderFactory(e.activeProject()).createProjectConfigRequestBuilder(Testgen.ConfigMode.CREATE_BUILD_DIR),

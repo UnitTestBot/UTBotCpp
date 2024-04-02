@@ -134,8 +134,8 @@ class UTBotConfigurable(private val myProject: Project) : BoundConfigurable(
     }
 
     private fun Panel.createPathsSettings() {
-        row(UTBot.message("settings.project.buildDir")) {
-            textField().bindText(settings::buildDirRelativePath).columns(COLUMNS_LARGE)
+        row(UTBot.message("settings.project.buildRelDir")) {
+            textField().bindText(settings::buildDirRelPath).columns(COLUMNS_LARGE)
                 .validateInput(ValidationCondition(UTBot.message("validation.not.empty")) {
                     it.text.stripLeadingSlashes().isNotEmpty()
                 })

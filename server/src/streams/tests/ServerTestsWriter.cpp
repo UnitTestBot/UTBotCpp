@@ -9,7 +9,7 @@
 
 void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
                                                const std::string &message,
-                                               const fs::path &testDirPath,
+                                               const fs::path &testDirRelPath,
                                                std::function<void(tests::Tests &)> &&prepareTests,
                                                std::function<void()> &&prepareTotal) {
     size_t size = testMap.size();
@@ -19,7 +19,7 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
         tests::Tests &tests = it.value();
         ExecUtils::throwIfCancelled();
         prepareTests(tests);
-        if (writeFileAndSendResponse(tests, testDirPath, message, (100.0 * totalTestsCounter) / size, false)) {
+        if (writeFileAndSendResponse(tests, testDirRelPath, message, (100.0 * totalTestsCounter) / size, false)) {
             ++totalTestsCounter;
         }
     }
@@ -28,11 +28,11 @@ void ServerTestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
 }
 
 bool ServerTestsWriter::writeFileAndSendResponse(const tests::Tests &tests,
-                                                 const fs::path &testDirPath,
+                                                 const fs::path &testDirRelPath,
                                                  const std::string &message,
                                                  double percent,
                                                  bool isCompleted) const {
-    fs::path testFilePath = testDirPath / tests.relativeFileDir / tests.testFilename;
+    fs::path testFilePath = testDirRelPath / tests.relativeFileDir / tests.testFilename;
     if (!tests.code.empty()) {
         FileSystemUtils::writeToFile(testFilePath, tests.code);
     }

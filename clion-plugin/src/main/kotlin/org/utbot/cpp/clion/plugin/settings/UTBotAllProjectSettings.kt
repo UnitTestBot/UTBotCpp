@@ -24,15 +24,15 @@ class UTBotAllProjectSettings(val project: Project) {
     val buildDirPath: Path
         get() {
             try {
-                return Paths.get(project.path).resolve(storedSettings.buildDirRelativePath)
+                return Paths.get(project.path).resolve(storedSettings.buildDirRelPath)
             } catch (e: InvalidPathException) {
                 throw IllegalPathException(
                     UTBot.message(
                         "paths.invalid",
                         "relative path to build dir",
-                        storedSettings.buildDirRelativePath
+                        storedSettings.buildDirRelPath
                     ),
-                    storedSettings.buildDirRelativePath
+                    storedSettings.buildDirRelPath
                 )
             }
         }
@@ -82,7 +82,7 @@ class UTBotAllProjectSettings(val project: Project) {
 
     fun predictPaths() {
         storedSettings.remotePath = UTBotProjectStoredSettings.REMOTE_PATH_VALUE_FOR_LOCAL_SCENARIO
-        storedSettings.buildDirRelativePath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
+        storedSettings.buildDirRelPath = UTBotProjectStoredSettings.DEFAULT_RELATIVE_PATH_TO_BUILD_DIR
         storedSettings.targetPath = UTBotTarget.autoTarget.path
     }
 

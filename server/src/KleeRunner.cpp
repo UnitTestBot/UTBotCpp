@@ -116,13 +116,13 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     std::function<void()> prepareTotal = [&]() {
         testsWriter->writeReport(sarif::sarifPackResults(sarifResults),
                                  "Sarif Report was created",
-                                 Paths::getUTBotReportDir(projectContext) / sarif::SARIF_FILE_NAME);
+                                 projectContext.getReportDirAbsPath() / sarif::SARIF_FILE_NAME);
     };
 
     testsWriter->writeTestsWithProgress(
         testsMap,
         "Running klee",
-        projectContext.testDirPath,
+        projectContext.getTestDirAbsPath(),
         std::move(prepareTests),
         std::move(prepareTotal));
 }

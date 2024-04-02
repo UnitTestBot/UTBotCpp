@@ -21,7 +21,7 @@ class GrpcRequestBuilderFactory(
             project.name,
             project.path,
             project.settings.storedSettings.testDirRelativePath,
-            project.settings.storedSettings.buildDirRelativePath
+            project.settings.storedSettings.buildDirRelPath
         )
     }
 

@@ -43,7 +43,7 @@ namespace Paths {
                           const std::vector<fs::path> &dirNames,
                           const std::function<bool(const fs::path &path)> &filter);
 
-    bool errorFileExists(const fs::path &path, std::string const& suffix);
+    bool errorFileExists(const fs::path &path, std::string const &suffix);
 
     static inline void setOptPath(fs::path &path, const std::string &value) {
         path = fs::path(value);
@@ -120,9 +120,9 @@ namespace Paths {
 
     std::vector<fs::path> findFilesInFolder(const fs::path &folder, const CollectionUtils::FileSet &sourcePaths);
 
-    std::string mangle(const fs::path& path);
+    std::string mangle(const fs::path &path);
 
-    std::string mangleExtensions(const fs::path& path);
+    std::string mangleExtensions(const fs::path &path);
 
     static inline fs::path addOrigExtensionAsSuffixAndAddNew(const fs::path &path,
                                                              const std::string &newExt) {
@@ -143,8 +143,7 @@ namespace Paths {
         if (posEncodedExtension == std::string::npos) {
             // In `sample_class_test.cpp` the `class` is not an extension
             fnWithExt = fnWithoutExt + defaultExt;
-        }
-        else {
+        } else {
             // In `sample_class_dot_cpp.cpp` the `cpp` is an extension
             fnWithExt = fnWithoutExt.substr(0, posEncodedExtension)
                         + dot
@@ -197,7 +196,7 @@ namespace Paths {
     //endregion
 
     static inline fs::path getUTBotFiles(const utbot::ProjectContext &projectContext) {
-        return projectContext.buildDir() / CompilationUtils::UTBOT_FILES_DIR_NAME;
+        return projectContext.getBuildDirAbsPath() / CompilationUtils::UTBOT_FILES_DIR_NAME;
     }
 
     static inline fs::path getUTBotBuildDir(const utbot::ProjectContext &projectContext) {
@@ -341,6 +340,9 @@ namespace Paths {
     fs::path getPathDirRelativeToTestDir(const utbot::ProjectContext &projectContext,
                                          const fs::path &sourceFilePath);
 
+    fs::path getPathDirRelativeToReportDir(const utbot::ProjectContext &projectContext,
+                                         const fs::path &sourceFilePath);
+
     fs::path getPathDirRelativeToBuildDir(const utbot::ProjectContext &projectContext,
                                           const fs::path &sourceFilePath);
 
@@ -405,8 +407,8 @@ namespace Paths {
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
     std::optional<std::string> getRelativePathWithShellVariable(const fs::path &shellVariableForBase,
-                                                             const std::string &base,
-                                                             const std::string &source);
+                                                                const std::string &base,
+                                                                const std::string &source);
 
     fs::path
     getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath,
@@ -419,11 +421,7 @@ namespace Paths {
 
     //region stubs
     static inline fs::path getStubsDirPath(const utbot::ProjectContext &projectContext) {
-        return projectContext.testDirPath / "stubs";
-    }
-
-    static inline fs::path getStubsRelativeDirPath(const fs::path &relativeTestDirPath) {
-        return "stubs" / relativeTestDirPath;
+        return projectContext.getTestDirAbsPath() / "stubs";
     }
 
     bool hasUncaughtException(const fs::path &path);
@@ -431,17 +429,17 @@ namespace Paths {
 
     //region utbot_report
 
+    const std::string UTBOT_TESTS = "tests";
     const std::string UTBOT_REPORT = "utbot_report";
-
-    inline fs::path getUTBotReportDir(const utbot::ProjectContext &projectContext) {
-        return projectContext.projectPath / UTBOT_REPORT;
-    }
+    const std::string UTBOT_BUILD = "build";
+    const std::string UTBOT_ITF = "";
 
     inline fs::path getGenerationStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return getUTBotReportDir(projectContext) / "generation-stats.csv";
+        return projectContext.getReportDirAbsPath() / "generation-stats.csv";
     }
+
     inline fs::path getExecutionStatsCSVPath(const utbot::ProjectContext &projectContext) {
-        return getUTBotReportDir(projectContext) / "execution-stats.csv";
+        return projectContext.getReportDirAbsPath() / "execution-stats.csv";
     }
 
     //endregion
