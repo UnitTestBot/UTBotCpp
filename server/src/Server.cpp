@@ -672,8 +672,7 @@ Server::TestsGenServiceImpl::ConfigureProject(ServerContext *context,
 
     utbot::ProjectContext utbotProjectContext{request->projectcontext()};
 
-    fs::path buildDirPath =
-            fs::path(utbotProjectContext.projectPath) / utbotProjectContext.getTestDirAbsPath();
+    fs::path buildDirPath = utbotProjectContext.getBuildDirAbsPath();
     switch (request->configmode()) {
         case ConfigMode::CHECK:
             return UserProjectConfiguration::CheckProjectConfiguration(buildDirPath, writer);
