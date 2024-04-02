@@ -23,12 +23,13 @@ internal data class ProjectContextBuilder(
         }
         return Testgen.ProjectContext.newBuilder()
             .setProjectPath(projectPath)
-            .setTestDirPath(
+            .setTestDirRelPath(
                 remoteMapping.convertToRemote(
                     projectNioPath.resolve(relativeTestsDirNioPath).toString(),
                     UTBot.message("settings.project.testsDir.wrong")
                 )
             )
+            .setReportDirRelPath("utbot_report")
             .setBuildDirRelPath(buildDirRelPath)
             .setProjectName(projectName)
             .setProjectPath(remoteMapping.convertToRemote(projectPath, UTBot.message("projectPath.wrong.conversion")))
