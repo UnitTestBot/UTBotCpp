@@ -15,6 +15,25 @@
 namespace {
     auto projectPath = fs::current_path().parent_path() / testUtils::getRelativeTestSuitePath("server");
 
+    TEST(StringUtils_stotInt128, simple) {
+        __int128 val = 42;
+        auto res = StringUtils::stot<__int128>("42");
+        EXPECT_EQ(val, res);
+    }
+
+    TEST(StringUtils_stotInt128, simple_unsigned) {
+        unsigned __int128 val = 42;
+        auto res = StringUtils::stot<unsigned __int128>("42");
+        EXPECT_EQ(val, res);
+    }
+
+    TEST(StringUtils_stotInt128, INT128_MIN) {
+        __int128 val = 1;
+        val <<= 127;
+        auto res = StringUtils::stot<__int128>("-170141183460469231731687303715884105728");
+        EXPECT_EQ(val, res);
+    }
+
     TEST(ReadBytesAsValueTest, Unsigned1) {
         size_t const LEN = 4;
         std::vector<char> bytes(LEN);
@@ -307,12 +326,12 @@ namespace {
 
     template<typename T>
     void readBytesAsValueTestTemplate(T val) {
-        srand(42);
+        size_t const len = sizeof(T);
+        std::default_random_engine gen(42);
         for (size_t tcount = 0; tcount < 5; ++tcount) {
-            auto add = static_cast<size_t>(rand() % 10);
-            auto start = static_cast<size_t>(rand() % add);
-            size_t const len = sizeof(T);
-            std::vector<char> bytes(len + add);
+            auto extra = static_cast<size_t>(std::uniform_int_distribution<unsigned>(1, 10)(gen));
+            auto start = static_cast<size_t>(std::uniform_int_distribution<unsigned>(0, extra)(gen));
+            std::vector<char> bytes(len + extra);
             for (size_t i = 1; i <= len; ++i) {
                 bytes[start + i - 1] = (val >> (CHAR_BIT * (i - 1))) & ((1 << CHAR_BIT) - 1);
             }

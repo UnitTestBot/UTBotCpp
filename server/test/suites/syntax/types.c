@@ -1,6 +1,7 @@
 #include "types.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 
 char a_or_b(char a, char b) {
     if (a == 'a') {
@@ -114,3 +115,12 @@ int structWithConstPointerParam(struct SupportedStruct4 st) {
 struct IncompleteType {
     char c[100];
 };
+
+unsigned __int128 int128_mult(unsigned long long a, unsigned long long b) {
+    unsigned __int128 mult = a;
+    mult *= b;
+    if (mult > (unsigned __int128) LLONG_MAX) {
+        return ~((unsigned __int128)0);
+    }
+    return mult;
+}
