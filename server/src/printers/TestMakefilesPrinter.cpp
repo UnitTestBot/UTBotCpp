@@ -47,7 +47,8 @@ namespace printer {
             CollectionUtils::FileSet const *stubSources) :
             RelativeMakefilePrinter(Paths::getUTBotBuildDir(testGen->projectContext),
                                     Paths::getRelativeUtbotBuildDir(testGen->projectContext),
-                                    testGen->projectContext.projectPath),
+                                    testGen->projectContext.projectPath,
+                                    testGen->projectContext.getTestDirAbsPath()),
             projectContext(testGen->projectContext),
             sharedMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable),
             objMakefilePrinter(testGen, rootPath, primaryCompiler, stubSources, pathToShellVariable) {
