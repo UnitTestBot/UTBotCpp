@@ -397,6 +397,9 @@ namespace printer {
                 tryChangeToRelativePath(file);
             }
 
+            dynamicLinkCommand.addFlagToBegin("-lmockcpp");
+            dynamicLinkCommand.addFlagToBegin("-L$(MOCKCPP_PATH)");
+
             dynamicLinkCommand.addFlagsToBegin(filesToLink);
             dynamicLinkCommand.addFlagToBegin(
                     getLibraryDirectoryFlag(getRelativePath(
