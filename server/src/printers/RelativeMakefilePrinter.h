@@ -12,7 +12,8 @@ public:
     RelativeMakefilePrinter(PathToShellVariable pathToShellVariable);
     RelativeMakefilePrinter(const fs::path &buildDirectory,
                             const fs::path &buildDirectoryRelative,
-                            const fs::path &projectPath);
+                            const fs::path &projectPath,
+                            const fs::path &testsPath);
 
     ~RelativeMakefilePrinter() override = default;
 
@@ -23,7 +24,7 @@ private:
     void initializePathsToShellVariables();
 
 protected:
-    fs::path buildDirectoryRelative, projectPath;
+    fs::path buildDirectoryRelative, testsPath, projectPath;
 
     // map variable with absolute path to $(someVar)
     std::map<std::string, fs::path, std::function<bool(const std::string&, const std::string&)>> pathToShellVariable;
