@@ -443,6 +443,7 @@ Commands::RunTestsCommands::RunTestsCommands(Commands::MainCommands &commands) {
     runCommand = commands.getRunTestsCommand();
 
     runTestCommand = runCommand->add_subcommand("test", "Run specified test");
+    runFunctionCommand = runCommand->add_subcommand("function", "Run specified function tests");
     runFileCommand = runCommand->add_subcommand("file", "Run all tests in specified file");
     runProjectCommand = runCommand->add_subcommand("project", "Run all tests for this project");
 }
@@ -459,8 +460,16 @@ CLI::App *Commands::RunTestsCommands::getRunTestCommand() {
     return runTestCommand;
 }
 
+CLI::App *Commands::RunTestsCommands::getRunFunctionCommand() {
+    return runFunctionCommand;
+}
+
 bool Commands::RunTestsCommands::gotRunTestCommand() {
     return runCommand->got_subcommand(runTestCommand);
+}
+
+bool Commands::RunTestsCommands::gotRunFunctionCommand() {
+    return runCommand->got_subcommand(runFunctionCommand);
 }
 
 bool Commands::RunTestsCommands::gotRunFileCommand() {
@@ -477,13 +486,23 @@ Commands::RunTestsCommandOptions::RunTestsCommandOptions(Commands::RunTestsComma
     commands.getRunTestCommand()
             ->add_option("--file-path", filePath, "Path to test file")
             ->required();
+    commands.getRunTestCommand()->add_flag("--no-coverage", noCoverage,
+                                           "Flag that controls coverage generation.");
+
+
+    commands.getRunFunctionCommand()
+            ->add_option("--file-path", filePath, "Path to test file")
+            ->required();
+    commands.getRunFunctionCommand()->add_option("--function-name", functionName, "Test name")->required();
+    commands.getRunFunctionCommand()->add_flag("--no-coverage", noCoverage,
+                                               "Flag that controls coverage generation.");
+
     commands.getRunFileCommand()
             ->add_option("--file-path", filePath, "Path to test file")
             ->required();
-    commands.getRunTestCommand()->add_flag("--no-coverage", noCoverage,
-                                           "Flag that controls coverage generation.");
     commands.getRunFileCommand()->add_flag("--no-coverage", noCoverage,
                                            "Flag that controls coverage generation.");
+
     commands.getRunProjectCommand()->add_flag("--no-coverage", noCoverage,
                                               "Flag that controls coverage generation.");
 }
@@ -498,6 +517,10 @@ std::string Commands::RunTestsCommandOptions::getTestSuite() {
 
 std::string Commands::RunTestsCommandOptions::getTestName() {
     return testName;
+}
+
+std::string Commands::RunTestsCommandOptions::getFunctionName() {
+    return functionName;
 }
 
 bool Commands::RunTestsCommandOptions::withCoverage() const {

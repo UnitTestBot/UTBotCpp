@@ -150,6 +150,14 @@ namespace GrpcUtils {
         return testFilter;
     }
 
+    std::unique_ptr<testsgen::TestFilter> createTestFilterForFunction(const fs::path &testFilePath,
+                                                                      std::string functionName) {
+        auto testFilter = std::make_unique<testsgen::TestFilter>();
+        testFilter->set_testfilepath(testFilePath);
+        testFilter->set_functionname(functionName);
+        return testFilter;
+    }
+
     std::unique_ptr<testsgen::TestFilter> createTestFilterForTest(const fs::path &testFilePath,
                                                                   std::string testSuite,
                                                                   std::string testName) {
