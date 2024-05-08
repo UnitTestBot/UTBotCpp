@@ -368,6 +368,8 @@ namespace Paths {
 
     fs::path getCoverageJsonPath(const utbot::ProjectContext &projectContext);
 
+    fs::path getFunctionReportPath(const utbot::ProjectContext &projectContext);
+
     fs::path getGcdaDirPath(const utbot::ProjectContext &projectContext);
 
     fs::path getGcdaFilePath(const utbot::ProjectContext &projectContext, const fs::path &sourceFilePath);

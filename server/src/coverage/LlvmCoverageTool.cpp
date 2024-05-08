@@ -104,25 +104,27 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     auto mergeTask = ShellExecTask::getShellCommandTask(Paths::getLLVMprofdata(), mergeArguments);
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
-    std::vector<std::string> exportArguments = { "export" };
+    std::vector<std::string> exportArguments = {"export"};
+    std::vector<std::string> reportArguments = {"report"};
 
     // From documentation:
     //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
     bool firstBIN = true; // the first BIN need to be mentioned without `-object`
-    for (const std::string &objectFile : objectFiles) {
+    for (const std::string &objectFile: objectFiles) {
         if (firstBIN) {
             firstBIN = false;
-        }
-        else {
+        } else {
             exportArguments.emplace_back("-object");
         }
         exportArguments.emplace_back(objectFile);
+        reportArguments.emplace_back(objectFile);
     }
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
 
     try {
         auto sourcePaths = CollectionUtils::transformTo<
-            std::unordered_set<std::string>>(testFilenames, [this](fs::path const &testFilePath) {
+                std::unordered_set<std::string>>(testFilenames, [this](fs::path const &testFilePath) {
             fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
             if (!fs::exists(sourcePath)) {
                 std::string message =
@@ -136,8 +138,9 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             }
             return sourcePath.string();
         });
-        for (const std::string &sourcePath : sourcePaths) {
+        for (const std::string &sourcePath: sourcePaths) {
             exportArguments.emplace_back(sourcePath);
+            reportArguments.emplace_back(sourcePath);
         }
     }
     catch (const CoverageGenerationException &ce) {
@@ -148,7 +151,13 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     auto exportTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), exportArguments);
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
-    return { mergeTask, exportTask };
+
+
+    reportArguments.emplace_back("-show-functions=true");
+    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
+    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+    exportFCTask.setRetainOutputFile(true);
+    return {mergeTask, exportTask, exportFCTask};
 }
 
 Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
