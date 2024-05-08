@@ -177,11 +177,15 @@ namespace Commands {
 
         CLI::App *getRunTestCommand();
 
+        CLI::App *getRunFunctionCommand();
+
         CLI::App *getRunFileCommand();
 
         CLI::App *getRunProjectCommand();
 
         bool gotRunTestCommand();
+
+        bool gotRunFunctionCommand();
 
         bool gotRunFileCommand();
 
@@ -191,6 +195,7 @@ namespace Commands {
         CLI::App *runCommand;
 
         CLI::App *runTestCommand;
+        CLI::App *runFunctionCommand;
         CLI::App *runFileCommand;
         CLI::App *runProjectCommand;
     };
@@ -204,12 +209,15 @@ namespace Commands {
 
         std::string getTestName();
 
+        std::string getFunctionName();
+
         [[nodiscard]] bool withCoverage() const;
 
     private:
         fs::path filePath;
         std::string testSuite;
         std::string testName;
+        std::string functionName;
 
         bool noCoverage = false;
     };

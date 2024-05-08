@@ -71,9 +71,9 @@ std::vector<fs::path> getSourcePaths(const ProjectContextOptionGroup &projectCon
                                      const std::string &sourcePathsString) {
     if (!sourcePathsString.empty()) {
         return CollectionUtils::transformTo<std::vector<fs::path>>(
-            StringUtils::split(sourcePathsString, ','), [](std::string const &file) {
-                return Paths::normalizedTrimmed(fs::absolute(fs::path(file)));
-            });
+                StringUtils::split(sourcePathsString, ','), [](std::string const &file) {
+                    return Paths::normalizedTrimmed(fs::absolute(fs::path(file)));
+                });
     } else if (!projectContextOptions.getProjectPath().empty()) {
         return FileSystemUtils::recursiveDirectories(projectContextOptions.getProjectPath());
     }
@@ -115,15 +115,15 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
     if (app.got_subcommand(mainCommands.getGenerateCommand())) {
         auto sourcePaths =
-            getSourcePaths(projectGenerateContext, generateCommandsOptions.getSrcPaths());
+                getSourcePaths(projectGenerateContext, generateCommandsOptions.getSrcPaths());
         auto projectContext = createProjectContextByOptions(projectGenerateContext);
         auto settingsContext = createSettingsContextByOptions(settingsGenerateContext);
 
         if (generateCommands.gotSnippetCommand()) {
             fs::path filePath =
-                Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
+                    Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
             auto snippetRequest = GrpcUtils::createSnippetRequest(
-                std::move(projectContext), std::move(settingsContext), filePath);
+                    std::move(projectContext), std::move(settingsContext), filePath);
             createTestsAndWriteStatus<SnippetTestGen, SnippetRequest>(snippetRequest.get(),
                                                                       ctx.get());
             return;
@@ -131,7 +131,7 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
         auto target = generateCommandsOptions.getTarget();
         auto projectRequest = GrpcUtils::createProjectRequest(
-            std::move(projectContext), std::move(settingsContext), sourcePaths, target);
+                std::move(projectContext), std::move(settingsContext), sourcePaths, target);
 
         if (generateCommands.gotProjectCommand()) {
             createTestsAndWriteStatus<ProjectTestGen, ProjectRequest>(projectRequest.get(),
@@ -139,25 +139,25 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
         } else if (generateCommands.gotFolderCommand()) {
             fs::path folderPath =
-                Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFolderPath()));
+                    Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFolderPath()));
             auto folderRequest =
-                GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
+                    GrpcUtils::createFolderRequest(std::move(projectRequest), folderPath);
             createTestsAndWriteStatus<FolderTestGen, FolderRequest>(folderRequest.get(), ctx.get());
 
         } else if (generateCommands.gotFileCommand()) {
             fs::path filePath =
-                Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
+                    Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
             auto fileRequest = GrpcUtils::createFileRequest(std::move(projectRequest), filePath);
             createTestsAndWriteStatus<FileTestGen, FileRequest>(fileRequest.get(), ctx.get());
         } else if (generateCommands.gotLineCommand() || generateCommands.gotFunctionCommand() ||
                    generateCommands.gotPredicateCommand() ||
                    generateCommands.gotAssertionCommand() || generateCommands.gotClassCommand()) {
             fs::path filePath =
-                Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
+                    Paths::normalizedTrimmed(fs::absolute(generateCommandsOptions.getFilePath()));
             auto lineInfo = GrpcUtils::createSourceInfo(
-                filePath, static_cast<int>(generateCommandsOptions.getLineNumber()));
+                    filePath, static_cast<int>(generateCommandsOptions.getLineNumber()));
             auto lineRequest =
-                GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
+                    GrpcUtils::createLineRequest(std::move(projectRequest), std::move(lineInfo));
 
             if (generateCommands.gotLineCommand()) {
                 createTestsAndWriteStatus<LineTestGen, LineRequest>(lineRequest.get(), ctx.get());
@@ -170,19 +170,19 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
 
                 auto assertionRequest = GrpcUtils::createAssertionRequest(std::move(lineRequest));
                 createTestsAndWriteStatus<AssertionTestGen, AssertionRequest>(
-                    assertionRequest.get(), ctx.get());
+                        assertionRequest.get(), ctx.get());
 
             } else if (generateCommands.gotPredicateCommand()) {
                 auto predicateInfo =
-                    GrpcUtils::createPredicateInfo(generateCommandsOptions.getPredicate(),
-                                                   generateCommandsOptions.getReturnValue(),
-                                                   generateCommandsOptions.getValidationType());
+                        GrpcUtils::createPredicateInfo(generateCommandsOptions.getPredicate(),
+                                                       generateCommandsOptions.getReturnValue(),
+                                                       generateCommandsOptions.getValidationType());
                 auto predicateRequest = GrpcUtils::createPredicateRequest(std::move(lineRequest),
                                                                           std::move(predicateInfo));
                 createTestsAndWriteStatus<PredicateTestGen, PredicateRequest>(
-                    predicateRequest.get(), ctx.get());
+                        predicateRequest.get(), ctx.get());
             } else if (mainCommands.getGenerateCommand()->got_subcommand(
-                           generateCommands.getClassCommand())) {
+                    generateCommands.getClassCommand())) {
                 auto classRequest = GrpcUtils::createClassRequest(std::move(lineRequest));
                 createTestsAndWriteStatus<ClassTestGen, ClassRequest>(classRequest.get(),
                                                                       ctx.get());
@@ -196,28 +196,36 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
         auto settingsContext = createSettingsContextByOptions(settingsRunContext);
         if (runCommands.gotRunTestCommand()) {
             auto testFilter = GrpcUtils::createTestFilterForTest(
-                runTestCommandsOptions.getFilePath(), runTestCommandsOptions.getTestSuite(),
-                runTestCommandsOptions.getTestName());
+                    runTestCommandsOptions.getFilePath(), runTestCommandsOptions.getTestSuite(),
+                    runTestCommandsOptions.getTestName());
             auto coverageAndResultRequest = GrpcUtils::createCoverageAndResultRequest(
-                std::move(projectContext), std::move(testFilter));
+                    std::move(projectContext), std::move(testFilter));
             GenerationUtils::generateCoverageAndResultsAndWriteStatus(
-                std::move(coverageAndResultRequest), std::move(settingsContext),
-                runTestCommandsOptions.withCoverage());
+                    std::move(coverageAndResultRequest), std::move(settingsContext),
+                    runTestCommandsOptions.withCoverage());
+        } else if (runCommands.gotRunFunctionCommand()) {
+            auto testFilter = GrpcUtils::createTestFilterForFunction(
+                    runTestCommandsOptions.getFilePath(), runTestCommandsOptions.getFunctionName());
+            auto coverageAndResultRequest = GrpcUtils::createCoverageAndResultRequest(
+                    std::move(projectContext), std::move(testFilter));
+            GenerationUtils::generateCoverageAndResultsAndWriteStatus(
+                    std::move(coverageAndResultRequest), std::move(settingsContext),
+                    runTestCommandsOptions.withCoverage());
         } else if (runCommands.gotRunFileCommand()) {
             auto testFilter =
-                GrpcUtils::createTestFilterForFile(runTestCommandsOptions.getFilePath());
+                    GrpcUtils::createTestFilterForFile(runTestCommandsOptions.getFilePath());
             auto coverageAndResultRequest = GrpcUtils::createCoverageAndResultRequest(
-                std::move(projectContext), std::move(testFilter));
+                    std::move(projectContext), std::move(testFilter));
             GenerationUtils::generateCoverageAndResultsAndWriteStatus(
-                std::move(coverageAndResultRequest), std::move(settingsContext),
-                runTestCommandsOptions.withCoverage());
+                    std::move(coverageAndResultRequest), std::move(settingsContext),
+                    runTestCommandsOptions.withCoverage());
         } else if (runCommands.gotRunProjectCommand()) {
             auto testFilter = GrpcUtils::createTestFilterForProject();
             auto coverageAndResultRequest = GrpcUtils::createCoverageAndResultRequest(
-                std::move(projectContext), std::move(testFilter));
+                    std::move(projectContext), std::move(testFilter));
             GenerationUtils::generateCoverageAndResultsAndWriteStatus(
-                std::move(coverageAndResultRequest), std::move(settingsContext),
-                runTestCommandsOptions.withCoverage());
+                    std::move(coverageAndResultRequest), std::move(settingsContext),
+                    runTestCommandsOptions.withCoverage());
         } else {
             // intentionally left blank
         }
@@ -225,21 +233,21 @@ void CLIUtils::parse(int argc, char **argv, CLI::App &app) {
         auto sourcePaths = getSourcePaths(projectAllContext, allCommandsOptions.getSrcPaths());
         auto target = allCommandsOptions.getTarget();
         auto projectRequest = GrpcUtils::createProjectRequest(
-            std::move(createProjectContextByOptions(projectAllContext)),
-            std::move(createSettingsContextByOptions(settingsAllContext)), sourcePaths, target);
+                std::move(createProjectContextByOptions(projectAllContext)),
+                std::move(createSettingsContextByOptions(settingsAllContext)), sourcePaths, target);
         auto [testGen, statusTests] =
-            createTestsByRequest<ProjectTestGen, ProjectRequest>(*projectRequest, ctx.get());
+                createTestsByRequest<ProjectTestGen, ProjectRequest>(*projectRequest, ctx.get());
         if (!statusTests.error_message().empty()) {
             LOG_S(ERROR) << statusTests.error_message();
             return;
         }
         auto coverageAndResultsRequest = GrpcUtils::createCoverageAndResultRequest(
-            std::move(createProjectContextByOptions(projectAllContext)),
-            GrpcUtils::createTestFilterForProject());
+                std::move(createProjectContextByOptions(projectAllContext)),
+                GrpcUtils::createTestFilterForProject());
         auto [_, statusResults] = generateCoverageAndResults(
-            std::move(coverageAndResultsRequest),
-            std::move(createSettingsContextByOptions(settingsAllContext)),
-            allCommandsOptions.withCoverage());
+                std::move(coverageAndResultsRequest),
+                std::move(createSettingsContextByOptions(settingsAllContext)),
+                allCommandsOptions.withCoverage());
         if (!statusResults.error_message().empty()) {
             LOG_S(ERROR) << statusTests.error_message();
             return;
@@ -288,6 +296,7 @@ void CLIUtils::setOptPath(int argc, char **argv, const std::string &option, fs::
         }
     }
 }
+
 void CLIUtils::setupLogger(int argc, char **argv, bool threadView) {
     setStderrVerbosity(loguru::Verbosity_WARNING);
     loguru::g_preamble_uptime = false;

@@ -18,6 +18,7 @@ CoverageAndResultsGenerator::CoverageAndResultsGenerator(
                  coverageAndResultsRequest->testfilter().testfilepath(),
                  coverageAndResultsRequest->testfilter().testsuite(),
                  coverageAndResultsRequest->testfilter().testname(),
+                 coverageAndResultsRequest->testfilter().functionname(),
                  coverageAndResultsWriter),
       coverageAndResultsWriter(coverageAndResultsWriter) {
 }

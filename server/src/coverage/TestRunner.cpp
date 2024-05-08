@@ -1,4 +1,5 @@
 #include <utils/stats/TestsExecutionStats.h>
+#include <utils/KleeUtils.h>
 #include "TestRunner.h"
 
 #include "printers/DefaultMakefilePrinter.h"
@@ -18,33 +19,37 @@ TestRunner::TestRunner(utbot::ProjectContext projectContext,
                        std::string testFilePath,
                        std::string testSuite,
                        std::string testName,
+                       std::string functionName,
                        ProgressWriter const *progressWriter)
-    : projectContext(std::move(projectContext)),
-      testFilePath(testFilePath.empty() ? std::nullopt : std::make_optional(testFilePath)),
-      testSuite(std::move(testSuite)), testName(std::move(testName)),
-      progressWriter(progressWriter) {
+        : projectContext(std::move(projectContext)),
+          testFilePath(testFilePath.empty() ? std::nullopt : std::make_optional(testFilePath)),
+          testSuite(std::move(testSuite)), testName(std::move(testName)), functionName(std::move(functionName)),
+          progressWriter(progressWriter) {
 }
 
 TestRunner::TestRunner(
-    const testsgen::CoverageAndResultsRequest *coverageAndResultsRequest,
-    grpc::ServerWriter<testsgen::CoverageAndResultsResponse> *coverageAndResultsWriter,
-    std::string testFilename,
-    std::string testSuite,
-    std::string testName)
-    : TestRunner(utbot::ProjectContext(coverageAndResultsRequest->projectcontext()),
-                 std::move(testFilename),
-                 std::move(testSuite),
-                 std::move(testName),
-                 &writer) {
+        const testsgen::CoverageAndResultsRequest *coverageAndResultsRequest,
+        grpc::ServerWriter<testsgen::CoverageAndResultsResponse> *coverageAndResultsWriter,
+        std::string testFilename,
+        std::string testSuite,
+        std::string testName,
+        std::string functionName)
+        : TestRunner(utbot::ProjectContext(coverageAndResultsRequest->projectcontext()),
+                     std::move(testFilename),
+                     std::move(testSuite),
+                     std::move(testName),
+                     std::move(functionName),
+                     &writer) {
     writer = ServerCoverageAndResultsWriter(coverageAndResultsWriter);
 }
 
 std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
-                                                       const fs::path &testFilePath) {
+                                                       const fs::path &testFilePath,
+                                                       const std::string &filter) {
     auto cmdGetAllTests = MakefileUtils::MakefileCommand(projectContext, makefile,
                                                          printer::DefaultMakefilePrinter::TARGET_RUN,
-                                                         "--gtest_list_tests", {"GTEST_FILTER=*"});
-    auto[out, status, _] = cmdGetAllTests.run(projectContext.getBuildDirAbsPath(), false);
+                                                         "--gtest_list_tests", {"GTEST_FILTER=" + filter});
+    auto [out, status, _] = cmdGetAllTests.run(projectContext.getBuildDirAbsPath(), false);
     if (status != 0) {
         auto [err, _, logFilePath] = cmdGetAllTests.run(projectContext.getBuildDirAbsPath(), true);
         progressWriter->writeProgress(StringUtils::stringFormat("command %s failed.\n"
@@ -55,12 +60,14 @@ std::vector<UnitTest> TestRunner::getTestsFromMakefile(const fs::path &makefile,
         throw ExecutionProcessException(err, logFilePath.value());
     }
     if (out.empty()) {
-        LOG_S(WARNING) << "Running gtest with flag --gtest_list_tests returns empty output. Does file contain main function?";
+        LOG_S(WARNING)
+        << "Running gtest with flag --gtest_list_tests returns empty output. Does file contain main function?";
         return {};
     }
     std::vector<std::string> gtestListTestsOutput = StringUtils::split(out, '\n');
-    gtestListTestsOutput.erase(gtestListTestsOutput.begin()); //GTEST prints "Running main() from /opt/gtest/googletest/src/gtest_main.cc"
-    for (std::string &s : gtestListTestsOutput) {
+    gtestListTestsOutput.erase(
+            gtestListTestsOutput.begin()); //GTEST prints "Running main() from /opt/gtest/googletest/src/gtest_main.cc"
+    for (std::string &s: gtestListTestsOutput) {
         StringUtils::trim(s);
     }
     std::string testSuite;
@@ -84,50 +91,65 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
         if (fs::exists(projectContext.getTestDirAbsPath())) {
             FileSystemUtils::RecursiveDirectoryIterator directoryIterator(projectContext.getTestDirAbsPath());
             ExecUtils::doWorkWithProgress(
-                directoryIterator, progressWriter, "Building tests",
-                [this, &result](fs::directory_entry const &directoryEntry) {
-                    if (!directoryEntry.is_regular_file()) {
-                        return;
-                    }
-                    const auto &testFilePath = directoryEntry.path();
-                    if (testFilePath.extension() == Paths::CXX_EXTENSION &&
-                        StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX)) {
-                        fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
-                        fs::path makefile =
-                                Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-                        if (fs::exists(makefile)) {
-                            try {
-                                auto tests = getTestsFromMakefile(makefile, testFilePath);
-                                CollectionUtils::extend(result, tests);
-                            } catch (ExecutionProcessException const &e) {
-                                exceptions.push_back(e);
+                    directoryIterator, progressWriter, "Building tests",
+                    [this, &result](fs::directory_entry const &directoryEntry) {
+                        if (!directoryEntry.is_regular_file()) {
+                            return;
+                        }
+                        const auto &testFilePath = directoryEntry.path();
+                        if (testFilePath.extension() == Paths::CXX_EXTENSION &&
+                            StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX)) {
+                            fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+                            fs::path makefile =
+                                    Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                            if (fs::exists(makefile)) {
+                                try {
+                                    auto tests = getTestsFromMakefile(makefile, testFilePath);
+                                    CollectionUtils::extend(result, tests);
+                                } catch (ExecutionProcessException const &e) {
+                                    exceptions.push_back(e);
+                                }
+                            } else {
+                                LOG_S(WARNING) << StringUtils::stringFormat(
+                                        "Makefile for %s not found, candidate: %s", testFilePath, makefile);
                             }
                         } else {
-                            LOG_S(WARNING) << StringUtils::stringFormat(
-                                "Makefile for %s not found, candidate: %s", testFilePath, makefile);
+                            if (!StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX) &&
+                                !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::STUB_SUFFIX) &&
+                                !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::MAKE_WRAPPER_SUFFIX) &&
+                                !StringUtils::endsWith(testFilePath.c_str(), Paths::MAKEFILE_EXTENSION)) {
+                                LOG_S(WARNING) << "Found extra file in test directory: " << testFilePath;
+                            }
                         }
-                    } else {
-                        if (!StringUtils::endsWith(testFilePath.stem().c_str(), Paths::TEST_SUFFIX) &&
-                            !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::STUB_SUFFIX) &&
-                            !StringUtils::endsWith(testFilePath.stem().c_str(), Paths::MAKE_WRAPPER_SUFFIX) &&
-                            !StringUtils::endsWith(testFilePath.c_str(), Paths::MAKEFILE_EXTENSION)) {
-                            LOG_S(WARNING) << "Found extra file in test directory: " << testFilePath;
-                        }
-                    }
-                });
+                    });
         } else {
             LOG_S(WARNING) << "Test folder doesn't exist: " << projectContext.getTestDirAbsPath();
         }
         return result;
     }
-    if (testName.empty()) {
+
+    if (testName.empty() && functionName.empty()) {
         //for file
         fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath.value());
         fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
         return getTestsFromMakefile(makefile, testFilePath.value());
     }
+
+    if (testName.empty()) {
+        //for function
+        fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath.value());
+        fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+
+
+        std::string renamedMethodDescription = KleeUtils::getRenamedOperator(functionName);
+        StringUtils::replaceColon(renamedMethodDescription);
+
+        std::string filter =  "*." + renamedMethodDescription + Paths::TEST_SUFFIX + "*";
+
+        return getTestsFromMakefile(makefile, testFilePath.value(), filter);
+    }
     //for single test
-    return { UnitTest{ testFilePath.value(), testSuite, testName } };
+    return {UnitTest{testFilePath.value(), testSuite, testName}};
 }
 
 grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::chrono::seconds> &testTimeout) {
@@ -136,22 +158,22 @@ grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::ch
 
     const auto buildRunCommands = coverageTool->getBuildRunCommands(testsToLaunch, withCoverage);
     ExecUtils::doWorkWithProgress(buildRunCommands, progressWriter, "Running tests",
-                              [this, testTimeout] (BuildRunCommand const &buildRunCommand) {
-                                  auto const &[unitTest, buildCommand, runCommand] =
-                                      buildRunCommand;
-                                  try {
-                                      auto status = runTest(buildRunCommand, testTimeout);
-                                      testResultMap[unitTest.testFilePath][unitTest.testname] = status;
-                                      ExecUtils::throwIfCancelled();
-                                  } catch (ExecutionProcessException const &e) {
-                                      testsgen::TestResultObject testRes;
-                                      testRes.set_testfilepath(unitTest.testFilePath);
-                                      testRes.set_testname(unitTest.testname);
-                                      testRes.set_status(testsgen::TEST_FAILED);
-                                      testResultMap[unitTest.testFilePath][unitTest.testname] = testRes;
-                                      exceptions.emplace_back(e);
-                                  }
-                              });
+                                  [this, testTimeout](BuildRunCommand const &buildRunCommand) {
+                                      auto const &[unitTest, buildCommand, runCommand] =
+                                              buildRunCommand;
+                                      try {
+                                          auto status = runTest(buildRunCommand, testTimeout);
+                                          testResultMap[unitTest.testFilePath][unitTest.testname] = status;
+                                          ExecUtils::throwIfCancelled();
+                                      } catch (ExecutionProcessException const &e) {
+                                          testsgen::TestResultObject testRes;
+                                          testRes.set_testfilepath(unitTest.testFilePath);
+                                          testRes.set_testname(unitTest.testname);
+                                          testRes.set_status(testsgen::TEST_FAILED);
+                                          testResultMap[unitTest.testFilePath][unitTest.testname] = testRes;
+                                          exceptions.emplace_back(e);
+                                      }
+                                  });
     LOG_S(DEBUG) << "All run commands were executed";
     return Status::OK;
 }
@@ -169,14 +191,14 @@ void TestRunner::init(bool withCoverage) {
     }
 }
 
-bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs::path& sourcePath) {
+bool TestRunner::buildTest(const utbot::ProjectContext &projectContext, const fs::path &sourcePath) {
     ExecUtils::throwIfCancelled();
     fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
     if (fs::exists(makefile)) {
         auto command = MakefileUtils::MakefileCommand(projectContext, makefile,
                                                       printer::DefaultMakefilePrinter::TARGET_BUILD, "", {});
         LOG_S(DEBUG) << "Try compile tests for: " << sourcePath.string();
-        auto[out, status, logFilePath] = command.run(projectContext.getBuildDirAbsPath(), true);
+        auto [out, status, logFilePath] = command.run(projectContext.getBuildDirAbsPath(), true);
         if (status != 0) {
             return false;
         }
@@ -185,10 +207,10 @@ bool TestRunner::buildTest(const utbot::ProjectContext& projectContext, const fs
     return false;
 }
 
-size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const tests::TestsMap& tests) {
+size_t TestRunner::buildTests(const utbot::ProjectContext &projectContext, const tests::TestsMap &tests) {
     size_t fail_count = 0;
     for (const auto &[file, _]: tests) {
-        if(!TestRunner::buildTest(projectContext, file)) {
+        if (!TestRunner::buildTest(projectContext, file)) {
             fail_count++;
         }
     }
@@ -196,7 +218,7 @@ size_t TestRunner::buildTests(const utbot::ProjectContext& projectContext, const
 }
 
 testsgen::TestResultObject TestRunner::runTest(const BuildRunCommand &command,
-                                               const std::optional <std::chrono::seconds> &testTimeout) {
+                                               const std::optional<std::chrono::seconds> &testTimeout) {
     fs::remove(Paths::getGTestResultsJsonPath(projectContext));
     auto res = command.runCommand.run(projectContext.getBuildDirAbsPath(), true, true, testTimeout);
     GTestLogger::log(res.output);

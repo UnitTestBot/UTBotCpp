@@ -183,6 +183,7 @@ message TestFilter {
     string testFilePath = 1;
     string testName = 2;
     string testSuite = 3;
+    string functionName = 4;
 }
 
 message CoverageAndResultsRequest {
