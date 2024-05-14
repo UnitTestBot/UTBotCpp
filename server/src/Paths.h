@@ -404,6 +404,9 @@ namespace Paths {
 
     fs::path testPathToSourcePath(const utbot::ProjectContext &projectContext, const fs::path &testFilePath);
 
+    std::pair<fs::path, fs::path> getSourceAndTestPath(const utbot::ProjectContext &projectContext,
+                                                       const fs::path &filePath);
+
     fs::path getRelativeDirPath(const utbot::ProjectContext &projectContext, const fs::path &source);
 
     std::optional<std::string> getRelativePathWithShellVariable(const fs::path &shellVariableForBase,

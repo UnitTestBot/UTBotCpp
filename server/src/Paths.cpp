@@ -375,8 +375,9 @@ namespace Paths {
 
     fs::path sourcePathToStubPath(const utbot::ProjectContext &projectContext,
                                   const fs::path &source) {
-        return normalizedTrimmed((projectContext.getTestDirAbsPath() / "stubs" / getRelativeDirPath(projectContext, source) /
-                                  sourcePathToStubName(source)));
+        return normalizedTrimmed(
+                (projectContext.getTestDirAbsPath() / "stubs" / getRelativeDirPath(projectContext, source) /
+                 sourcePathToStubName(source)));
     }
 
     fs::path testPathToSourcePath(const utbot::ProjectContext &projectContext,
@@ -384,6 +385,20 @@ namespace Paths {
         fs::path relative = fs::relative(testFilePath.parent_path(), projectContext.getTestDirAbsPath());
         fs::path filename = testPathToSourceName(testFilePath);
         return projectContext.projectPath / relative / filename;
+    }
+
+    std::pair<fs::path, fs::path> getSourceAndTestPath(const utbot::ProjectContext &projectContext,
+                                                       const fs::path &filePath) {
+        fs::path sourcePath;
+        fs::path testPath;
+        if (isSubPathOf(projectContext.getTestDirAbsPath(), filePath)) {
+            testPath = filePath;
+            sourcePath = testPathToSourcePath(projectContext, filePath);
+        } else {
+            testPath = sourcePathToTestPath(projectContext, filePath);
+            sourcePath = filePath;
+        }
+        return {sourcePath, testPath};
     }
 
     fs::path getMakefilePathFromSourceFilePath(const utbot::ProjectContext &projectContext,

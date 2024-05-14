@@ -127,29 +127,28 @@ std::vector<UnitTest> TestRunner::getTestsToLaunch() {
         }
         return result;
     }
+    auto [sourcePath, testPath] = Paths::getSourceAndTestPath(projectContext,
+                                                              projectContext.projectPath / testFilePath.value());
+    fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
 
     if (testName.empty() && functionName.empty()) {
         //for file
-        fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath.value());
-        fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-        return getTestsFromMakefile(makefile, testFilePath.value());
+        return getTestsFromMakefile(makefile, testPath);
     }
 
     if (testName.empty()) {
         //for function
-        fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath.value());
-        fs::path makefile = Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-
 
         std::string renamedMethodDescription = KleeUtils::getRenamedOperator(functionName);
         StringUtils::replaceColon(renamedMethodDescription);
 
-        std::string filter =  "*." + renamedMethodDescription + Paths::TEST_SUFFIX + "*";
+        std::string filter = "*." + renamedMethodDescription + Paths::TEST_SUFFIX + "*";
 
-        return getTestsFromMakefile(makefile, testFilePath.value(), filter);
+        return getTestsFromMakefile(makefile, testPath, filter);
     }
+
     //for single test
-    return {UnitTest{testFilePath.value(), testSuite, testName}};
+    return {UnitTest{testPath, testSuite, testName}};
 }
 
 grpc::Status TestRunner::runTests(bool withCoverage, const std::optional<std::chrono::seconds> &testTimeout) {
