@@ -33,7 +33,7 @@ class Synchronizer {
 
     [[nodiscard]] bool isProbablyOutdatedWrappers(const fs::path &srcFilePath) const;
 
-    [[nodiscard]] bool removeStubIfSourceAbsent(const StubOperator &stub) const;
+    bool removeStubIfSourceAbsent(const StubOperator &stub) const;
 
     void synchronizeStubs(std::unordered_set<StubOperator, HashUtils::StubHash> &outdatedStubs,
                           const types::TypesHandler &typesHandler);

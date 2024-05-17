@@ -112,8 +112,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     for (const std::string &objectFile : objectFiles) {
         if (firstBIN) {
             firstBIN = false;
-        }
-        else {
+        } else {
             exportArguments.emplace_back("-object");
         }
         exportArguments.emplace_back(objectFile);

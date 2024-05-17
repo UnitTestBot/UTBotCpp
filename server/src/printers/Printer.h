@@ -73,20 +73,21 @@ namespace printer {
 
         Stream strIfBound(SRef condition);
 
-        Stream strDeclareVar(std::string_view type,
-                             std::string_view name,
-                             std::optional<std::string_view> initValue = std::nullopt,
-                             std::optional<uint64_t> alignment = std::nullopt,
-                             bool complete = true,
-                             size_t additionalPointersCount = 0);
-
-        Stream strDeclareAbsError(SRef name);
-
         enum ExternType {
             NONE,
             SAME_LANGUAGE,
             C
         };
+
+        Stream strDeclareVar(std::string_view type,
+                             std::string_view name,
+                             std::optional<std::string_view> initValue = std::nullopt,
+                             std::optional<uint64_t> alignment = std::nullopt,
+                             bool complete = true,
+                             size_t additionalPointersCount = 0,
+                             ExternType externType = ExternType::NONE);
+
+        Stream strDeclareAbsError(SRef name);
 
         Stream strDeclareArrayVar(const types::Type &type,
                                   std::string_view name,
@@ -96,7 +97,7 @@ namespace printer {
                                   bool complete = true,
                                   ExternType externType = ExternType::NONE);
 
-        Stream strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars);
+        Stream strDeclareSetOfExternVars(const std::set<Tests::TypeAndVarName> &vars);
 
         Stream strAssignVar(std::string_view name, std::string_view value);
 

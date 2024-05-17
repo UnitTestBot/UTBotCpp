@@ -158,7 +158,7 @@ fs::path KleePrinter::writeTmpKleeFile(
                                  return filter && forThisFunction && forThisClass;
                              });
 
-    strDeclareSetOfVars(tests.externVariables);
+    strDeclareSetOfExternVars(tests.externVariables);
     ss << printer::NL;
 
     for (const auto &[methodName, testMethod]: tests.methods) {
