@@ -157,6 +157,9 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
     exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
     exportFCTask.setRetainOutputFile(true);
+
+    LOG_S(ERROR) << exportFCTask.toString();
+
     return {mergeTask, exportTask, exportFCTask};
 }
 
