@@ -102,6 +102,9 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     mergeArguments.emplace_back("-o");
     mergeArguments.emplace_back(mainProfdataPath);
     auto mergeTask = ShellExecTask::getShellCommandTask(Paths::getLLVMprofdata(), mergeArguments);
+
+    LOG_S(INFO) << "Merge coverage info command: " << mergeTask.toString();
+
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = {"export"};
@@ -152,13 +155,15 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
 
+    LOG_S(INFO) << "Export coverage command: " << exportTask.toString();
+
 
     reportArguments.emplace_back("-show-functions=true");
     auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
     exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
     exportFCTask.setRetainOutputFile(true);
 
-    LOG_S(ERROR) << exportFCTask.toString();
+    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
 
     return {mergeTask, exportTask, exportFCTask};
 }
