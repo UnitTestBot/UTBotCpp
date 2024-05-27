@@ -125,6 +125,8 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         projectContext.getTestDirAbsPath(),
         std::move(prepareTests),
         std::move(prepareTotal));
+
+    fs::remove_all(kleeOutDir);
 }
 
 static void processMethod(MethodKtests &ktestChunk,
