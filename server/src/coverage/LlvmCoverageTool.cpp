@@ -108,7 +108,8 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = {"export"};
-    std::vector<std::string> reportArguments = {"report"};
+//    std::vector<std::string> reportArguments = {"report"};
+    std::vector<std::string> gcovArgs = {"gcov", "-f", "-b", "-c"};
 
     // From documentation:
     //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
@@ -120,10 +121,10 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             exportArguments.emplace_back("-object");
         }
         exportArguments.emplace_back(objectFile);
-        reportArguments.emplace_back(objectFile);
+//        reportArguments.emplace_back(objectFile);
     }
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
-    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+//    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
 
     try {
         auto sourcePaths = CollectionUtils::transformTo<
@@ -143,7 +144,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
         });
         for (const std::string &sourcePath: sourcePaths) {
             exportArguments.emplace_back(sourcePath);
-            reportArguments.emplace_back(sourcePath);
+//            reportArguments.emplace_back(sourcePath);
         }
     }
     catch (const CoverageGenerationException &ce) {
@@ -158,14 +159,24 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     LOG_S(INFO) << "Export coverage command: " << exportTask.toString();
 
 
-    reportArguments.emplace_back("-show-functions=true");
-    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
-    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
-    exportFCTask.setRetainOutputFile(true);
+//    reportArguments.emplace_back("-show-functions=true");
+//    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
+//    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+//    exportFCTask.setRetainOutputFile(true);
+//
+//    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
 
-    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
+    for (auto i: getGcdaFiles()) {
+        gcovArgs.emplace_back(i);
+    }
 
-    return {mergeTask, exportTask, exportFCTask};
+    auto exportFCGcovTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), gcovArgs);
+    exportFCGcovTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+    exportFCGcovTask.setRetainOutputFile(true);
+    LOG_S(INFO) << "Get coverage by functions gcov command:" << exportFCGcovTask.toString();
+
+
+    return {mergeTask, exportTask, exportFCGcovTask};
 }
 
 Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
@@ -222,19 +233,19 @@ Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {
 
 void LlvmCoverageTool::countLineCoverage(Coverage::CoverageMap &coverageMap,
                                          const std::string &filename) const {
-    for (auto range : coverageMap[filename].uncoveredRanges) {
-        coverageMap[filename].noCoverageLinesBorders.insert({ range.start.line });
-        coverageMap[filename].noCoverageLinesBorders.insert({ range.end.line });
+    for (auto range: coverageMap[filename].uncoveredRanges) {
+        coverageMap[filename].noCoverageLinesBorders.insert({range.start.line});
+        coverageMap[filename].noCoverageLinesBorders.insert({range.end.line});
         for (uint32_t i = range.start.line; i <= range.end.line; i++) {
-            coverageMap[filename].noCoverageLines.insert({ i });
+            coverageMap[filename].noCoverageLines.insert({i});
         }
     }
-    for (auto range : coverageMap[filename].coveredRanges) {
-        checkLineForPartial({ range.start.line }, coverageMap[filename]);
-        checkLineForPartial({ range.end.line }, coverageMap[filename]);
+    for (auto range: coverageMap[filename].coveredRanges) {
+        checkLineForPartial({range.start.line}, coverageMap[filename]);
+        checkLineForPartial({range.end.line}, coverageMap[filename]);
         for (uint32_t i = range.start.line + 1; i < range.end.line; i++) {
-            if (coverageMap[filename].noCoverageLines.count({ i }) == 0) {
-                coverageMap[filename].fullCoverageLines.insert({ i });
+            if (coverageMap[filename].noCoverageLines.count({i}) == 0) {
+                coverageMap[filename].fullCoverageLines.insert({i});
             }
         }
     }
@@ -265,8 +276,29 @@ nlohmann::json LlvmCoverageTool::getTotals() const {
     }
 }
 
+std::vector<fs::path> LlvmCoverageTool::getGcdaFiles() const {
+    std::vector<fs::path> result;
+    fs::path gcdaDirPath = Paths::getGcdaDirPath(projectContext);
+    if (!fs::exists(gcdaDirPath)) {
+        return {};
+    }
+    for (const auto &entry: fs::recursive_directory_iterator(gcdaDirPath)) {
+        if (entry.is_regular_file() && entry.path().extension() == ".gcda") {
+            result.emplace_back(entry.path());
+        }
+    }
+    return result;
+}
 
 void LlvmCoverageTool::cleanCoverage() const {
     fs::path coverageDir = Paths::getClangCoverageDir(projectContext);
     FileSystemUtils::removeAll(coverageDir);
+
+
+    fs::path gccCoverageDir = Paths::getGccCoverageDir(projectContext);
+    auto gcdaFiles = getGcdaFiles();
+    for (fs::path const &gcdaFile: gcdaFiles) {
+        fs::remove(gcdaFile);
+    }
+    FileSystemUtils::removeAll(gccCoverageDir);
 }

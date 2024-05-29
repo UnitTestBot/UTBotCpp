@@ -76,18 +76,18 @@ namespace CompilationUtils {
 
     std::vector<std::string> getCoverageCompileFlags(const CompilerName &compilerName) {
         switch (compilerName) {
-        case CompilerName::GCC:
-        case CompilerName::GXX:
-            return { "--coverage" };
-        case CompilerName::CLANG:
-        case CompilerName::CLANGXX:
-            return { "-fprofile-instr-generate", "-fcoverage-mapping" };
-        default:
-            break;
+            case CompilerName::GCC:
+            case CompilerName::GXX:
+                return {"--coverage"};
+            case CompilerName::CLANG:
+            case CompilerName::CLANGXX:
+                return {"--coverage", "-fprofile-instr-generate", "-fcoverage-mapping"};
+            default:
+                break;
         }
         LOG_S(WARNING) << StringUtils::stringFormat(
-            "Coverage flags for compiler: %s are unknown, using empty list of flags",
-            to_string(compilerName));
+                "Coverage flags for compiler: %s are unknown, using empty list of flags",
+                to_string(compilerName));
         return {};
     }
 

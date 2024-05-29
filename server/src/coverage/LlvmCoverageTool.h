@@ -19,6 +19,8 @@ public:
 private:
     void countLineCoverage(Coverage::CoverageMap& coverageMap, const std::string& filename) const;
     void checkLineForPartial(Coverage::FileCoverage::SourceLine line, Coverage::FileCoverage& fileCoverage) const;
+
+    std::vector<fs::path> getGcdaFiles() const;
 };
 
 
