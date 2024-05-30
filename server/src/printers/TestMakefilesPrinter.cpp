@@ -45,6 +45,7 @@ namespace printer {
             fs::path const &rootPath,
             fs::path primaryCompiler,
             CollectionUtils::FileSet const *stubSources) :
+            testGen(testGen),
             RelativeMakefilePrinter(Paths::getUTBotBuildDir(testGen->projectContext),
                                     Paths::getRelativeUtbotBuildDir(testGen->projectContext),
                                     testGen->projectContext.projectPath,
@@ -88,6 +89,10 @@ namespace printer {
                         MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "bin", true),
                         " ")
         });
+
+        auto objPath = testGen->getTargetBuildDatabase()->getObjectFile(sourcePath);
+        fs::path recompiledFile = Paths::getRecompiledFile(testGen->projectContext, objPath);
+        generalMakefilePrinter.declareTarget("obj_path", {TARGET_FORCE}, {"echo " + recompiledFile.string()});
 
         generalMakefilePrinter.declareTarget("compile_test", {TARGET_FORCE}, {
                 StringUtils::joinWith(

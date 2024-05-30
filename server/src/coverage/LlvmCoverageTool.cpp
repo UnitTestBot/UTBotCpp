@@ -72,31 +72,52 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     }
 
     auto testFilenames = CollectionUtils::transformTo<CollectionUtils::FileSet>(
-        testsToLaunch, [](UnitTest const &test) { return test.testFilePath; });
+            testsToLaunch, [](UnitTest const &test) { return test.testFilePath; });
     auto objectFiles = CollectionUtils::transformTo<std::unordered_set<std::string>>(
-        testFilenames, [this](fs::path const &testFilePath) {
-            fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
-            fs::path makefile =
-                Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
-            auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "bin");
-            auto res = makefileCommand.run();
-            if (res.status == 0) {
-                if (res.output.empty()) {
-                    std::string message = "Coverage result empty. See logs for more information.";
-                    LOG_S(ERROR) << message;
-                    throw CoverageGenerationException(message);
+            testFilenames, [this](fs::path const &testFilePath) {
+                fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+                fs::path makefile =
+                        Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "bin");
+                auto res = makefileCommand.run();
+                if (res.status == 0) {
+                    if (res.output.empty()) {
+                        std::string message = "Coverage result empty. See logs for more information.";
+                        LOG_S(ERROR) << message;
+                        throw CoverageGenerationException(message);
+                    }
+                    return StringUtils::split(res.output, '\n').back();
                 }
-                return StringUtils::split(res.output, '\n').back();
-            }
-            std::string message =
-                    "Coverage generation failed. See logs for more information.";
-            LOG_S(ERROR) << message;
-            throw CoverageGenerationException(message);
-        });
+                std::string message =
+                        "Coverage generation failed. See logs for more information.";
+                LOG_S(ERROR) << message;
+                throw CoverageGenerationException(message);
+            });
+
+    auto showObjectFiles = CollectionUtils::transformTo<std::unordered_set<std::string>>(
+            testFilenames, [this](fs::path const &testFilePath) {
+                fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+                fs::path makefile =
+                        Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "obj_path");
+                auto res = makefileCommand.run();
+                if (res.status == 0) {
+                    if (res.output.empty()) {
+                        std::string message = "Coverage result empty. See logs for more information.";
+                        LOG_S(ERROR) << message;
+                        throw CoverageGenerationException(message);
+                    }
+                    return StringUtils::split(res.output, '\n').back();
+                }
+                std::string message =
+                        "Coverage generation failed. See logs for more information.";
+                LOG_S(ERROR) << message;
+                throw CoverageGenerationException(message);
+            });
 
     fs::path mainProfdataPath = Paths::getMainProfdataPath(projectContext);
-    std::vector<std::string> mergeArguments = { "merge" };
-    for (const fs::path &profrawFile : profrawFilePaths) {
+    std::vector<std::string> mergeArguments = {"merge"};
+    for (const fs::path &profrawFile: profrawFilePaths) {
         mergeArguments.emplace_back(profrawFile.string());
     }
     mergeArguments.emplace_back("-o");
@@ -108,8 +129,8 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = {"export"};
-//    std::vector<std::string> reportArguments = {"report"};
-    std::vector<std::string> gcovArgs = {"gcov", "-f", "-b", "-c"};
+    std::vector<std::string> reportArguments = {"report"};
+//    std::vector<std::string> gcovArgs = {"gcov", "-f", "-b", "-c"};
 
     // From documentation:
     //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
@@ -119,12 +140,23 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             firstBIN = false;
         } else {
             exportArguments.emplace_back("-object");
+            reportArguments.emplace_back("-object");
         }
         exportArguments.emplace_back(objectFile);
-//        reportArguments.emplace_back(objectFile);
+        reportArguments.emplace_back(objectFile);
     }
+
+    for (const std::string &objectFile: showObjectFiles) {
+        if (firstBIN) {
+            firstBIN = false;
+        } else {
+            reportArguments.emplace_back("-object");
+        }
+        reportArguments.emplace_back(objectFile);
+    }
+
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
-//    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
 
     try {
         auto sourcePaths = CollectionUtils::transformTo<
@@ -144,7 +176,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
         });
         for (const std::string &sourcePath: sourcePaths) {
             exportArguments.emplace_back(sourcePath);
-//            reportArguments.emplace_back(sourcePath);
+            reportArguments.emplace_back(sourcePath);
         }
     }
     catch (const CoverageGenerationException &ce) {
@@ -159,24 +191,24 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     LOG_S(INFO) << "Export coverage command: " << exportTask.toString();
 
 
-//    reportArguments.emplace_back("-show-functions=true");
-//    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
-//    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
-//    exportFCTask.setRetainOutputFile(true);
-//
-//    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
+    reportArguments.emplace_back("-show-functions=true");
+    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
+    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+    exportFCTask.setRetainOutputFile(true);
 
-    for (auto i: getGcdaFiles()) {
-        gcovArgs.emplace_back(i);
-    }
+    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
 
-    auto exportFCGcovTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), gcovArgs);
-    exportFCGcovTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
-    exportFCGcovTask.setRetainOutputFile(true);
-    LOG_S(INFO) << "Get coverage by functions gcov command:" << exportFCGcovTask.toString();
+//    for (auto i: getGcdaFiles()) {
+//        gcovArgs.emplace_back(i);
+//    }
+
+//    auto exportFCGcovTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), gcovArgs);
+//    exportFCGcovTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+//    exportFCGcovTask.setRetainOutputFile(true);
+//    LOG_S(INFO) << "Get coverage by functions gcov command:" << exportFCGcovTask.toString();
 
 
-    return {mergeTask, exportTask, exportFCGcovTask};
+    return {mergeTask, exportTask, exportFCTask};
 }
 
 Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {

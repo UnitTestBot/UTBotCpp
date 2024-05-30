@@ -81,7 +81,7 @@ namespace CompilationUtils {
                 return {"--coverage"};
             case CompilerName::CLANG:
             case CompilerName::CLANGXX:
-                return {"--coverage", "-fprofile-instr-generate", "-fcoverage-mapping"};
+                return {"-fprofile-instr-generate", "-fcoverage-mapping"};
             default:
                 break;
         }

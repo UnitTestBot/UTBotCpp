@@ -21,6 +21,7 @@ namespace printer {
 
     class TestMakefilesPrinter : public RelativeMakefilePrinter {
     private:
+        const BaseTestGen *testGen;
         utbot::ProjectContext projectContext;
         printer::NativeMakefilePrinter sharedMakefilePrinter;
         printer::NativeMakefilePrinter objMakefilePrinter;
