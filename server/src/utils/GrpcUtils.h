@@ -90,6 +90,9 @@ namespace GrpcUtils {
 
     std::unique_ptr<testsgen::TestFilter> createTestFilterForFile(const fs::path &testFilePath);
 
+    std::unique_ptr<testsgen::TestFilter> createTestFilterForFunction(const fs::path &testFilePath,
+                                                                      std::string functionName);
+
     std::unique_ptr<testsgen::TestFilter> createTestFilterForTest(const fs::path &testFilePath,
                                                                   std::string testSuite,
                                                                   std::string testName);
@@ -103,13 +106,14 @@ namespace GrpcUtils {
 
     testsgen::ProjectTarget createAutoTarget();
 
-    template <typename Request>
+    template<typename Request>
     using has_projectrequest = decltype(std::declval<Request>().projectrequest());
 
-    template <typename Request>
+    template<typename Request>
     using has_linerequest = decltype(std::declval<Request>().linerequest());
 
-    template <typename Request> bool synchronizeCode(Request const &request) {
+    template<typename Request>
+    bool synchronizeCode(Request const &request) {
         if constexpr (std::is_same_v<Request, testsgen::SnippetRequest>) {
             return true;
         } else if constexpr (std::is_same_v<Request, testsgen::ProjectRequest>) {
