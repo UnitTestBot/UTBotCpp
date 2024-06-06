@@ -11,9 +11,11 @@ RelativeMakefilePrinter::RelativeMakefilePrinter(PathToShellVariable pathToShell
 RelativeMakefilePrinter::RelativeMakefilePrinter(
         const fs::path &buildDirectory,
         const fs::path &buildDirectoryRelative,
-        const fs::path &projectPath)
+        const fs::path &projectPath,
+        const fs::path &testsPath)
         : DefaultMakefilePrinter(),
           pathToShellVariable{{{buildDirectory, "$(BUILD_DIR)"},
+                               {testsPath, "$(TESTS_DIR)"},
                                {projectPath, "$(PROJECT_DIR)"},
                                {buildDirectoryRelative, "$(BUILD_RELATIVE)"}},
                               [](const std::string& lhs, const std::string& rhs) -> bool {
@@ -23,6 +25,7 @@ RelativeMakefilePrinter::RelativeMakefilePrinter(
               return std::greater<>()(lhs, rhs);
           }},
           buildDirectoryRelative{buildDirectoryRelative},
+          testsPath{testsPath},
           projectPath{projectPath} {
     initializePathsToShellVariables();
 }
@@ -71,6 +74,8 @@ std::string RelativeMakefilePrinter::getProjectStructureRelativeTo(const fs::pat
     printer.declareVariable("export PROJECT_DIR", "$(MAKEFILE_DIR)/$(PROJECT_DIR_RELATIVE_TO_MAKEFILE)");
     printer.declareVariable("export BUILD_RELATIVE", buildDirectoryRelative);
     printer.declareVariable("export BUILD_DIR", "$(PROJECT_DIR)/$(BUILD_RELATIVE)");
+    printer.declareVariable("export TESTS_DIR_RELATIVE", fs::relative(testsPath, makefilePath.parent_path()));
+    printer.declareVariable("export TESTS_DIR", "$(MAKEFILE_DIR)/$(TESTS_DIR_RELATIVE)");
     return printer.ss.str();
 }
 
