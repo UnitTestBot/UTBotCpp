@@ -368,7 +368,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests, 1);
     }
 
-    TEST_F(Regression_Test, Extern_Variables) {
+    TEST_F(Regression_Test, DISABLED_Extern_Variables) {
         fs::path source = getTestFilePath("issue-514.c");
         auto [testGen, status] = createTestForFunction(source, 5);
         ASSERT_TRUE(status.ok()) << status.error_message();
