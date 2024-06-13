@@ -103,7 +103,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     mergeArguments.emplace_back(mainProfdataPath);
     auto mergeTask = ShellExecTask::getShellCommandTask(Paths::getLLVMprofdata(), mergeArguments);
 
-    LOG_S(INFO) << "Merge coverage info command: " << mergeTask.toString();
+    LOG_S(MAX) << "Merge coverage info command: " << mergeTask.toString();
 
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
@@ -151,7 +151,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
 
-    LOG_S(INFO) << "Export coverage command: " << exportTask.toString();
+    LOG_S(MAX) << "Export coverage command: " << exportTask.toString();
 
     return { mergeTask, exportTask };
 }
