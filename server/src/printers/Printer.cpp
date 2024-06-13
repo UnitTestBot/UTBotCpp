@@ -88,8 +88,23 @@ namespace printer {
                                                      std::optional<std::string_view> initValue,
                                                      std::optional<uint64_t> alignment,
                                                      bool complete,
-                                                     size_t additionalPointersCount) {
+                                                     size_t additionalPointersCount,
+                                                     ExternType externType) {
         ss << LINE_INDENT();
+
+        switch (externType) {
+            case ExternType::C :
+                if (getLanguage() == utbot::Language::CXX) {
+                    ss << "extern \"C\" ";
+                    break;
+                }
+            case ExternType::SAME_LANGUAGE :
+                ss << "extern ";
+                break;
+            case ExternType::NONE :
+                break;
+        }
+
         printAlignmentIfExists(alignment);
         auto additionalPointers = StringUtils::repeat("*", additionalPointersCount);
         if (needDecorate()) {
@@ -685,12 +700,14 @@ namespace printer {
         ss << Copyright::GENERATED_C_CPP_FILE_HEADER << printer::NL;
     }
 
-    Printer::Stream Printer::strDeclareSetOfVars(const std::set<Tests::TypeAndVarName> &vars) {
+    Printer::Stream Printer::strDeclareSetOfExternVars(const std::set<Tests::TypeAndVarName> &vars) {
         for (const auto &var: vars) {
             if (var.type.isArray()) {
-                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE);
+                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE, std::nullopt,
+                                   std::nullopt, true, ExternType::C);
             } else {
-                strDeclareVar(var.type.mTypeName(), var.varName);
+                strDeclareVar(var.type.mTypeName(), var.varName, std::nullopt,
+                              std::nullopt, true, 0, ExternType::C);
             }
         }
         return ss;

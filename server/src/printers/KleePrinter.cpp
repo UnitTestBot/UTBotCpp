@@ -22,17 +22,19 @@ using namespace types;
 using printer::KleePrinter;
 
 static const std::string KLEE_GLOBAL_VAR_H = "klee_global_var.h";
-static const std::string CALLOC_DECLARATION = "extern\n"
+static const std::string CALLOC_DECLARATION = "#ifndef calloc\n"
+                                              "extern\n"
                                               "#ifdef __cplusplus\n"
                                               "\"C\"\n"
                                               "#endif\n"
-                                              "void* calloc(size_t num, size_t size);\n";
+                                              "void* calloc(size_t num, size_t size);\n"
+                                              "#endif\n";
 
 printer::KleePrinter::KleePrinter(const types::TypesHandler *typesHandler,
                                   std::shared_ptr<BuildDatabase> buildDatabase,
                                   utbot::Language srcLanguage,
                                   const BaseTestGen *testGen)
-    : Printer(srcLanguage), typesHandler(typesHandler), buildDatabase(std::move(buildDatabase)), testGen(testGen) {
+        : Printer(srcLanguage), typesHandler(typesHandler), buildDatabase(std::move(buildDatabase)), testGen(testGen) {
 }
 
 void KleePrinter::writePosixWrapper(const Tests &tests,
@@ -41,8 +43,10 @@ void KleePrinter::writePosixWrapper(const Tests &tests,
     strFunctionCall(PrinterUtils::POSIX_INIT, {"&" + PrinterUtils::UTBOT_ARGC, "&" + PrinterUtils::UTBOT_ARGV});
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.name, false, true);
     strDeclareVar("int", KleeUtils::RESULT_VARIABLE_NAME, constrFunctionCall(entryPoint,
-                        {PrinterUtils::UTBOT_ARGC, PrinterUtils::UTBOT_ARGV, PrinterUtils::UTBOT_ENVP},
-                        "", std::nullopt, false));
+                                                                             {PrinterUtils::UTBOT_ARGC,
+                                                                              PrinterUtils::UTBOT_ARGV,
+                                                                              PrinterUtils::UTBOT_ENVP},
+                                                                             "", std::nullopt, false));
     strFunctionCall(PrinterUtils::POSIX_CHECK_STDIN_READ, {});
     strReturn(KleeUtils::RESULT_VARIABLE_NAME);
     closeBrackets(1);
@@ -128,7 +132,7 @@ fs::path KleePrinter::writeTmpKleeFile(
     }
 
     auto headers = getIncludePaths(tests, pathSubstitution);
-    for (const auto &header : headers) {
+    for (const auto &header: headers) {
         LOG_S(MAX) << "Header is included in tmpKleeFile: " << header;
         strInclude(header);
     }
@@ -158,7 +162,7 @@ fs::path KleePrinter::writeTmpKleeFile(
                                  return filter && forThisFunction && forThisClass;
                              });
 
-    strDeclareSetOfVars(tests.externVariables);
+    strDeclareSetOfExternVars(tests.externVariables);
     ss << printer::NL;
 
     for (const auto &[methodName, testMethod]: tests.methods) {
@@ -180,7 +184,7 @@ fs::path KleePrinter::writeTmpKleeFile(
             }
         } catch (const UnImplementedException &e) {
             std::string message =
-                "Could not generate klee code for method \'" + methodName + "\', skipping it. ";
+                    "Could not generate klee code for method \'" + methodName + "\', skipping it. ";
             LOG_S(WARNING) << message << e.what();
         }
     }
@@ -202,7 +206,7 @@ void KleePrinter::declTestEntryPoint(const Tests &tests,
 
 Tests::MethodParam KleePrinter::getKleeMethodParam(tests::Tests::MethodParam const &param) {
     if (param.type.isTwoDimensionalPointer()) {
-        return { param.type, param.underscoredName(), param.alignment };
+        return {param.type, param.underscoredName(), param.alignment};
     } else {
         return param;
     }
@@ -210,12 +214,12 @@ Tests::MethodParam KleePrinter::getKleeMethodParam(tests::Tests::MethodParam con
 
 Tests::MethodParam KleePrinter::getKleePostParam(const Tests::MethodParam &param) {
     auto postVariable = KleeUtils::postSymbolicVariable(param.name);
-    return { param.type, postVariable, param.alignment };
+    return {param.type, postVariable, param.alignment};
 }
 
 Tests::MethodParam KleePrinter::getKleeGlobalParam(tests::Tests::MethodParam const &param) {
     if (param.type.isObjectPointer()) {
-        return { param.type, param.underscoredName(), param.alignment };
+        return {param.type, param.underscoredName(), param.alignment};
     } else {
         return param;
     }
@@ -224,25 +228,25 @@ Tests::MethodParam KleePrinter::getKleeGlobalParam(tests::Tests::MethodParam con
 Tests::MethodParam KleePrinter::getKleeGlobalPostParam(const Tests::MethodParam &globalParam) {
     auto postVariable = KleeUtils::postSymbolicVariable(globalParam.name);
     if (globalParam.type.isObjectPointer()) {
-        return { globalParam.type.baseTypeObj(), postVariable, globalParam.alignment };
+        return {globalParam.type.baseTypeObj(), postVariable, globalParam.alignment};
     } else {
-        return { globalParam.type, postVariable, globalParam.alignment };
+        return {globalParam.type, postVariable, globalParam.alignment};
     }
 }
 
 void KleePrinter::genPostGlobalSymbolicVariables(const Tests::MethodDescription &testMethod) {
-    for (const auto &globalParam : testMethod.globalParams) {
+    for (const auto &globalParam: testMethod.globalParams) {
         genPostSymbolicVariable(testMethod, getKleeGlobalPostParam(globalParam));
     }
 }
 
 void KleePrinter::genPostParamsSymbolicVariables(
-    const Tests::MethodDescription &testMethod,
-    std::function<bool(const tests::Tests::MethodParam &)> filter) {
+        const Tests::MethodDescription &testMethod,
+        std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         genPostSymbolicVariable(testMethod, getKleePostParam(testMethod.classObj.value()));
     }
-    for (const auto &param : testMethod.params) {
+    for (const auto &param: testMethod.params) {
         if (!filter(param)) {
             continue;
         }
@@ -252,24 +256,25 @@ void KleePrinter::genPostParamsSymbolicVariables(
     }
 }
 
-void KleePrinter::genPostSymbolicVariable(const Tests::MethodDescription &testMethod, const Tests::MethodParam &kleeParam) {
+void
+KleePrinter::genPostSymbolicVariable(const Tests::MethodDescription &testMethod, const Tests::MethodParam &kleeParam) {
     bool isArray = genParamDeclaration(testMethod, kleeParam);
     strKleeMakeSymbolic(kleeParam.type, kleeParam.name, !isArray);
 }
 
 void KleePrinter::genGlobalsKleeAssumes(const Tests::MethodDescription &testMethod) {
-    for (const auto &globalParam : testMethod.globalParams) {
+    for (const auto &globalParam: testMethod.globalParams) {
         genPostAssumes(globalParam, true);
     }
 }
 
 void KleePrinter::genPostParamsKleeAssumes(
-    const Tests::MethodDescription &testMethod,
-    std::function<bool(const tests::Tests::MethodParam &)> filter) {
+        const Tests::MethodDescription &testMethod,
+        std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         genPostAssumes(testMethod.classObj.value());
     }
-    for (auto &param : testMethod.params) {
+    for (auto &param: testMethod.params) {
         if (!filter(param)) {
             continue;
         }
@@ -328,7 +333,8 @@ std::string KleePrinter::addTestLineFlag(const std::shared_ptr<LineInfo> &lineIn
     fs::path flagFileFolder = Paths::getFlagsDir(projectContext);
 
     fs::path globalFlagFilePath = flagFileFolder / KLEE_GLOBAL_VAR_H;
-    FileSystemUtils::writeToFile(globalFlagFilePath, StringUtils::stringFormat("extern int %s;", PrinterUtils::KLEE_PATH_FLAG));
+    FileSystemUtils::writeToFile(globalFlagFilePath,
+                                 StringUtils::stringFormat("extern int %s;", PrinterUtils::KLEE_PATH_FLAG));
 
     fs::path flagFilePath = flagFileFolder / lineInfo->filePath.filename();
     FileSystemUtils::writeToFile(flagFilePath, ss.str());
@@ -355,11 +361,11 @@ void KleePrinter::genNonVoidFunctionAssumes(const Tests::MethodDescription &test
 
 std::vector<std::string> KleePrinter::getIncludePaths(const Tests &tests,
                                                       const PathSubstitution &substitution) const {
-    return { substitution.substituteLineFlag(tests.sourceFilePath) };
+    return {substitution.substituteLineFlag(tests.sourceFilePath)};
 }
 
 void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &testMethod) {
-    for (const auto &param : testMethod.globalParams) {
+    for (const auto &param: testMethod.globalParams) {
         tests::Tests::MethodParam kleeParam = getKleeGlobalParam(param);
         bool isArray = TypesHandler::isArrayType(param.type);
         if (param.type.isObjectPointer()) {
@@ -378,8 +384,8 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
 }
 
 void KleePrinter::genParamsDeclarations(
-    const Tests::MethodDescription &testMethod,
-    std::function<bool(const tests::Tests::MethodParam &)> filter) {
+        const Tests::MethodDescription &testMethod,
+        std::function<bool(const tests::Tests::MethodParam &)> filter) {
     if (testMethod.isClassMethod()) {
         strDeclareVar(testMethod.classObj->type.typeName(), testMethod.classObj->name);
         strKleeMakeSymbolic(testMethod.classObj->type, testMethod.classObj->name,
@@ -388,13 +394,13 @@ void KleePrinter::genParamsDeclarations(
         KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
         constraintsPrinter.setTabsDepth(tabsDepth);
         const auto constraintsBlock =
-            constraintsPrinter.genConstraints(testMethod.classObj->name, testMethod.classObj->type)
-                .str();
+                constraintsPrinter.genConstraints(testMethod.classObj->name, testMethod.classObj->type)
+                        .str();
         ss << constraintsBlock;
     }
-    std::unordered_map<std::string , std::vector<std::string>>typesToNames;
-    for (const auto &param : testMethod.params) {
-        if(testGen->settingsContext.differentVariablesOfTheSameType){
+    std::unordered_map<std::string, std::vector<std::string>> typesToNames;
+    for (const auto &param: testMethod.params) {
+        if (testGen->settingsContext.differentVariablesOfTheSameType) {
             typesToNames[param.type.typeName()].push_back(param.name);
         }
         if (!filter(param)) {
@@ -450,7 +456,7 @@ bool KleePrinter::genPointerParamDeclaration(const Tests::MethodParam &param) {
         isArray = true;
     } else if (!param.type.maybeJustPointer()) {
         size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(
-            types::PointerUsage::PARAMETER);
+                types::PointerUsage::PARAMETER);
         element = constrIndex(element, size);
         isArray = true;
     }
@@ -470,17 +476,18 @@ void KleePrinter::makeBracketsForStrPredicate(const std::optional<PredInfo> &inf
 }
 
 
-void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod, const std::optional<PredInfo> &predicateInfo) {
+void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMethod,
+                                       const std::optional<PredInfo> &predicateInfo) {
     // If return type is a pointer, we compare values that are stored at these pointers,
     // not the pointers themselves
     Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
-                          ? Type::minimalScalarType()
-                          : testMethod.returnType;
+                      ? Type::minimalScalarType()
+                      : testMethod.returnType;
     bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
     std::string type = typesHandler->isAnonymousEnum(returnType)
-                           ? "int"
-                           : returnType.baseType();
+                       ? "int"
+                       : returnType.baseType();
     strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
@@ -503,13 +510,14 @@ void KleePrinter::genParamsKleeAssumes(
         bool onlyForOneEntity) {
     visitor::KleeAssumeReturnValueVisitor(typesHandler, this).visit(testMethod, predicateInfo);
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
-        std::string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR, PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
-                                   PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, PrinterUtils::EQ_OPERATOR, "1)");
-        strFunctionCall(PrinterUtils::KLEE_ASSUME, { assumption });
+        std::string assumption = concat("(", PrinterUtils::KLEE_PATH_FLAG, PrinterUtils::EQ_OPERATOR,
+                                        PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, ") & (",
+                                        PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, PrinterUtils::EQ_OPERATOR, "1)");
+        strFunctionCall(PrinterUtils::KLEE_ASSUME, {assumption});
     }
 }
 
-void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::vector<std::string>& names) {
+void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::vector<std::string> &names) {
     KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
     constraintsPrinter.setTabsDepth(tabsDepth);
     const auto constraintsBlock = constraintsPrinter.genConstraints(param, names).str();
@@ -517,9 +525,9 @@ void KleePrinter::genConstraints(const Tests::MethodParam &param, const std::vec
 }
 
 void KleePrinter::genKleePathSymbolicIfNeeded(
-    const std::optional<LineInfo::PredicateInfo> &predicateInfo,
-    const std::string &testedMethod,
-    bool onlyForOneEntity) {
+        const std::optional<LineInfo::PredicateInfo> &predicateInfo,
+        const std::string &testedMethod,
+        bool onlyForOneEntity) {
     if (!predicateInfo.has_value() && !onlyForOneEntity && !testedMethod.empty()) {
         strDeclareVar("int", PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC);
         strKleeMakeSymbolic(PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC, true);
@@ -565,13 +573,13 @@ void KleePrinter::genKleePathSymbolicAssumeIfNeeded(const std::optional<PredInfo
                                                     const std::string &testedMethod,
                                                     bool onlyForOneEntity) {
     if (!onlyForOneEntity && !testedMethod.empty() && !predicateInfo.has_value()) {
-        strFunctionCall(PrinterUtils::KLEE_ASSUME, { concat("(", PrinterUtils::KLEE_PATH_FLAG,
-                                                            PrinterUtils::EQ_OPERATOR,
-                                                            PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
-                                                            ") & (",
-                                                            PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
-                                                            PrinterUtils::EQ_OPERATOR,
-                                                            "1)") });
+        strFunctionCall(PrinterUtils::KLEE_ASSUME, {concat("(", PrinterUtils::KLEE_PATH_FLAG,
+                                                           PrinterUtils::EQ_OPERATOR,
+                                                           PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
+                                                           ") & (",
+                                                           PrinterUtils::KLEE_PATH_FLAG_SYMBOLIC,
+                                                           PrinterUtils::EQ_OPERATOR,
+                                                           "1)")});
     }
 }
 

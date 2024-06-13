@@ -88,6 +88,13 @@ namespace printer {
                         MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "bin", true),
                         " ")
         });
+
+        generalMakefilePrinter.declareTarget("compile_test", {TARGET_FORCE}, {
+                StringUtils::joinWith(
+                        MakefileUtils::getMakeCommand(sharedMakefilePathRelative, "compile_test", true),
+                        " ")
+        });
+
         generalMakefilePrinter.declareTarget(TARGET_BUILD, {TARGET_FORCE}, {
                 StringUtils::stringFormat("%s || %s",
                                           StringUtils::joinWith(MakefileUtils::getMakeCommand(

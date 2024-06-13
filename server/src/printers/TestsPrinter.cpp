@@ -64,7 +64,7 @@ void TestsPrinter::joinToFinalCode(Tests &tests, const fs::path& generatedHeader
     genHeaders(tests, generatedHeaderPath);
     ss << printer::NL;
 
-    strDeclareSetOfVars(tests.externVariables);
+    strDeclareSetOfExternVars(tests.externVariables);
 
     ss << "namespace " << PrinterUtils::TEST_NAMESPACE << " {\n";
 

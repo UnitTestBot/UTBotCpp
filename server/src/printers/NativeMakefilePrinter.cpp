@@ -152,7 +152,7 @@ namespace printer {
                 break;
             }
         }
-        
+
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)", getRelativePath(buildDirectory)));
         declareAction(stringFormat("$(shell mkdir -p %s >/dev/null)",
                                    getRelativePath(dependencyDirectory)));
@@ -344,6 +344,9 @@ namespace printer {
         declareTarget(testCompilationCommand.getOutput(), {testCompilationCommand.getSourcePath().string() },
                       { testCompilationCommand.toStringWithChangingDirectoryToNew(
                               getRelativePath(testCompilationCommand.getDirectory())) });
+
+
+        declareTarget("compile_test", {testCompilationCommand.getOutput()}, {});
 
         artifacts.push_back(testCompilationCommand.getOutput());
 
