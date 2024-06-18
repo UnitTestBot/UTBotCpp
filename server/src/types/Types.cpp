@@ -833,98 +833,105 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
     recursiveCheckStarted.insert(type.typeName());
     using PredicateWithReason = std::pair<std::string, std::function<bool(Type, TypeUsage)>>;
     std::vector<PredicateWithReason> unsupportedPredicates = {
-        {
-            "Type is unknown",
-            [&](const Type &type, TypeUsage usage) {
-              return getTypeKind(type) == TypeKind::UNKNOWN;
+            {
+                    "Type is unknown",
+                    [&](const Type &type, TypeUsage usage) {
+                        return getTypeKind(type) == TypeKind::UNKNOWN;
+                    }
+            },
+            {
+                    "Type has flexible array member",
+                    [&](const Type &type, TypeUsage usage) {
+                        if (isStructLike(type)) {
+                            auto structInfo = getStructInfo(type);
+                            if (structInfo.fields.empty()) {
+                                return false;
+                            }
+                            return isIncompleteArrayType(structInfo.fields.back().type);
+                        }
+                        return false;
+                    }
+            },
+            {
+                    "Dimension of pointer is too big",
+                    [&](const Type &type, TypeUsage usage) {
+                        if (usage == TypeUsage::RETURN) {
+                            return false;
+                        }
+                        if (type.isPointerToFunction()) {
+                            return false;
+                        }
+                        size_t counter = 0;
+                        for (const auto &kind: type.kinds()) {
+                            counter += kind->getKind() == AbstractType::OBJECT_POINTER ? 1 : 0;
+                        }
+                        return counter > 2;
+                    }
+            },
+            {       "Two dimensional pointer has extra const qualifiers",
+                    [&](const Type &type, TypeUsage usage) {
+                        if (usage == TypeUsage::RETURN) {
+                            return false;
+                        }
+                        if (type.isPointerToPointer()) {
+                            if (auto firstPointer =
+                                    dynamic_cast<ObjectPointerType *>(type.kinds()[0].get())) {
+                                if (firstPointer->isConstQualified()) {
+                                    return true;
+                                }
+                                if (auto secondPointer =
+                                        dynamic_cast<ObjectPointerType *>(type.kinds()[1].get())) {
+                                    if (secondPointer->isConstQualified()) {
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        return false;
+                    }
+            },
+            {
+                    "Unsupported types in structs/unions",
+                    [&](const Type &type, TypeUsage usage) {
+                        auto unsupportedFields = [&](const std::vector<types::Field> &fields) {
+                            return std::any_of(fields.begin(), fields.end(), [&](const types::Field &field) {
+                                if (!CollectionUtils::contains(recursiveCheckStarted, field.type.typeName())) {
+                                    if (field.type.isObjectPointer()) {
+                                        return false;
+                                    }
+                                    auto support = isSupportedType(field.type, usage, depth + 1);
+                                    bool fieldSupported = support.isSupported;
+                                    return !fieldSupported;
+                                }
+                                return false;
+                            });
+                        };
+                        if (isStructLike(type)) {
+                            auto structInfo = getStructInfo(type);
+                            return unsupportedFields(structInfo.fields);
+                        }
+                        return false;
+                    }
+            },
+            {       "Base type of array or pointer",
+                    [&](const Type &type, TypeUsage usage) {
+                        if (type.isArray() || type.isObjectPointer()) {
+                            if (type.isObjectPointer() && depth > 0) {
+                                return false;
+                            }
+                            auto support = isSupportedType(type.baseTypeObj(), usage, depth + 1);
+                            bool supported = support.isSupported;
+                            return !supported;
+                        }
+                        return false;
+                    }
             }
-        },
-        {
-            "Type has flexible array member",
-            [&](const Type &type, TypeUsage usage) {
-              if (isStructLike(type)) {
-                  auto structInfo = getStructInfo(type);
-                  if (structInfo.fields.empty()) {
-                      return false;
-                  }
-                  return isIncompleteArrayType(structInfo.fields.back().type);
-              }
-              return false;
-            } },
-        {
-            "Dimension of pointer is too big",
-            [&](const Type &type, TypeUsage usage) {
-              if (usage == TypeUsage::RETURN) {
-                  return false;
-              }
-              size_t counter = 0;
-              for (const auto& kind: type.kinds()) {
-                  counter += kind->getKind() == AbstractType::OBJECT_POINTER ? 1: 0;
-              }
-              return counter > 2;
-            }
-        },
-        { "Two dimensional pointer has extra const qualifiers",
-            [&](const Type &type, TypeUsage usage) {
-              if (usage == TypeUsage::RETURN) {
-                  return false;
-              }
-              if (type.isPointerToPointer()) {
-                  if (auto firstPointer =
-                      dynamic_cast<ObjectPointerType *>(type.kinds()[0].get())) {
-                      if (firstPointer->isConstQualified()) {
-                          return true;
-                      }
-                      if (auto secondPointer =
-                          dynamic_cast<ObjectPointerType *>(type.kinds()[1].get())) {
-                          if (secondPointer->isConstQualified()) {
-                              return true;
-                          }
-                      }
-                  }
-              }
-              return false;
-            } },
-        {
-            "Unsupported types in structs/unions",
-            [&](const Type &type, TypeUsage usage) {
-              auto unsupportedFields = [&](const std::vector<types::Field> &fields) {
-                return std::any_of(fields.begin(), fields.end(), [&](const types::Field &field) {
-                  if (!CollectionUtils::contains(recursiveCheckStarted, field.type.typeName())) {
-                      if (field.type.isObjectPointer()) {
-                          return false;
-                      }
-                      auto support = isSupportedType(field.type, usage, depth + 1);
-                      bool fieldSupported = support.isSupported;
-                      return !fieldSupported;
-                  }
-                  return false;
-                });
-              };
-              if (isStructLike(type)) {
-                  auto structInfo = getStructInfo(type);
-                  return unsupportedFields(structInfo.fields);
-              }
-              return false;
-            }
-        },
-        { "Base type of array or pointer",
-            [&](const Type &type, TypeUsage usage) {
-              if (type.isArray() || type.isObjectPointer()) {
-                  if (type.isObjectPointer() && depth > 0) {
-                      return false;
-                  }
-                  auto support = isSupportedType(type.baseTypeObj(), usage, depth + 1);
-                  bool supported = support.isSupported;
-                  return !supported;
-              }
-              return false;
-            } }
     };
 
     for (const auto &[reason, predicate]: unsupportedPredicates) {
         if (predicate(type, usage)) {
             recursiveCheckStarted.erase(type.typeName());
+            LOG_S(MAX) << "Unsupported type: " << type.typeName() << " " << reason;
             return {false, reason};
         }
     }
