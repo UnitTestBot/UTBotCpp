@@ -94,6 +94,27 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             throw CoverageGenerationException(message);
         });
 
+    auto showObjectFiles = CollectionUtils::transformTo<std::unordered_set<std::string>>(
+            testFilenames, [this](fs::path const &testFilePath) {
+                fs::path sourcePath = Paths::testPathToSourcePath(projectContext, testFilePath);
+                fs::path makefile =
+                        Paths::getMakefilePathFromSourceFilePath(projectContext, sourcePath);
+                auto makefileCommand = MakefileUtils::MakefileCommand(projectContext, makefile, "obj_path");
+                auto res = makefileCommand.run();
+                if (res.status == 0) {
+                    if (res.output.empty()) {
+                        std::string message = "Coverage result empty. See logs for more information.";
+                        LOG_S(ERROR) << message;
+                        throw CoverageGenerationException(message);
+                    }
+                    return StringUtils::split(res.output, '\n').back();
+                }
+                std::string message =
+                        "Coverage generation failed. See logs for more information.";
+                LOG_S(ERROR) << message;
+                throw CoverageGenerationException(message);
+            });
+
     fs::path mainProfdataPath = Paths::getMainProfdataPath(projectContext);
     std::vector<std::string> mergeArguments = { "merge" };
     for (const fs::path &profrawFile : profrawFilePaths) {
@@ -102,9 +123,13 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     mergeArguments.emplace_back("-o");
     mergeArguments.emplace_back(mainProfdataPath);
     auto mergeTask = ShellExecTask::getShellCommandTask(Paths::getLLVMprofdata(), mergeArguments);
+
+    LOG_S(MAX) << "Merge coverage info command: " << mergeTask.toString();
+
     fs::path coverageJsonPath = Paths::getCoverageJsonPath(projectContext);
     fs::create_directories(coverageJsonPath.parent_path());
     std::vector<std::string> exportArguments = { "export" };
+    std::vector<std::string> reportArguments = {"report"};
 
     // From documentation:
     //   llvm-cov export [options] -instr-profile PROFILE BIN [-object BIN,...] [[-object BIN]] [SOURCES]
@@ -114,10 +139,23 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
             firstBIN = false;
         } else {
             exportArguments.emplace_back("-object");
+            reportArguments.emplace_back("-object");
         }
         exportArguments.emplace_back(objectFile);
+        reportArguments.emplace_back(objectFile);
     }
+
+    for (const std::string &objectFile: showObjectFiles) {
+        if (firstBIN) {
+            firstBIN = false;
+        } else {
+            reportArguments.emplace_back("-object");
+    }
+        reportArguments.emplace_back(objectFile);
+    }
+
     exportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
+    reportArguments.emplace_back("-instr-profile=" + mainProfdataPath.string());
 
     try {
         auto sourcePaths = CollectionUtils::transformTo<
@@ -137,6 +175,7 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
         });
         for (const std::string &sourcePath : sourcePaths) {
             exportArguments.emplace_back(sourcePath);
+            reportArguments.emplace_back(sourcePath);
         }
     }
     catch (const CoverageGenerationException &ce) {
@@ -147,7 +186,19 @@ LlvmCoverageTool::getCoverageCommands(const std::vector<UnitTest> &testsToLaunch
     auto exportTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), exportArguments);
     exportTask.setLogFilePath(coverageJsonPath);
     exportTask.setRetainOutputFile(true);
-    return { mergeTask, exportTask };
+
+    LOG_S(INFO) << "Export coverage command: " << exportTask.toString();
+
+
+    reportArguments.emplace_back("-show-functions=true");
+    auto exportFCTask = ShellExecTask::getShellCommandTask(Paths::getLLVMcov(), reportArguments);
+    exportFCTask.setLogFilePath(Paths::getFunctionReportPath(projectContext));
+    exportFCTask.setRetainOutputFile(true);
+
+    LOG_S(INFO) << "Get coverage by functions command:" << exportFCTask.toString();
+
+
+    return {mergeTask, exportTask, exportFCTask};
 }
 
 Coverage::CoverageMap LlvmCoverageTool::getCoverageInfo() const {

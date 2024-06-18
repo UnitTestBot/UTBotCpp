@@ -305,6 +305,10 @@ namespace Paths {
         return getClangCoverageDir(projectContext) / "coverage.json";
     }
 
+    fs::path getFunctionReportPath(const utbot::ProjectContext &projectContext) {
+        return projectContext.getReportDirAbsPath() / "function_report.csv";
+    }
+
     fs::path getGcdaDirPath(const utbot::ProjectContext &projectContext) {
         return getRecompiledDir(projectContext);
     }
