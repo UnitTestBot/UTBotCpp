@@ -913,7 +913,8 @@ types::TypesHandler::isSupportedType(const Type &type, TypeUsage usage, int dept
                         return false;
                     }
             },
-            {       "Base type of array or pointer",
+            {
+                    "Base type of array or pointer",
                     [&](const Type &type, TypeUsage usage) {
                         if (type.isArray() || type.isObjectPointer()) {
                             if (type.isObjectPointer() && depth > 0) {

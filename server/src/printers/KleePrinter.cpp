@@ -411,8 +411,9 @@ void KleePrinter::genParamsDeclarations(
         if (CollectionUtils::containsKey(testMethod.functionPointers, param.name)) {
             continue;
         }
-        auto paramType =
-                kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
+//        auto paramType =
+//                kleeParam.type.maybeJustPointer() ? kleeParam.type.baseTypeObj() : kleeParam.type;
+        auto paramType = kleeParam.type;
         strKleeMakeSymbolic(paramType, kleeParam.name, param.name, !isArray);
         if (testGen->settingsContext.differentVariablesOfTheSameType &&
             typesToNames[param.type.typeName()].size() <= 3) {
@@ -420,7 +421,7 @@ void KleePrinter::genParamsDeclarations(
         } else {
             genConstraints(kleeParam);
         }
-        genTwoDimPointers(param, true);
+//        genTwoDimPointers(param, true);
         commentBlockSeparator();
     }
 }
@@ -451,21 +452,22 @@ bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod
 bool KleePrinter::genPointerParamDeclaration(const Tests::MethodParam &param) {
     std::string element = param.name;
     bool isArray = false;
-    if (param.type.pointerArrayKinds().size() > 1) {
-        element = constrMultiIndex(element, param.type.arraysSizes(types::PointerUsage::PARAMETER));
-        isArray = true;
-    } else if (!param.type.maybeJustPointer()) {
-        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(
-                types::PointerUsage::PARAMETER);
-        element = constrIndex(element, size);
-        isArray = true;
-    }
-
-    if (types::TypesHandler::isVoid(param.type.baseTypeObj())) {
-        strDeclareVar(Type::minimalScalarType().baseType(), element, std::nullopt, param.alignment);
-    } else {
-        strDeclareVar(param.type.baseType(), element, std::nullopt, param.alignment);
-    }
+//    if (param.type.pointerArrayKinds().size() > 1) {
+//        element = constrMultiIndex(element, param.type.arraysSizes(types::PointerUsage::PARAMETER));
+//        isArray = true;
+//    } else if (!param.type.maybeJustPointer()) {
+//        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(
+//                types::PointerUsage::PARAMETER);
+//        element = constrIndex(element, size);
+//        isArray = true;
+//    }
+//
+//    if (types::TypesHandler::isVoid(param.type.baseTypeObj())) {
+//        strDeclareVar(Type::minimalScalarType().baseType(), element, std::nullopt, param.alignment);
+//    } else {
+//        strDeclareVar(param.type.baseType(), element, std::nullopt, param.alignment);
+//    }
+    strDeclareVar(param.type.typeName(), param.name, std::nullopt, param.alignment);
     return isArray;
 }
 
