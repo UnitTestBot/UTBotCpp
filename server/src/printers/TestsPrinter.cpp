@@ -367,7 +367,7 @@ void TestsPrinter::printStubVariablesForParam(const Tests::MethodDescription &me
         types::Type stubType = testCase.stubParamTypes[i].type;
         std::string bufferSuffix = "_buffer";
         std::string buffer = stub.name + bufferSuffix;
-        strDeclareArrayVar(stubType, buffer, types::PointerUsage::PARAMETER, stub.view->getEntryValue(this));
+        strDeclareArrayVar(stubType, buffer/*, types::PointerUsage::PARAMETER*/, stub.view->getEntryValue(this));
         strMemcpy(stub.name, buffer, false);
     }
 }
@@ -427,13 +427,13 @@ void TestsPrinter::redirectStdin(const Tests::MethodDescription &methodDescripti
         strComment("Redirect stdin");
     }
     const types::Type stdinBufferType =
-        Tests::getStdinMethodParam().type.arrayClone(types::PointerUsage::RETURN);
-    visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
+        Tests::getStdinMethodParam().type.arrayClone(/*types::PointerUsage::RETURN*/);
+    visitor::VerboseParameterVisitor(typesHandler, this, true/*, types::PointerUsage::RETURN*/)
         .visit(stdinBufferType, types::Type::getStdinParamName(), testCase.stdinValue.value().view.get(),
                std::nullopt);
     std::string utbotRedirectStdinStatus = "utbot_redirect_stdin_status";
     auto view = tests::JustValueView("0");
-    visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
+    visitor::VerboseParameterVisitor(typesHandler, this, true/*, types::PointerUsage::RETURN*/)
         .visit(types::Type::intType(), utbotRedirectStdinStatus, &view, std::nullopt);
     strFunctionCall("utbot_redirect_stdin", { types::Type::getStdinParamName(), utbotRedirectStdinStatus });
     strIfBound("utbot_redirect_stdin_status != 0") << LB();
@@ -496,15 +496,15 @@ void TestsPrinter::printFunctionParameters(const Tests::MethodDescription &metho
                                            const Tests::MethodTestCase &testCase,
                                            bool all) {
     for (auto i = 0; i < testCase.paramValues.size(); i++) {
-        printPointerParameter(methodDescription, testCase, i);
+//        printPointerParameter(methodDescription, testCase, i);
         const Tests::MethodParam &param = methodDescription.params[i];
-        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !param.isChangeable();
-        if (!param.type.isFilePointer() &&
-            (all || param.type.isLValueReference() || param.type.isSimple() && containsLazy)) {
+//        bool containsLazy = !testCase.paramValues[i].lazyValues.empty() && !param.isChangeable();
+        bool containsLazy = !testCase.paramValues[i].lazyValues.empty();
+        if (!param.type.isFilePointer() && (all || param.type.isLValueReference() || containsLazy)) {
             Tests::TestCaseParamValue value = testCase.paramValues[i];
             Tests::MethodParam valueParam = getValueParam(param);
             value.name = valueParam.name;
-            if (param.type.isLValueReference() || param.type.isSimple() || param.type.isPointerToFunction()) {
+            if (param.type.isLValueReference() || param.type.isSimple() || param.type.isPointerToFunction() || containsLazy) {
                 verboseParameter(methodDescription, valueParam, value, true);
             }
         }
@@ -524,7 +524,7 @@ void TestsPrinter::verboseParameter(const Tests::MethodDescription &method,
         strDeclareArrayOfFunctionPointerVar(getTypedefFunctionPointer(method.name, param.name, false), param.name, stubFunctionName);
     } else {
         auto paramType = types::TypesHandler::isVoid(param.type) ? types::Type::minimalScalarType() : param.type;
-        visitor::VerboseParameterVisitor(typesHandler, this, needDeclaration, types::PointerUsage::PARAMETER)
+        visitor::VerboseParameterVisitor(typesHandler, this, needDeclaration/*, types::PointerUsage::PARAMETER*/)
             .visit(paramType, param.name, value.view.get(), param.alignment);
     }
 }
@@ -545,7 +545,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
                                          const Tests::MethodTestCase &testCase) {
     const types::Type baseReturnType = methodDescription.returnType.baseTypeObj();
     const types::Type expectedType = methodDescription.returnType.maybeReturnArray() ?
-        methodDescription.returnType.arrayClone(types::PointerUsage::RETURN) :
+        methodDescription.returnType.arrayClone(/*types::PointerUsage::RETURN*/) :
         typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     strComment("Expected output");
 
@@ -558,7 +558,7 @@ void TestsPrinter::verboseOutputVariable(const Tests::MethodDescription &methodD
                testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
         strComment("No output variable check for function returning null");
     } else {
-        visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::RETURN)
+        visitor::VerboseParameterVisitor(typesHandler, this, true/*, types::PointerUsage::RETURN*/)
             .visit(expectedType, PrinterUtils::EXPECTED, testCase.returnValue.view.get(), std::nullopt);
     }
     ss << printer::NL;
@@ -570,7 +570,7 @@ void TestsPrinter::verboseFunctionCall(const Tests::MethodDescription &methodDes
     std::string baseReturnType = types::TypesHandler::cBoolToCpp(methodDescription.returnType.baseType());
     types::Type expectedType = typesHandler->getReturnTypeToCheck(methodDescription.returnType);
     if (methodDescription.returnType.maybeReturnArray()) {
-        expectedType = methodDescription.returnType.arrayClone(types::PointerUsage::RETURN);
+        expectedType = methodDescription.returnType.arrayClone(/*types::PointerUsage::RETURN*/);
     }
     strComment("Trigger the function");
     std::string methodCall = constrVisitorFunctionCall(methodDescription, testCase, true, errorMode);
@@ -617,22 +617,22 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
     if (!testCase.paramPostValues.empty()) {
         ss << printer::NL;
         strComment("Check function parameters");
-        changeableParamsAsserts(methodDescription, testCase);
+//        changeableParamsAsserts(methodDescription, testCase);
     }
 }
 
 void TestsPrinter::classAsserts(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase) {
     if (methodDescription.isClassMethod()) {
-        auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true,
-                                                                 types::PointerUsage::PARAMETER);
+        auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true/*,
+                                                                 types::PointerUsage::PARAMETER*/);
         auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
-        auto usage = types::PointerUsage::PARAMETER;
+//        auto usage = types::PointerUsage::PARAMETER;
         size_t param_i = 0;
         auto param = methodDescription.classObj.value();
         auto const &value = testCase.classPostValues.value();
         std::string expectedName = PrinterUtils::getExpectedVarName(param.name);
-        const types::Type expectedType = param.type.arrayCloneMultiDim(usage);
+        const types::Type expectedType = param.type.arrayCloneMultiDim(/*usage*/);
         parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
         assertsVisitor.visit(param, param.name);
     }
@@ -640,15 +640,15 @@ void TestsPrinter::classAsserts(const Tests::MethodDescription &methodDescriptio
 
 void TestsPrinter::changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase){
-    auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::PARAMETER);
+//    auto usage = types::PointerUsage::PARAMETER;
+    auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true/*, usage*/);
     auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
-    auto usage = types::PointerUsage::PARAMETER;
     size_t param_i = 0;
     for (const auto& param : methodDescription.params) {
         if (param.isChangeable()) {
             auto const &value = testCase.paramPostValues[param_i];
             std::string expectedName = PrinterUtils::getExpectedVarName(param.name);
-            const types::Type expectedType = param.type.arrayCloneMultiDim(usage);
+            const types::Type expectedType = param.type.arrayCloneMultiDim(/*usage*/);
             parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
             assertsVisitor.visit(param, param.name);
             param_i++;
@@ -659,7 +659,7 @@ void TestsPrinter::changeableParamsAsserts(const Tests::MethodDescription &metho
 void TestsPrinter::globalParamsAsserts(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase){
 
-    auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true, types::PointerUsage::PARAMETER);
+    auto parameterVisitor = visitor::VerboseParameterVisitor(typesHandler, this, true/*, types::PointerUsage::PARAMETER*/);
     auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
     for (size_t i = 0; i < methodDescription.globalParams.size(); i++) {
         auto const &param = methodDescription.globalParams[i];
@@ -683,13 +683,13 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
                 methodDescription.getClassTypeName(), methodDescription.name, param.name, false);
         strDeclareArrayOfFunctionPointerVar(type, param.name, stubName);
     } else if (types::TypesHandler::isCStringType(param.type)) {
-        strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER,
+        strDeclareArrayVar(param.type, param.name, //types::PointerUsage::PARAMETER,
                            value.view->getEntryValue(this), param.alignment);
     } else if (!param.type.isFilePointer() &&
                (param.type.isObjectPointer() || param.type.isArray())) {
+        //TODO change to depth
         auto arrayType = types::TypesHandler::isVoid(param.type.baseTypeObj())
-                             ? types::Type::minimalScalarPointerType(
-                                   param.type.arraysSizes(types::PointerUsage::PARAMETER).size())
+                             ? types::Type::minimalScalarPointerType( 1 /*param.type.arraysSizes(types::PointerUsage::PARAMETER).size()*/)
                              : param.type;
         if (param.type.maybeJustPointer()) {
             strDeclareVar(arrayType.baseType(), param.name, value.view->getEntryValue(this),
@@ -697,7 +697,7 @@ void TestsPrinter::printPointerParameter(const Tests::MethodDescription &methodD
         } else {
             auto paramName =
                 param.type.isTwoDimensionalPointer() ? param.underscoredName() : param.name;
-            strDeclareArrayVar(arrayType, paramName, types::PointerUsage::PARAMETER,
+            strDeclareArrayVar(arrayType, paramName, //types::PointerUsage::PARAMETER,
                                value.view->getEntryValue(this), param.alignment, true);
         }
     }
@@ -718,7 +718,7 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
-        changeableParamsAsserts(methodDescription, testCase);
+//        changeableParamsAsserts(methodDescription, testCase);
     } else {
         printFailAssertion(errorMode);
     }

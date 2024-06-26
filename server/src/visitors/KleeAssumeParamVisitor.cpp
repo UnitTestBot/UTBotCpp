@@ -7,7 +7,7 @@ namespace visitor {
           const types::TypesHandler *typesHandler,
           printer::KleePrinter *printer)
           : KleeAssumeVisitor(typesHandler, printer) {
-      usage = types::PointerUsage::PARAMETER;
+//      usage = types::PointerUsage::PARAMETER;
   }
 
   static thread_local std::string outVariable;
@@ -16,7 +16,7 @@ namespace visitor {
                                      const std::string &_outVariable) {
       outVariable = _outVariable;
       std::string name = param.dataVariableName();
-      auto paramType = param.type.arrayCloneMultiDim(usage);
+      auto paramType = param.type.arrayCloneMultiDim(/*usage*/);
       visitAny(paramType, name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
       outVariable = {};
   }
@@ -42,8 +42,9 @@ namespace visitor {
                                             const std::string &access,
                                             int depth) {
       if (depth == 0) {
-          auto sizes = type.arraysSizes(usage);
-          std::string newName = PrinterUtils::getDereferencePointer(name, sizes.size());
+          //TODO
+          size_t sizes_d =1; //type.arraysSizes(usage);
+          std::string newName = PrinterUtils::getDereferencePointer(name, sizes_d);
           KleeAssumeVisitor::visitAny(type.baseTypeObj(), newName, view, access, depth);
       }
       //TODO add assert visit struct.pointer
@@ -53,14 +54,15 @@ namespace visitor {
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
-                                                size_t size,
+//                                                size_t size,
                                                 int depth) {
       if (depth == 0) {
           if (type.isObjectPointer()) {
               return visitPointer(type, name, view, access, depth);
           }
       }
-      std::vector<size_t> sizes = type.arraysSizes(usage);
+      //TODO
+      std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
       bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
       if (assignPointersToNull) {
           int pointerIndex = type.indexOfFirstPointerInTypeKinds();

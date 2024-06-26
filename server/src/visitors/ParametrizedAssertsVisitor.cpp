@@ -9,7 +9,7 @@ namespace visitor {
             printer::TestsPrinter *printer,
             const std::optional<LineInfo::PredicateInfo> &predicateInfo,
             bool isError)
-            : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo),
+            : AssertsVisitor(typesHandler, printer/*, types::PointerUsage::RETURN*/, predicateInfo),
               isError(isError) {
     }
 
@@ -19,7 +19,7 @@ namespace visitor {
                                            const Tests::MethodTestCase &testCase,
                                            ErrorMode errorMode) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
-                          ? methodDescription.returnType.arrayClone(usage, pointerSize)
+                          ? methodDescription.returnType.arrayClone(/*usage, */pointerSize)
                           : methodDescription.returnType;
 
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false, errorMode);
@@ -46,7 +46,7 @@ namespace visitor {
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
-                                                size_t size,
+//                                                size_t size,
                                                 int depth) {
         if (depth == 0) {
             if (type.isArray()) {
@@ -59,7 +59,7 @@ namespace visitor {
                                            PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                            additionalPointersCount);
                     printer->strDeclareArrayVar(
-                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), usage,
+                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), /*usage,*/
                             view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
@@ -70,7 +70,8 @@ namespace visitor {
 
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
-            std::vector<size_t> sizes = type.arraysSizes(usage);
+            //TODO
+            std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
             const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
             const auto indexing = printer::Printer::constrMultiIndex(iterators);
             visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,

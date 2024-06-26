@@ -24,8 +24,8 @@ KleeConstraintsPrinter::genConstraints(const std::string &name, const types::Typ
     switch (typesHandler->getTypeKind(paramType)) {
         case TypeKind::OBJECT_POINTER:
         case TypeKind::ARRAY:
-            state = { name, name, paramType, state.endString };
-            genConstraintsForPointerOrArray(state);
+//            state = { name, name, paramType, state.endString };
+//            genConstraintsForPointerOrArray(state);
             break;
         case TypeKind::STRUCT_LIKE:
             genConstraintsForStruct(state);
@@ -71,10 +71,10 @@ void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state
     strFunctionCall(PrinterUtils::KLEE_ASSUME, { _ss.str() });
 }
 
-void KleeConstraintsPrinter::genConstraintsForPointerOrArray(const ConstraintsState &state) {
-    auto sizes = state.curType.arraysSizes(types::PointerUsage::PARAMETER);
-    genConstraintsForMultiPointerOrArray(state, sizes);
-}
+//void KleeConstraintsPrinter::genConstraintsForPointerOrArray(const ConstraintsState &state) {
+//    auto sizes = state.curType.arraysSizes(types::PointerUsage::PARAMETER);
+//    genConstraintsForMultiPointerOrArray(state, sizes);
+//}
 
 void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
                                                                   std::vector<size_t> sizes) {
@@ -139,7 +139,7 @@ void KleeConstraintsPrinter::genConstraintsForStruct(const ConstraintsState &sta
             genConstraintsForPrimitive(newState);
             break;
         case TypeKind::ARRAY:
-            genConstraintsForPointerOrArray(newState);
+//            genConstraintsForPointerOrArray(newState);
             break;
         case TypeKind::OBJECT_POINTER:
             if (types::TypesHandler::isArrayOfPointersToFunction(field.type)) {

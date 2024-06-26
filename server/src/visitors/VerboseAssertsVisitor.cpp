@@ -4,7 +4,7 @@ namespace visitor {
     VerboseAssertsVisitor::VerboseAssertsVisitor(const types::TypesHandler *typesHandler,
                                                  printer::TestsPrinter *const printer,
                                                  const std::optional<LineInfo::PredicateInfo> &predicateInfo)
-        : AssertsVisitor(typesHandler, printer, types::PointerUsage::RETURN, predicateInfo) {
+        : AssertsVisitor(typesHandler, printer/*, types::PointerUsage::RETURN*/, predicateInfo) {
 
     }
 
@@ -13,8 +13,8 @@ namespace visitor {
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
                                              int depth) {
-        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
-        printer->strForBound(printer::IND, size) << printer->LB();
+//        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
+        printer->strForBound(printer::IND, /*size*/ 1) << printer->LB();
         AbstractValueViewVisitor::visitPointer(type, name, view, access, depth);
         printer->ss << printer->RB();
     }
@@ -23,9 +23,10 @@ namespace visitor {
                                            const std::string &name,
                                            const tests::AbstractValueView *view,
                                            const std::string &access,
-                                           size_t size,
+//                                           size_t size,
                                            int depth) {
-        std::vector<size_t> sizes = type.arraysSizes(usage);
+        //TODO
+        std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 

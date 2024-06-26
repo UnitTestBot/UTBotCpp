@@ -137,7 +137,7 @@ namespace printer {
 
     Printer::Stream &printer::Printer::strDeclareArrayVar(const types::Type &type,
                                                           std::string_view name,
-                                                          types::PointerUsage usage,
+//                                                          types::PointerUsage usage,
                                                           std::optional<std::string_view> value,
                                                           std::optional<uint64_t> alignment,
                                                           bool complete,
@@ -165,7 +165,8 @@ namespace printer {
         }
         printAlignmentIfExists(alignment);
         ss << baseType << " " << arrayName;
-        std::vector<size_t> sizes = type.arraysSizes(usage);
+        //TODO
+        std::vector<size_t> sizes = {}; //type.arraysSizes(/*usage*/);
         bool isLiteral = sizes.size() == 1 &&
                          types::TypesHandler::isCharacterType(type.baseTypeObj()) &&
                          value.has_value();
@@ -405,7 +406,7 @@ namespace printer {
 
     std::stringstream &Printer::checkOverflowStubArray(const std::string &cntCall) {
         ss << LINE_INDENT() << "if (" << cntCall << " == " <<
-           types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER) << ") {"
+           /*types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER)*/ 1 << ") {"
            << printer::NL;
         tabsDepth++;
         ss << LINE_INDENT() << cntCall << "--;" << printer::NL;
@@ -425,8 +426,7 @@ namespace printer {
 
         std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodCopy.name, parentMethodName);
         if (!types::TypesHandler::omitMakeSymbolic(method.returnType)) {
-            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName,
-                               types::PointerUsage::PARAMETER);
+            strDeclareArrayVar(types::Type::createArray(method.returnType), stubSymbolicVarName/*, types::PointerUsage::PARAMETER*/);
         }
 
         if (!prefix.empty()) {
@@ -486,8 +486,7 @@ namespace printer {
 
     std::stringstream &Printer::strDeclareArrayOfFunctionPointerVar(
             const std::string &arrayType, const std::string &arrayName, const std::string &stubFunctionName) {
-        size_t size =
-                types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
+        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strDeclareVar(arrayType, arrayName + "[" + std::to_string(size) + "]");
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
@@ -525,7 +524,7 @@ namespace printer {
             return ss;
         }
 
-        size_t pointerSize = types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
+        size_t pointerSize = 1; //types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
         auto typeObject = types::TypesHandler::isVoid(param.type.baseTypeObj())
                           ? types::Type::minimalScalarPointerType(2)
                           : param.type;
@@ -578,7 +577,7 @@ namespace printer {
             }
         }
         for (const auto &[name, type]: symbolicNamesToTypesMap) {
-            strDeclareArrayVar(type, name, types::PointerUsage::PARAMETER, std::nullopt, std::nullopt, true,
+            strDeclareArrayVar(type, name/*, types::PointerUsage::PARAMETER*/, std::nullopt, std::nullopt, true,
                                ExternType::C);
         }
     }
@@ -657,8 +656,7 @@ namespace printer {
     void Printer::genStubForStructFunctionPointerArray(const std::string &structName,
                                                        const types::Field &field,
                                                        const std::string &stubName) {
-        size_t size =
-                types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
+        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(types::PointerUsage::PARAMETER);
         strForBound("i", size) << " " << BNL;
         tabsDepth++;
         std::string name = structName + "." + field.name + "[i]";
@@ -703,7 +701,7 @@ namespace printer {
     Printer::Stream Printer::strDeclareSetOfExternVars(const std::set<Tests::TypeAndVarName> &vars) {
         for (const auto &var: vars) {
             if (var.type.isArray()) {
-                strDeclareArrayVar(var.type, var.varName, types::PointerUsage::KNOWN_SIZE, std::nullopt,
+                strDeclareArrayVar(var.type, var.varName/*, types::PointerUsage::KNOWN_SIZE*/, std::nullopt,
                                    std::nullopt, true, ExternType::C);
             } else {
                 strDeclareVar(var.type.mTypeName(), var.varName, std::nullopt,

@@ -91,7 +91,7 @@ namespace printer {
 
         Stream strDeclareArrayVar(const types::Type &type,
                                   std::string_view name,
-                                  types::PointerUsage usage,
+//                                  types::PointerUsage usage,
                                   std::optional<std::string_view> value = std::nullopt,
                                   std::optional<uint64_t> alignment = std::nullopt,
                                   bool complete = true,

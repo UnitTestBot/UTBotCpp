@@ -32,7 +32,7 @@ namespace visitor {
     public:
         explicit AssertsVisitor(const types::TypesHandler *typesHandler,
                                 printer::TestsPrinter *printer,
-                                types::PointerUsage usage, const std::optional<LineInfo::PredicateInfo> &predicateInfo);
+                                /*types::PointerUsage usage, */const std::optional<LineInfo::PredicateInfo> &predicateInfo);
     };
 }
 

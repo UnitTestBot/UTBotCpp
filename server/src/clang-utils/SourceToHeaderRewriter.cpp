@@ -131,8 +131,8 @@ std::string SourceToHeaderRewriter::generateStubHeader(const tests::Tests &tests
     for (const auto &[methodName, methodDescription]: tests.methods) {
         std::string stubSymbolicVarName = StubsUtils::getStubSymbolicVarName(methodName, "");
         if (!types::TypesHandler::omitMakeSymbolic(methodDescription.returnType)) {
-            stubsPrinter.strDeclareArrayVar(types::Type::createArray(methodDescription.returnType), stubSymbolicVarName,
-                                            types::PointerUsage::PARAMETER);
+            stubsPrinter.strDeclareArrayVar(types::Type::createArray(methodDescription.returnType), stubSymbolicVarName/*,
+                                            types::PointerUsage::PARAMETER*/);
         }
     }
     return stubsPrinter.ss.str();

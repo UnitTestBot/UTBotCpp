@@ -86,7 +86,7 @@ types::Type types::Type::createArray(const types::Type &type) {
     res.mBaseType = type.baseType();
     res.mKinds = type.mKinds;
     res.mKinds.insert(res.mKinds.begin(), std::shared_ptr<AbstractType>(new ArrayType(
-        TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::PARAMETER), false)));
+        1 /*TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::PARAMETER)*/, false)));
     res.dimension = type.dimension + 1;
     res.mTypeId = 0;
     res.mBaseTypeId = type.mBaseTypeId;
@@ -128,7 +128,8 @@ std::string types::Type::mTypeName() const {
 
 size_t types::Type::getDimension() const {
     // usage doesn't matter here
-    return arraysSizes(PointerUsage::PARAMETER).size();
+    // TODO change to depth
+    return 1; //arraysSizes(PointerUsage::PARAMETER).size();
 }
 
 std::optional<uint64_t> types::Type::getBaseTypeId() const {
@@ -169,33 +170,33 @@ const std::vector<std::shared_ptr<AbstractType>> &types::Type::kinds() const {
     return mKinds;
 }
 
-std::vector<size_t> types::Type::arraysSizes(PointerUsage usage) const {
-    if (!isArray() && !isObjectPointer() && !isPointerToFunction()) {
-        return {};
-    }
-    std::vector<size_t> sizes;
-    for (const auto &kind: pointerArrayKinds()) {
-        switch (kind->getKind()) {
-        case AbstractType::ARRAY:
-            sizes.push_back(kind->getSize());
-            break;
-        case AbstractType::OBJECT_POINTER:
-        case AbstractType::FUNCTION_POINTER:
-            if (kinds().size() <= 2) {
-                sizes.push_back(types::TypesHandler::getElementsNumberInPointerOneDim(usage));
-            } else {
-                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim(usage));
-            }
-            if (usage == types::PointerUsage::LAZY) {
-                return sizes;
-            }
-            break;
-        default:
-            LOG_S(ERROR) << "INVARIANT ERROR: Class Type: " << kind->getKind();
-        }
-    }
-    return sizes;
-}
+//std::vector<size_t> types::Type::arraysSizes(PointerUsage usage) const {
+//    if (!isArray() && !isObjectPointer() && !isPointerToFunction()) {
+//        return {};
+//    }
+//    std::vector<size_t> sizes;
+//    for (const auto &kind: pointerArrayKinds()) {
+//        switch (kind->getKind()) {
+//        case AbstractType::ARRAY:
+//            sizes.push_back(kind->getSize());
+//            break;
+//        case AbstractType::OBJECT_POINTER:
+//        case AbstractType::FUNCTION_POINTER:
+//            if (kinds().size() <= 2) {
+//                sizes.push_back(types::TypesHandler::getElementsNumberInPointerOneDim(usage));
+//            } else {
+//                sizes.push_back(types::TypesHandler::getElementsNumberInPointerMultiDim(usage));
+//            }
+//            if (usage == types::PointerUsage::LAZY) {
+//                return sizes;
+//            }
+//            break;
+//        default:
+//            LOG_S(ERROR) << "INVARIANT ERROR: Class Type: " << kind->getKind();
+//        }
+//    }
+//    return sizes;
+//}
 
 std::vector<std::shared_ptr<AbstractType>> types::Type::pointerArrayKinds() const {
     if (kinds().size() <= 1) {
@@ -352,36 +353,36 @@ bool types::Type::isOneDimensionPointer() const {
     return isObjectPointer() && !isPointerToPointer() && !isPointerToArray();
 }
 
-types::Type types::Type::arrayClone(PointerUsage usage, size_t pointerSize) const {
+types::Type types::Type::arrayClone(/*PointerUsage usage, */size_t pointerSize) const {
     Type t = *this;
-    t.mKinds[0] = std::make_shared<ArrayType>(TypesHandler::getElementsNumberInPointerOneDim(usage, pointerSize), true);
+    t.mKinds[0] = std::make_shared<ArrayType>(1 /*TypesHandler::getElementsNumberInPointerOneDim(usage, pointerSize)*/, true);
     return t;
 }
 
-types::Type types::Type::arrayCloneMultiDim(PointerUsage usage, std::vector<size_t> pointerSizes) const {
+types::Type types::Type::arrayCloneMultiDim(/*PointerUsage usage,*/ std::vector<size_t> pointerSizes) const {
     Type t = *this;
     for(size_t i = 0; i < pointerSizes.size(); ++i) {
         if (t.mKinds[i]->getKind() == AbstractType::OBJECT_POINTER) {
             t.mKinds[i] = std::make_shared<ArrayType>(
-                TypesHandler::getElementsNumberInPointerMultiDim(usage, pointerSizes[i]),
+                1 /*TypesHandler::getElementsNumberInPointerMultiDim(usage, pointerSizes[i])*/,
                 true);
         }
     }
     return t;
 }
 
-types::Type types::Type::arrayCloneMultiDim(PointerUsage usage) const {
-    if (this->maybeJustPointer() && this->pointerArrayKinds().size() < 2) {
-        return this->baseTypeObj();
-    }
-
-    std::vector<size_t> pointerSizes = this->arraysSizes(usage);
+types::Type types::Type::arrayCloneMultiDim(/*PointerUsage usage*/) const {
+//    if (this->maybeJustPointer() && this->pointerArrayKinds().size() < 2) {
+//        return this->baseTypeObj();
+//    }
+    // TODO
+    std::vector<size_t> pointerSizes = {}; // this->arraysSizes(/*usage*/);
 
     if(pointerSizes.size() == 1) {
-        return arrayClone(usage);
+        return arrayClone(/*usage*/);
     }
 
-    return this->arrayCloneMultiDim(usage, pointerSizes);
+    return this->arrayCloneMultiDim(/*usage,*/ pointerSizes);
 }
 
 uint64_t types::Type::getId() const {
@@ -958,12 +959,12 @@ std::size_t types::TypesHandler::IsSupportedTypeArgumentsHash::operator()(const 
 
 types::Type types::TypesHandler::getReturnTypeToCheck(const types::Type &returnType) const {
     types::Type baseReturnType = returnType.baseTypeObj();
-    if (types::TypesHandler::isObjectPointerType(returnType)) {
+//    if (types::TypesHandler::isObjectPointerType(returnType)) {
         if (types::TypesHandler::skipTypeInReturn(baseReturnType)) {
             return types::Type::minimalScalarType();
         }
-        return baseReturnType;
-    }
+//        return baseReturnType;
+//    }
     return returnType;
 }
 

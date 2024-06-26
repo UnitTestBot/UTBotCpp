@@ -48,7 +48,7 @@ namespace visitor {
             }
         } else {
             if (methodDescription.returnType.maybeReturnArray()) {
-                returnType = methodDescription.returnType.arrayClone(usage);
+                returnType = methodDescription.returnType.arrayClone(/*usage*/);
             }
             visitAny(returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         }
@@ -97,13 +97,14 @@ namespace visitor {
                                                   const std::string &name,
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
-                                                  size_t size,
+//                                                  size_t size,
                                                   int depth) {
         if (depth == 0 && additionalPointersCount > 0) {
             returnTypeIsArray = true;
             additionalPointersCount--;
         }
-        auto sizes = type.arraysSizes(usage);
+        //TODO
+        std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (assignPointersToNull) {
             int pointerIndex = type.indexOfFirstPointerInTypeKinds();

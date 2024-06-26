@@ -8,7 +8,7 @@
 namespace visitor {
     FunctionPointerForStubsVisitor::FunctionPointerForStubsVisitor(
         const types::TypesHandler *typesHandler)
-        : AbstractValueViewVisitor(typesHandler, types::PointerUsage::RETURN) {
+        : AbstractValueViewVisitor(typesHandler/*, types::PointerUsage::RETURN*/) {
     }
 
     static thread_local printer::Printer printer{};
@@ -63,7 +63,7 @@ namespace visitor {
                                                     const std::string &name,
                                                     const tests::AbstractValueView *view,
                                                     const std::string &access,
-                                                    size_t size,
+//                                                    size_t size,
                                                     int depth) {
         AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access,
                                            depth + type.getDimension());

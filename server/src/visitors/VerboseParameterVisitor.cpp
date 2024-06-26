@@ -5,9 +5,9 @@
 namespace visitor {
     VerboseParameterVisitor::VerboseParameterVisitor(const types::TypesHandler *typesHandler,
                                                      printer::TestsPrinter *printer,
-                                                     bool needDeclaration,
-                                                     types::PointerUsage usage)
-        : AbstractValueViewVisitor(typesHandler, usage), printer(printer),
+                                                     bool needDeclaration/*,
+                                                     types::PointerUsage usage*/)
+        : AbstractValueViewVisitor(typesHandler/*, usage*/), printer(printer),
           needDeclaration(needDeclaration) {
     }
 
@@ -31,12 +31,12 @@ namespace visitor {
                                                int depth) {
         if (depth == 0) {
             if (needDeclaration) {
-                printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(printer), parameterAlignment);
+                printer->strDeclareArrayVar(type, name/*, usage*/, view->getEntryValue(printer), parameterAlignment);
             } else {
                 static const std::string bufferSuffix = "_buffer";
                 std::string buffer = name + bufferSuffix;
-                printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer));
-                size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
+                printer->strDeclareArrayVar(type, buffer/*, usage*/, view->getEntryValue(printer));
+                size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(usage);
                 std::string callocCall = StringUtils::stringFormat("(%s) calloc(%zu, sizeof(%s))",
                                                               type.usedType(), size, type.baseType());
                 printer->strAssignVar(name, callocCall);
@@ -51,14 +51,14 @@ namespace visitor {
                                              const std::string &name,
                                              const tests::AbstractValueView *view,
                                              const std::string &access,
-                                             size_t size,
+//                                             size_t size,
                                              int depth) {
         if (needDeclaration) {
-            printer->strDeclareArrayVar(type, name, usage, view->getEntryValue(printer), parameterAlignment);
+            printer->strDeclareArrayVar(type, name/*, usage*/, view->getEntryValue(printer), parameterAlignment);
         } else {
             std::string bufferSuffix = "_buffer";
             std::string buffer = name + bufferSuffix;
-            printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer), parameterAlignment);
+            printer->strDeclareArrayVar(type, buffer/*, usage*/, view->getEntryValue(printer), parameterAlignment);
             printer->strMemcpy(name, buffer, false);
         }
 
@@ -71,7 +71,7 @@ namespace visitor {
                                                int depth) {
         std::string bufferSuffix = "_buffer";
         std::string buffer = name + bufferSuffix;
-        printer->strDeclareArrayVar(type, buffer, usage, view->getEntryValue(printer), parameterAlignment);
+        printer->strDeclareArrayVar(type, buffer/*, usage*/, view->getEntryValue(printer), parameterAlignment);
         if (needDeclaration) {
             printer->strDeclareVar(type.usedType(), name, buffer);
         } else {

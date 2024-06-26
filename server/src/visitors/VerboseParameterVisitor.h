@@ -17,8 +17,8 @@ namespace visitor {
     public:
         VerboseParameterVisitor(const types::TypesHandler *typesHandler,
                                 printer::TestsPrinter *printer,
-                                bool needDeclaration,
-                                types::PointerUsage usage);
+                                bool needDeclaration/*,
+                                types::PointerUsage usage*/);
 
         ~VerboseParameterVisitor() override;
 
@@ -38,7 +38,7 @@ namespace visitor {
                         const std::string &name,
                         const tests::AbstractValueView *view,
                         const std::string &access,
-                        size_t size,
+//                        size_t size,
                         int depth) override;
 
         void visitCString(const types::Type &type,

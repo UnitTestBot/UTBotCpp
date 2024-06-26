@@ -16,13 +16,13 @@ namespace visitor {
 
     AssertsVisitor::AssertsVisitor(const types::TypesHandler *typesHandler,
                                    printer::TestsPrinter *printer,
-                                   types::PointerUsage _usage,
+//                                   types::PointerUsage _usage,
                                    const std::optional<LineInfo::PredicateInfo> &predicateInfo)
-        : AbstractValueViewVisitor(typesHandler, _usage), printer(printer) {
+        : AbstractValueViewVisitor(typesHandler/*, _usage*/), printer(printer) {
        if (predicateInfo.has_value()) {
             predicate = predicateInfo->predicate;
             if (predicateInfo->type == testsgen::STRING) {
-                usage = types::PointerUsage::KNOWN_SIZE;
+//                usage = types::PointerUsage::KNOWN_SIZE;
                 pointerSize = predicateInfo->returnValue.size();
             }
         }

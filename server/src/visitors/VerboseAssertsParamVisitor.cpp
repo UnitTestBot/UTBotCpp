@@ -7,7 +7,7 @@ namespace visitor {
             const types::TypesHandler *typesHandler,
             printer::TestsPrinter *printer)
             : VerboseAssertsVisitor(typesHandler, printer, {}) {
-        usage = types::PointerUsage::PARAMETER;
+//        usage = types::PointerUsage::PARAMETER;
     }
 
     static thread_local std::string expectedVariable;
@@ -15,7 +15,7 @@ namespace visitor {
     void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name) {
         expectedVariable = PrinterUtils::getExpectedVarName(name);
         std::string paramName = param.dataVariableName();
-        types::Type paramType = param.type.arrayCloneMultiDim(usage);
+        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
         visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         expectedVariable = {};
     }
@@ -32,9 +32,10 @@ namespace visitor {
                                                   const std::string &access,
                                                   int depth) {
         if (depth == 0) {
-            const auto sizes = type.arraysSizes(usage);
+            //TODO change to depth
+            size_t sizes_d = 1; // type.arraysSizes(usage).size();
             std::string newName = type.maybeJustPointer() ? name :
-                                  PrinterUtils::getDereferencePointer(name, sizes.size());
+                                  PrinterUtils::getDereferencePointer(name, sizes_d);
             visitAny(type.baseTypeObj(), newName, view, access, depth);
         }
     }
@@ -43,7 +44,7 @@ namespace visitor {
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
-                                                size_t size,
+//                                                size_t size,
                                                 int depth) {
         if (depth == 0) {
             if (type.isObjectPointer()) {
@@ -52,7 +53,7 @@ namespace visitor {
         }
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
-            VerboseAssertsVisitor::visitArray(type, name, view, access, size, depth);
+            VerboseAssertsVisitor::visitArray(type, name, view, access/*, size*/, depth);
         }
     }
 

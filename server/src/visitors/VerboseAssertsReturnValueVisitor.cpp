@@ -10,7 +10,7 @@ namespace visitor {
     void VerboseAssertsReturnValueVisitor::visit(const Tests::MethodDescription &methodDescription,
                                                  const Tests::MethodTestCase &testCase) {
         auto returnType = methodDescription.returnType.maybeReturnArray()
-                          ? methodDescription.returnType.arrayClone(usage, pointerSize)
+                          ? methodDescription.returnType.arrayClone(/*usage, */pointerSize)
                           : methodDescription.returnType.baseTypeObj();
         if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
             additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
@@ -51,11 +51,11 @@ namespace visitor {
                                                       const std::string &name,
                                                       const tests::AbstractValueView *view,
                                                       const std::string &access,
-                                                      size_t size,
+//                                                      size_t size,
                                                       int depth) {
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
-            VerboseAssertsVisitor::visitArray(type, name, view, access, size, depth);
+            VerboseAssertsVisitor::visitArray(type, name, view, access/*, size*/, depth);
         } else {
             // assign NULL to pointer field
         }

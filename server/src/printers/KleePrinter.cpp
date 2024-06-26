@@ -89,15 +89,15 @@ void KleePrinter::writeTestedFunction(const Tests &tests,
     genGlobalParamsDeclarations(testMethod);
     genInitCall(testMethod);
     genParamsDeclarations(testMethod, filterAllWithoutFile);
-    genPostGlobalSymbolicVariables(testMethod);
-    genPostParamsSymbolicVariables(testMethod, filterAllWithoutFile);
+//    genPostGlobalSymbolicVariables(testMethod);
+//    genPostParamsSymbolicVariables(testMethod, filterAllWithoutFile);
     if (types::TypesHandler::skipTypeInReturn(testMethod.returnType)) {
         genVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
     } else {
         genNonVoidFunctionAssumes(testMethod, predicateInfo, testedMethod, onlyForOneEntity);
     }
-    genGlobalsKleeAssumes(testMethod);
-    genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
+//    genGlobalsKleeAssumes(testMethod);
+//    genPostParamsKleeAssumes(testMethod, filterAllWithoutFile);
     genTearDownCall(testMethod);
     strReturn("0");
     closeBrackets(1);
@@ -379,7 +379,7 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
                 strAssignVar(param.name, kleeParam.name);
             }
         }
-        genConstraints(kleeParam);
+//        genConstraints(kleeParam);
     }
 }
 
@@ -393,10 +393,10 @@ void KleePrinter::genParamsDeclarations(
 
         KleeConstraintsPrinter constraintsPrinter(typesHandler, srcLanguage);
         constraintsPrinter.setTabsDepth(tabsDepth);
-        const auto constraintsBlock =
-                constraintsPrinter.genConstraints(testMethod.classObj->name, testMethod.classObj->type)
-                        .str();
-        ss << constraintsBlock;
+//        const auto constraintsBlock =
+//                constraintsPrinter.genConstraints(testMethod.classObj->name, testMethod.classObj->type)
+//                        .str();
+//        ss << constraintsBlock;
     }
     std::unordered_map<std::string, std::vector<std::string>> typesToNames;
     for (const auto &param: testMethod.params) {
@@ -417,9 +417,9 @@ void KleePrinter::genParamsDeclarations(
         strKleeMakeSymbolic(paramType, kleeParam.name, param.name, !isArray);
         if (testGen->settingsContext.differentVariablesOfTheSameType &&
             typesToNames[param.type.typeName()].size() <= 3) {
-            genConstraints(kleeParam, typesToNames[param.type.typeName()]);
+//            genConstraints(kleeParam, typesToNames[param.type.typeName()]);
         } else {
-            genConstraints(kleeParam);
+//            genConstraints(kleeParam);
         }
 //        genTwoDimPointers(param, true);
         commentBlockSeparator();
@@ -441,7 +441,7 @@ bool KleePrinter::genParamDeclaration(const Tests::MethodDescription &testMethod
     } else if (types::TypesHandler::isObjectPointerType(param.type)) {
         return genPointerParamDeclaration(param);
     } else if (types::TypesHandler::isArrayType(param.type)) {
-        strDeclareArrayVar(param.type, param.name, types::PointerUsage::PARAMETER);
+        strDeclareArrayVar(param.type, param.name/*, types::PointerUsage::PARAMETER*/);
         return true;
     } else {
         strDeclareVar(param.type.typeName(), param.name, std::nullopt, param.alignment);
@@ -493,7 +493,7 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
     strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
-        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
+        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
         ss << "[" << size << "]";
     }
     ss << SCNL;

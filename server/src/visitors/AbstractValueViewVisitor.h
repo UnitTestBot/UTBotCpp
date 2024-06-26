@@ -9,12 +9,11 @@ namespace visitor {
     class AbstractValueViewVisitor {
     protected:
         types::TypesHandler const * const typesHandler;
-        types::PointerUsage usage;
+//        types::PointerUsage usage;
         size_t additionalPointersCount;
         bool inUnion = false;
     public:
-        explicit AbstractValueViewVisitor(types::TypesHandler const *typesHandler,
-                                          types::PointerUsage usage);
+        explicit AbstractValueViewVisitor(types::TypesHandler const *typesHandler/*, types::PointerUsage usage */);
 
         virtual ~AbstractValueViewVisitor() = default;
 
@@ -41,7 +40,7 @@ namespace visitor {
                                 const std::string &name,
                                 const tests::AbstractValueView *view,
                                 const std::string &access,
-                                size_t size,
+//                                size_t size,
                                 int depth);
 
         virtual void visitCString(const types::Type &type,

@@ -391,9 +391,10 @@ namespace tests {
                     return StringUtils::stringFormat("(%svoid **) %s", qualifier, name);
                 } else if (type.isRValueReference()) {
                     return "std::move(" + name + ")";
-                } else if (type.maybeJustPointer() && !type.isFilePointer() ) {
-                    return "&" + name;
                 }
+//                else if (type.maybeJustPointer() && !type.isFilePointer() ) {
+//                    return "&" + name;
+//                }
                 return name;
             }
         };
@@ -730,7 +731,7 @@ namespace tests {
         std::shared_ptr<AbstractValueView>
         testParameterView(const RawKleeParam &kleeParam,
                           const Tests::TypeAndVarName &param,
-                          types::PointerUsage usage,
+//                          types::PointerUsage usage,
                           const std::vector<UTBotKTestObject> &objects,
                           std::vector<InitReference> &initReferences,
                           const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
@@ -739,15 +740,15 @@ namespace tests {
                                                        const std::vector<Pointer> &lazyPointersArray,
                                                        const types::Type &type,
                                                        size_t arraySizeInBits,
-                                                       size_t offsetInBits,
-                                                       types::PointerUsage usage);
+                                                       size_t offsetInBits/*,
+                                                       types::PointerUsage usage*/);
 
         std::shared_ptr<ArrayValueView> arrayView(const std::vector<char> &byteArray,
                                                   const std::vector<Pointer> &lazyPointersArray,
                                                   const types::Type &type,
                                                   size_t arraySizeInBits,
-                                                  size_t offsetInBits,
-                                                  types::PointerUsage usage);
+                                                  size_t offsetInBits/*,
+                                                  types::PointerUsage usage*/);
 
         static std::shared_ptr<StringValueView> stringLiteralView(const std::vector<char> &byteArray,
                                                                   size_t length = 0);
@@ -762,14 +763,14 @@ namespace tests {
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     const std::vector<Pointer> &lazyPointersArray,
                                                     const types::StructInfo &curStruct,
-                                                    size_t offsetInBits,
-                                                    types::PointerUsage usage);
+                                                    size_t offsetInBits/*,
+                                                    types::PointerUsage usage*/);
 
         std::shared_ptr<StructValueView> structView(const std::vector<char> &byteArray,
                                                     const std::vector<Pointer> &lazyPointersArray,
                                                     const types::StructInfo &curStruct,
                                                     size_t offsetInBits,
-                                                    types::PointerUsage usage,
+//                                                    types::PointerUsage usage,
                                                     const std::optional<const Tests::MethodDescription> &testingMethod,
                                                     const bool anonymous,
                                                     const std::string &name,
@@ -837,21 +838,21 @@ namespace tests {
                                const types::Type &paramType,
                                Tests::TestCaseParamValue &paramValue,
                                std::vector<bool> &visited,
-                               std::vector<types::PointerUsage> &usages,
+//                               std::vector<types::PointerUsage> &usages,
                                std::queue<JsonIndAndParam> &order);
 
         void assignTypeUnnamedVar(Tests::MethodTestCase &testCase,
                                   const Tests::MethodDescription &methodDescription,
-                                  std::vector<std::optional<Tests::TypeAndVarName>> &objects,
-                                  std::vector<types::PointerUsage> &usages);
+                                  std::vector<std::optional<Tests::TypeAndVarName>> &objects/*,
+                                  std::vector<types::PointerUsage> &usages*/);
 
         void assignTypeStubVar(Tests::MethodTestCase &testCase,
                                const Tests::MethodDescription &methodDescription);
 
         void assignAllLazyPointers(
             Tests::MethodTestCase &testCase,
-            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName,
-            const std::vector<types::PointerUsage> &usages) const;
+            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName/*,
+            const std::vector<types::PointerUsage> &usages*/) const;
 
         size_t findFieldIndex(const types::StructInfo &structInfo, size_t offsetInBits) const;
 
@@ -860,8 +861,8 @@ namespace tests {
                                                    const std::string &curVarName = "") const;
 
         size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
-                                 size_t offsetInBits,
-                                 types::PointerUsage usage) const;
+                                 size_t offsetInBits/*,
+                                 types::PointerUsage usage*/) const;
 
         std::shared_ptr<AbstractValueView>
         getLazyPointerView(const std::vector<UTBotKTestObject> &objects,

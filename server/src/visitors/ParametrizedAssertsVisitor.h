@@ -28,7 +28,7 @@ namespace visitor {
                         const std::string &name,
                         const tests::AbstractValueView *view,
                         const std::string &access,
-                        size_t size,
+//                        size_t size,
                         int depth) override;
 
         void visitStruct(const types::Type &type,

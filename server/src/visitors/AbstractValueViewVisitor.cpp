@@ -1,9 +1,9 @@
 #include "AbstractValueViewVisitor.h"
 
 namespace visitor {
-    AbstractValueViewVisitor::AbstractValueViewVisitor(const types::TypesHandler *typesHandler,
-                                                       types::PointerUsage usage)
-        : typesHandler(typesHandler), usage(usage) {
+    AbstractValueViewVisitor::AbstractValueViewVisitor(const types::TypesHandler *typesHandler/*,
+                                                       types::PointerUsage usage*/)
+            : typesHandler(typesHandler)/*, usage(usage)*/ {
     }
 
     void AbstractValueViewVisitor::visitAny(const types::Type &type,
@@ -18,10 +18,11 @@ namespace visitor {
             size_t size = type.kinds().front()->getSize();
             if (types::TypesHandler::isVoid(type.baseTypeObj())) {
                 return visitArray(
-                    types::Type::minimalScalarPointerType(type.arraysSizes(usage).size()), name,
-                    view, access, size, depth);
+                        //TODO change to depth
+                        types::Type::minimalScalarPointerType(/*type.arraysSizes(usage).size()*/), name,
+                        view, access/*, size*/, depth);
             } else {
-                return visitArray(type, name, view, access, size, depth);
+                return visitArray(type, name, view, access/*, size*/, depth);
             }
         } else if (types::TypesHandler::isArrayOfPointersToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
@@ -54,27 +55,26 @@ namespace visitor {
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
                                                 int depth) {
-        size_t size =
-            types::TypesHandler::getElementsNumberInPointerOneDim(usage);
-        visitArray(type, name, view, access, size, depth);
+//        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
+        visitArray(type, name, view, access/*, size*/, depth);
     }
 
     void AbstractValueViewVisitor::visitArray(const types::Type &type,
                                               const std::string &name,
                                               const tests::AbstractValueView *view,
                                               const std::string &access,
-                                              size_t size,
+                                              /*size_t size,*/
                                               int depth) {
         auto subViews = view ? &view->getSubViews() : nullptr;
-        for (int i = 0; i < size; i++) {
-            auto index = "[" + std::to_string(i) + "]";
-            types::Type newType = type.baseTypeObj(1);
-            auto const newName = name + index;
-            auto const *newView = subViews ? (*subViews)[i].get() : nullptr;
-            auto const newAccess = access + index;
-            visitAny(newType, newName, newView, newAccess, depth + 1);
-            visitArrayElementAfter(newType, newName, newView, newAccess, depth + 1);
-        }
+//        for (int i = 0; i < size; i++) {
+//            auto index = "[" + std::to_string(i) + "]";
+//            types::Type newType = type.baseTypeObj(1);
+//            auto const newName = name + index;
+//            auto const *newView = subViews ? (*subViews)[i].get() : nullptr;
+//            auto const newAccess = access + index;
+//            visitAny(newType, newName, newView, newAccess, depth + 1);
+//            visitArrayElementAfter(newType, newName, newView, newAccess, depth + 1);
+//        }
     }
 
     void AbstractValueViewVisitor::visitCString(const types::Type &type,
@@ -125,7 +125,7 @@ namespace visitor {
                                                               const std::string &access) {
         if (access.empty() || pointersCount == 0) {
             return StringUtils::repeat("*", pointersCount) +
-                    PrinterUtils::fillVarName(access, varName);
+                   PrinterUtils::fillVarName(access, varName);
         } else {
             return PrinterUtils::fillVarName(access, "(" + StringUtils::repeat("*", pointersCount) +
                                                      varName + ")");

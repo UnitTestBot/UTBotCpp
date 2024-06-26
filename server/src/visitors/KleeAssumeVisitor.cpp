@@ -6,7 +6,7 @@
 namespace visitor {
     KleeAssumeVisitor::KleeAssumeVisitor(const types::TypesHandler *typesHandler,
                                          printer::KleePrinter *printer)
-        : AbstractValueViewVisitor(typesHandler, types::PointerUsage::RETURN), printer(printer) {
+        : AbstractValueViewVisitor(typesHandler/*, types::PointerUsage::RETURN*/), printer(printer) {
     }
 
     void KleeAssumeVisitor::visitPointer(const types::Type &type,

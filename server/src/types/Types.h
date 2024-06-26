@@ -23,7 +23,7 @@ namespace types {
     using Kind = std::shared_ptr<AbstractType>;
     struct FunctionInfo;
 
-    enum class PointerUsage;
+//    enum class PointerUsage;
     enum class ReferenceType;
 
     enum AccessSpecifier {
@@ -100,20 +100,20 @@ namespace types {
         /**
          * @return Type object where the first Kind is not a pointer, but an array
          */
-        [[nodiscard]] Type arrayClone(PointerUsage usage, size_t pointerSize = 0) const;
+        [[nodiscard]] Type arrayClone(/*PointerUsage usage, */size_t pointerSize = 0) const;
 
         /**
          * @return Type object where first N kinds is not a pointer, but an array
          * where N is size of @pointerSizes
          * @pointerSizes contains sizes of arrays
          */
-        [[nodiscard]] Type arrayCloneMultiDim(PointerUsage usage, std::vector<size_t> pointerSizes) const;
+        [[nodiscard]] Type arrayCloneMultiDim(/*PointerUsage usage, */std::vector<size_t> pointerSizes) const;
 
         /**
          * @return baseType if called on pointerObject, else return Type object,
          * where leading pointers are replaced to array with default sizes
          */
-        [[nodiscard]] Type arrayCloneMultiDim(PointerUsage usage) const;
+        [[nodiscard]] Type arrayCloneMultiDim(/*PointerUsage usage*/) const;
 
         /**
          * Checks whether given type is a pointer.
@@ -200,7 +200,7 @@ namespace types {
 
         [[nodiscard]] int indexOfFirstPointerInTypeKinds() const;
 
-        [[nodiscard]] std::vector<size_t> arraysSizes(PointerUsage usage) const;
+//        [[nodiscard]] std::vector<size_t> arraysSizes(/*PointerUsage usage*/) const;
 
         /**
          * Creates type from its name. Created type satisfies following:
@@ -358,7 +358,7 @@ namespace types {
         UNKNOWN };
 
     enum class TypeUsage { PARAMETER, RETURN, ALL };
-    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
+//    enum class PointerUsage { PARAMETER, RETURN, KNOWN_SIZE, LAZY };
 
     class TypesHandler {
     public:
@@ -573,33 +573,33 @@ namespace types {
             return sizeContext.maximumAlignment;
         }
 
-        static size_t getElementsNumberInPointerMultiDim(PointerUsage usage, size_t def = 2) noexcept {
-            switch (usage) {
-            case PointerUsage::PARAMETER:
-                return 2;
-            case PointerUsage::RETURN:
-                return 2;
-            case PointerUsage::LAZY:
-                return 1;
-            case PointerUsage::KNOWN_SIZE:
-                return def;
-            }
-        }
+//        static size_t getElementsNumberInPointerMultiDim(PointerUsage usage, size_t def = 2) noexcept {
+//            switch (usage) {
+//            case PointerUsage::PARAMETER:
+//                return 2;
+//            case PointerUsage::RETURN:
+//                return 2;
+//            case PointerUsage::LAZY:
+//                return 1;
+//            case PointerUsage::KNOWN_SIZE:
+//                return def;
+//            }
+//        }
 
-        static size_t
-        getElementsNumberInPointerOneDim(PointerUsage usage,
-                                         size_t def = types::Type::symInputSize) noexcept {
-            switch (usage) {
-            case PointerUsage::PARAMETER:
-                return 10;
-            case PointerUsage::RETURN:
-                return 1;
-            case PointerUsage::LAZY:
-                return 1;
-            case PointerUsage::KNOWN_SIZE:
-                return def;
-            }
-        }
+//        static size_t
+//        getElementsNumberInPointerOneDim(PointerUsage usage,
+//                                         size_t def = types::Type::symInputSize) noexcept {
+//            switch (usage) {
+//            case PointerUsage::PARAMETER:
+//                return 10;
+//            case PointerUsage::RETURN:
+//                return 1;
+//            case PointerUsage::LAZY:
+//                return 1;
+//            case PointerUsage::KNOWN_SIZE:
+//                return def;
+//            }
+//        }
 
         void setPointerSize(size_t size) noexcept {
             sizeContext.pointerSize = size;
