@@ -346,7 +346,8 @@ void KleePrinter::genVoidFunctionAssumes(const Tests::MethodDescription &testMet
                                          const std::string &testedMethod,
                                          bool onlyForOneEntity) {
     genKleePathSymbolicIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
-    strFunctionCall(testMethod, testMethod.returnType.countReturnPointers(), SCNL, false);
+//    strFunctionCall(testMethod, testMethod.returnType.countReturnPointers(), SCNL, false);
+    strFunctionCall(testMethod, 0, SCNL, false);
     genKleePathSymbolicAssumeIfNeeded(predicateInfo, testedMethod, onlyForOneEntity);
 }
 
@@ -489,7 +490,8 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
     bool isPointer = testMethod.returnType.isObjectPointer();
     std::string type = typesHandler->isAnonymousEnum(returnType)
                        ? "int"
-                       : returnType.baseType();
+                       : returnType.typeName();
+//                       : returnType.baseType();
     strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
     if (maybeArray) {
@@ -499,10 +501,10 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
     ss << SCNL;
     strKleeMakeSymbolic(KleeUtils::RESULT_VARIABLE_NAME,
                         !maybeArray && !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
-    if (isPointer) {
-        strDeclareVar("int", KleeUtils::NOT_NULL_VARIABLE_NAME);
-        strKleeMakeSymbolic(KleeUtils::NOT_NULL_VARIABLE_NAME, true);
-    }
+//    if (isPointer) {
+//        strDeclareVar("int", KleeUtils::NOT_NULL_VARIABLE_NAME);
+//        strKleeMakeSymbolic(KleeUtils::NOT_NULL_VARIABLE_NAME, true);
+//    }
 }
 
 void KleePrinter::genParamsKleeAssumes(

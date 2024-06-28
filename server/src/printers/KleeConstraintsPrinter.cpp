@@ -76,41 +76,41 @@ void KleeConstraintsPrinter::genConstraintsForEnum(const ConstraintsState &state
 //    genConstraintsForMultiPointerOrArray(state, sizes);
 //}
 
-void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
-                                                                  std::vector<size_t> sizes) {
-    const types::Type baseType = state.curType.baseTypeObj();
-    bool assignPointersToNull = state.curType.isTypeContainsPointer() && state.depth > 0;
-    if (assignPointersToNull) {
-        int pointerIndex = state.curType.indexOfFirstPointerInTypeKinds();
-        sizes = std::vector<size_t>(sizes.begin(), sizes.begin() + pointerIndex);
-    }
-    const auto indexes = printForLoopsAndReturnLoopIterators(sizes);
-    std::string element = constrMultiIndex(state.curElement, indexes);
-
-    if (state.endString && types::TypesHandler::isCharacterType(baseType) &&
-        TypesHandler::isCStringType(state.curType)) {
-        std::vector<std::string> charSizes(indexes.begin(), indexes.end() - 1);
-        const auto charElement = constrMultiIndex(state.curElement, charSizes);
-        ss << LINE_INDENT() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
-        ss << LINE_INDENT() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
-        ss << LINE_INDENT() << "break" << SCNL;
-        ss << RB();
-    }
-
-    ConstraintsState newState = { state.paramName, element, baseType };
-    if (assignPointersToNull) {
-        genConstraintsForPointerInStruct(newState);
-    } else if (typesHandler->isStructLike(baseType)) {
-        genConstraintsForStruct(newState);
-    } else if (typesHandler->isEnum(baseType)) {
-        genConstraintsForEnum(newState);
-    } else {
-        newState = { state.paramName, element, baseType };
-        genConstraintsForPrimitive(newState);
-    }
-
-    closeBrackets(sizes.size());
-}
+//void KleeConstraintsPrinter::genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
+//                                                                  std::vector<size_t> sizes) {
+//    const types::Type baseType = state.curType.baseTypeObj();
+//    bool assignPointersToNull = state.curType.isTypeContainsPointer() && state.depth > 0;
+//    if (assignPointersToNull) {
+//        int pointerIndex = state.curType.indexOfFirstPointerInTypeKinds();
+//        sizes = std::vector<size_t>(sizes.begin(), sizes.begin() + pointerIndex);
+//    }
+//    const auto indexes = printForLoopsAndReturnLoopIterators(sizes);
+//    std::string element = constrMultiIndex(state.curElement, indexes);
+//
+//    if (state.endString && types::TypesHandler::isCharacterType(baseType) &&
+//        TypesHandler::isCStringType(state.curType)) {
+//        std::vector<std::string> charSizes(indexes.begin(), indexes.end() - 1);
+//        const auto charElement = constrMultiIndex(state.curElement, charSizes);
+//        ss << LINE_INDENT() << "if (" << indexes.back() << PrinterUtils::EQ_OPERATOR << sizes.back() - 1 << ")" << LB();
+//        ss << LINE_INDENT() << PrinterUtils::KLEE_ASSUME << "(" << charElement << "[" << sizes.back() - 1 << "]" << PrinterUtils::EQ_OPERATOR << "'\\0'" << ")" << SCNL;
+//        ss << LINE_INDENT() << "break" << SCNL;
+//        ss << RB();
+//    }
+//
+//    ConstraintsState newState = { state.paramName, element, baseType };
+//    if (assignPointersToNull) {
+//        genConstraintsForPointerInStruct(newState);
+//    } else if (typesHandler->isStructLike(baseType)) {
+//        genConstraintsForStruct(newState);
+//    } else if (typesHandler->isEnum(baseType)) {
+//        genConstraintsForEnum(newState);
+//    } else {
+//        newState = { state.paramName, element, baseType };
+//        genConstraintsForPrimitive(newState);
+//    }
+//
+//    closeBrackets(sizes.size());
+//}
 
 void KleeConstraintsPrinter::genConstraintsForPointerInStruct(const ConstraintsState &state) {
     strFunctionCall(PrinterUtils::KLEE_ASSUME, { state.curElement + PrinterUtils::EQ_OPERATOR + PrinterUtils::C_NULL });

@@ -127,9 +127,22 @@ std::string types::Type::mTypeName() const {
 }
 
 size_t types::Type::getDimension() const {
-    // usage doesn't matter here
-    // TODO change to depth
-    return 1; //arraysSizes(PointerUsage::PARAMETER).size();
+    if (!isArray() && !isObjectPointer() && !isPointerToFunction()) {
+        return 0;
+    }
+    size_t size = 0;
+    for (const auto &kind: pointerArrayKinds()) {
+        switch (kind->getKind()) {
+        case AbstractType::ARRAY:
+        case AbstractType::OBJECT_POINTER:
+        case AbstractType::FUNCTION_POINTER:
+            ++size;
+            break;
+        default:
+            LOG_S(ERROR) << "INVARIANT ERROR: Class Type: " << kind->getKind();
+        }
+    }
+    return size;
 }
 
 std::optional<uint64_t> types::Type::getBaseTypeId() const {

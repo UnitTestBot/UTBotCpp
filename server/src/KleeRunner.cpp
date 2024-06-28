@@ -164,7 +164,7 @@ static void processMethod(MethodKtests &ktestChunk,
 
                 std::vector<UTBotKTestObject> objects =
                     CollectionUtils::transform(kTestObjects, [](const KTestObject &kTestObject) {
-                        return UTBotKTestObject{ kTestObject };
+                        return UTBotKTestObject(kTestObject);
                     });
 
                 std::vector<std::string> errorDescriptors =

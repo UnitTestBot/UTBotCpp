@@ -13,7 +13,7 @@ void CLITestsWriter::writeTestsWithProgress(tests::TestsMap &testMap,
     std::cout << message << std::endl;
     int totalTestsCounter = 0;
     for (auto it = testMap.begin(); it != testMap.end(); ++it) {
-        tests::Tests& tests = it.value();
+        tests::Tests &tests = it.value();
         prepareTests(tests);
         if (writeTestFile(tests, testDirRelPath)) {
             ++totalTestsCounter;

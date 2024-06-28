@@ -52,6 +52,7 @@ namespace tests {
     struct UTBotKTestObject {
         std::string name;
         std::vector<char> bytes;
+        std::vector<char> finalBytes;
         std::vector<Pointer> pointers;
         size_t address;
         bool is_lazy = false;
@@ -60,12 +61,14 @@ namespace tests {
          * Constructs UTBotKTestObject
          * @param name object's name
          * @param bytes byte array associated with object
+         * @param bytes final byte array associated with object
          * @param pointers vector of pointers
          * @param address object's address
          * @param is_lazy whether object is lazy
          */
         UTBotKTestObject(std::string name,
                          std::vector<char> bytes,
+                         std::vector<char> finalBytes,
                          std::vector<Pointer> pointers,
                          size_t address,
                          bool is_lazy);
@@ -680,10 +683,13 @@ namespace tests {
         struct RawKleeParam {
             std::string paramName;
             std::vector<char> rawData;
+            std::vector<char> rawDataFinal;
             std::vector<Pointer> pointers;
 
-            RawKleeParam(std::string paramName, std::vector<char> rawData, std::vector<Pointer> pointers)
-                : paramName(std::move(paramName)), rawData(std::move(rawData)), pointers(pointers) {
+            RawKleeParam(std::string paramName, std::vector<char> rawData, std::vector<char> rawDataFinal,
+                         std::vector<Pointer> pointers)
+                    : paramName(std::move(paramName)), rawData(std::move(rawData)),
+                      rawDataFinal(std::move(rawDataFinal)), pointers(pointers) {
             }
 
             [[nodiscard]] [[maybe_unused]] bool hasPrefix(const std::string &prefix) const {
@@ -850,8 +856,8 @@ namespace tests {
                                const Tests::MethodDescription &methodDescription);
 
         void assignAllLazyPointers(
-            Tests::MethodTestCase &testCase,
-            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName/*,
+                Tests::MethodTestCase &testCase,
+                const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName/*,
             const std::vector<types::PointerUsage> &usages*/) const;
 
         size_t findFieldIndex(const types::StructInfo &structInfo, size_t offsetInBits) const;

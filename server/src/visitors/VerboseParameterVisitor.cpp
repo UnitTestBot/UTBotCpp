@@ -31,7 +31,7 @@ namespace visitor {
                                                int depth) {
         if (depth == 0) {
             if (needDeclaration) {
-                printer->strDeclareArrayVar(type, name/*, usage*/, view->getEntryValue(printer), parameterAlignment);
+                printer->strDeclareVar(type.typeName(), name/*, usage*/, view->getEntryValue(printer), parameterAlignment);
             } else {
                 static const std::string bufferSuffix = "_buffer";
                 std::string buffer = name + bufferSuffix;

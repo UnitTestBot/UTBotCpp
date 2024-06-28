@@ -384,14 +384,15 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 std::string res = readBytesAsValueForType(byteArray, PointerWidthType,
                                                           fieldStartOffset, PointerWidthSizeInBits);
                 auto pointerIterator =
-                    std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
-                                 [&fieldStartOffset](const Pointer &ptr) {
-                                     return SizeUtils::bytesToBits(ptr.offset) == fieldStartOffset;
-                                 });
+                        std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
+                                     [&fieldStartOffset](const Pointer &ptr) {
+                                         return SizeUtils::bytesToBits(ptr.offset) == fieldStartOffset;
+                                     });
                 subViews.push_back(getLazyPointerView(
-                    objects, initReferences, PrinterUtils::getFieldAccess(name, field), res,
-                    field.type, pointerIterator != lazyPointersArray.end()));
-            } break;
+                        objects, initReferences, PrinterUtils::getFieldAccess(name, field), res,
+                        field.type, pointerIterator != lazyPointersArray.end()));
+            }
+                break;
             case TypeKind::FUNCTION_POINTER:
                 subViews.push_back(functionPointerView(curStruct.name, field.name));
                 break;
@@ -935,7 +936,7 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
     const std::stringstream &traceStream) {
     std::vector<RawKleeParam> rawKleeParams;
     for (auto const &param : ktest.objects) {
-        rawKleeParams.emplace_back(param.name, param.bytes, param.pointers);
+        rawKleeParams.emplace_back(param.name, param.bytes, param.finalBytes, param.pointers);
     }
 
     Tests::TestCaseDescription testCaseDescription;
@@ -950,7 +951,7 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
         obj.name = PrinterUtils::generateNewVar(++cnt);
     }
 
-    const RawKleeParam emptyKleeParam = { "", {}, {} };
+    const RawKleeParam emptyKleeParam = { "", {}, {}, {} };
 
     if (methodDescription.isClassMethod()) {
         auto methodParam = methodDescription.classObj.value();
@@ -991,9 +992,10 @@ Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
     if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
         const auto kleeResParam =
                 getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
-        auto paramType = methodDescription.returnType.maybeReturnArray()
-                         ? methodDescription.returnType
-                         : methodDescription.returnType.baseTypeObj();
+//        auto paramType = methodDescription.returnType.maybeReturnArray()
+//                         ? methodDescription.returnType
+//                         : methodDescription.returnType.baseTypeObj();
+        auto paramType = methodDescription.returnType;
         const Tests::TypeAndVarName returnParam = {paramType, KleeUtils::RESULT_VARIABLE_NAME};
         const auto testReturnView = testParameterView(
                 kleeResParam, returnParam/*, PointerUsage::RETURN*/, testCaseDescription.objects,
@@ -1203,6 +1205,14 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
         case TypeKind::PRIMITIVE:
             return primitiveView(rawData, paramType.baseTypeObj(), 0,
                                  SizeUtils::bytesToBits(rawData.size()));
+        case TypeKind::ARRAY:
+//            if (paramType.kinds().size() > 2) {
+//                return multiArrayView(rawData, kleeParam.pointers, paramType,
+//                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
+//            } else {
+//                return arrayView(rawData, kleeParam.pointers, paramType.baseTypeObj(),
+//                                 SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
+//            }
         case TypeKind::OBJECT_POINTER:
 //            if (usage == types::PointerUsage::LAZY) {
 //                //TODO
@@ -1213,10 +1223,12 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
 //            } else
             if (types::TypesHandler::isCStringType(paramType)) {
                 return stringLiteralView(rawData);
-            } else if (paramType.kinds().size() > 2) {
-                return multiArrayView(rawData, kleeParam.pointers, paramType,
-                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-            } else {
+            }
+//            else if (paramType.kinds().size() > 2) {
+//                return multiArrayView(rawData, kleeParam.pointers, paramType,
+//                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
+//            }
+            else {
                 return arrayView(rawData, kleeParam.pointers, paramType.baseTypeObj(),
                                  SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
             }
@@ -1226,14 +1238,6 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
             }
             return functionPointerView(testingMethod->getClassTypeName(), testingMethod->name,
                                        param.varName);
-        case TypeKind::ARRAY:
-            if (paramType.kinds().size() > 2) {
-                return multiArrayView(rawData, kleeParam.pointers, paramType,
-                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-            } else {
-                return arrayView(rawData, kleeParam.pointers, paramType.baseTypeObj(),
-                                 SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-            }
         case TypeKind::UNKNOWN: {
             std::string message = "No such type";
             LOG_S(ERROR) << message;
@@ -1311,24 +1315,29 @@ bool TestMethod::operator!=(const TestMethod &rhs) const {
 
 UTBotKTestObject::UTBotKTestObject(std::string name,
                                    std::vector<char> bytes,
+                                   std::vector<char> finalBytes,
                                    std::vector<Pointer> pointers,
                                    size_t address,
                                    bool is_lazy)
-    : name(std::move(name)), bytes(std::move(bytes)), pointers(std::move(pointers)),
+    : name(std::move(name)), bytes(std::move(bytes)), finalBytes(std::move(finalBytes)), pointers(std::move(pointers)),
       address(address), is_lazy(is_lazy) {
 }
 
-UTBotKTestObject::UTBotKTestObject(const KTestObject &kTestObject)
-    : UTBotKTestObject(kTestObject.name,
-                       { kTestObject.bytes, kTestObject.bytes + kTestObject.numBytes },
-                       { kTestObject.pointers, kTestObject.pointers + kTestObject.numPointers },
-                       kTestObject.address,
-                       isUnnamed(kTestObject.name) == 0) {
-}
+    UTBotKTestObject::UTBotKTestObject(const KTestObject &kTestObject)
+            : UTBotKTestObject(kTestObject.name,
+                               {kTestObject.bytes, kTestObject.bytes + kTestObject.numBytes},
+                               {},
+                               {kTestObject.pointers, kTestObject.pointers + kTestObject.numPointers},
+                               kTestObject.address,
+                               isUnnamed(kTestObject.name) == 0) {
+        if (kTestObject.finalBytes) {
+            finalBytes = {kTestObject.finalBytes, kTestObject.finalBytes + kTestObject.numBytes};
+        }
+    }
 
-bool isUnnamed(char *name) {
-    return strcmp(name, LAZYNAME.c_str());
-}
+    bool isUnnamed(char *name) {
+        return strcmp(name, LAZYNAME.c_str());
+    }
 
 bool Tests::MethodTestCase::isError() const {
     return suiteName == ERROR_SUITE_NAME;

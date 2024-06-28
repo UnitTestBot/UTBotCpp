@@ -20,39 +20,41 @@ namespace visitor {
         std::string type = typesHandler->isAnonymousEnum(returnType)
                                ? "int"
                                : getActualTmpVarType(returnType).baseType();
-        printer->strDeclareVar(type,
-                               KleeUtils::TEMP_VARIABLE_NAME, functionCall,
-                               std::nullopt, true, additionalPointersCount);
-        checkNotNullBefore();
-        if (predicateInfo.has_value()) {
-            std::string assumption;
-            if (predicateInfo->type != testsgen::STRING) {
-                assumption = PrinterUtils::getEqualString(KleeUtils::RESULT_VARIABLE_NAME, KleeUtils::TEMP_VARIABLE_NAME);
-                kleeAssumeWithNullCheck(assumption);
-                assumption = StringUtils::stringFormat(
-                        "%s %s %s", KleeUtils::RESULT_VARIABLE_NAME, predicateInfo->predicate,
-                PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
-                kleeAssume(assumption);
-            } else {
-                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
-                    assumption = StringUtils::stringFormat("%s[%d] == \'%c\'", KleeUtils::RESULT_VARIABLE_NAME, i, predicateInfo->returnValue[i]);
-                    kleeAssume(assumption);
-                }
-                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
-                    assumption = StringUtils::stringFormat("%s[%d] %s %s[%d]", KleeUtils::RESULT_VARIABLE_NAME,
-                                                                  i,
-                                                                  predicateInfo->predicate,
-                                                                  KleeUtils::TEMP_VARIABLE_NAME, i);
-                    kleeAssumeWithNullCheck(assumption);
-                }
-            }
-        } else {
-            if (methodDescription.returnType.maybeReturnArray()) {
-                returnType = methodDescription.returnType.arrayClone(/*usage*/);
-            }
-            visitAny(returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
-        }
-        checkNotNullAfter();
+//        printer->strDeclareVar(type,
+//                               KleeUtils::RESULT_VARIABLE_NAME, functionCall,
+//                               std::nullopt, true, additionalPointersCount);
+
+        printer->strAssignVar(KleeUtils::RESULT_VARIABLE_NAME, functionCall);
+////        checkNotNullBefore();
+//        if (predicateInfo.has_value()) {
+//            std::string assumption;
+//            if (predicateInfo->type != testsgen::STRING) {
+//                assumption = PrinterUtils::getEqualString(KleeUtils::RESULT_VARIABLE_NAME, KleeUtils::TEMP_VARIABLE_NAME);
+////                kleeAssumeWithNullCheck(assumption);
+//                assumption = StringUtils::stringFormat(
+//                        "%s %s %s", KleeUtils::RESULT_VARIABLE_NAME, predicateInfo->predicate,
+//                PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
+//                kleeAssume(assumption);
+//            } else {
+//                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
+//                    assumption = StringUtils::stringFormat("%s[%d] == \'%c\'", KleeUtils::RESULT_VARIABLE_NAME, i, predicateInfo->returnValue[i]);
+//                    kleeAssume(assumption);
+//                }
+//                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
+//                    assumption = StringUtils::stringFormat("%s[%d] %s %s[%d]", KleeUtils::RESULT_VARIABLE_NAME,
+//                                                                  i,
+//                                                                  predicateInfo->predicate,
+//                                                                  KleeUtils::TEMP_VARIABLE_NAME, i);
+////                    kleeAssumeWithNullCheck(assumption);
+//                }
+//            }
+//        } else {
+//            if (methodDescription.returnType.maybeReturnArray()) {
+//                returnType = methodDescription.returnType.arrayClone(/*usage*/);
+//            }
+//            visitAny(returnType, "", nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
+//        }
+////        checkNotNullAfter();
         functionCall = {};
         additionalPointersCount = 0;
     }
@@ -64,7 +66,7 @@ namespace visitor {
                                                       int depth) {
         std::string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
                                              PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
-        kleeAssumeWithNullCheck(assumption);
+//        kleeAssumeWithNullCheck(assumption);
     }
 
     void KleeAssumeReturnValueVisitor::visitStruct(const types::Type &type,
@@ -73,7 +75,7 @@ namespace visitor {
                                                    const std::string &access,
                                                    int depth) {
         if (depth == 0) {
-            kleeAssumeWithNullCheck("", false);
+//            kleeAssumeWithNullCheck("", false);
             AbstractValueViewVisitor::visitStruct(type, KleeUtils::TEMP_VARIABLE_NAME, view, PrinterUtils::DEFAULT_ACCESS,
                                                   depth);
         } else {

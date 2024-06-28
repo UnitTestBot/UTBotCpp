@@ -35,8 +35,8 @@ namespace printer {
 
 //        void genConstraintsForPointerOrArray(const ConstraintsState &state);
 
-        void genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
-                                                  std::vector<size_t> sizes);
+//        void genConstraintsForMultiPointerOrArray(const ConstraintsState &state,
+//                                                  std::vector<size_t> sizes);
 
         void genConstraintsForStruct(const ConstraintsState &state);
 
