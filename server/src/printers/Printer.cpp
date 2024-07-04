@@ -142,7 +142,7 @@ namespace printer {
                                                           std::optional<uint64_t> alignment,
                                                           bool complete,
                                                           ExternType externType) {
-        auto baseType = type.baseType();
+        auto baseType = type.baseType(); //TODO change type
         std::string arrayName{name.data(), name.length()};
 
         if (needDecorate()) {
@@ -167,9 +167,10 @@ namespace printer {
         ss << baseType << " " << arrayName;
         //TODO
         std::vector<size_t> sizes = {}; //type.arraysSizes(/*usage*/);
-        bool isLiteral = sizes.size() == 1 &&
-                         types::TypesHandler::isCharacterType(type.baseTypeObj()) &&
-                         value.has_value();
+        bool isLiteral = true;
+//                 sizes.size() == 1 &&
+//                 types::TypesHandler::isCharacterType(type.baseTypeObj()) &&
+//                 value.has_value();
         if (isLiteral) {
             ss << "[]";
         } else {

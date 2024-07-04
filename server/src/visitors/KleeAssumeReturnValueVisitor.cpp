@@ -106,7 +106,7 @@ namespace visitor {
             additionalPointersCount--;
         }
         //TODO
-        std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
+        std::vector<size_t> sizes = {1}; //type.arraysSizes(usage);
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (assignPointersToNull) {
             int pointerIndex = type.indexOfFirstPointerInTypeKinds();
@@ -147,12 +147,13 @@ namespace visitor {
        return AbstractValueViewVisitor::getDecoratedVarName(KleeUtils::TEMP_VARIABLE_NAME,
                                                             additionalPointersCount, access);
    }
-   void KleeAssumeReturnValueVisitor::checkNotNullBefore() {
-       if (additionalPointersCount > 0) {
-           printer->ss << printer->LINE_INDENT() << "if (" << KleeUtils::TEMP_VARIABLE_NAME
-                       << " != " << PrinterUtils::C_NULL << ")" << printer->LB();
-       }
-   }
+
+//   void KleeAssumeReturnValueVisitor::checkNotNullBefore() {
+//       if (additionalPointersCount > 0) {
+//           printer->ss << printer->LINE_INDENT() << "if (" << KleeUtils::TEMP_VARIABLE_NAME
+//                       << " != " << PrinterUtils::C_NULL << ")" << printer->LB();
+//       }
+//   }
 
    void KleeAssumeReturnValueVisitor::checkNotNullAfter() {
        if (additionalPointersCount > 0 || returnTypeIsArray) {

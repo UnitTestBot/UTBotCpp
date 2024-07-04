@@ -75,6 +75,7 @@ namespace tests {
 
         explicit UTBotKTestObject(const KTestObject &kTestObject);
     };
+
     struct UTBotKTest {
         enum class Status {
             SUCCESS,
@@ -210,8 +211,8 @@ namespace tests {
     /**
      * Representation of array value. It's value is stored as a string. Subviews of the ArrayValueView are its elements.
      */
-    struct ArrayValueView : AbstractValueView {
-        explicit ArrayValueView(std::vector<std::shared_ptr<AbstractValueView>> &subViews)
+    struct FixedArrayValueView : AbstractValueView {
+        explicit FixedArrayValueView(std::vector<std::shared_ptr<AbstractValueView>> &subViews)
             : AbstractValueView(subViews) {}
 
         [[nodiscard]] std::string getEntryValue(printer::TestsPrinter *printer) const override {
@@ -742,18 +743,18 @@ namespace tests {
                           std::vector<InitReference> &initReferences,
                           const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
 
-        std::shared_ptr<ArrayValueView> multiArrayView(const std::vector<char> &byteArray,
-                                                       const std::vector<Pointer> &lazyPointersArray,
-                                                       const types::Type &type,
-                                                       size_t arraySizeInBits,
-                                                       size_t offsetInBits/*,
-                                                       types::PointerUsage usage*/);
+//        std::shared_ptr<FixedArrayValueView> multiArrayView(const std::vector<char> &byteArray,
+//                                                            const std::vector<Pointer> &lazyPointersArray,
+//                                                            const types::Type &type,
+//                                                            size_t arraySizeInBits,
+//                                                            size_t offsetInBits/*,
+//                                                       types::PointerUsage usage*/);
 
-        std::shared_ptr<ArrayValueView> arrayView(const std::vector<char> &byteArray,
-                                                  const std::vector<Pointer> &lazyPointersArray,
-                                                  const types::Type &type,
-                                                  size_t arraySizeInBits,
-                                                  size_t offsetInBits/*,
+        std::shared_ptr<FixedArrayValueView> fixedArrayView(const std::vector<char> &byteArray,
+                                                            const std::vector<Pointer> &lazyPointersArray,
+                                                            const types::Type &type,
+                                                            size_t arraySizeInBits,
+                                                            size_t offsetInBits/*,
                                                   types::PointerUsage usage*/);
 
         static std::shared_ptr<StringValueView> stringLiteralView(const std::vector<char> &byteArray,
@@ -862,9 +863,9 @@ namespace tests {
 
         size_t findFieldIndex(const types::StructInfo &structInfo, size_t offsetInBits) const;
 
-        Tests::TypeAndVarName traverseLazyInStruct(const types::Type &curVarType,
-                                                   size_t offsetInBits,
-                                                   const std::string &curVarName = "") const;
+        Tests::TypeAndVarName traverseLazy(const types::Type &curVarType,
+                                           size_t offsetInBits,
+                                           const std::string &curVarName = "") const;
 
         size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
                                  size_t offsetInBits/*,

@@ -26,7 +26,7 @@ namespace visitor {
 //                                           size_t size,
                                            int depth) {
         //TODO
-        std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
+        std::vector<size_t> sizes = {1}; //type.arraysSizes(usage);
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 

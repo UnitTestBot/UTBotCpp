@@ -62,7 +62,7 @@ namespace visitor {
           }
       }
       //TODO
-      std::vector<size_t> sizes = {}; //type.arraysSizes(usage);
+      std::vector<size_t> sizes = {1}; //type.arraysSizes(usage);
       bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
       if (assignPointersToNull) {
           int pointerIndex = type.indexOfFirstPointerInTypeKinds();

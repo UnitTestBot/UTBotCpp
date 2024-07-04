@@ -95,7 +95,7 @@ namespace PrinterUtils {
                                        bool pointerToConstQualifiedValue) {
         std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
         std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
-        return StringUtils::stringFormat("(%s%s%s) &%s", qualifier, type, additionalPointers, varName);
+        return StringUtils::stringFormat("(%s%s%s) %s", qualifier, type, additionalPointers, varName);
     }
 
     std::string generateNewVar(int cnt) {

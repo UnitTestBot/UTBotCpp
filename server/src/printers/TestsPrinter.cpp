@@ -341,8 +341,11 @@ void TestsPrinter::printLazyVariables(const std::vector<Tests::MethodParam> &laz
                                       const std::vector<Tests::TestCaseParamValue> &lazyValues) {
     for (size_t i = 0; i < lazyParams.size(); ++i) {
         printLazyVariables(lazyValues[i].lazyParams, lazyValues[i].lazyValues);
-        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name, lazyValues[i].view->getEntryValue(this),
-                          std::nullopt, true, lazyParams[i].type.getDimension());
+        //TODO make normal array
+        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name + "[]", lazyValues[i].view->getEntryValue(this),
+                      std::nullopt, true, lazyParams[i].type.getDimension() - 1);
+//        strDeclareArrayVar(lazyParams[i].type, lazyValues[i].name, lazyValues[i].view->getEntryValue(this),
+//                          std::nullopt, true);
     }
 }
 
@@ -745,8 +748,9 @@ TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &m
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
         } else if (param.type.isObjectPointer() || param.type.isArray()) {
-            std::string maybeAmpersand =
-                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
+//            std::string maybeAmpersand =
+//                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
+            std::string maybeAmpersand = "";
             args.push_back(maybeAmpersand + param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
