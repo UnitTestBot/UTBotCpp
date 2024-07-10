@@ -754,8 +754,10 @@ namespace tests {
                                                             const std::vector<Pointer> &lazyPointersArray,
                                                             const types::Type &type,
                                                             size_t arraySizeInBits,
-                                                            size_t offsetInBits/*,
-                                                  types::PointerUsage usage*/);
+                                                            size_t offsetInBits,
+//                                                  types::PointerUsage usage,
+                                                            const std::vector<UTBotKTestObject> &objects,
+                                                            std::vector<InitReference> &initReferences);
 
         static std::shared_ptr<StringValueView> stringLiteralView(const std::vector<char> &byteArray,
                                                                   size_t length = 0);
@@ -867,17 +869,17 @@ namespace tests {
                                            size_t offsetInBits,
                                            const std::string &curVarName = "") const;
 
-        size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
-                                 size_t offsetInBits/*,
-                                 types::PointerUsage usage*/) const;
+//        size_t getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
+//                                 size_t offsetInBits/*,
+//                                 types::PointerUsage usage*/) const;
 
         std::shared_ptr<AbstractValueView>
-        getLazyPointerView(const std::vector<UTBotKTestObject> &objects,
-                           std::vector<InitReference> &initReferences,
-                           const std::string &name,
+        getLazyPointerView(const std::string &name,
                            std::string res,
                            const types::Type &paramType,
-                           bool lazyPointer) const;
+                           bool lazyPointer,
+                           const std::vector<UTBotKTestObject> &objects,
+                           std::vector<InitReference> &initReferences) const;
 
         bool pointToStruct(const types::Type &pointerType, const UTBotKTestObject &goal) const;
 

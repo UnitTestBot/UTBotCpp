@@ -229,33 +229,49 @@ std::shared_ptr<FixedArrayValueView> KTestObjectParser::fixedArrayView(const std
                                                                        const std::vector<Pointer> &lazyPointersArray,
                                                                        const types::Type &type,
                                                                        size_t arraySizeInBits,
-                                                                       size_t offsetInBits/*,
-                                                             PointerUsage usage*/) {
+                                                                       size_t offsetInBits,
+//                                                                       PointerUsage usage,
+                                                                       const std::vector<UTBotKTestObject> &objects,
+                                                                       std::vector<InitReference> &initReferences) {
     std::vector<std::shared_ptr<AbstractValueView>> subViews;
-    size_t elementLenInBits = typesHandler.typeSize(types::TypesHandler::isVoid(type)
-                                                    ? Type::minimalScalarType() : type);
+    if(typesHandler.getTypeKind(type) != TypeKind::ARRAY) {
+        //TODO change exceprion type
+        throw UnImplementedException("Incorrect type in array");
+    }
+    auto subType = type.baseTypeObj(1);
+
+    size_t elementLenInBits = typesHandler.typeSize(types::TypesHandler::isVoid(subType)
+                                                    ? Type::minimalScalarType() : subType);
 
     for (size_t curPos = offsetInBits; curPos < offsetInBits + arraySizeInBits; curPos += elementLenInBits) {
-        switch (typesHandler.getTypeKind(type)) {
+        switch (typesHandler.getTypeKind(subType)) {
             case TypeKind::STRUCT_LIKE:
                 subViews.push_back(
-                        structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(type), curPos/*, usage*/));
+                        structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(subType), curPos/*, usage*/));
                 break;
             case TypeKind::ENUM:
-                subViews.push_back(enumView(byteArray, typesHandler.getEnumInfo(type), curPos, elementLenInBits));
+                subViews.push_back(enumView(byteArray, typesHandler.getEnumInfo(subType), curPos, elementLenInBits));
                 break;
             case TypeKind::PRIMITIVE:
-                subViews.push_back(primitiveView(byteArray, type.baseTypeObj(), curPos, elementLenInBits));
+                subViews.push_back(primitiveView(byteArray, subType.baseTypeObj(), curPos, elementLenInBits));
                 break;
             case TypeKind::OBJECT_POINTER: {
-                std::string res = readBytesAsValueForType(byteArray, PointerWidthType, 0, PointerWidthSizeInBits);
-                subViews.push_back(getLazyPointerView(objects, initReferences, param.varName, res, paramType,
-                                                      !kleeParam.pointers.empty()));
+                std::string res = readBytesAsValueForType(byteArray, PointerWidthType, curPos, PointerWidthSizeInBits);
+                //TODO change "abc" to accessor
+
+//                auto pointerIterator =
+//                        std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
+//                                     [&curPos](const Pointer &ptr) {
+//                                         return SizeUtils::bytesToBits(ptr.offset) == curPos;
+//                                     }) != lazyPointersArray.end();
+
+                subViews.push_back(getLazyPointerView("abc", res, subType, true, objects, initReferences));
                 break;
             }
             case TypeKind::ARRAY: {
-                auto subType = type.baseTypeObj(1);
-                subViews.push_back(fixedArrayView(byteArray, lazyPointersArray, subType, elementLenInBits, curPos));
+                subViews.push_back(
+                        fixedArrayView(byteArray, lazyPointersArray, subType, elementLenInBits, curPos, objects,
+                                       initReferences));
                 break;
             }
             case TypeKind::UNKNOWN: {
@@ -385,7 +401,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
 //                    }
 //                } else {
                     auto view = fixedArrayView(byteArray, lazyPointersArray, field.type.baseTypeObj(1), fieldLen,
-                                               fieldStartOffset/*, usage*/);
+                                               fieldStartOffset/*, usage*/, objects, initReferences);
                     subViews.push_back(view);
 //                }
             }
@@ -397,10 +413,10 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                         std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
                                      [&fieldStartOffset](const Pointer &ptr) {
                                          return SizeUtils::bytesToBits(ptr.offset) == fieldStartOffset;
-                                     });
-                subViews.push_back(getLazyPointerView(
-                        objects, initReferences, PrinterUtils::getFieldAccess(name, field), res,
-                        field.type, pointerIterator != lazyPointersArray.end()));
+                                     }) != lazyPointersArray.end();
+                subViews.push_back(getLazyPointerView(PrinterUtils::getFieldAccess(name, field), res,
+                        field.type, pointerIterator,
+                                                      objects, initReferences));
             }
                 break;
             case TypeKind::FUNCTION_POINTER:
@@ -442,7 +458,7 @@ std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector
                 fixedArrayView(byteArray, lazyPointersArray,
                                types::Type::createSimpleTypeFromName("utbot_byte"),
                                curStruct.size,
-                               offsetInBits/*, usage*/)->getEntryValue(nullptr));
+                               offsetInBits/*, usage*/, objects, initReferences)->getEntryValue(nullptr));
         isInitializedStruct = true;
         dirtyInitializedStruct = false;
     }
@@ -694,18 +710,21 @@ std::vector<PointerUsage> &usages*/) {
         }
 
         for (auto const &[offset, indObj, indexOffset]: testCase.objects[curType.jsonInd].pointers) {
-            if (indexOffset != 0) {
-                continue;
-            }
-            Tests::TypeAndVarName typeAndName = {paramType, ""};
-            size_t offsetInStruct =
-                    getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(offset)/*, usages[indObj]*/);
-            types::Type fieldType = traverseLazy(typeAndName.type, offsetInStruct).type;
-//            if (!pointToStruct(fieldType, testCase.objects[indObj])) {
-//                continue;
-//            }
             if (!visited[indObj]) {
-                Tests::MethodParam param = {fieldType.arrayClone(), "", std::nullopt};
+//                if (indexOffset != 0) {
+//                    continue;
+//                }
+
+                Tests::TypeAndVarName typeAndName = {paramType, ""};
+//                size_t offsetInStruct = getOffsetInStruct(typeAndName, SizeUtils::bytesToBits(offset)/*, usages[indObj]*/);
+                size_t offsetInStruct = SizeUtils::bytesToBits(offset);
+                types::Type fieldType = traverseLazy(typeAndName.type, offsetInStruct).type;
+
+//                if (!pointToStruct(fieldType, testCase.objects[indObj])) {
+//                    continue;
+//                }
+
+                Tests::MethodParam param(fieldType.arrayClone(), "", std::nullopt);
                 order.emplace(indObj, param, curType.paramValue);
                 visited[indObj] = true;
 //                usages[indObj] = types::PointerUsage::PARAMETER;
@@ -725,15 +744,20 @@ Tests::TypeAndVarName KTestObjectParser::traverseLazy(const types::Type &curVarT
             return traverseLazy(next.type, offsetInBits - next.offset,
                                 PrinterUtils::getFieldAccess(curVarName, next));
         }
+        case TypeKind::ARRAY: {
+//            LOG_IF_S(ERROR, offsetInBits != 0) << "Offset not zero" << offsetInBits;
+            //TODO change name constructor
+            const types::Type subType = curVarType.baseTypeObj(1);
+            size_t offsetInArray =  (offsetInBits >> 3) / typesHandler.getPointerSize();
+            size_t newOffset = offsetInBits - offsetInArray * typesHandler.getPointerSize();
+            std::string varname = StringUtils::stringFormat("%s[%d]", curVarName, offsetInArray);
+            return traverseLazy(subType, newOffset, varname);
+        }
+        case TypeKind::OBJECT_POINTER:
         case TypeKind::PRIMITIVE: {
             return {curVarType, curVarName};
         }
-        case TypeKind::ARRAY:
         case TypeKind::ENUM:
-        case TypeKind::OBJECT_POINTER: {
-            LOG_IF_S(ERROR, offsetInBits != 0) << "Offset not zero" << offsetInBits;
-            return {curVarType, curVarName};
-        }
         case TypeKind::FUNCTION_POINTER:
         case TypeKind::UNKNOWN:
         default: {
@@ -745,24 +769,24 @@ Tests::TypeAndVarName KTestObjectParser::traverseLazy(const types::Type &curVarT
     }
 }
 
-size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
-                                            size_t offsetInBits/*,
-                                            types::PointerUsage usage*/) const {
-    if (!objTypeAndName.type.isPointerToPointer() /* || usage != types::PointerUsage::PARAMETER*/) {
-        return offsetInBits;
-    }
-    //TODO
-    std::vector<size_t> sizes = {1}; //objTypeAndName.type.arraysSizes(/*usage*/);
-    objTypeAndName.type = objTypeAndName.type.baseTypeObj();
-    size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
-    size_t offset = offsetInBits / sizeInBits;
-    PrinterUtils::appendIndicesToVarName(objTypeAndName.varName, sizes, offset);
-    if (objTypeAndName.type.isConstQualifiedValue()) {
-        PrinterUtils::appendConstCast(objTypeAndName.varName);
-    }
-    offsetInBits %= sizeInBits;
-    return offsetInBits;
-}
+//size_t KTestObjectParser::getOffsetInStruct(Tests::TypeAndVarName &objTypeAndName,
+//                                            size_t offsetInBits/*,
+//                                            types::PointerUsage usage*/) const {
+//    if (!objTypeAndName.type.isPointerToPointer() /* || usage != types::PointerUsage::PARAMETER*/) {
+//        return offsetInBits;
+//    }
+//    //TODO
+//    std::vector<size_t> sizes = {1}; //objTypeAndName.type.arraysSizes(/*usage*/);
+//    objTypeAndName.type = objTypeAndName.type.baseTypeObj();
+//    size_t sizeInBits = typesHandler.typeSize(objTypeAndName.type);
+//    size_t offset = offsetInBits / sizeInBits;
+//    PrinterUtils::appendIndicesToVarName(objTypeAndName.varName, sizes, offset);
+//    if (objTypeAndName.type.isConstQualifiedValue()) {
+//        PrinterUtils::appendConstCast(objTypeAndName.varName);
+//    }
+//    offsetInBits %= sizeInBits;
+//    return offsetInBits;
+//}
 
 void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                           const Tests::MethodDescription &methodDescription) {
@@ -790,29 +814,33 @@ void KTestObjectParser::assignAllLazyPointers(
         if (!objTypeAndName[ind].has_value()) {
             continue;
         }
+        //TODO
         for (const auto &pointer : object.pointers) {
+
             Tests::TypeAndVarName typeAndName = objTypeAndName[ind].value();
-            size_t offset = getOffsetInStruct(typeAndName,
-                                              SizeUtils::bytesToBits(pointer.offset)/*,
-                                              usages[ind]*/);
+//            size_t offset = getOffsetInStruct(typeAndName,
+//                                              SizeUtils::bytesToBits(pointer.offset)/*,
+//                                              usages[ind]*/);
+            size_t offset = SizeUtils::bytesToBits(pointer.offset);
             Tests::TypeAndVarName fromPtr =
                     traverseLazy(typeAndName.type, offset, typeAndName.varName);
             if (!objTypeAndName[pointer.index].has_value()) {
                 continue;
             }
 
-            std::string toPtrName;
+//            std::string toPtrName;
             Tests::TypeAndVarName pointerTypeAndName = objTypeAndName[pointer.index].value();
-            size_t indexOffset = getOffsetInStruct(pointerTypeAndName,
-                                                   SizeUtils::bytesToBits(pointer.indexOffset)/*,
-                                                   usages[pointer.index]*/);
-            if (indexOffset == 0 &&
-                pointToStruct(fromPtr.type, testCase.objects[pointer.index])) {
-                toPtrName = pointerTypeAndName.varName;
-            } else {
-                toPtrName = traverseLazy(pointerTypeAndName.type, indexOffset,
-                                         pointerTypeAndName.varName).varName;
-            }
+//            size_t indexOffset = getOffsetInStruct(pointerTypeAndName,
+//                                                   SizeUtils::bytesToBits(pointer.indexOffset)/*,
+//                                                   usages[pointer.index]*/);
+//            if (indexOffset == 0 &&
+//                pointToStruct(fromPtr.type, testCase.objects[pointer.index])) {
+//                toPtrName = pointerTypeAndName.varName;
+//            } else {
+//                toPtrName = traverseLazy(pointerTypeAndName.type, indexOffset,
+//                                         pointerTypeAndName.varName).varName;
+//            }
+            std::string toPtrName = pointerTypeAndName.varName;
 
             testCase.lazyReferences.emplace_back(
                 fromPtr.varName, toPtrName,
@@ -1225,8 +1253,9 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
             //TODO
             std::string res =
                     readBytesAsValueForType(rawData, PointerWidthType, 0, PointerWidthSizeInBits);
-            return getLazyPointerView(objects, initReferences, param.varName, res, paramType,
-                                      !kleeParam.pointers.empty());
+            return getLazyPointerView(param.varName, res, paramType,
+                                      !kleeParam.pointers.empty(),
+                                      objects, initReferences);
 //            } else
 //            if (types::TypesHandler::isCStringType(paramType)) {
 //                return stringLiteralView(rawData);
@@ -1250,7 +1279,7 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
 //                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
 //            } else {
                 return fixedArrayView(rawData, kleeParam.pointers, paramType,
-                                 SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
+                                 SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/, objects, initReferences);
 //            }
         case TypeKind::UNKNOWN: {
             std::string message = "No such type";
@@ -1266,12 +1295,12 @@ std::shared_ptr<AbstractValueView> KTestObjectParser::testParameterView(
 }
 
 std::shared_ptr<AbstractValueView>
-KTestObjectParser::getLazyPointerView(const std::vector<UTBotKTestObject> &objects,
-                                      std::vector<InitReference> &initReferences,
-                                      const std::string &name,
+KTestObjectParser::getLazyPointerView(const std::string &name,
                                       std::string res,
                                       const Type &paramType,
-                                      bool lazyPointer) const {
+                                      bool lazyPointer,
+                                      const std::vector<UTBotKTestObject> &objects,
+                                      std::vector<InitReference> &initReferences) const {
     size_t ptr = std::stoull(res);
     auto ptr_element =
         std::find_if(objects.begin(), objects.end(),
@@ -1283,9 +1312,9 @@ KTestObjectParser::getLazyPointerView(const std::vector<UTBotKTestObject> &objec
                                                      paramType.getDimension(),
                                                      paramType.isConstQualifiedValue()));
     }
-    if (lazyPointer || ptr_element != objects.end()) {
-            res = PrinterUtils::C_NULL;
-    }
+//    if (lazyPointer || ptr_element != objects.end()) {
+//            res = PrinterUtils::C_NULL;
+//    }
     return std::make_shared<JustValueView>(
         PrinterUtils::initializePointer(paramType.baseType(), res, paramType.getDimension(),
                                         paramType.isConstQualifiedValue()));

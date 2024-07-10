@@ -486,7 +486,7 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
     Type returnType = types::TypesHandler::isVoid(testMethod.returnType.baseTypeObj())
                       ? Type::minimalScalarType()
                       : testMethod.returnType;
-    bool maybeArray = returnType.maybeReturnArray();
+//    bool maybeArray = returnType.maybeReturnArray();
     bool isPointer = testMethod.returnType.isObjectPointer();
     std::string type = typesHandler->isAnonymousEnum(returnType)
                        ? "int"
@@ -494,13 +494,13 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
 //                       : returnType.baseType();
     strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
-    if (maybeArray) {
-        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
-        ss << "[" << size << "]";
-    }
+//    if (maybeArray) {
+//        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
+//        ss << "[" << size << "]";
+//    }
     ss << SCNL;
     strKleeMakeSymbolic(KleeUtils::RESULT_VARIABLE_NAME,
-                        !maybeArray && !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
+                        /*!maybeArray && */ !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
 //    if (isPointer) {
 //        strDeclareVar("int", KleeUtils::NOT_NULL_VARIABLE_NAME);
 //        strKleeMakeSymbolic(KleeUtils::NOT_NULL_VARIABLE_NAME, true);
