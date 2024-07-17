@@ -720,6 +720,7 @@ namespace tests {
                             Tests::MethodDescription &methodDescription,
                             const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                             const std::shared_ptr<LineInfo> &lineInfo);
+
         /**
          * Parses parameters that are stored in given objects. Then parameters
          * are written into paramValues.
@@ -732,16 +733,45 @@ namespace tests {
         Tests::TestCaseDescription
         parseTestCaseParameters(const UTBotKTest &testCases,
                                 Tests::MethodDescription &methodDescription,
-                                const std::unordered_map<std::string, types::Type>& methodNameToReturnTypeMap,
+                                const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
                                 std::stringstream &traceStream);
 
         std::shared_ptr<AbstractValueView>
-        testParameterView(const RawKleeParam &kleeParam,
-                          const Tests::TypeAndVarName &param,
-//                          types::PointerUsage usage,
-                          const std::vector<UTBotKTestObject> &objects,
-                          std::vector<InitReference> &initReferences,
-                          const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
+        testValueView(
+                const std::vector<char> &rawData,
+                const std::vector<Pointer> &pointers,
+                const types::Type &paramType,
+                const std::string &paramName,
+                const std::vector<UTBotKTestObject> &objects,
+                std::vector<InitReference> &initReferences,
+                const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
+
+        std::shared_ptr<AbstractValueView>
+        testPreValueView(
+                const RawKleeParam &kleeParam,
+                const types::Type &paramType,
+                const std::string &paramName,
+                const std::vector<UTBotKTestObject> &objects,
+                std::vector<InitReference> &initReferences,
+                const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
+
+        std::shared_ptr<AbstractValueView>
+        testPreValueView(
+                const tests::UTBotKTestObject &kleeParam,
+                const types::Type &paramType,
+                const std::string &paramName,
+                const std::vector<UTBotKTestObject> &objects,
+                std::vector<InitReference> &initReferences,
+                const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
+
+        std::shared_ptr<AbstractValueView>
+        testPostValueView(
+                const RawKleeParam &kleeParam,
+                const types::Type &paramType,
+                const std::string &paramName,
+                const std::vector<UTBotKTestObject> &objects,
+                std::vector<InitReference> &initReferences,
+                const std::optional<const Tests::MethodDescription> &testingMethod = std::nullopt);
 
 //        std::shared_ptr<FixedArrayValueView> multiArrayView(const std::vector<char> &byteArray,
 //                                                            const std::vector<Pointer> &lazyPointersArray,

@@ -112,7 +112,7 @@ namespace PrinterUtils {
                                        size_t additionalPointersCount,
                                        bool pointerToConstQualifiedValue);
 
-    std::string generateNewVar(int cnt);
+    std::string generateNewVar(size_t cnt);
 
     std::string getFileParamKTestJSON(char fileName);
     std::string getFileReadBytesParamKTestJSON(char fileName);

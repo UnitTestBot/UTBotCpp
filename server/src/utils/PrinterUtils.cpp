@@ -98,7 +98,7 @@ namespace PrinterUtils {
         return StringUtils::stringFormat("(%s%s%s) %s", qualifier, type, additionalPointers, varName);
     }
 
-    std::string generateNewVar(int cnt) {
+    std::string generateNewVar(size_t cnt) {
         return LAZYRENAME + std::to_string(cnt);
     }
 
