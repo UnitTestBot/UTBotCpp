@@ -437,6 +437,7 @@ namespace tests {
             std::vector<TestCaseParamValue> stubValues;
 
             std::vector<InitReference> lazyReferences;
+            std::vector<InitReference> lazyReferencesPost;
 
             std::vector<TestCaseParamValue> funcParamValues;
             std::vector<TestCaseParamValue> paramPostValues;
@@ -460,6 +461,7 @@ namespace tests {
             std::optional<TestCaseParamValue> stdinValue;
             std::optional<std::vector<FileInfo>> filesValues;
             std::vector<InitReference> lazyReferences;
+            std::vector<InitReference> lazyReferencesPost;
             std::vector<UTBotKTestObject> objects;
 
             std::vector<MethodParam> stubValuesTypes;
@@ -909,7 +911,8 @@ namespace tests {
                            const types::Type &paramType,
                            bool lazyPointer,
                            const std::vector<UTBotKTestObject> &objects,
-                           std::vector<InitReference> &initReferences) const;
+                           std::vector<InitReference> &initReferences,
+                           bool post) const;
 
         bool pointToStruct(const types::Type &pointerType, const UTBotKTestObject &goal) const;
 

@@ -267,7 +267,6 @@ namespace tests {
 //                                     [&curPos](const Pointer &ptr) {
 //                                         return SizeUtils::bytesToBits(ptr.offset) == curPos;
 //                                     }) != lazyPointersArray.end();
-
                     subViews.push_back(getLazyPointerView("abc", res, subType, true, objects, initReferences));
                     break;
                 }
@@ -889,6 +888,7 @@ std::vector<PointerUsage> &usages*/) {
                 std::swap(testCase.filesValues, testCaseDescription.filesValues);
                 std::swap(testCase.objects, testCaseDescription.objects);
                 std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
+                std::swap(testCase.lazyReferencesPost, testCaseDescription.lazyReferencesPost);
 
                 testCase.errorDescriptors = case_.errorDescriptors;
                 testCase.errorInfo = testCaseDescription.errorInfo;
@@ -1009,9 +1009,9 @@ std::vector<PointerUsage> &usages*/) {
             testCaseDescription.funcParamValues.emplace_back(methodParam.name, methodParam.alignment,
                                                              testParamView);
 
-//        if (methodParam.isChangeable()) {
-//            processParamPostValue(testCaseDescription, methodParam, rawKleeParams);
-//        }
+        if (methodParam.isChangeable()) {
+            processParamPostValue(testCaseDescription, methodParam, rawKleeParams);
+        }
         }
         for (const auto &globalParam: methodDescription.globalParams) {
             processGlobalParamPreValue(testCaseDescription, globalParam, rawKleeParams);
@@ -1154,11 +1154,11 @@ std::vector<PointerUsage> &usages*/) {
     void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseDescription &testCaseDescription,
                                                         const Tests::MethodParam &globalParam,
                                                         std::vector<RawKleeParam> &rawKleeParams) {
-        auto symbolicVariable = KleeUtils::postSymbolicVariable(globalParam.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, symbolicVariable);
-        auto type = typesHandler.getReturnTypeToCheck(globalParam.type);
+//        auto symbolicVariable = KleeUtils::postSymbolicVariable(globalParam.name);
+        auto kleeParam = getKleeParamOrThrow(rawKleeParams, globalParam.name);
+//        auto type = typesHandler.getReturnTypeToCheck(globalParam.type);
         auto testParamView =
-                testPostValueView(kleeParam, type, globalParam.name,
+                testPostValueView(kleeParam, globalParam.type, globalParam.name,
                               testCaseDescription.objects, testCaseDescription.lazyReferences);
         testCaseDescription.globalPostValues.emplace_back(globalParam.name, globalParam.alignment,
                                                           testParamView);
@@ -1168,12 +1168,12 @@ std::vector<PointerUsage> &usages*/) {
                                                   const Tests::MethodParam &param,
                                                   std::vector<RawKleeParam> &rawKleeParams) {
 //    const auto usage = types::PointerUsage::PARAMETER;
-        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, symbolicVariable);
-        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
-        auto type = typesHandler.getReturnTypeToCheck(paramType);
+//        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
+        auto kleeParam = getKleeParamOrThrow(rawKleeParams, param.name);
+//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
+//        auto type = typesHandler.getReturnTypeToCheck(paramType);
         auto testParamView =
-                testPostValueView(kleeParam, type, param.name/*, usage*/, testCaseDescription.objects,
+                testPostValueView(kleeParam, param.type, param.name/*, usage*/, testCaseDescription.objects,
                               testCaseDescription.lazyReferences);
         testCaseDescription.classPostValues = {param.name, param.alignment, testParamView};
     }
@@ -1183,13 +1183,14 @@ std::vector<PointerUsage> &usages*/) {
                                                   std::vector<RawKleeParam> &rawKleeParams) {
 //    const auto usage = types::PointerUsage::PARAMETER;
         auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, symbolicVariable);
-        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
-        auto type = typesHandler.getReturnTypeToCheck(paramType);
-        auto testParamView =
-                testPostValueView(kleeParam, type, param.name/*, usage*/, testCaseDescription.objects,
-                              testCaseDescription.lazyReferences);
-        testCaseDescription.paramPostValues.emplace_back(param.name, param.alignment, testParamView);
+        auto kleeParam = getKleeParamOrThrow(rawKleeParams, param.name);
+//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
+//        auto type = typesHandler.getReturnTypeToCheck(paramType);
+
+        auto expectedName = PrinterUtils::getExpectedVarName(param.name);
+        auto testParamView = testPostValueView(kleeParam, param.type, expectedName/*, usage*/, testCaseDescription.objects,
+                                               testCaseDescription.lazyReferences);
+        testCaseDescription.paramPostValues.emplace_back(expectedName, param.alignment, testParamView);
     }
 
     void KTestObjectParser::processStubParamValue(
@@ -1309,12 +1310,12 @@ std::vector<PointerUsage> &usages*/) {
                                           const Type &paramType,
                                           bool lazyPointer,
                                           const std::vector<UTBotKTestObject> &objects,
-                                          std::vector<InitReference> &initReferences) const {
+                                          std::vector<InitReference> &initReferences,
+                                          bool post) const {
         size_t ptr = std::stoull(res);
-        auto ptr_element =
-                std::find_if(objects.begin(), objects.end(),
-                             [ptr](const UTBotKTestObject &object) { return object.address == ptr; });
-        if (!lazyPointer && ptr_element != objects.end()) {
+        auto ptr_element = std::find_if(objects.begin(), objects.end(),
+                                        [ptr](const UTBotKTestObject &object) { return object.address == ptr; });
+        if ( ptr_element != objects.end()) {
             initReferences.emplace_back(
                     name, ptr_element->name,
                     PrinterUtils::initializePointerToVar(paramType.baseType(), ptr_element->name,

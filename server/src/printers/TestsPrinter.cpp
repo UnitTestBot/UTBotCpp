@@ -620,7 +620,7 @@ void TestsPrinter::verboseAsserts(const Tests::MethodDescription &methodDescript
     if (!testCase.paramPostValues.empty()) {
         ss << printer::NL;
         strComment("Check function parameters");
-//        changeableParamsAsserts(methodDescription, testCase);
+        changeableParamsAsserts(methodDescription, testCase);
     }
 }
 
@@ -650,7 +650,7 @@ void TestsPrinter::changeableParamsAsserts(const Tests::MethodDescription &metho
     for (const auto& param : methodDescription.params) {
         if (param.isChangeable()) {
             auto const &value = testCase.paramPostValues[param_i];
-            std::string expectedName = PrinterUtils::getExpectedVarName(param.name);
+            std::string expectedName = value.name; //PrinterUtils::getExpectedVarName(param.name);
             const types::Type expectedType = param.type.arrayCloneMultiDim(/*usage*/);
             parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
             assertsVisitor.visit(param, param.name);
@@ -721,7 +721,7 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
     if (!testCase.isError()) {
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
-//        changeableParamsAsserts(methodDescription, testCase);
+        changeableParamsAsserts(methodDescription, testCase);
     } else {
         printFailAssertion(errorMode);
     }
