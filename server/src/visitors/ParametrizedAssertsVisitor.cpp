@@ -9,7 +9,7 @@ namespace visitor {
             printer::TestsPrinter *printer,
             const std::optional<LineInfo::PredicateInfo> &predicateInfo,
             bool isError)
-            : AssertsVisitor(typesHandler, printer/*, types::PointerUsage::RETURN*/, predicateInfo),
+            : AssertsVisitor(typesHandler, printer, predicateInfo),
               isError(isError) {
     }
 
@@ -18,21 +18,16 @@ namespace visitor {
     void ParametrizedAssertsVisitor::visit(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            ErrorMode errorMode) {
-        auto returnType = methodDescription.returnType.maybeReturnArray()
-                          ? methodDescription.returnType.arrayClone(/*usage, */pointerSize)
-                          : methodDescription.returnType;
-
         functionCall = printer->constrVisitorFunctionCall(methodDescription, testCase, false, errorMode);
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType) && !testCase.isError()) {
             if (testCase.returnValue.view->getEntryValue(nullptr) == PrinterUtils::C_NULL) {
                 additionalPointersCount = methodDescription.returnType.countReturnPointers(true);
                 printer->writeCodeLine(StringUtils::stringFormat(
-                        "EXPECT_TRUE(%s)",
-                        PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
+                        "EXPECT_TRUE(%s)", PrinterUtils::getEqualString(functionCall, PrinterUtils::C_NULL)));
                 return;
             } else {
                 additionalPointersCount = 0;
-                visitAny(returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+                visitAny(methodDescription.returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
                 functionCall = {};
                 additionalPointersCount = 0;
             }

@@ -14,24 +14,21 @@ namespace visitor {
         if (types::TypesHandler::isCStringType(type)) {
             return visitCString(type, name, view, access, depth);
         }
-        if (type.isArray() || type.isPointerToArray() || type.isPointerToPointer() && depth == 0) {
-            size_t size = type.kinds().front()->getSize();
-            if (types::TypesHandler::isVoid(type.baseTypeObj())) {
-                return visitArray(
-                        //TODO change to depth
-                        types::Type::minimalScalarPointerType(/*type.arraysSizes(usage).size()*/), name,
-                        view, access/*, size*/, depth);
-            } else {
-                return visitArray(type, name, view, access/*, size*/, depth);
-            }
+        if (type.isArray()) {
+//            size_t size = type.kinds().front()->getSize();
+//            if (types::TypesHandler::isVoid(type.baseTypeObj())) {
+//                return visitArray(types::Type::minimalScalarPointerType(/*type.arraysSizes(usage).size()*/), name, view, access, depth);
+//            } else {
+            return visitArray(type, name, view, access, depth);
+//            }
         } else if (types::TypesHandler::isArrayOfPointersToFunction(type)) {
             return visitPointerToFunction(type, name, view, access, depth);
         } else if (types::TypesHandler::isObjectPointerType(type)) {
-            if (types::TypesHandler::isVoid(type.baseTypeObj())) {
-                return visitPointer(types::Type::minimalScalarPointerType(), name, view, access, depth);
-            } else {
+//            if (types::TypesHandler::isVoid(type.baseTypeObj())) {
+//                return visitPointer(types::Type::minimalScalarPointerType(), name, view, access, depth);
+//            } else {
                 return visitPointer(type, name, view, access, depth);
-            }
+//            }
         } else if (typesHandler->isStructLike(type)) {
             return visitStruct(type, name, view, access, depth);
         } else if (typesHandler->isEnum(type)) {

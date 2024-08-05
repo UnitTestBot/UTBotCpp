@@ -97,12 +97,12 @@ namespace tests {
         }
     }
 
-    std::shared_ptr<PrimitiveValueView> KTestObjectParser::primitiveView(const std::vector<char> &byteArray,
+    std::shared_ptr<PrimitiveValueView> KTestObjectParser::primitiveView(const UTBotKTestObject::RawData &rawData,
                                                                          const types::Type &type,
                                                                          size_t offsetInBits,
                                                                          size_t lenInBits) {
         Type readType = types::TypesHandler::isVoid(type) ? Type::minimalScalarType() : type;
-        std::string value = readBytesAsValueForType(byteArray, readType.baseType(), offsetInBits, lenInBits);
+        std::string value = readBytesAsValueForType(rawData.bytes, readType.baseType(), offsetInBits, lenInBits);
         value = makeDecimalConstant(value, type.baseType());
         value = processFPSpecialValue(value);
         if (types::TypesHandler::isBoolType(type)) {
@@ -112,11 +112,11 @@ namespace tests {
     }
 
 
-    std::shared_ptr<EnumValueView> KTestObjectParser::enumView(const std::vector<char> &byteArray,
+    std::shared_ptr<EnumValueView> KTestObjectParser::enumView(const UTBotKTestObject::RawData &rawData,
                                                                const types::EnumInfo &enumInfo,
                                                                size_t offsetInBits,
                                                                size_t lenInBits) {
-        std::string value = readBytesAsValue<int>(byteArray, offsetInBits, lenInBits);
+        std::string value = readBytesAsValue<int>(rawData.bytes, offsetInBits, lenInBits);
         if (CollectionUtils::containsKey(enumInfo.valuesToEntries, value)) {
             auto name = enumInfo.getEntryName(value, utbot::Language::CXX);
             value = NameDecorator::decorate(name);
@@ -150,67 +150,6 @@ namespace tests {
         return std::make_shared<StringValueView>(value);
     }
 
-//std::shared_ptr<FixedArrayValueView> KTestObjectParser::multiArrayView(const std::vector<char> &byteArray,
-//                                                                       const std::vector<Pointer> &lazyPointersArray,
-//                                                                       const types::Type &type,
-//                                                                       size_t arraySizeInBits,
-//                                                                       size_t offsetInBits/*,
-//                                                                  PointerUsage usage*/) {
-//    std::vector<std::shared_ptr<AbstractValueView>> views;
-//    const types::Type baseType = type.baseTypeObj();
-//
-//    size_t elementLenInBits = (types::TypesHandler::isVoid(baseType))
-//                              ? typesHandler.typeSize(Type::minimalScalarType())
-//                              : typesHandler.typeSize(baseType);
-//
-//    for (size_t curPos = offsetInBits; curPos < offsetInBits + arraySizeInBits; curPos += elementLenInBits) {
-//        switch (typesHandler.getTypeKind(baseType)) {
-//            case TypeKind::STRUCT_LIKE: {
-//                views.push_back(
-//                        structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(baseType), curPos/*, usage*/));
-//                break;
-//            }
-//            case TypeKind::ENUM: {
-//                views.push_back(enumView(byteArray, typesHandler.getEnumInfo(type), curPos, elementLenInBits));
-//                break;
-//            }
-//            case TypeKind::PRIMITIVE: {
-//                views.push_back(primitiveView(byteArray, baseType, curPos, elementLenInBits));
-//                break;
-//            }
-//            case TypeKind::OBJECT_POINTER:
-//            case TypeKind::ARRAY:
-//                LOG_S(ERROR) << "Invariant ERROR: base type is pointer/array: " << type.typeName();
-//                // No break here
-//            case TypeKind::UNKNOWN: {
-//                std::string message = "Arrays don't support element type: " + type.typeName();
-//                LOG_S(ERROR) << message;
-//                throw UnImplementedException(message);
-//            }
-//            default: {
-//                std::string message = "Missing case for this TypeKind in switch";
-//                LOG_S(ERROR) << message;
-//                throw NoSuchTypeException(message);
-//            }
-//        }
-//    }
-//
-//    //TODO
-////    std::vector<size_t> sizes = type.arraysSizes(/*usage*/);
-////    for (size_t i = sizes.size() - 1; i > 0; i--) {
-////        size_t size = sizes[i];
-////        std::vector<std::shared_ptr<AbstractValueView>> newViews;
-////        for (size_t j = 0; j < views.size(); j += size) {
-////            std::vector<std::shared_ptr<AbstractValueView>> curViews =
-////                std::vector(views.begin() + j, views.begin() + j + size);
-////            newViews.push_back(std::make_shared<ArrayValueView>(curViews));
-////        }
-////        views = newViews;
-////    }
-//
-//    return std::make_shared<FixedArrayValueView>(views);
-//}
-
     std::shared_ptr<FunctionPointerView> KTestObjectParser::functionPointerView(
             const std::optional<std::string> &scopeName,
             const std::string &methodName, const std::string &paramName) {
@@ -225,12 +164,10 @@ namespace tests {
         return std::make_shared<FunctionPointerView>(value);
     }
 
-    std::shared_ptr<FixedArrayValueView> KTestObjectParser::fixedArrayView(const std::vector<char> &byteArray,
-                                                                           const std::vector<Pointer> &lazyPointersArray,
+    std::shared_ptr<FixedArrayValueView> KTestObjectParser::fixedArrayView(const UTBotKTestObject::RawData &rawData,
                                                                            const types::Type &type,
                                                                            size_t arraySizeInBits,
                                                                            size_t offsetInBits,
-//                                                                       PointerUsage usage,
                                                                            const std::vector<UTBotKTestObject> &objects,
                                                                            std::vector<InitReference> &initReferences) {
         std::vector<std::shared_ptr<AbstractValueView>> subViews;
@@ -247,32 +184,33 @@ namespace tests {
             switch (typesHandler.getTypeKind(subType)) {
                 case TypeKind::STRUCT_LIKE:
                     subViews.push_back(
-                            structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(subType),
+                            structView(rawData, typesHandler.getStructInfo(subType),
                                        curPos/*, usage*/));
                     break;
                 case TypeKind::ENUM:
                     subViews.push_back(
-                            enumView(byteArray, typesHandler.getEnumInfo(subType), curPos, elementLenInBits));
+                            enumView(rawData, typesHandler.getEnumInfo(subType), curPos, elementLenInBits));
                     break;
                 case TypeKind::PRIMITIVE:
-                    subViews.push_back(primitiveView(byteArray, subType.baseTypeObj(), curPos, elementLenInBits));
+                    subViews.push_back(primitiveView(rawData, subType.baseTypeObj(), curPos, elementLenInBits));
                     break;
                 case TypeKind::OBJECT_POINTER: {
-                    std::string res = readBytesAsValueForType(byteArray, PointerWidthType, curPos,
+                    std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, curPos,
                                                               PointerWidthSizeInBits);
                     //TODO change "abc" to accessor
 
-//                auto pointerIterator =
-//                        std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
-//                                     [&curPos](const Pointer &ptr) {
-//                                         return SizeUtils::bytesToBits(ptr.offset) == curPos;
-//                                     }) != lazyPointersArray.end();
-                    subViews.push_back(getLazyPointerView("abc", res, subType, true, objects, initReferences));
+//                    auto pointerIterator =
+//                            std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
+//                                         [&curPos](const Pointer &ptr) {
+//                                             return SizeUtils::bytesToBits(ptr.offset) == curPos;
+//                                         }) != lazyPointersArray.end();
+                    subViews.push_back(
+                            getLazyPointerView("abc", res, subType, true, objects, initReferences, rawData.isPost));
                     break;
                 }
                 case TypeKind::ARRAY: {
                     subViews.push_back(
-                            fixedArrayView(byteArray, lazyPointersArray, subType, elementLenInBits, curPos, objects,
+                            fixedArrayView(rawData, subType, elementLenInBits, curPos, objects,
                                            initReferences));
                     break;
                 }
@@ -291,27 +229,25 @@ namespace tests {
         return std::make_shared<FixedArrayValueView>(subViews);
     }
 
-    std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector<char> &byteArray,
-                                                                   const std::vector<Pointer> &lazyPointersArray,
+    std::shared_ptr<StructValueView> KTestObjectParser::structView(const UTBotKTestObject::RawData &rawData,
                                                                    const types::StructInfo &curStruct,
-                                                                   size_t offsetInBits/*,
-                                                               types::PointerUsage usage*/) {
+                                                                   size_t offsetInBits) {
         std::vector<InitReference> tmpInitReferences;
-        return structView(byteArray, lazyPointersArray, curStruct, offsetInBits/*, usage*/, {}, false, "", {},
-                          tmpInitReferences);
+        return structView(rawData, curStruct, "", {}, tmpInitReferences, {}, offsetInBits, false);
     }
 
-    std::shared_ptr<StructValueView> KTestObjectParser::structView(const std::vector<char> &byteArray,
-                                                                   const std::vector<Pointer> &lazyPointersArray,
-                                                                   const StructInfo &curStruct,
-                                                                   size_t offsetInBits,
-//                                                               PointerUsage usage,
-                                                                   const std::optional<const Tests::MethodDescription> &testingMethod,
-                                                                   const bool anonymousField,
+    std::shared_ptr<StructValueView> KTestObjectParser::structView(const UTBotKTestObject::RawData &rawData,
+                                                                   const types::StructInfo &curStruct,
                                                                    const std::string &name,
                                                                    const std::vector<UTBotKTestObject> &objects,
-                                                                   std::vector<InitReference> &initReferences) {
+                                                                   std::vector<InitReference> &initReferences,
+                                                                   const std::optional<const Tests::MethodDescription> &testingMethod,
+                                                                   size_t offsetInBits,
+                                                                   const bool anonymous) {
         std::vector<std::shared_ptr<AbstractValueView>> subViews;
+
+        const auto &byteArray = rawData.bytes;
+        const auto &lazyPointersArray = rawData.pointers;
 
         size_t fieldIndexToInitUnion = SIZE_MAX;
         size_t sizeOfFieldToInitUnion = 0;
@@ -361,51 +297,28 @@ namespace tests {
 
             switch (typesHandler.getTypeKind(field.type)) {
                 case TypeKind::STRUCT_LIKE: {
-                    auto sv = structView(byteArray, lazyPointersArray, typesHandler.getStructInfo(field.type),
-                                         fieldStartOffset/*, usage*/, testingMethod, field.anonymous,
-                                         PrinterUtils::getFieldAccess(name, field), objects,
-                                         initReferences);
+                    auto sv = structView(rawData, typesHandler.getStructInfo(field.type),
+                                         PrinterUtils::getFieldAccess(name, field), objects, initReferences,
+                                         testingMethod, fieldStartOffset, field.anonymous);
                     dirtyInitializedField |= sv->isDirtyInit();
                     isInitializedField = sv->isInitialized();
                     subViews.push_back(sv);
                 }
                     break;
                 case TypeKind::ENUM:
-                    subViews.push_back(enumView(byteArray, typesHandler.getEnumInfo(field.type),
+                    subViews.push_back(enumView(rawData, typesHandler.getEnumInfo(field.type),
                                                 fieldStartOffset, fieldLen));
                     break;
                 case TypeKind::PRIMITIVE:
-                    subViews.push_back(primitiveView(byteArray, field.type.baseTypeObj(),
+                    subViews.push_back(primitiveView(rawData, field.type.baseTypeObj(),
                                                      fieldStartOffset,
                                                      std::min(field.size, fieldLen)));
                     break;
                 case TypeKind::ARRAY: {
                     const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = field.type.pointerArrayKinds();
-                    //TODO
-//                if (pointerArrayKinds.size() > 1) {
-//                    size_t size = 1;
-//                    bool onlyArrays = true;
-//                    for (const auto &pointerArrayKind : pointerArrayKinds) {
-//                        if (pointerArrayKind->getKind() == AbstractType::ARRAY) {
-//                            size *= pointerArrayKind->getSize();
-//                        } else {
-//                            onlyArrays = false;
-//                            break;
-//                        }
-//                    }
-//                    if (onlyArrays) {
-//                        size *= typesHandler.typeSize(field.type.baseTypeObj());
-//                        subViews.push_back(multiArrayView(byteArray, lazyPointersArray, field.type, size, fieldStartOffset/*, usage*/));
-//                    } else {
-//                        std::vector<std::shared_ptr<AbstractValueView>> nullViews(
-//                            size, std::make_shared<JustValueView>(PrinterUtils::C_NULL));
-//                        subViews.push_back(std::make_shared<FixedArrayValueView>(nullViews));
-//                    }
-//                } else {
-                    auto view = fixedArrayView(byteArray, lazyPointersArray, field.type.baseTypeObj(1), fieldLen,
+                    auto view = fixedArrayView(rawData, field.type.baseTypeObj(1), fieldLen,
                                                fieldStartOffset/*, usage*/, objects, initReferences);
                     subViews.push_back(view);
-//                }
                 }
                     break;
                 case TypeKind::OBJECT_POINTER: {
@@ -418,14 +331,13 @@ namespace tests {
                                          }) != lazyPointersArray.end();
                     subViews.push_back(getLazyPointerView(PrinterUtils::getFieldAccess(name, field), res,
                                                           field.type, pointerIterator,
-                                                          objects, initReferences));
+                                                          objects, initReferences, rawData.isPost));
                 }
                     break;
                 case TypeKind::FUNCTION_POINTER:
                     subViews.push_back(functionPointerView(curStruct.name, field.name));
                     break;
                 case TypeKind::UNKNOWN: {
-                    // TODO: pointers
                     std::string message = "Structs don't support fields of type: " + field.type.typeName();
                     LOG_S(ERROR) << message;
                     throw UnImplementedException(message);
@@ -453,11 +365,11 @@ namespace tests {
         }
 
         std::optional<std::string> entryValue;
-        if (!isInitializedStruct && !curStruct.name.empty() && !anonymousField) {
+        if (!isInitializedStruct && !curStruct.name.empty() && !anonymous) {
             // init by memory copy
             entryValue = PrinterUtils::convertBytesToStruct(
                     curStruct.name,
-                    fixedArrayView(byteArray, lazyPointersArray,
+                    fixedArrayView(rawData,
                                    types::Type::createSimpleTypeFromName("utbot_byte"),
                                    curStruct.size,
                                    offsetInBits/*, usage*/, objects, initReferences)->getEntryValue(nullptr));
@@ -468,7 +380,7 @@ namespace tests {
             dirtyInitializedStruct = false;
         }
         return std::make_shared<StructValueView>(curStruct, subViews, entryValue,
-                                                 anonymousField, isInitializedStruct, dirtyInitializedStruct,
+                                                 anonymous, isInitializedStruct, dirtyInitializedStruct,
                                                  fieldIndexToInitUnion);
     }
 
@@ -658,50 +570,48 @@ namespace tests {
         LOG_S(WARNING) << message;
     }
 
-    bool KTestObjectParser::pointToStruct(const types::Type &pointerType,
-                                          const UTBotKTestObject &goal) const {
-        // In different situations we may point on the whole struct or on the field with assignment 0
-        size_t fieldSizeInBits = typesHandler.typeSize(pointerType.baseTypeObj(1));
-        size_t pointerVarSizeInBytes = goal.bytes.size();
-        return SizeUtils::bytesToBits(pointerVarSizeInBytes) == fieldSizeInBits;
-    }
+//    bool KTestObjectParser::pointToStruct(const types::Type &pointerType,
+//                                          const UTBotKTestObject &goal) const {
+//        // In different situations we may point on the whole struct or on the field with assignment 0
+//        size_t fieldSizeInBits = typesHandler.typeSize(pointerType.baseTypeObj(1));
+//        size_t pointerVarSizeInBytes = goal.bytes.size();
+//        return SizeUtils::bytesToBits(pointerVarSizeInBytes) == fieldSizeInBits;
+//    }
 
     void KTestObjectParser::assignTypeUnnamedVar(
             Tests::MethodTestCase &testCase,
             const Tests::MethodDescription &methodDescription,
-            std::vector<std::optional<Tests::TypeAndVarName>> &objects/*,
-std::vector<PointerUsage> &usages*/) {
+            std::vector<std::optional<Tests::TypeAndVarName>> &typeAndName) {
         std::queue<JsonIndAndParam> order;
-        std::vector<bool> visited(testCase.objects.size(), false);
+        std::vector<bool> visited(testCase.kleeObjects.size(), false);
         for (size_t paramInd = 0; paramInd < testCase.paramValues.size(); paramInd++) {
-            addToOrder(testCase.objects, methodDescription.params[paramInd].name,
+            addToOrder(testCase.kleeObjects, methodDescription.params[paramInd].name,
                        methodDescription.params[paramInd].type, testCase.paramValues[paramInd], visited,
                     /*usages,*/ order);
         }
-        addToOrder(testCase.objects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
+        addToOrder(testCase.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
                    testCase.returnValue, visited/*, usages*/, order);
 
         while (!order.empty()) {
             auto curType = order.front();
             order.pop();
-            std::string paramName = testCase.objects[curType.jsonInd].name;
+            std::string paramName = testCase.kleeObjects[curType.jsonInd].name;
             types::Type paramType = curType.param.type;
-            objects[curType.jsonInd] = {paramType, paramName};
+            typeAndName[curType.jsonInd] = {paramType, paramName};
 
-            if (testCase.objects[curType.jsonInd].is_lazy) {
+            if (testCase.kleeObjects[curType.jsonInd].is_lazy) {
                 std::shared_ptr<AbstractValueView> testParamView = testPreValueView(
-                        testCase.objects[curType.jsonInd],
+                        testCase.kleeObjects[curType.jsonInd],
                         paramType,
                         paramName,
-                        testCase.objects,
-                        testCase.lazyReferences,
+                        testCase,
                         methodDescription);
                 LOG_S(MAX) << "Fetch lazy object: " << paramName << " = " << testParamView->getEntryValue(nullptr);
                 curType.paramValue.lazyParams.emplace_back(paramType, paramName, std::nullopt);
                 curType.paramValue.lazyValues.emplace_back(paramName, std::nullopt, testParamView);
             }
-
-            for (auto const &[offset, indObj, indexOffset]: testCase.objects[curType.jsonInd].pointers) {
+            //TODO add post
+            for (auto const &[offset, indObj, indexOffset]: testCase.kleeObjects[curType.jsonInd].preRaw.pointers) {
                 if (!visited[indObj]) {
 //                if (indexOffset != 0) {
 //                    continue;
@@ -782,14 +692,13 @@ std::vector<PointerUsage> &usages*/) {
 
     void KTestObjectParser::assignTypeStubVar(Tests::MethodTestCase &testCase,
                                               const Tests::MethodDescription &methodDescription) {
-        for (auto const &obj: testCase.objects) {
+        for (auto const &obj: testCase.kleeObjects) {
             std::optional<std::shared_ptr<FunctionInfo>>
                     maybeFunctionInfo = methodDescription.stubsParamStorage->getFunctionInfoByKTestObjectName(obj.name);
             if (maybeFunctionInfo.has_value()) {
                 types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
                 std::shared_ptr<AbstractValueView> stubView =
-                        testPreValueView(obj, stubType, obj.name, testCase.objects,
-                                      testCase.lazyReferences, methodDescription);
+                        testPreValueView(obj, stubType, obj.name, testCase, methodDescription);
                 testCase.stubParamValues.emplace_back(obj.name, 0, stubView);
                 testCase.stubParamTypes.emplace_back(stubType, obj.name, std::nullopt);
             }
@@ -798,15 +707,14 @@ std::vector<PointerUsage> &usages*/) {
 
     void KTestObjectParser::assignAllLazyPointers(
             Tests::MethodTestCase &testCase,
-            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName/*,
-    const std::vector<PointerUsage> &usages*/) const {
-        for (size_t ind = 0; ind < testCase.objects.size(); ind++) {
-            const auto &object = testCase.objects[ind];
+            const std::vector<std::optional<Tests::TypeAndVarName>> &objTypeAndName) const {
+        for (size_t ind = 0; ind < testCase.kleeObjects.size(); ind++) {
+            const auto &object = testCase.kleeObjects[ind];
             if (!objTypeAndName[ind].has_value()) {
                 continue;
             }
-            //TODO
-            for (const auto &pointer: object.pointers) {
+            //TODO add post
+            for (const auto &pointer: object.preRaw.pointers) {
 
                 Tests::TypeAndVarName typeAndName = objTypeAndName[ind].value();
 //            size_t offset = getOffsetInStruct(typeAndName,
@@ -862,46 +770,49 @@ std::vector<PointerUsage> &usages*/) {
                 std::stringstream traceStream;
                 traceStream << "Test case #" << (++caseCounter) << ":\n";
                 std::string suiteName = getSuiteName(case_.status, lineInfo);
-                Tests::MethodTestCase testCase{testIndex, suiteName};
+                Tests::MethodTestCase testCase;
+                testCase.testIndex = testIndex;
+                testCase.suiteName = suiteName;
                 std::vector<Tests::TestCaseParamValue> paramValues;
 
-                Tests::TestCaseDescription testCaseDescription = parseTestCaseParameters(case_, methodDescription,
-                                                                                         methodNameToReturnTypeMap,
-                                                                                         traceStream);
+                Tests::TestCaseValues testCaseValues = parseTestCaseParameters(case_,
+                                                                               methodDescription,
+                                                                               methodNameToReturnTypeMap,
+                                                                               traceStream);
+
                 size_t size = case_.objects.size();
-                bool isVoidOrFPointer = types::TypesHandler::skipTypeInReturn(methodDescription.returnType);
-                if ((isVoidOrFPointer && size > 0) || (!isVoidOrFPointer && size > 1) ||
-                    methodDescription.params.empty()) {
-                    std::swap(testCase.paramValues, testCaseDescription.funcParamValues);
+                bool isVoidOrFunctionPointer = types::TypesHandler::skipTypeInReturn(methodDescription.returnType);
+                if ((isVoidOrFunctionPointer && size > 0) || (!isVoidOrFunctionPointer && size > 1)) {
+                    std::swap(testCase.paramValues, testCaseValues.paramValues);
                 } else {
-                    // if all the data characters are not printable the case is skipped
+                    // If all the data characters are not printable the case is skipped
                     continue;
                 }
-                std::swap(testCase.classPreValues, testCaseDescription.classPreValues);
-                std::swap(testCase.classPostValues, testCaseDescription.classPostValues);
-                std::swap(testCase.globalPreValues, testCaseDescription.globalPreValues);
-                std::swap(testCase.globalPostValues, testCaseDescription.globalPostValues);
-                std::swap(testCase.paramPostValues, testCaseDescription.paramPostValues);
-                std::swap(testCase.stubValuesTypes, testCaseDescription.stubValuesTypes);
-                std::swap(testCase.stubValues, testCaseDescription.stubValues);
-                std::swap(testCase.stdinValue, testCaseDescription.stdinValue);
-                std::swap(testCase.filesValues, testCaseDescription.filesValues);
-                std::swap(testCase.objects, testCaseDescription.objects);
-                std::swap(testCase.lazyReferences, testCaseDescription.lazyReferences);
-                std::swap(testCase.lazyReferencesPost, testCaseDescription.lazyReferencesPost);
+                std::swap(testCase.classPreValues, testCaseValues.classPreValues);
+                std::swap(testCase.classPostValues, testCaseValues.classPostValues);
+                std::swap(testCase.globalPreValues, testCaseValues.globalPreValues);
+                std::swap(testCase.globalPostValues, testCaseValues.globalPostValues);
+                std::swap(testCase.paramPostValues, testCaseValues.paramPostValues);
+                std::swap(testCase.stubValuesTypes, testCaseValues.stubValuesTypes);
+                std::swap(testCase.stubValues, testCaseValues.stubValues);
+                std::swap(testCase.stdinValue, testCaseValues.stdinValue);
+                std::swap(testCase.filesValues, testCaseValues.filesValues);
+                std::swap(testCase.kleeObjects, testCaseValues.kleeObjects);
+                std::swap(testCase.lazyReferences, testCaseValues.lazyReferences);
+                std::swap(testCase.lazyReferencesPost, testCaseValues.lazyReferencesPost);
 
                 testCase.errorDescriptors = case_.errorDescriptors;
-                testCase.errorInfo = testCaseDescription.errorInfo;
+                testCase.errorInfo = testCaseValues.errorInfo;
 
                 if (filterByLineFlag) {
-                    auto view = testCaseDescription.kleePathFlagSymbolicValue.view;
+                    auto view = testCaseValues.kleePathFlagSymbolicValue.view;
                     if (!view || view->getEntryValue(nullptr) != "1") {
                         continue;
                     }
                 }
                 auto const &predicateInfo = lineInfo ? lineInfo->predicateInfo : std::nullopt;
                 if (predicateInfo.has_value() &&
-                    !predicateMatch(testCaseDescription.returnValue.view->getEntryValue(nullptr),
+                    !predicateMatch(testCaseValues.returnValue.view->getEntryValue(nullptr),
                                     predicateInfo.value())) {
                     continue;
                 }
@@ -910,22 +821,21 @@ std::vector<PointerUsage> &usages*/) {
                     testCase.returnValue.view = std::make_shared<PrimitiveValueView>(
                             PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
                 } else {
-                    testCase.returnValue.view = testCaseDescription.returnValue.view;
+                    testCase.returnValue.view = testCaseValues.returnValue.view;
                 }
 
                 if (methodDescription.returnType.isObjectPointer() && !methodDescription.returnType.maybeArray
-                    && testCaseDescription.functionReturnNotNullValue.view &&
-                    testCaseDescription.functionReturnNotNullValue.view->getEntryValue(nullptr) == "0") {
+                    && testCaseValues.functionReturnNotNullValue.view &&
+                    testCaseValues.functionReturnNotNullValue.view->getEntryValue(nullptr) == "0") {
                     testCase.returnValue.view = std::make_shared<PrimitiveValueView>(PrinterUtils::C_NULL);
                 }
                 traceStream << "\treturn: " << testCase.returnValue.view->getEntryValue(nullptr);
                 LOG_S(MAX) << traceStream.str();
 
-                std::vector<std::optional<Tests::TypeAndVarName>> objectsValues(testCase.objects.size());
-//            std::vector<PointerUsage> usages(testCase.objects.size());
-                assignTypeUnnamedVar(testCase, methodDescription, objectsValues/*, usages*/);
+                std::vector<std::optional<Tests::TypeAndVarName>> objectsValues(testCase.kleeObjects.size());
+                assignTypeUnnamedVar(testCase, methodDescription, objectsValues);
                 assignTypeStubVar(testCase, methodDescription);
-                assignAllLazyPointers(testCase, objectsValues/*, usages*/);
+//                assignAllLazyPointers(testCase, objectsValues);
 
                 methodDescription.testCases.push_back(testCase);
                 methodDescription.suiteTestCases[testCase.suiteName].push_back(testCase.testIndex);
@@ -938,17 +848,16 @@ std::vector<PointerUsage> &usages*/) {
         }
     }
 
-    std::vector<KTestObjectParser::RawKleeParam>::const_iterator
-    KTestObjectParser::getKleeParam(const std::vector<RawKleeParam> &rawKleeParams, const std::string name) {
-        return std::find_if(rawKleeParams.begin(), rawKleeParams.end(),
-                            [&](const RawKleeParam &param) { return param.paramName == name; });
+    std::vector<UTBotKTestObject>::const_iterator
+    KTestObjectParser::getKleeParam(const std::vector<UTBotKTestObject> &objects, const std::string name) {
+        return std::find_if(objects.begin(), objects.end(),
+                            [&](const UTBotKTestObject &param) { return param.name == name; });
     }
 
-    KTestObjectParser::RawKleeParam
-    KTestObjectParser::getKleeParamOrThrow(const std::vector<RawKleeParam> &rawKleeParams,
-                                           const std::string &name) {
-        const auto kleeParam = getKleeParam(rawKleeParams, name);
-        if (kleeParam == rawKleeParams.end()) {
+    UTBotKTestObject KTestObjectParser::getKleeParamOrThrow(const std::vector<UTBotKTestObject> &objects,
+                                                            const std::string &name) {
+        const auto kleeParam = getKleeParam(objects, name);
+        if (kleeParam == objects.end()) {
             std::string message = "Parameter \'" + name + "\' not found.";
             LOG_S(ERROR) << message;
             throw UnImplementedException(message);
@@ -957,116 +866,100 @@ std::vector<PointerUsage> &usages*/) {
         return *kleeParam;
     }
 
-    Tests::TestCaseDescription
-    KTestObjectParser::parseTestCaseParameters(const UTBotKTest &testCases,
-                                               Tests::MethodDescription &methodDescription,
-                                               const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-                                               std::stringstream &traceStream) {
-        return parseTestCaseParams(testCases, methodDescription, methodNameToReturnTypeMap, traceStream);
-    }
-
-    Tests::TestCaseDescription KTestObjectParser::parseTestCaseParams(
+    Tests::TestCaseValues KTestObjectParser::parseTestCaseParameters(
             const UTBotKTest &ktest,
-            const Tests::MethodDescription &methodDescription,
+            Tests::MethodDescription &methodDescription,
             const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-            const std::stringstream &traceStream) {
-        std::vector<RawKleeParam> rawKleeParams;
-        for (auto const &param: ktest.objects) {
-            rawKleeParams.emplace_back(param.name, param.bytes, param.finalBytes, param.pointers);
-        }
+            std::stringstream &traceStream) {
 
-        Tests::TestCaseDescription testCaseDescription;
-        testCaseDescription.objects = ktest.objects;
-        testCaseDescription.errorInfo = ktest.errorInfo;
+        Tests::TestCaseValues testCaseValues;
+        testCaseValues.kleeObjects = ktest.objects;
+        testCaseValues.errorInfo = ktest.errorInfo;
 
-        for (size_t i = 0; i < testCaseDescription.objects.size(); ++i) {
-            if (testCaseDescription.objects[i].name != LAZYNAME) {
+        for (size_t i = 0; i < testCaseValues.kleeObjects.size(); ++i) {
+            if (testCaseValues.kleeObjects[i].name != LAZYNAME) {
                 continue;
             }
-            testCaseDescription.objects[i].name = PrinterUtils::generateNewVar(i);
+            testCaseValues.kleeObjects[i].name = PrinterUtils::generateNewVar(i);
         }
-
-        const RawKleeParam emptyKleeParam = {"", {}, {}, {}};
 
         if (methodDescription.isClassMethod()) {
             auto methodParam = methodDescription.classObj.value();
             std::shared_ptr<AbstractValueView> testParamView;
-            getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription,
-                             methodParam, testParamView);
-            testCaseDescription.classPreValues = {methodParam.name, methodParam.alignment,
-                                                  testParamView};
-            processClassPostValue(testCaseDescription, methodParam, rawKleeParams);
+            getTestParamView(methodDescription, testCaseValues, methodParam, testParamView);
+            testCaseValues.classPreValues = {methodParam.name, methodParam.alignment, testParamView};
+            processClassPostValue(testCaseValues, methodParam, testCaseValues.kleeObjects);
         }
 
         for (auto &methodParam: methodDescription.params) {
-            std::shared_ptr<AbstractValueView> testParamView;
-            if (!methodParam.type.isFilePointer()) {
-                getTestParamView(methodDescription, rawKleeParams, emptyKleeParam, testCaseDescription,
-                                 methodParam, testParamView);
-            } else {
-                testParamView = std::shared_ptr<AbstractValueView>(new JustValueView("FILE_PTR"));
+            {
+                std::shared_ptr<AbstractValueView> testParamView;
+                if (!methodParam.type.isFilePointer()) {
+                    getTestParamView(methodDescription, testCaseValues, methodParam, testParamView);
+                } else {
+                    testParamView = std::shared_ptr<AbstractValueView>(new JustValueView("FILE_PTR"));
+                }
+                testCaseValues.paramValues.emplace_back(methodParam.name, methodParam.alignment,
+                                                        testParamView);
             }
-            testCaseDescription.funcParamValues.emplace_back(methodParam.name, methodParam.alignment,
-                                                             testParamView);
 
-        if (methodParam.isChangeable()) {
-            processParamPostValue(testCaseDescription, methodParam, rawKleeParams);
-        }
+            if (methodParam.isChangeable()) {
+                processParamPostValue(testCaseValues, methodParam, testCaseValues.kleeObjects);
+            }
         }
         for (const auto &globalParam: methodDescription.globalParams) {
-            processGlobalParamPreValue(testCaseDescription, globalParam, rawKleeParams);
-            processGlobalParamPostValue(testCaseDescription, globalParam, rawKleeParams);
+            processGlobalParamPreValue(testCaseValues, globalParam, testCaseValues.kleeObjects);
+            processGlobalParamPostValue(testCaseValues, globalParam, testCaseValues.kleeObjects);
         }
 
         if (Paths::getSourceLanguage(sourceFilePath) == utbot::Language::C) {
-            processSymbolicStdin(testCaseDescription, rawKleeParams);
-            processSymbolicFiles(testCaseDescription, rawKleeParams);
+            processSymbolicStdin(testCaseValues, testCaseValues.kleeObjects);
+            processSymbolicFiles(testCaseValues, testCaseValues.kleeObjects);
         }
 
-        processStubParamValue(methodDescription, testCaseDescription, methodNameToReturnTypeMap, rawKleeParams);
+        processStubParamValue(methodDescription, testCaseValues, methodNameToReturnTypeMap, testCaseValues.kleeObjects);
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
-            const auto kleeResParam = getKleeParamOrThrow(rawKleeParams, KleeUtils::RESULT_VARIABLE_NAME);
-//        auto paramType = methodDescription.returnType.maybeReturnArray()
-//                         ? methodDescription.returnType
-//                         : methodDescription.returnType.baseTypeObj();
+            const auto kleeResParam = getKleeParamOrThrow(testCaseValues.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME);
             auto paramType = methodDescription.returnType;
             const auto testReturnView = testPostValueView(
                     kleeResParam, paramType, KleeUtils::RESULT_VARIABLE_NAME,
-                    testCaseDescription.objects,
-                    testCaseDescription.lazyReferences, methodDescription);
-            testCaseDescription.returnValue = {
+                    testCaseValues, methodDescription);
+            testCaseValues.returnValue = {
                     KleeUtils::RESULT_VARIABLE_NAME,
-                    types::TypesHandler::isObjectPointerType(methodDescription.returnType), testReturnView
+                    types::TypesHandler::isObjectPointerType(methodDescription.returnType),
+                    testReturnView
             };
         } else {
-            testCaseDescription.returnValue = {KleeUtils::RESULT_VARIABLE_NAME, false,
-                                               std::make_shared<VoidValueView>()};
+            testCaseValues.returnValue = {KleeUtils::RESULT_VARIABLE_NAME, false,
+                                          std::make_shared<VoidValueView>()};
         }
 
-        const auto kleePathFlagIterator = getKleeParam(rawKleeParams, KLEE_PATH_FLAG);
-        const auto kleePathFlagSymbolicIterator = getKleeParam(rawKleeParams, KLEE_PATH_FLAG_SYMBOLIC);
-        if (kleePathFlagSymbolicIterator != rawKleeParams.end()) {
+        const auto kleePathFlagIterator = getKleeParam(testCaseValues.kleeObjects, KLEE_PATH_FLAG);
+        const auto kleePathFlagSymbolicIterator = getKleeParam(testCaseValues.kleeObjects, KLEE_PATH_FLAG_SYMBOLIC);
+        if (kleePathFlagSymbolicIterator != testCaseValues.kleeObjects.end()) {
             const auto kleePathFlagSymbolicView = testPreValueView(
                     *kleePathFlagSymbolicIterator, types::Type::intType(), KLEE_PATH_FLAG_SYMBOLIC,
-                    testCaseDescription.objects, testCaseDescription.lazyReferences);
-            testCaseDescription.kleePathFlagSymbolicValue = {KLEE_PATH_FLAG_SYMBOLIC, false,
-                                                             kleePathFlagSymbolicView};
+                    testCaseValues);
+            testCaseValues.kleePathFlagSymbolicValue = {KLEE_PATH_FLAG_SYMBOLIC, false,
+                                                        kleePathFlagSymbolicView};
         }
-        const auto functionReturnNotNullIterator = getKleeParam(rawKleeParams, KleeUtils::NOT_NULL_VARIABLE_NAME);
-        if (functionReturnNotNullIterator != rawKleeParams.end()) {
+        const auto functionReturnNotNullIterator = getKleeParam(testCaseValues.kleeObjects,
+                                                                KleeUtils::NOT_NULL_VARIABLE_NAME);
+        if (functionReturnNotNullIterator != testCaseValues.kleeObjects.end()) {
             const auto functionReturnNotNullView = testPreValueView(
                     *functionReturnNotNullIterator, types::Type::intType(), KleeUtils::NOT_NULL_VARIABLE_NAME,
-                    testCaseDescription.objects, testCaseDescription.lazyReferences);
-            testCaseDescription.functionReturnNotNullValue = {KleeUtils::NOT_NULL_VARIABLE_NAME, false,
-                                                              functionReturnNotNullView};
+                    testCaseValues);
+            testCaseValues.functionReturnNotNullValue = {KleeUtils::NOT_NULL_VARIABLE_NAME, false,
+                                                         functionReturnNotNullView};
         }
-        return testCaseDescription;
+        return testCaseValues;
     }
 
+
+    const UTBotKTestObject emptyKleeObject = {"", {}, {}, {}, 0, false};
+
     void KTestObjectParser::getTestParamView(const Tests::MethodDescription &methodDescription,
-                                             const std::vector<RawKleeParam> &rawKleeParams,
-                                             const KTestObjectParser::RawKleeParam &emptyKleeParam,
-                                             Tests::TestCaseDescription &testCaseDescription,
+                                             Tests::TestCaseValues &testCaseValues,
                                              const Tests::MethodParam &methodParam,
                                              std::shared_ptr<AbstractValueView> &testParamView) {
 //    const auto usage = types::PointerUsage::PARAMETER;
@@ -1074,35 +967,32 @@ std::vector<PointerUsage> &usages*/) {
         auto type = typesHandler.getReturnTypeToCheck(paramType);
 
         if (CollectionUtils::containsKey(methodDescription.functionPointers, methodParam.name)) {
-            testParamView = testPreValueView(emptyKleeParam, type, methodParam.name,
-                    /*usage,*/ testCaseDescription.objects,
-                                          testCaseDescription.lazyReferences, methodDescription);
+            testParamView = testPreValueView(emptyKleeObject, type, methodParam.name,
+                                             testCaseValues, methodDescription);
         } else {
-            const auto kleeParam = getKleeParamOrThrow(rawKleeParams, methodParam.name);
+            const auto kleeParam = getKleeParamOrThrow(testCaseValues.kleeObjects, methodParam.name);
             testParamView = testPreValueView(kleeParam, type, methodParam.name,
-                    /*usage,*/ testCaseDescription.objects,
-                                          testCaseDescription.lazyReferences, methodDescription);
+                                             testCaseValues, methodDescription);
         }
     }
 
-    void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseDescription &testCaseDescription,
+    void KTestObjectParser::processGlobalParamPreValue(Tests::TestCaseValues &testCaseValues,
                                                        const Tests::MethodParam &globalParam,
-                                                       std::vector<RawKleeParam> &rawKleeParams) {
+                                                       const std::vector<UTBotKTestObject> &objects) {
         std::string kleeParamName = globalParam.name;
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, kleeParamName);
+        auto kleeParam = getKleeParamOrThrow(objects, kleeParamName);
         auto testParamView = testPreValueView(
                 kleeParam, globalParam.type, globalParam.name,
-                testCaseDescription.objects, testCaseDescription.lazyReferences);
-        testCaseDescription.globalPreValues.emplace_back(globalParam.name, globalParam.alignment,
-                                                         testParamView);
+                testCaseValues);
+        testCaseValues.globalPreValues.emplace_back(globalParam.name, globalParam.alignment,
+                                                    testParamView);
     }
 
-    void KTestObjectParser::processSymbolicStdin(Tests::TestCaseDescription &testCaseDescription,
-                                                 const std::vector<RawKleeParam> &rawKleeParams) {
-        auto &&read = getKleeParamOrThrow(rawKleeParams, KleeUtils::STDIN_READ_NAME);
+    void KTestObjectParser::processSymbolicStdin(Tests::TestCaseValues &testCaseValues,
+                                                 const std::vector<UTBotKTestObject> &objects) {
+        auto &&read = getKleeParamOrThrow(objects, KleeUtils::STDIN_READ_NAME);
         std::string &&view = testPreValueView(read, types::Type::longlongType(), KleeUtils::STDIN_READ_NAME,
-                                              testCaseDescription.objects,
-                                              testCaseDescription.lazyReferences)
+                                              testCaseValues)
                 ->getEntryValue(nullptr);
         if (view == "0LL") {
             return;
@@ -1113,138 +1003,123 @@ std::vector<PointerUsage> &usages*/) {
                 LOG_S(ERROR) << message;
                 throw UnImplementedException(message);
             }
-            auto &&stdinBuffer = getKleeParamOrThrow(rawKleeParams, KleeUtils::STDIN_NAME);
-            auto &&testParamView = stringLiteralView(stdinBuffer.rawData, usedStdinBytesCount);
-            testCaseDescription.stdinValue = Tests::TestCaseParamValue(types::Type::getStdinParamName(),
-                                                                       std::nullopt, testParamView);
+            auto stdinBuffer = getKleeParamOrThrow(objects, KleeUtils::STDIN_NAME);
+            auto testParamView = stringLiteralView(stdinBuffer.preRaw.bytes, usedStdinBytesCount);
+            testCaseValues.stdinValue = Tests::TestCaseParamValue(types::Type::getStdinParamName(),
+                                                                  std::nullopt, testParamView);
         }
     }
 
-    void KTestObjectParser::processSymbolicFiles(Tests::TestCaseDescription &testCaseDescription,
-                                                 const std::vector<RawKleeParam> &rawKleeParams) {
+    void KTestObjectParser::processSymbolicFiles(Tests::TestCaseValues &testCaseValues,
+                                                 const std::vector<UTBotKTestObject> &objects) {
         std::vector<Tests::FileInfo> filesValues(types::Type::symFilesCount);
         int fileIndex = 0;
         for (char fileName = 'A'; fileName < 'A' + types::Type::symFilesCount;
              fileName++, fileIndex++) {
             std::string readBytesName = PrinterUtils::getFileReadBytesParamKTestJSON(fileName);
-            auto &&readBytes = getKleeParamOrThrow(rawKleeParams, readBytesName);
+            auto &&readBytes = getKleeParamOrThrow(objects, readBytesName);
             filesValues[fileIndex].readBytes =
                     std::stoi(testPreValueView(readBytes, types::Type::longlongType(), readBytesName,
-                            /*types::PointerUsage::PARAMETER,*/ testCaseDescription.objects,
-                                            testCaseDescription.lazyReferences)
+                                               testCaseValues)
                                       ->getEntryValue(nullptr));
 
             std::string writeBytesName = PrinterUtils::getFileWriteBytesParamKTestJSON(fileName);
-            auto &&writeBytes = getKleeParamOrThrow(rawKleeParams, writeBytesName);
+            auto &&writeBytes = getKleeParamOrThrow(objects, writeBytesName);
             filesValues[fileIndex].writeBytes =
                     std::stoi(testPreValueView(writeBytes, types::Type::longlongType(), writeBytesName,
-                            /*types::PointerUsage::PARAMETER,*/ testCaseDescription.objects,
-                                            testCaseDescription.lazyReferences)
+                                               testCaseValues)
                                       ->getEntryValue(nullptr));
 
-            auto &&fileBuffer =
-                    getKleeParamOrThrow(rawKleeParams, PrinterUtils::getFileParamKTestJSON(fileName));
+            auto fileBuffer = getKleeParamOrThrow(objects, PrinterUtils::getFileParamKTestJSON(fileName));
             filesValues[fileIndex].data =
-                    stringLiteralView(fileBuffer.rawData, filesValues[fileIndex].readBytes)
+                    stringLiteralView(fileBuffer.preRaw.bytes, filesValues[fileIndex].readBytes)
                             ->getEntryValue(nullptr);
         }
-        testCaseDescription.filesValues = filesValues;
+        testCaseValues.filesValues = filesValues;
     }
 
-    void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseDescription &testCaseDescription,
+    void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseValues &testCaseValues,
                                                         const Tests::MethodParam &globalParam,
-                                                        std::vector<RawKleeParam> &rawKleeParams) {
+                                                        std::vector<UTBotKTestObject> &objects) {
 //        auto symbolicVariable = KleeUtils::postSymbolicVariable(globalParam.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, globalParam.name);
+        auto kleeParam = getKleeParamOrThrow(objects, globalParam.name);
 //        auto type = typesHandler.getReturnTypeToCheck(globalParam.type);
-        auto testParamView =
-                testPostValueView(kleeParam, globalParam.type, globalParam.name,
-                              testCaseDescription.objects, testCaseDescription.lazyReferences);
-        testCaseDescription.globalPostValues.emplace_back(globalParam.name, globalParam.alignment,
-                                                          testParamView);
+
+        auto expectedName = PrinterUtils::getExpectedVarName(globalParam.name);
+        auto testParamView = testPostValueView(kleeParam, globalParam.type, expectedName, testCaseValues);
+        testCaseValues.globalPostValues.emplace_back(expectedName, globalParam.alignment, testParamView);
     }
 
-    void KTestObjectParser::processClassPostValue(Tests::TestCaseDescription &testCaseDescription,
+    void KTestObjectParser::processClassPostValue(Tests::TestCaseValues &testCaseValues,
                                                   const Tests::MethodParam &param,
-                                                  std::vector<RawKleeParam> &rawKleeParams) {
+                                                  std::vector<UTBotKTestObject> &objects) {
 //    const auto usage = types::PointerUsage::PARAMETER;
 //        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, param.name);
-//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
-//        auto type = typesHandler.getReturnTypeToCheck(paramType);
-        auto testParamView =
-                testPostValueView(kleeParam, param.type, param.name/*, usage*/, testCaseDescription.objects,
-                              testCaseDescription.lazyReferences);
-        testCaseDescription.classPostValues = {param.name, param.alignment, testParamView};
-    }
-
-    void KTestObjectParser::processParamPostValue(Tests::TestCaseDescription &testCaseDescription,
-                                                  const Tests::MethodParam &param,
-                                                  std::vector<RawKleeParam> &rawKleeParams) {
-//    const auto usage = types::PointerUsage::PARAMETER;
-        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
-        auto kleeParam = getKleeParamOrThrow(rawKleeParams, param.name);
+        auto kleeParam = getKleeParamOrThrow(objects, param.name);
 //        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
 //        auto type = typesHandler.getReturnTypeToCheck(paramType);
 
         auto expectedName = PrinterUtils::getExpectedVarName(param.name);
-        auto testParamView = testPostValueView(kleeParam, param.type, expectedName/*, usage*/, testCaseDescription.objects,
-                                               testCaseDescription.lazyReferences);
-        testCaseDescription.paramPostValues.emplace_back(expectedName, param.alignment, testParamView);
+        auto testParamView = testPostValueView(kleeParam, param.type, expectedName, testCaseValues);
+        testCaseValues.classPostValues = {expectedName, param.alignment, testParamView};
+    }
+
+    void KTestObjectParser::processParamPostValue(Tests::TestCaseValues &testCaseValues,
+                                                  const Tests::MethodParam &param,
+                                                  std::vector<UTBotKTestObject> &objects) {
+//    const auto usage = types::PointerUsage::PARAMETER;
+//        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
+        auto kleeParam = getKleeParamOrThrow(objects, param.name);
+//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
+//        auto type = typesHandler.getReturnTypeToCheck(paramType);
+
+
+        auto expectedName = PrinterUtils::getExpectedVarName(param.name);
+        auto testParamView = testPostValueView(kleeParam, param.type, expectedName, testCaseValues);
+        testCaseValues.paramPostValues.emplace_back(expectedName, param.alignment, testParamView);
     }
 
     void KTestObjectParser::processStubParamValue(
             const Tests::MethodDescription &methodDescription,
-            Tests::TestCaseDescription &testCaseDescription,
+            Tests::TestCaseValues &testCaseValues,
             const std::unordered_map<std::string, types::Type> &methodNameToReturnTypeMap,
-            std::vector<RawKleeParam> &rawKleeParams) {
-        for (const auto &kleeParam: rawKleeParams) {
+            std::vector<UTBotKTestObject> &objects) {
+        for (const auto &ktestObject: objects) {
             auto maybeFunctionInfo = methodDescription.stubsStorage->getFunctionInfoByKTestObjectName(
-                    kleeParam.paramName);
+                    ktestObject.name);
             if (maybeFunctionInfo.has_value()) {
                 types::Type stubType = types::Type::createArray(maybeFunctionInfo.value()->returnType);
                 auto testParamView =
-                        testPreValueView(kleeParam, stubType, kleeParam.paramName/*, types::PointerUsage::PARAMETER*/,
-                                      testCaseDescription.objects, testCaseDescription.lazyReferences);
-                testCaseDescription.stubValues.emplace_back(kleeParam.paramName, 0, testParamView);
-                testCaseDescription.stubValuesTypes.emplace_back(stubType, kleeParam.paramName, std::nullopt);
+                        testPreValueView(ktestObject, stubType, ktestObject.name,
+                                         testCaseValues);
+                testCaseValues.stubValues.emplace_back(ktestObject.name, 0, testParamView);
+                testCaseValues.stubValuesTypes.emplace_back(stubType, ktestObject.name, std::nullopt);
             }
         }
     }
 
     std::shared_ptr<AbstractValueView> KTestObjectParser::testValueView(
-            const std::vector<char> &rawData,
-            const std::vector<Pointer> &pointers,
+            const UTBotKTestObject::RawData &rawData,
             const types::Type &paramType,
             const std::string &paramName,
             const std::vector<UTBotKTestObject> &objects,
             std::vector<InitReference> &initReferences,
             const std::optional<const Tests::MethodDescription> &testingMethod) {
 
+        const size_t sizeInBits = SizeUtils::bytesToBits(rawData.bytes.size());
+
         switch (typesHandler.getTypeKind(paramType)) {
             case TypeKind::STRUCT_LIKE:
-                return structView(rawData, pointers, typesHandler.getStructInfo(paramType), 0,
-                        /*usage,*/ testingMethod, false, paramName, objects, initReferences);
+                return structView(rawData, typesHandler.getStructInfo(paramType), paramName, objects, initReferences,
+                                  testingMethod, 0, false);
             case TypeKind::ENUM:
-                return enumView(rawData, typesHandler.getEnumInfo(paramType), 0,
-                                SizeUtils::bytesToBits(rawData.size()));
+                return enumView(rawData, typesHandler.getEnumInfo(paramType), 0, sizeInBits);
             case TypeKind::PRIMITIVE:
-                return primitiveView(rawData, paramType.baseTypeObj(), 0, SizeUtils::bytesToBits(rawData.size()));
+                return primitiveView(rawData, paramType.baseTypeObj(), 0, sizeInBits);
             case TypeKind::OBJECT_POINTER: {
-//            if (usage == types::PointerUsage::LAZY) {
-                //TODO
-                std::string res = readBytesAsValueForType(rawData, PointerWidthType, 0, PointerWidthSizeInBits);
-                return getLazyPointerView(paramName, res, paramType, !pointers.empty(), objects, initReferences);
-//            } else
-//            if (types::TypesHandler::isCStringType(paramType)) {
-//                return stringLiteralView(rawData);
-//            } else if (paramType.kinds().size() > 2) {
-//                return multiArrayView(rawData, pointers, paramType,
-//                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-//            } else {
-//                return arrayView(rawData, pointers, paramType.baseTypeObj(),
-//                                 SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-//            }
+                std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, 0, PointerWidthSizeInBits);
+                return getLazyPointerView(paramName, res, paramType, !rawData.pointers.empty(), objects, initReferences,
+                                          rawData.isPost);
             }
             case TypeKind::FUNCTION_POINTER:
                 if (!testingMethod.has_value()) {
@@ -1252,13 +1127,7 @@ std::vector<PointerUsage> &usages*/) {
                 }
                 return functionPointerView(testingMethod->getClassTypeName(), testingMethod->name, paramName);
             case TypeKind::ARRAY:
-//            if (paramType.kinds().size() > 2) {
-//                return multiArrayView(rawData, pointers, paramType,
-//                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/);
-//            } else {
-                return fixedArrayView(rawData, pointers, paramType,
-                                      SizeUtils::bytesToBits(rawData.size()), 0/*, usage*/, objects, initReferences);
-//            }
+                return fixedArrayView(rawData, paramType, sizeInBits, 0, objects, initReferences);
             case TypeKind::UNKNOWN: {
                 std::string message = "No such type";
                 LOG_S(ERROR) << message;
@@ -1273,35 +1142,23 @@ std::vector<PointerUsage> &usages*/) {
     }
 
     std::shared_ptr<AbstractValueView> KTestObjectParser::testPreValueView(
-            const RawKleeParam &kleeParam,
-            const types::Type &paramType,
-            const std::string &paramName,
-            const std::vector<UTBotKTestObject> &objects,
-            std::vector<InitReference> &initReferences,
-            const std::optional<const Tests::MethodDescription> &testingMethod) {
-        return testValueView(kleeParam.rawData, kleeParam.pointers, paramType, paramName, objects, initReferences,
-                             testingMethod);
-    }
-
-    std::shared_ptr<AbstractValueView> KTestObjectParser::testPreValueView(
             const tests::UTBotKTestObject &kleeParam,
             const types::Type &paramType,
             const std::string &paramName,
-            const std::vector<UTBotKTestObject> &objects,
-            std::vector<InitReference> &initReferences,
+            Tests::TestCaseValues &testCaseValues,
             const std::optional<const Tests::MethodDescription> &testingMethod) {
-        return testValueView(kleeParam.bytes, kleeParam.pointers, paramType, paramName, objects, initReferences,
-                             testingMethod);
+        return testValueView(kleeParam.preRaw, paramType, paramName, testCaseValues.kleeObjects,
+                             testCaseValues.lazyReferences, testingMethod);
     }
 
     std::shared_ptr<AbstractValueView> KTestObjectParser::testPostValueView(
-            const RawKleeParam &kleeParam,
+            const UTBotKTestObject &kleeParam,
             const types::Type &paramType,
             const std::string &paramName,
-            const std::vector<UTBotKTestObject> &objects,
-            std::vector<InitReference> &initReferences,
+            Tests::TestCaseValues &testCaseValues,
             const std::optional<const Tests::MethodDescription> &testingMethod) {
-        return testValueView(kleeParam.rawDataFinal, {}, paramType, paramName, objects, initReferences, testingMethod);
+        return testValueView(kleeParam.postRaw, paramType, paramName, testCaseValues.kleeObjects,
+                             testCaseValues.lazyReferencesPost, testingMethod);
     }
 
     std::shared_ptr<AbstractValueView>
@@ -1313,12 +1170,13 @@ std::vector<PointerUsage> &usages*/) {
                                           std::vector<InitReference> &initReferences,
                                           bool post) const {
         size_t ptr = std::stoull(res);
-        auto ptr_element = std::find_if(objects.begin(), objects.end(),
-                                        [ptr](const UTBotKTestObject &object) { return object.address == ptr; });
-        if ( ptr_element != objects.end()) {
+        auto ptrElement = std::find_if(objects.begin(), objects.end(),
+                                       [ptr](const UTBotKTestObject &object) { return object.address == ptr; });
+        if (ptrElement != objects.end()) {
+            std::string ptrElementName = post ? KleeUtils::postSymbolicVariable(ptrElement->name) : ptrElement->name;
             initReferences.emplace_back(
-                    name, ptr_element->name,
-                    PrinterUtils::initializePointerToVar(paramType.baseType(), ptr_element->name,
+                    name, ptrElementName,
+                    PrinterUtils::initializePointerToVar(paramType.baseType(), ptrElementName,
                                                          paramType.getDimension(),
                                                          paramType.isConstQualifiedValue()));
         }
@@ -1373,21 +1231,20 @@ std::vector<PointerUsage> &usages*/) {
                                        std::vector<Pointer> pointers,
                                        size_t address,
                                        bool is_lazy)
-            : name(std::move(name)), bytes(std::move(bytes)), finalBytes(std::move(finalBytes)),
-              pointers(std::move(pointers)),
-              address(address), is_lazy(is_lazy) {
+            : name(std::move(name)),
+              preRaw({std::move(bytes), std::move(pointers), false}),
+              postRaw({std::move(finalBytes), {}, true}),
+              address(address),
+              is_lazy(is_lazy) {
     }
 
     UTBotKTestObject::UTBotKTestObject(const KTestObject &kTestObject)
             : UTBotKTestObject(kTestObject.name,
                                {kTestObject.bytes, kTestObject.bytes + kTestObject.numBytes},
-                               {},
+                               {kTestObject.finalBytes, kTestObject.finalBytes + kTestObject.numBytes},
                                {kTestObject.pointers, kTestObject.pointers + kTestObject.numPointers},
                                kTestObject.address,
                                isUnnamed(kTestObject.name)) {
-        if (kTestObject.finalBytes) {
-            finalBytes = {kTestObject.finalBytes, kTestObject.finalBytes + kTestObject.numBytes};
-        }
     }
 
     bool isUnnamed(char *name) {

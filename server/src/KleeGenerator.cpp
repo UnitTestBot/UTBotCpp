@@ -358,8 +358,7 @@ void KleeGenerator::parseKTestsToFinalCode(
         bool filterByFlag = (lineInfo != nullptr && !lineInfo->forMethod && !lineInfo->forClass &&
                              !lineInfo->predicateInfo.has_value());
         tests::KTestObjectParser KTestObjectParser(typesHandler);
-        KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag,
-                                     lineInfo);
+        KTestObjectParser.parseKTest(batch, tests, methodNameToReturnTypeMap, filterByFlag, lineInfo);
     }
     printer::TestsPrinter testsPrinter(testGen->projectContext, &typesHandler,
                                        Paths::getSourceLanguage(tests.sourceFilePath));
