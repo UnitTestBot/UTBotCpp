@@ -312,7 +312,8 @@ Status Server::TestsGenServiceImpl::ProcessBaseTestRequest(BaseTestGen &testGen,
                                fetcher.getStructsToDeclare(), testGen.serverBuildDir, typesHandler)
                 .generateTestHeaders(testGen.tests, stubGen, selectedTargets, testGen.progressWriter);
         KleeRunner kleeRunner{testGen.projectContext, testGen.settingsContext};
-        bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
+//        bool interactiveMode = (dynamic_cast<ProjectTestGen *>(&testGen) != nullptr);
+        bool interactiveMode = false;
         auto generationStartTime = std::chrono::steady_clock::now();
         StatsUtils::TestsGenerationStatsFileMap generationStatsMap(testGen.projectContext,
                                                                    std::chrono::duration_cast<std::chrono::milliseconds>(

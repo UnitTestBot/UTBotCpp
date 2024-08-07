@@ -20,7 +20,7 @@ WORKDIR docker
 # Install required system packages
 RUN apt update
 RUN DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends sudo file python3-dateutil wget fakeroot libssl-dev build-essential \
-      software-properties-common
+      software-properties-common pkg-config
 RUN echo "check_certificate = off" > /etc/wgetrc
 
 # We use C++ 17 for UnitTestBot, it is available in gcc-9; default gcc for ubuntu:18.04 is gcc-7
@@ -217,6 +217,8 @@ RUN ./configure --make-llvm-lib && make -j`nproc`
 
 # Download library for access private members
 RUN git clone https://github.com/martong/access_private.git $UTBOT_ALL/access_private
+RUN git clone https://github.com/arximboldi/immer.git $UTBOT_ALL/immer
+RUN git clone https://github.com/nlohmann/json.git $UTBOT_ALL/json
 
 RUN apt autoclean
 
