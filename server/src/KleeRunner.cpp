@@ -58,9 +58,9 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     LOG_SCOPE_FUNCTION(DEBUG);
 
     fs::path kleeOutDir = Paths::getKleeOutDir(projectContext);
-    if (fs::exists(kleeOutDir)) {
-        FileSystemUtils::removeAll(kleeOutDir);
-    }
+//    if (fs::exists(kleeOutDir)) {
+//        FileSystemUtils::removeAll(kleeOutDir);
+//    }
     fs::create_directories(kleeOutDir);
     CollectionUtils::MapFileTo<std::vector<TestMethod>> fileToMethods;
     for (const auto &method : testMethods) {
@@ -219,9 +219,9 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
 
     std::vector<std::string> argvData = {
         "klee",
-        "--entry-point=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
+        "--entry-points=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
         "--libc=klee",
-        "--utbot",
+//        "--utbot",
         "--posix-runtime",
         "--skip-not-lazy-initialized",
         "--min-number-elements-li=1",
