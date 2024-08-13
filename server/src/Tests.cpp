@@ -723,12 +723,12 @@ namespace tests {
                 size_t offset = SizeUtils::bytesToBits(pointer.offset);
                 Tests::TypeAndVarName fromPtr =
                         traverseLazy(typeAndName.type, offset, typeAndName.varName);
-                if (!objTypeAndName[pointer.index].has_value()) {
+                if (!objTypeAndName[pointer.indexOfObject].has_value()) {
                     continue;
                 }
 
 //            std::string toPtrName;
-                Tests::TypeAndVarName pointerTypeAndName = objTypeAndName[pointer.index].value();
+                Tests::TypeAndVarName pointerTypeAndName = objTypeAndName[pointer.indexOfObject].value();
 //            size_t indexOffset = getOffsetInStruct(pointerTypeAndName,
 //                                                   SizeUtils::bytesToBits(pointer.indexOffset)/*,
 //                                                   usages[pointer.index]*/);
@@ -956,7 +956,7 @@ namespace tests {
     }
 
 
-    const UTBotKTestObject emptyKleeObject = {"", {}, {}, {}, 0, false};
+    const UTBotKTestObject emptyKleeObject = {"", {}, {}, {}, {}, 0, false};
 
     void KTestObjectParser::getTestParamView(const Tests::MethodDescription &methodDescription,
                                              Tests::TestCaseValues &testCaseValues,
@@ -1229,20 +1229,22 @@ namespace tests {
                                        std::vector<char> bytes,
                                        std::vector<char> finalBytes,
                                        std::vector<Pointer> pointers,
+                                       std::vector<Pointer> finalPointers,
                                        size_t address,
                                        bool is_lazy)
             : name(std::move(name)),
               preRaw({std::move(bytes), std::move(pointers), false}),
-              postRaw({std::move(finalBytes), {}, true}),
+              postRaw({std::move(finalBytes), std::move(finalPointers), true}),
               address(address),
               is_lazy(is_lazy) {
     }
 
     UTBotKTestObject::UTBotKTestObject(const KTestObject &kTestObject)
             : UTBotKTestObject(kTestObject.name,
-                               {kTestObject.bytes, kTestObject.bytes + kTestObject.numBytes},
-                               {kTestObject.finalBytes, kTestObject.finalBytes + kTestObject.numBytes},
-                               {kTestObject.pointers, kTestObject.pointers + kTestObject.numPointers},
+                               {kTestObject.content.bytes, kTestObject.content.bytes + kTestObject.content.numBytes},
+                               {kTestObject.content.finalBytes, kTestObject.content.finalBytes + kTestObject.content.numBytes},
+                               {kTestObject.content.pointers, kTestObject.content.pointers + kTestObject.content.numPointers},
+                               {kTestObject.content.finalPointers, kTestObject.content.finalPointers + kTestObject.content.numFinalPointers},
                                kTestObject.address,
                                isUnnamed(kTestObject.name)) {
     }

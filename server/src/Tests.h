@@ -76,6 +76,7 @@ namespace tests {
                          std::vector<char> bytes,
                          std::vector<char> finalBytes,
                          std::vector<Pointer> pointers,
+                         std::vector<Pointer> finalPointers,
                          size_t address,
                          bool is_lazy);
 
