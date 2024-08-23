@@ -520,32 +520,32 @@ namespace printer {
         return ss;
     }
 
-    std::stringstream &Printer::gen2DPointer(const Tests::MethodParam &param, bool needDeclare) {
-        if (!param.type.isPointerToPointer()) {
-            return ss;
-        }
-
-        size_t pointerSize = 1; //types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
-        auto typeObject = types::TypesHandler::isVoid(param.type.baseTypeObj())
-                          ? types::Type::minimalScalarPointerType(2)
-                          : param.type;
-        auto baseType = typeObject.baseType();
-        auto type = stringFormat("%s%s **", getConstQualifier(typeObject), baseType);
-        std::string value =
-                stringFormat("(%s) calloc(%zu, sizeof(%s *))", type, pointerSize + 1, baseType);
-        if (needDeclare) {
-            strDeclareVar(type, param.name, value);
-        } else {
-            strAssignVar(param.name, value);
-        }
-
-        auto iterators = printForLoopsAndReturnLoopIterators({pointerSize});
-        auto indexing = constrMultiIndex(iterators);
-        strAssignVar(param.name + indexing, param.underscoredName() + indexing);
-        closeBrackets(1);
-        strAssignVar(constrIndex(param.name, pointerSize), PrinterUtils::C_NULL);
-        return ss;
-    }
+//    std::stringstream &Printer::gen2DPointer(const Tests::MethodParam &param, bool needDeclare) {
+//        if (!param.type.isPointerToPointer()) {
+//            return ss;
+//        }
+//
+//        size_t pointerSize = 1; //types::TypesHandler::getElementsNumberInPointerMultiDim(types::PointerUsage::PARAMETER);
+//        auto typeObject = types::TypesHandler::isVoid(param.type.baseTypeObj())
+//                          ? types::Type::minimalScalarPointerType(2)
+//                          : param.type;
+//        auto baseType = typeObject.baseType();
+//        auto type = stringFormat("%s%s **", getConstQualifier(typeObject), baseType);
+//        std::string value =
+//                stringFormat("(%s) calloc(%zu, sizeof(%s *))", type, pointerSize + 1, baseType);
+//        if (needDeclare) {
+//            strDeclareVar(type, param.name, value);
+//        } else {
+//            strAssignVar(param.name, value);
+//        }
+//
+//        auto iterators = printForLoopsAndReturnLoopIterators({pointerSize});
+//        auto indexing = constrMultiIndex(iterators);
+//        strAssignVar(param.name + indexing, param.underscoredName() + indexing);
+//        closeBrackets(1);
+//        strAssignVar(constrIndex(param.name, pointerSize), PrinterUtils::C_NULL);
+//        return ss;
+//    }
 
     Printer::Stream
     Printer::strMemcpyImpl(std::string_view dest, std::string_view src, bool needDereference) {

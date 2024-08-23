@@ -71,7 +71,7 @@ namespace sarif {
                                     R"regex(\s+#(.*) in ([^ ]*)[(][^)]*[)] at ([^:]*):(\d+))regex");
                                 std::smatch stack_match;
                                 if (!std::regex_match(lineInDescriptor, stack_match, stack_regex)) {
-                                    LOG_S(ERROR) << "wrong `Stack` line: " << lineInDescriptor;
+                                    LOG_S(WARNING) << "wrong `Stack` line: " << lineInDescriptor;
                                 } else {
                                     const fs::path &srcPath = fs::path(stack_match[3]);
                                     const fs::path &relPathInProject = getInProjectPath(projectContext.projectPath, srcPath);

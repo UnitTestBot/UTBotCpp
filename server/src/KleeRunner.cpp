@@ -217,9 +217,9 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
 
     std::vector<std::string> argvData = {
         "klee",
-        "--entry-point=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
+        "--entry-points=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
         "--libc=klee",
-        "--utbot",
+//        "--utbot",
         "--posix-runtime",
         "--skip-not-lazy-initialized",
         "--use-sym-size-li",

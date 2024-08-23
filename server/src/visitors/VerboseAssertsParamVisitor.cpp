@@ -15,7 +15,16 @@ namespace visitor {
     void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name) {
         expectedVariable = PrinterUtils::getExpectedVarName(name);
         std::string paramName = param.dataVariableName();
-        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
+        types::Type paramType = param.type; //.arrayCloneMultiDim(/*usage*/);
+        visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
+        expectedVariable = {};
+    }
+
+    //TODO: make normal solution
+    void VerboseAssertsParamVisitor::visitTemp(const Tests::MethodParam &param, const std::string &name) {
+        expectedVariable = name;
+        std::string paramName = param.dataVariableName();
+        types::Type paramType = param.type; //.arrayCloneMultiDim(/*usage*/);
         visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
         expectedVariable = {};
     }
@@ -31,13 +40,9 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   int depth) {
-        if (depth == 0) {
-            //TODO change to depth
-            size_t sizes_d = 1; // type.arraysSizes(usage).size();
-            std::string newName = type.maybeJustPointer() ? name :
-                                  PrinterUtils::getDereferencePointer(name, sizes_d);
-            visitAny(type.baseTypeObj(), newName, view, access, depth);
-        }
+//        auto signature = processExpect(type, PrinterUtils::EQ,
+//                                       {PrinterUtils::fillVarName(access, expectedVariable), name});
+//        printer->strFunctionCall(signature.name, signature.args);
     }
 
     void VerboseAssertsParamVisitor::visitArray(const types::Type &type,

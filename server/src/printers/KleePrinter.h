@@ -93,7 +93,7 @@ namespace printer {
          */
         void genConstraints(const Tests::MethodParam &param, const std::vector<std::string> &names = {});
 
-        void genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare);
+//        void genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare);
 
         void genVoidFunctionAssumes(const Tests::MethodDescription &testMethod,
                                     const std::optional<PredInfo> &predicateInfo,

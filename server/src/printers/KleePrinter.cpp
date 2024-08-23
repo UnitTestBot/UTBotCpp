@@ -205,11 +205,11 @@ void KleePrinter::declTestEntryPoint(const Tests &tests,
 }
 
 Tests::MethodParam KleePrinter::getKleeMethodParam(tests::Tests::MethodParam const &param) {
-    if (param.type.isTwoDimensionalPointer()) {
-        return {param.type, param.underscoredName(), param.alignment};
-    } else {
+//    if (param.type.isTwoDimensionalPointer()) {
+//        return {param.type, param.underscoredName(), param.alignment};
+//    } else {
         return param;
-    }
+//    }
 }
 
 Tests::MethodParam KleePrinter::getKleePostParam(const Tests::MethodParam &param) {
@@ -374,11 +374,11 @@ void KleePrinter::genGlobalParamsDeclarations(const Tests::MethodDescription &te
         }
         strKleeMakeSymbolic(kleeParam.type, kleeParam.name, param.name, !isArray);
         if (param.type.isObjectPointer()) {
-            if (param.type.isTwoDimensionalPointer()) {
-                genTwoDimPointers(param, false);
-            } else {
+//            if (param.type.isTwoDimensionalPointer()) {
+//                genTwoDimPointers(param, false);
+//            } else {
                 strAssignVar(param.name, kleeParam.name);
-            }
+//            }
         }
 //        genConstraints(kleeParam);
     }
@@ -587,9 +587,9 @@ void KleePrinter::genKleePathSymbolicAssumeIfNeeded(const std::optional<PredInfo
     }
 }
 
-void printer::KleePrinter::genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare) {
-    gen2DPointer(param, needDeclare);
-}
+//void printer::KleePrinter::genTwoDimPointers(const Tests::MethodParam &param, bool needDeclare) {
+//    gen2DPointer(param, needDeclare);
+//}
 
 utbot::Language printer::KleePrinter::getLanguage() const {
     return srcLanguage;

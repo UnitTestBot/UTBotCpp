@@ -197,7 +197,7 @@ namespace tests {
                 case TypeKind::OBJECT_POINTER: {
                     std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, curPos,
                                                               PointerWidthSizeInBits);
-                    //TODO change "abc" to accessor
+                    //TODO change "anyname" to accessor
 
 //                    auto pointerIterator =
 //                            std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
@@ -205,7 +205,7 @@ namespace tests {
 //                                             return SizeUtils::bytesToBits(ptr.offset) == curPos;
 //                                         }) != lazyPointersArray.end();
                     subViews.push_back(
-                            getLazyPointerView("abc", res, subType, true, objects, initReferences, rawData.isPost));
+                            getLazyPointerView("anyname", res, subType, true, objects, initReferences, rawData.isPost));
                     break;
                 }
                 case TypeKind::ARRAY: {
@@ -550,7 +550,6 @@ namespace tests {
                                        const types::Type &paramType,
                                        Tests::TestCaseParamValue &paramValue,
                                        std::vector<bool> &visited,
-//                                   std::vector<PointerUsage> &usages,
                                        std::queue<JsonIndAndParam> &order) {
         auto it = std::find_if(objects.begin(), objects.end(),
                                [paramName](const UTBotKTestObject &obj) { return obj.name == paramName; });
@@ -586,11 +585,8 @@ namespace tests {
         std::vector<bool> visited(testCase.kleeObjects.size(), false);
         for (size_t paramInd = 0; paramInd < testCase.paramValues.size(); paramInd++) {
             addToOrder(testCase.kleeObjects, methodDescription.params[paramInd].name,
-                       methodDescription.params[paramInd].type, testCase.paramValues[paramInd], visited,
-                    /*usages,*/ order);
+                       methodDescription.params[paramInd].type, testCase.paramValues[paramInd], visited, order);
         }
-        addToOrder(testCase.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
-                   testCase.returnValue, visited/*, usages*/, order);
 
         while (!order.empty()) {
             auto curType = order.front();
@@ -630,6 +626,49 @@ namespace tests {
                     order.emplace(indObj, param, curType.paramValue);
                     visited[indObj] = true;
 //                usages[indObj] = types::PointerUsage::PARAMETER;
+                }
+            }
+        }
+
+        visited = std::vector<bool>(testCase.kleeObjects.size(), false);
+        for (size_t paramInd = 0; paramInd < testCase.paramPostValues.size(); paramInd++) {
+            addToOrder(testCase.kleeObjects, methodDescription.params[paramInd].name,
+                       methodDescription.params[paramInd].type, testCase.paramPostValues[paramInd], visited, order);
+        }
+        addToOrder(testCase.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
+                   testCase.returnValue, visited, order);
+
+        while (!order.empty()) {
+            auto curType = order.front();
+            order.pop();
+            std::string paramName = testCase.kleeObjects[curType.jsonInd].name;
+            std::string expectedParamName = PrinterUtils::getExpectedVarName(paramName);
+            types::Type paramType = curType.param.type;
+            typeAndName[curType.jsonInd] = {paramType, paramName};
+
+            if (testCase.kleeObjects[curType.jsonInd].is_lazy) {
+
+
+                std::shared_ptr<AbstractValueView> testParamViewPost = testPostValueView(
+                        testCase.kleeObjects[curType.jsonInd],
+                        paramType,
+                        expectedParamName,
+                        testCase,
+                        methodDescription);
+                LOG_S(MAX) << "Fetch lazy object: " << expectedParamName << " = " << testParamViewPost->getEntryValue(nullptr);
+                curType.paramValue.lazyParams.emplace_back(paramType, expectedParamName, std::nullopt);
+                curType.paramValue.lazyValues.emplace_back(expectedParamName, std::nullopt, testParamViewPost);
+            }
+            //TODO add post
+            for (auto const &[offset, indObj, indexOffset]: testCase.kleeObjects[curType.jsonInd].preRaw.pointers) {
+                if (!visited[indObj]) {
+                    Tests::TypeAndVarName typeAndName = {paramType, ""};
+                    size_t offsetInStruct = SizeUtils::bytesToBits(offset);
+                    types::Type fieldType = traverseLazy(typeAndName.type, offsetInStruct).type;
+
+                    Tests::MethodParam param(fieldType.arrayClone(), "", std::nullopt);
+                    order.emplace(indObj, param, curType.paramValue);
+                    visited[indObj] = true;
                 }
             }
         }

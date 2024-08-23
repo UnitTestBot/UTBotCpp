@@ -40,7 +40,7 @@ namespace printer {
 
         void genParametrizedTestCase(const tests::Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
-                                     const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                     const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                      ErrorMode errorMode);
 
         void genVerboseTestCase(const tests::Tests::MethodDescription &methodDescription,
@@ -80,18 +80,33 @@ namespace printer {
                             const Tests::MethodTestCase &testCase,
                             const std::optional<LineInfo::PredicateInfo> &predicateInfo);
 
+        void printGlobalObjectPost(const Tests::MethodDescription &methodDescription,
+                                   const Tests::MethodTestCase &testCase);
+
+        void printClassObjectPost(const Tests::MethodDescription &methodDescription,
+                                  const Tests::MethodTestCase &testCase);
+
+        void printFunctionParametersPost(const Tests::MethodDescription &methodDescription,
+                                         const Tests::MethodTestCase &testCase);
+
+        void globalParamsAsserts(const Tests::MethodDescription &methodDescription,
+                                 const Tests::MethodTestCase &testCase);
+
         void classAsserts(const Tests::MethodDescription &methodDescription,
                           const Tests::MethodTestCase &testCase);
 
         void changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase);
 
-        void globalParamsAsserts(const Tests::MethodDescription &methodDescription,
-                                 const Tests::MethodTestCase &testCase);
+        void printLazyAsserts(const std::vector<Tests::MethodParam> &lazyParams,
+                              const std::vector<Tests::TestCaseParamValue> &lazyValues);
+
+        void printLazyAsserts(const Tests::MethodTestCase &testCase,
+                              bool verbose);
 
         void parametrizedAsserts(const tests::Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,
-                                 const std::optional<LineInfo::PredicateInfo>& predicateInfo,
+                                 const std::optional<LineInfo::PredicateInfo> &predicateInfo,
                                  ErrorMode errorMode);
 
         void markTestedFunctionCallIfNeed(const std::string &name,
@@ -131,18 +146,26 @@ namespace printer {
         void parametrizedInitializeSymbolicStubs(const Tests::MethodDescription &methodDescription,
                                                  const Tests::MethodTestCase &testCase);
 
-        void printLazyVariables(const Tests::MethodDescription &methodDescription,
-                                const Tests::MethodTestCase &testCase,
-                                bool verbose);
-
         void initializeFiles(const Tests::MethodDescription &methodDescription,
                              const Tests::MethodTestCase &testCase);
 
         void openFiles(const Tests::MethodDescription &methodDescription,
                        const Tests::MethodTestCase &testCase);
 
+        void printLazyVariables(const Tests::MethodDescription &methodDescription,
+                                const Tests::MethodTestCase &testCase,
+                                bool verbose);
+
+        void printLazyVariablesPost(const Tests::MethodDescription &methodDescription,
+                                    const Tests::MethodTestCase &testCase,
+                                    bool verbose);
+
         void printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
                                 const std::vector<Tests::TestCaseParamValue> &lazyValues);
+
+        void printLazyReferencesPost(const Tests::MethodDescription &methodDescription,
+                                     const Tests::MethodTestCase &testCase,
+                                     bool verbose);
 
         void printLazyReferences(const Tests::MethodDescription &methodDescription,
                                  const Tests::MethodTestCase &testCase,

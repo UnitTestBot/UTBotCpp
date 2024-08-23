@@ -5,9 +5,8 @@
 namespace visitor {
     VerboseParameterVisitor::VerboseParameterVisitor(const types::TypesHandler *typesHandler,
                                                      printer::TestsPrinter *printer,
-                                                     bool needDeclaration/*,
-                                                     types::PointerUsage usage*/)
-        : AbstractValueViewVisitor(typesHandler/*, usage*/), printer(printer),
+                                                     bool needDeclaration)
+        : AbstractValueViewVisitor(typesHandler), printer(printer),
           needDeclaration(needDeclaration) {
     }
 

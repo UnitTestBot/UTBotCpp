@@ -12,6 +12,8 @@ namespace visitor {
 
     void visit(const Tests::MethodParam &param, const std::string &name);
 
+    void visitTemp(const Tests::MethodParam &param, const std::string &name);
+
     void visitGlobal(const Tests::MethodParam &param, const std::string &name);
 
   protected:

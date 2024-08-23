@@ -141,7 +141,7 @@ namespace printer {
 
         Stream closeBrackets(size_t sz);
 
-        Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
+//        Stream gen2DPointer(const Tests::MethodParam &param, bool needDeclare);
 
         std::vector<std::string> printForLoopsAndReturnLoopIterators(const std::vector<size_t> &bounds);
 

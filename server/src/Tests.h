@@ -391,9 +391,10 @@ namespace tests {
             }
 
             [[nodiscard]] std::string dataVariableName() const {
-                return this->type.isTwoDimensionalPointer() ?
-                       this->underscoredName() :
-                       this->name;
+//                return this->type.isTwoDimensionalPointer() ?
+//                       this->underscoredName() :
+//                       this->name;
+                return this->name;
             }
 
             [[nodiscard]] std::string getFunctionParamDecl() const {
