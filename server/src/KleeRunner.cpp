@@ -30,7 +30,7 @@ namespace {
         ShellExecTask::ExecutionParameters kleeStatsParams("klee-stats",
                                                            {"--utbot-config", kleeOut.string(),
                                                             "--table-format=readable-csv"});
-        auto[out, status, _] = ShellExecTask::runShellCommandTask(kleeStatsParams);
+        auto [out, status, _] = ShellExecTask::runShellCommandTask(kleeStatsParams);
         if (status != 0) {
             LOG_S(ERROR) << "klee-stats call failed:" << "\n" << out;
             return {};
@@ -43,7 +43,7 @@ namespace {
 
 KleeRunner::KleeRunner(utbot::ProjectContext projectContext,
                        utbot::SettingsContext settingsContext)
-    : projectContext(std::move(projectContext)), settingsContext(std::move(settingsContext)) {
+        : projectContext(std::move(projectContext)), settingsContext(std::move(settingsContext)) {
 }
 
 void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
@@ -63,7 +63,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     }
     fs::create_directories(kleeOutDir);
     CollectionUtils::MapFileTo<std::vector<TestMethod>> fileToMethods;
-    for (const auto &method : testMethods) {
+    for (const auto &method: testMethods) {
         fileToMethods[method.sourceFilePath].push_back(method);
     }
 
@@ -95,7 +95,7 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
         std::stringstream logStream;
         if (LogUtils::isMaxVerbosity()) {
             logStream << "Processing batch: ";
-            for (const auto &method : batch) {
+            for (const auto &method: batch) {
                 logStream << method.methodName << ", ";
             }
             LOG_S(MAX) << logStream.str();
@@ -120,11 +120,11 @@ void KleeRunner::runKlee(const std::vector<tests::TestMethod> &testMethods,
     };
 
     testsWriter->writeTestsWithProgress(
-        testsMap,
-        "Running klee",
-        projectContext.getTestDirAbsPath(),
-        std::move(prepareTests),
-        std::move(prepareTotal));
+            testsMap,
+            "Running klee",
+            projectContext.getTestDirAbsPath(),
+            std::move(prepareTests),
+            std::move(prepareTotal));
 }
 
 static void processMethod(MethodKtests &ktestChunk,
@@ -138,7 +138,7 @@ static void processMethod(MethodKtests &ktestChunk,
     clearUnusedData(kleeOut);
     bool hasTimeout = false;
     bool hasError = false;
-    for (auto const &entry : fs::directory_iterator(kleeOut)) {
+    for (auto const &entry: fs::directory_iterator(kleeOut)) {
         auto const &path = entry.path();
         if (Paths::isKtest(path)) {
             if (Paths::hasEarly(path)) {
@@ -147,39 +147,39 @@ static void processMethod(MethodKtests &ktestChunk,
                 hasError = true;
             } else {
                 std::unique_ptr<KTest, decltype(&kTest_free)> ktestData{
-                    kTest_fromFile(path.c_str()), kTest_free
+                        kTest_fromFile(path.c_str()), kTest_free
                 };
                 if (ktestData == nullptr) {
                     LOG_S(WARNING) << "Unable to open .ktest file";
                     continue;
                 }
                 const std::vector<fs::path> &errorDescriptorFiles =
-                    Paths::getErrorDescriptors(path);
+                        Paths::getErrorDescriptors(path);
 
                 UTBotKTest::Status status = errorDescriptorFiles.empty()
-                                                ? UTBotKTest::Status::SUCCESS
-                                                : UTBotKTest::Status::FAILED;
+                                            ? UTBotKTest::Status::SUCCESS
+                                            : UTBotKTest::Status::FAILED;
                 std::vector<KTestObject> kTestObjects(ktestData->objects,
                                                       ktestData->objects + ktestData->numObjects);
 
                 std::vector<UTBotKTestObject> objects =
-                    CollectionUtils::transform(kTestObjects, [](const KTestObject &kTestObject) {
-                        return UTBotKTestObject(kTestObject);
-                    });
+                        CollectionUtils::transform(kTestObjects, [](const KTestObject &kTestObject) {
+                            return UTBotKTestObject::fromKTest(kTestObject);
+                        });
 
                 std::vector<std::string> errorDescriptors =
-                    CollectionUtils::transform(errorDescriptorFiles, [](const fs::path &errorFile) {
-                        std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
-                        std::string content((std::istreambuf_iterator<char>(fileWithError)),
-                                            std::istreambuf_iterator<char>());
+                        CollectionUtils::transform(errorDescriptorFiles, [](const fs::path &errorFile) {
+                            std::ifstream fileWithError(errorFile.c_str(), std::ios_base::in);
+                            std::string content((std::istreambuf_iterator<char>(fileWithError)),
+                                                std::istreambuf_iterator<char>());
 
-                        const std::string &errorId = errorFile.stem().extension().string();
-                        if (!errorId.empty()) {
-                            // skip leading dot
-                            content += "\n" + sarif::ERROR_ID_KEY + ":" + errorId.substr(1);
-                        }
-                        return content;
-                    });
+                            const std::string &errorId = errorFile.stem().extension().string();
+                            if (!errorId.empty()) {
+                                // skip leading dot
+                                content += "\n" + sarif::ERROR_ID_KEY + ":" + errorId.substr(1);
+                            }
+                            return content;
+                        });
 
                 ktestChunk[method].emplace_back(objects, status, errorDescriptors);
             }
@@ -187,23 +187,23 @@ static void processMethod(MethodKtests &ktestChunk,
     }
     if (hasTimeout) {
         std::string message = StringUtils::stringFormat(
-            "Some tests for function '%s' were skipped, as execution of function is "
-            "out of timeout.",
-            method.methodName);
+                "Some tests for function '%s' were skipped, as execution of function is "
+                "out of timeout.",
+                method.methodName);
         tests.commentBlocks.emplace_back(std::move(message));
     }
     if (hasError) {
         std::string message = StringUtils::stringFormat(
-            "Some tests for function '%s' were skipped, as execution of function leads "
-            "KLEE to the internal error. See console log for more details.",
-            method.methodName);
+                "Some tests for function '%s' were skipped, as execution of function leads "
+                "KLEE to the internal error. See console log for more details.",
+                method.methodName);
         tests.commentBlocks.emplace_back(std::move(message));
     }
 
     if (!CollectionUtils::containsKey(ktestChunk, method) || ktestChunk.at(method).empty()) {
         tests.commentBlocks.emplace_back(StringUtils::stringFormat(
-            "Tests for %s were not generated. Maybe the function is too complex.",
-            method.methodName));
+                "Tests for %s were not generated. Maybe the function is too complex.",
+                method.methodName));
     }
 }
 
@@ -216,47 +216,69 @@ KleeRunner::createKleeParams(const tests::TestMethod &testMethod,
     fs::create_directories(kleeOut.parent_path());
 
     std::vector<std::string> argvData = {
-        "klee",
-        "--entry-points=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
-        "--libc=klee",
-//        "--utbot",
-        "--posix-runtime",
-        "--skip-not-lazy-initialized",
-        "--use-sym-size-li",
-        "--min-number-elements-li=1",
-        "--symbolic-allocation-threshold=0",
-        "--fp-runtime",
-        "--only-output-states-covering-new",
-        "--allocate-determ",
-        "--external-calls=all",
-        "--timer-interval=1000ms",
-        "--use-cov-check=instruction-based",
-        "--istats-write-interval=5s",
-        "--disable-verify",
-        "--check-div-zero=false",
-        "--check-overshift=false",
-        "--skip-not-symbolic-objects",
-        "--use-tbaa",
-        "--ubsan-runtime",
-        "--output-dir=" + kleeOut.string()
+            "klee",
+            "--entry-points=" + KleeUtils::entryPointFunction(tests, testMethod.methodName, true),
+            "--strip-unwanted-calls",
+            "--delete-dead-loops=false",
+            "--mock-policy=all",
+            "--external-calls=all",
+            "--libc=klee",
+            "--skip-not-lazy-initialized",
+            "--output-source=false",
+            "--use-sym-size-alloc=true",
+            "--cex-cache-validity-cores",
+            "--fp-runtime",
+            "--symbolic-allocation-threshold=8192",
+            "--uninit-memory-test-multiplier=10",
+            "--only-output-make-symbolic-arrays",
+            "--memory-backend=mixed",
+            "--max-fixed-size-structures-size=64",
+            "--optimize=false",
+            "--mem-trigger-cof",
+            "--use-alpha-equivalence=true",
+            "--optimize-aggressive=false",
+            "--track-coverage=all",
+            "--use-iterative-deepening-search=max-cycles",
+            "--max-solver-time=10s",
+            "--max-cycles-before-stuck=15",
+            "--only-output-states-covering-new",
+            "--dump-states-on-halt=all",
+            "--posix-runtime",
+            "--use-sym-size-li",
+            "--min-number-elements-li=1",
+            "--allocate-determ",
+            "--timer-interval=1000ms",
+            "--use-cov-check=instruction-based",
+            "--istats-write-interval=5s",
+            "--disable-verify",
+            "--check-div-zero=false",
+            "--check-overshift=false",
+            "--skip-not-symbolic-objects",
+            "--ubsan-runtime",
+            "--skip-global",
+            "--skip-local",
+            "--use-lazy-initialization=only",
+            "--output-dir=" + kleeOut.string()
     };
     if (Paths::isCXXFile(testMethod.sourceFilePath)) {
         argvData.emplace_back("--use-advanced-type-system=true");
-//        argvData.emplace_back("--libcxx=true");
+        argvData.emplace_back("--libcxx=true");
     }
     if (settingsContext.useDeterministicSearcher) {
         argvData.emplace_back("--search=dfs");
+    } else {
+        argvData.emplace_back("--search=dfs");
+        argvData.emplace_back("--search=random-state");
     }
     if (testMethod.is32bits) {
         // 32bit project
         argvData.emplace_back("--allocate-determ-size=" + std::to_string(1));
         argvData.emplace_back("--allocate-determ-start-address=" + std::to_string(0x10000));
     }
-    return { argvData, kleeOut };
+    return {argvData, kleeOut};
 }
 
-void KleeRunner::addTailKleeInitParams(std::vector<std::string> &argvData, const std::string &bitcodeFilePath)
-{
+void KleeRunner::addTailKleeInitParams(std::vector<std::string> &argvData, const std::string &bitcodeFilePath) {
     argvData.emplace_back(bitcodeFilePath);
     argvData.emplace_back("--sym-stdin");
     argvData.emplace_back(std::to_string(types::Type::symInputSize));
@@ -272,12 +294,12 @@ void KleeRunner::processBatchWithoutInteractive(const std::vector<tests::TestMet
         return;
     }
 
-    for (const auto &testMethod : testMethods) {
+    for (const auto &testMethod: testMethods) {
         if (testMethod.sourceFilePath != tests.sourceFilePath) {
             std::string message = StringUtils::stringFormat(
-                "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n",
-                tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
+                    "While generating tests for source file: %s tried to generate tests for method %s "
+                    "from another source file: %s. This can cause invalid generation.\n",
+                    tests.sourceFilePath, testMethod.methodName, testMethod.sourceFilePath);
             LOG_S(WARNING) << message;
         }
 
@@ -308,12 +330,12 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         return;
     }
 
-    for (const auto &method : testMethods) {
+    for (const auto &method: testMethods) {
         if (method.sourceFilePath != tests.sourceFilePath) {
             std::string message = StringUtils::stringFormat(
-                "While generating tests for source file: %s tried to generate tests for method %s "
-                "from another source file: %s. This can cause invalid generation.\n",
-                tests.sourceFilePath, method.methodName, method.sourceFilePath);
+                    "While generating tests for source file: %s tried to generate tests for method %s "
+                    "from another source file: %s. This can cause invalid generation.\n",
+                    tests.sourceFilePath, method.methodName, method.sourceFilePath);
             LOG_S(WARNING) << message;
         }
     }
@@ -327,14 +349,14 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
             // entrypoints
             fs::path entrypoints = kleeOut.parent_path() / "entrypoints.txt";
             std::ofstream of(entrypoints);
-            for (const auto &method : testMethods) {
+            for (const auto &method: testMethods) {
                 of << KleeUtils::entryPointFunction(tests, method.methodName, true) << std::endl;
             }
             argvData.emplace_back("--entrypoints-file=" + entrypoints.string());
         }
         if (settingsContext.timeoutPerFunction.has_value()) {
             argvData.emplace_back(StringUtils::stringFormat(
-                "--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
+                    "--timeout-per-function=%d", settingsContext.timeoutPerFunction.value()));
         }
         addTailKleeInitParams(argvData, testMethods[0].bitcodeFilePath);
     }
@@ -349,15 +371,15 @@ void KleeRunner::processBatchWithInteractive(const std::vector<tests::TestMethod
         RunKleeTask task(cargv.size(),
                          cargv.data(),
                          settingsContext.timeoutPerFunction.has_value()
-                             ? settingsContext.timeoutPerFunction.value() * testMethods.size()
-                             : settingsContext.timeoutPerFunction);
+                         ? settingsContext.timeoutPerFunction.value() * testMethods.size()
+                         : settingsContext.timeoutPerFunction);
         ExecUtils::ExecutionResult result __attribute__((unused)) = task.run();
 
         ExecUtils::throwIfCancelled();
 
-        for (const auto &method : testMethods) {
+        for (const auto &method: testMethods) {
             std::string kleeMethodName =
-                KleeUtils::entryPointFunction(tests, method.methodName, true);
+                    KleeUtils::entryPointFunction(tests, method.methodName, true);
             fs::path newKleeOut = kleeOut / kleeMethodName;
             MethodKtests ktestChunk;
             processMethod(ktestChunk, tests, newKleeOut, method);

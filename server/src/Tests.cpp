@@ -655,7 +655,8 @@ namespace tests {
                         expectedParamName,
                         testCase,
                         methodDescription);
-                LOG_S(MAX) << "Fetch lazy object: " << expectedParamName << " = " << testParamViewPost->getEntryValue(nullptr);
+                LOG_S(MAX)
+                << "Fetch lazy object: " << expectedParamName << " = " << testParamViewPost->getEntryValue(nullptr);
                 curType.paramValue.lazyParams.emplace_back(paramType, expectedParamName, std::nullopt);
                 curType.paramValue.lazyValues.emplace_back(expectedParamName, std::nullopt, testParamViewPost);
             }
@@ -1278,14 +1279,30 @@ namespace tests {
               is_lazy(is_lazy) {
     }
 
-    UTBotKTestObject::UTBotKTestObject(const KTestObject &kTestObject)
-            : UTBotKTestObject(kTestObject.name,
-                               {kTestObject.content.bytes, kTestObject.content.bytes + kTestObject.content.numBytes},
-                               {kTestObject.content.finalBytes, kTestObject.content.finalBytes + kTestObject.content.numBytes},
-                               {kTestObject.content.pointers, kTestObject.content.pointers + kTestObject.content.numPointers},
-                               {kTestObject.content.finalPointers, kTestObject.content.finalPointers + kTestObject.content.numFinalPointers},
-                               kTestObject.address,
-                               isUnnamed(kTestObject.name)) {
+
+    UTBotKTestObject UTBotKTestObject::fromKTest(const KTestObject &kTestObject) {
+        std::vector<char> bytes = kTestObject.content.bytes != nullptr ?
+                                  std::vector<char>(
+                                          kTestObject.content.bytes,
+                                          kTestObject.content.bytes + kTestObject.content.numBytes
+                                  ) :
+                                  std::vector<char>(0);
+        std::vector<char> finalBytes = kTestObject.content.bytes != nullptr ?
+                                       std::vector<char>(
+                                               kTestObject.content.finalBytes,
+                                               kTestObject.content.finalBytes + kTestObject.content.numBytes
+                                       ) :
+                                       std::vector<char>(0);
+
+        return UTBotKTestObject(kTestObject.name,
+                                std::move(bytes),
+                                std::move(finalBytes),
+                                {kTestObject.content.pointers,
+                                 kTestObject.content.pointers + kTestObject.content.numPointers},
+                                {kTestObject.content.finalPointers,
+                                 kTestObject.content.finalPointers + kTestObject.content.numFinalPointers},
+                                kTestObject.address,
+                                isUnnamed(kTestObject.name));
     }
 
     bool isUnnamed(char *name) {

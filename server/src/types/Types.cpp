@@ -972,12 +972,12 @@ std::size_t types::TypesHandler::IsSupportedTypeArgumentsHash::operator()(const 
 
 types::Type types::TypesHandler::getReturnTypeToCheck(const types::Type &returnType) const {
     types::Type baseReturnType = returnType.baseTypeObj();
-//    if (types::TypesHandler::isObjectPointerType(returnType)) {
+    if (types::TypesHandler::isObjectPointerType(returnType)) {
         if (types::TypesHandler::skipTypeInReturn(baseReturnType)) {
-            return types::Type::minimalScalarType();
+            return types::Type::createArray(types::Type::minimalScalarType());
         }
 //        return baseReturnType;
-//    }
+    }
     return returnType;
 }
 

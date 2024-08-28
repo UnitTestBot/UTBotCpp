@@ -80,7 +80,7 @@ namespace tests {
                          size_t address,
                          bool is_lazy);
 
-        explicit UTBotKTestObject(const KTestObject &kTestObject);
+        static UTBotKTestObject fromKTest(const KTestObject &kTestObject);
     };
 
     struct UTBotKTest {
