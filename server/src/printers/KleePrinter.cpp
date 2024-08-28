@@ -177,8 +177,8 @@ fs::path KleePrinter::writeTmpKleeFile(
         }
         try {
             if (srcLanguage == utbot::Language::C) {
-                writeTestedFunction(tests, testMethod, predicateInfo, testedMethod, onlyForOneEntity, true);
-                writePosixWrapper(tests, testMethod);
+                writeTestedFunction(tests, testMethod, predicateInfo, testedMethod, onlyForOneEntity, false);
+//                writePosixWrapper(tests, testMethod);
             } else {
                 writeTestedFunction(tests, testMethod, predicateInfo, testedMethod, onlyForOneEntity, false);
             }
