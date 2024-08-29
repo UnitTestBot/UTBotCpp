@@ -131,11 +131,7 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   int depth) {
-        if (depth == 0) {
-            AbstractValueViewVisitor::visitAny(type.baseTypeObj(), name, view, access, depth);
-        } else {
-            // assign NULL to pointer field
-        }
+        visitPrimitive(type, name, view, access, depth);
     }
 
     void ParametrizedAssertsVisitor::visitPointerToFunction(const types::Type &type,

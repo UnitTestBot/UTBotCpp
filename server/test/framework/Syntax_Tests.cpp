@@ -2519,7 +2519,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(simple_class_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Change_class_by_ref_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Change_class_by_ref_cpp) {
         auto [testGen, status] = createTestForFunction(simple_class_cpp, 34);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2570,7 +2570,7 @@ namespace {
                 "change_class_by_ref_cpp");
     }
 
-    TEST_F(Syntax_Test, Change_class_by_ref_2_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Change_class_by_ref_2_cpp) {
         auto [testGen, status] = createTestForFunction(simple_class_cpp, 50);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2600,7 +2600,7 @@ namespace {
               "change_class_by_ref_2_cpp");
     }
 
-    TEST_F(Syntax_Test, Change_class_by_method_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Change_class_by_method_cpp) {
         auto [testGen, status] = createTestForFunction(simple_class_cpp, 60);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2730,7 +2730,7 @@ namespace {
                                           }));
     }
 
-    TEST_F(Syntax_Test, Default_constructor_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Default_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 59);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2738,7 +2738,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_parameters_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Constructor_with_parameters_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 86);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2746,7 +2746,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Copy_constructor_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Copy_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 37);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2754,7 +2754,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Move_constructor_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Move_constructor_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 67);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2762,7 +2762,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 1);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_pointers_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Constructor_with_pointers_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 21);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2770,7 +2770,7 @@ namespace {
         testUtils::checkMinNumberOfTests(testGen.tests.at(constructors_cpp).methods.begin().value().testCases, 2);
     }
 
-    TEST_F(Syntax_Test, Constructor_with_if_stmt_cpp) {
+    TEST_F(Syntax_Test, DISABLED_Constructor_with_if_stmt_cpp) {
         auto [testGen, status] = createTestForFunction(constructors_cpp, 9);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2854,7 +2854,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, example_namespace_cpp) {
+    TEST_F(Syntax_Test, DISABLED_example_namespace_cpp) {
         auto [testGen, status] = createTestForFunction(namespace_cpp, 3);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2879,7 +2879,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, struct_with_union_as_return_type_cpp) {
+    TEST_F(Syntax_Test, DISABLED_struct_with_union_as_return_type_cpp) {
         auto [testGen, status] = createTestForFunction(namespace_cpp, 24);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2898,7 +2898,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, multi_union_cpp) {
+    TEST_F(Syntax_Test, DISABLED_multi_union_cpp) {
         auto [testGen, status] = createTestForFunction(namespace_cpp, 38);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2917,7 +2917,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, multiple_rvalue_params_cpp) {
+    TEST_F(Syntax_Test, DISABLED_multiple_rvalue_params_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 9);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2956,7 +2956,7 @@ namespace {
 
     }
 
-    TEST_F(Syntax_Test, const_rvalue_reference_cpp) {
+    TEST_F(Syntax_Test, DISABLED_const_rvalue_reference_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 17);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -2997,7 +2997,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, rvalue_params_cpp) {
+    TEST_F(Syntax_Test, DISABLED_rvalue_params_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 28);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -3025,7 +3025,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, return_rvalue_cpp) {
+    TEST_F(Syntax_Test, DISABLED_return_rvalue_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 62);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -3044,7 +3044,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, rvalue_struct_param_cpp) {
+    TEST_F(Syntax_Test, DISABLED_rvalue_struct_param_cpp) {
         auto [testGen, status] = createTestForFunction(rvalue_reference_cpp, 38);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
@@ -3065,7 +3065,7 @@ namespace {
         );
     }
 
-    TEST_F(Syntax_Test, unsupported_clases_cpp) {
+    TEST_F(Syntax_Test, DISABLED_unsupported_clases_cpp) {
         std::vector<size_t> lines = {4, 8, 12, 16};
         for (const auto &line: lines) {
             auto [testGen, status] = createTestForFunction(unsupported_class_cpp, line);

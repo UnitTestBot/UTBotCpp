@@ -340,7 +340,7 @@ void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDesc
 void TestsPrinter::printLazyVariablesPost(const Tests::MethodDescription &methodDescription,
                                           const Tests::MethodTestCase &testCase,
                                           bool verbose) {
-    if (!testCase.lazyReferences.empty()) {
+    if (!testCase.lazyReferencesPost.empty()) {
         if (verbose) {
             strComment("Construct lazy post instantiated variables");
 
@@ -348,6 +348,7 @@ void TestsPrinter::printLazyVariablesPost(const Tests::MethodDescription &method
         for (const auto &paramValue: testCase.paramPostValues) {
             printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
         }
+        printLazyVariables(testCase.returnValue.lazyParams, testCase.returnValue.lazyValues);
         ss << printer::NL;
     }
 }
@@ -381,7 +382,7 @@ void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDes
 void TestsPrinter::printLazyReferencesPost(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase,
                                            bool verbose) {
-    if (!testCase.lazyReferences.empty()) {
+    if (!testCase.lazyReferencesPost.empty()) {
         if (verbose) {
             strComment("Assign lazy variables to post pointer");
         }
@@ -731,13 +732,14 @@ void TestsPrinter::printLazyAsserts(const std::vector<Tests::MethodParam> &lazyP
 
 void TestsPrinter::printLazyAsserts(const Tests::MethodTestCase &testCase,
                                     bool verbose) {
-    if (!testCase.lazyReferences.empty()) {
+    if (!testCase.lazyReferencesPost.empty()) {
         if (verbose) {
             strComment("Construct asserts for lazy instantiated variables");
         }
         for (const auto &paramValue: testCase.paramPostValues) {
             printLazyAsserts(paramValue.lazyParams, paramValue.lazyValues);
         }
+        printLazyAsserts(testCase.returnValue.lazyParams, testCase.returnValue.lazyValues);
         ss << printer::NL;
     }
 }
@@ -795,7 +797,6 @@ void TestsPrinter::parametrizedAsserts(const Tests::MethodDescription &methodDes
         globalParamsAsserts(methodDescription, testCase);
         classAsserts(methodDescription, testCase);
         changeableParamsAsserts(methodDescription, testCase);
-
         printLazyAsserts(testCase, false);
     } else {
         printFailAssertion(errorMode);
@@ -856,18 +857,18 @@ std::string TestsPrinter::constrVisitorFunctionCall(const Tests::MethodDescripti
             verboseMode ? methodParametersListVerbose(methodDescription, testCase)
                         : methodParametersListParametrized(methodDescription, testCase);
 
-    std::optional<types::Type> castType;
-    if (types::TypesHandler::skipTypeInReturn(methodDescription.returnType.baseTypeObj()) &&
-        methodDescription.returnType.isObjectPointer()) {
-        castType = types::Type::minimalScalarPointerType();
-    }
+//    std::optional<types::Type> castType;
+//    if (types::TypesHandler::skipTypeInReturn(methodDescription.returnType.baseTypeObj()) &&
+//        methodDescription.returnType.isObjectPointer()) {
+//        castType = types::Type::minimalScalarPointerType();
+//    }
     auto classObjName = methodDescription.getClassName();
-    size_t returnPointersCount = 0;
-    if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
-        returnPointersCount = methodDescription.returnType.countReturnPointers(true);
-    }
+//    size_t returnPointersCount = 0;
+//    if (testCase.returnValue.view && testCase.returnValue.view->getEntryValue(nullptr) != PrinterUtils::C_NULL) {
+//        returnPointersCount = methodDescription.returnType.countReturnPointers(true);
+//    }
     std::string functionCall = constrFunctionCall(methodDescription.callName, methodArgs, "", classObjName,
-                                                  false, returnPointersCount, castType);
+                                                  false, 0, methodDescription.returnType);
     if (methodDescription.isMoveConstructor()) {
         functionCall = "std::move(" + functionCall + ")";
     }

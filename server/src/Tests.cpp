@@ -172,7 +172,7 @@ namespace tests {
                                                                            std::vector<InitReference> &initReferences) {
         std::vector<std::shared_ptr<AbstractValueView>> subViews;
         if (typesHandler.getTypeKind(type) != TypeKind::ARRAY) {
-            //TODO change exceprion type
+            //TODO change exception type
             throw UnImplementedException("Incorrect type in array");
         }
         auto subType = type.baseTypeObj(1);
@@ -184,8 +184,7 @@ namespace tests {
             switch (typesHandler.getTypeKind(subType)) {
                 case TypeKind::STRUCT_LIKE:
                     subViews.push_back(
-                            structView(rawData, typesHandler.getStructInfo(subType),
-                                       curPos/*, usage*/));
+                            structView(rawData, typesHandler.getStructInfo(subType), curPos));
                     break;
                 case TypeKind::ENUM:
                     subViews.push_back(
@@ -315,8 +314,7 @@ namespace tests {
                                                      std::min(field.size, fieldLen)));
                     break;
                 case TypeKind::ARRAY: {
-                    const std::vector<std::shared_ptr<AbstractType>> pointerArrayKinds = field.type.pointerArrayKinds();
-                    auto view = fixedArrayView(rawData, field.type.baseTypeObj(1), fieldLen,
+                    auto view = fixedArrayView(rawData, field.type, fieldLen,
                                                fieldStartOffset/*, usage*/, objects, initReferences);
                     subViews.push_back(view);
                 }
@@ -661,7 +659,7 @@ namespace tests {
                 curType.paramValue.lazyValues.emplace_back(expectedParamName, std::nullopt, testParamViewPost);
             }
             //TODO add post
-            for (auto const &[offset, indObj, indexOffset]: testCase.kleeObjects[curType.jsonInd].preRaw.pointers) {
+            for (auto const &[offset, indObj, indexOffset]: testCase.kleeObjects[curType.jsonInd].postRaw.pointers) {
                 if (!visited[indObj]) {
                     Tests::TypeAndVarName typeAndName = {paramType, ""};
                     size_t offsetInStruct = SizeUtils::bytesToBits(offset);
