@@ -341,10 +341,10 @@ namespace tests {
     struct InitReference {
         std::string varName;
         std::string refName;
-        std::string typeName;
+        std::string castStr;
 
         InitReference(std::string varName, std::string refName, std::string typeName)
-                : varName(std::move(varName)), refName(std::move(refName)), typeName(std::move(typeName)) {
+                : varName(std::move(varName)), refName(std::move(refName)), castStr(std::move(typeName)) {
         }
     };
 

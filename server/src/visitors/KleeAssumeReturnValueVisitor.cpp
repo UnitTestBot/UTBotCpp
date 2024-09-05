@@ -21,27 +21,27 @@ namespace visitor {
                                ? "int"
                                : getActualTmpVarType(returnType).baseType();
 //        printer->strDeclareVar(type,
-//                               KleeUtils::RESULT_VARIABLE_NAME, functionCall,
+//                               PrinterUtils::ACTUAL, functionCall,
 //                               std::nullopt, true, additionalPointersCount);
 
-        printer->strAssignVar(KleeUtils::RESULT_VARIABLE_NAME, functionCall);
+        printer->strAssignVar(PrinterUtils::ACTUAL, functionCall);
 ////        checkNotNullBefore();
 //        if (predicateInfo.has_value()) {
 //            std::string assumption;
 //            if (predicateInfo->type != testsgen::STRING) {
-//                assumption = PrinterUtils::getEqualString(KleeUtils::RESULT_VARIABLE_NAME, KleeUtils::TEMP_VARIABLE_NAME);
+//                assumption = PrinterUtils::getEqualString(PrinterUtils::ACTUAL, KleeUtils::TEMP_VARIABLE_NAME);
 ////                kleeAssumeWithNullCheck(assumption);
 //                assumption = StringUtils::stringFormat(
-//                        "%s %s %s", KleeUtils::RESULT_VARIABLE_NAME, predicateInfo->predicate,
+//                        "%s %s %s", PrinterUtils::ACTUAL, predicateInfo->predicate,
 //                PrinterUtils::wrapUserValue(predicateInfo->type, predicateInfo->returnValue));
 //                kleeAssume(assumption);
 //            } else {
 //                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
-//                    assumption = StringUtils::stringFormat("%s[%d] == \'%c\'", KleeUtils::RESULT_VARIABLE_NAME, i, predicateInfo->returnValue[i]);
+//                    assumption = StringUtils::stringFormat("%s[%d] == \'%c\'", PrinterUtils::ACTUAL, i, predicateInfo->returnValue[i]);
 //                    kleeAssume(assumption);
 //                }
 //                for (int i = 0; i < predicateInfo->returnValue.size(); i++) {
-//                    assumption = StringUtils::stringFormat("%s[%d] %s %s[%d]", KleeUtils::RESULT_VARIABLE_NAME,
+//                    assumption = StringUtils::stringFormat("%s[%d] %s %s[%d]", PrinterUtils::ACTUAL,
 //                                                                  i,
 //                                                                  predicateInfo->predicate,
 //                                                                  KleeUtils::TEMP_VARIABLE_NAME, i);
@@ -65,7 +65,7 @@ namespace visitor {
                                                       const std::string &access,
                                                       int depth) {
         std::string assumption = PrinterUtils::getEqualString(getDecorateTmpVarName(access),
-                                             PrinterUtils::fillVarName(access, KleeUtils::RESULT_VARIABLE_NAME));
+                                             PrinterUtils::fillVarName(access, PrinterUtils::ACTUAL));
 //        kleeAssumeWithNullCheck(assumption);
     }
 

@@ -331,7 +331,7 @@ void TestsPrinter::printLazyVariables(const Tests::MethodDescription &methodDesc
             strComment("Construct lazy instantiated variables");
         }
         for (const auto &paramValue: testCase.paramValues) {
-            printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
+            printLazyVariables(paramValue.lazyParams, paramValue.lazyValues, false);
         }
         ss << printer::NL;
     }
@@ -346,19 +346,20 @@ void TestsPrinter::printLazyVariablesPost(const Tests::MethodDescription &method
 
         }
         for (const auto &paramValue: testCase.paramPostValues) {
-            printLazyVariables(paramValue.lazyParams, paramValue.lazyValues);
+            printLazyVariables(paramValue.lazyParams, paramValue.lazyValues, true);
         }
-        printLazyVariables(testCase.returnValue.lazyParams, testCase.returnValue.lazyValues);
+        printLazyVariables(testCase.returnValue.lazyParams, testCase.returnValue.lazyValues, true);
         ss << printer::NL;
     }
 }
 
 void TestsPrinter::printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
-                                      const std::vector<Tests::TestCaseParamValue> &lazyValues) {
+                                      const std::vector<Tests::TestCaseParamValue> &lazyValues, bool isPost) {
     for (size_t i = 0; i < lazyParams.size(); ++i) {
-        printLazyVariables(lazyValues[i].lazyParams, lazyValues[i].lazyValues);
+        printLazyVariables(lazyValues[i].lazyParams, lazyValues[i].lazyValues, isPost);
         //TODO make normal array
-        strDeclareVar(lazyParams[i].type.baseType(), lazyValues[i].name + "[]", lazyValues[i].view->getEntryValue(this),
+        std::string name = isPost ? PrinterUtils::getExpectedVarName(lazyValues[i].name) : lazyValues[i].name;
+        strDeclareVar(lazyParams[i].type.baseType(), name + "[]", lazyValues[i].view->getEntryValue(this),
                       std::nullopt, true, lazyParams[i].type.getDimension() - 1);
 //        strDeclareArrayVar(lazyParams[i].type, lazyValues[i].name, lazyValues[i].view->getEntryValue(this),
 //                          std::nullopt, true);
@@ -373,7 +374,7 @@ void TestsPrinter::printLazyReferences(const Tests::MethodDescription &methodDes
             strComment("Assign lazy variables to pointer");
         }
         for (const auto &lazy: testCase.lazyReferences) {
-            strAssignVar(lazy.varName, lazy.typeName);
+            strAssignVar(lazy.varName, "(" + lazy.castStr + ") " + lazy.refName);
         }
         ss << printer::NL;
     }
@@ -387,7 +388,7 @@ void TestsPrinter::printLazyReferencesPost(const Tests::MethodDescription &metho
             strComment("Assign lazy variables to post pointer");
         }
         for (const auto &lazy: testCase.lazyReferencesPost) {
-            strAssignVar(lazy.varName, lazy.typeName);
+            strAssignVar(lazy.castStr + " " + lazy.refName, lazy.varName);
         }
         ss << printer::NL;
     }
@@ -686,7 +687,7 @@ void TestsPrinter::printFunctionParametersPost(const Tests::MethodDescription &m
     for (const auto &param: methodDescription.params) {
         if (param.isChangeable()) {
             auto const &value = testCase.paramPostValues[param_i];
-            std::string expectedName = value.name;
+            std::string expectedName = PrinterUtils::getExpectedVarName(value.name);
             const types::Type expectedType = param.type;
             parameterVisitor.visit(expectedType, expectedName, value.view.get(), std::nullopt);
             param_i++;
@@ -697,8 +698,10 @@ void TestsPrinter::printFunctionParametersPost(const Tests::MethodDescription &m
 void TestsPrinter::globalParamsAsserts(const Tests::MethodDescription &methodDescription,
                                        const Tests::MethodTestCase &testCase) {
     auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
-    for (const auto &param: methodDescription.globalParams) {
-        assertsVisitor.visitGlobal(param, param.name);
+    for (size_t i = 0; i < methodDescription.globalParams.size(); ++i) {
+        const auto &param = methodDescription.globalParams[i];
+        const auto &view = testCase.globalPostValues[i].view.get();
+        assertsVisitor.visitGlobal(param, param.name, view);
     }
 }
 
@@ -707,16 +710,19 @@ void TestsPrinter::classAsserts(const Tests::MethodDescription &methodDescriptio
     if (methodDescription.isClassMethod()) {
         auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
         const auto &param = methodDescription.classObj.value();
-        assertsVisitor.visit(param, param.name);
+        assertsVisitor.visit(param, param.name, testCase.classPostValues->view.get());
     }
 }
 
 void TestsPrinter::changeableParamsAsserts(const Tests::MethodDescription &methodDescription,
                                            const Tests::MethodTestCase &testCase) {
     auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
+    size_t param_i = 0;
     for (const auto &param: methodDescription.params) {
         if (param.isChangeable()) {
-            assertsVisitor.visit(param, param.name);
+            const auto &view = testCase.paramPostValues[param_i].view.get();
+            assertsVisitor.visit(param, param.name, view);
+            param_i++;
         }
     }
 }
@@ -725,7 +731,7 @@ void TestsPrinter::printLazyAsserts(const std::vector<Tests::MethodParam> &lazyP
                                     const std::vector<Tests::TestCaseParamValue> &lazyValues) {
     for (size_t i = 0; i < lazyParams.size(); ++i) {
         auto assertsVisitor = visitor::VerboseAssertsParamVisitor(typesHandler, this);
-        assertsVisitor.visit(lazyParams[i], lazyParams[i].name);
+        assertsVisitor.visit(lazyParams[i], lazyParams[i].name, lazyValues[i].view.get());
         printLazyAsserts(lazyValues[i].lazyParams, lazyValues[i].lazyValues);
     }
 }

@@ -27,7 +27,8 @@ namespace visitor {
                 return;
             } else {
                 additionalPointersCount = 0;
-                visitAny(methodDescription.returnType, "", testCase.returnValue.view.get(), PrinterUtils::DEFAULT_ACCESS, 0);
+                visitAny(methodDescription.returnType, "", testCase.returnValue.view.get(),
+                         PrinterUtils::DEFAULT_ACCESS, 0);
                 functionCall = {};
                 additionalPointersCount = 0;
             }
@@ -41,7 +42,6 @@ namespace visitor {
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
-//                                                size_t size,
                                                 int depth) {
         if (depth == 0) {
             if (type.isArray()) {
@@ -54,7 +54,7 @@ namespace visitor {
                                            PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
                                            additionalPointersCount);
                     printer->strDeclareArrayVar(
-                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED), /*usage,*/
+                            type, PrinterUtils::fillVarName(access, PrinterUtils::EXPECTED),
                             view->getEntryValue(printer), std::nullopt, true);
                 }
             } else {
@@ -65,12 +65,10 @@ namespace visitor {
 
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
-            //TODO
-            std::vector<size_t> sizes = {1}; //type.arraysSizes(usage);
+            std::vector<size_t> sizes = {view->getSubViews().size()};
             const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
             const auto indexing = printer::Printer::constrMultiIndex(iterators);
-            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
-                     depth + sizes.size());
+            visitAny(type.baseTypeObj(), name + indexing, view, access + indexing, depth + sizes.size());
             printer->closeBrackets(sizes.size());
         }
     }
@@ -131,7 +129,14 @@ namespace visitor {
                                                   const tests::AbstractValueView *view,
                                                   const std::string &access,
                                                   int depth) {
-        visitPrimitive(type, name, view, access, depth);
+
+        if (depth == 0) {
+            printer->strDeclareVar(printer::Printer::getConstQualifier(type) + type.usedType(),
+                                   PrinterUtils::ACTUAL, functionCall, std::nullopt, true,
+                                   additionalPointersCount);
+        }
+
+//        visitPrimitive(type, name, view, access, depth + 1);
     }
 
     void ParametrizedAssertsVisitor::visitPointerToFunction(const types::Type &type,

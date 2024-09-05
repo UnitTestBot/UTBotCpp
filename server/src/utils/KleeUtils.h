@@ -9,7 +9,7 @@
 
 namespace KleeUtils {
     static inline const std::string TEMP_VARIABLE_NAME = "utbot_tmp";
-    static inline const std::string RESULT_VARIABLE_NAME = "utbot_result";
+//    static inline const std::string RESULT_VARIABLE_NAME = "utbot_result";
     static inline const std::string NOT_NULL_VARIABLE_NAME = "utbot_return_not_null";
 
     static inline const std::string STDIN_READ_NAME = "stdin_read";

@@ -42,13 +42,13 @@ void KleePrinter::writePosixWrapper(const Tests &tests,
     declTestEntryPoint(tests, testMethod, false);
     strFunctionCall(PrinterUtils::POSIX_INIT, {"&" + PrinterUtils::UTBOT_ARGC, "&" + PrinterUtils::UTBOT_ARGV});
     std::string entryPoint = KleeUtils::entryPointFunction(tests, testMethod.name, false, true);
-    strDeclareVar("int", KleeUtils::RESULT_VARIABLE_NAME, constrFunctionCall(entryPoint,
+    strDeclareVar("int", PrinterUtils::ACTUAL, constrFunctionCall(entryPoint,
                                                                              {PrinterUtils::UTBOT_ARGC,
                                                                               PrinterUtils::UTBOT_ARGV,
                                                                               PrinterUtils::UTBOT_ENVP},
                                                                              "", std::nullopt, false));
     strFunctionCall(PrinterUtils::POSIX_CHECK_STDIN_READ, {});
-    strReturn(KleeUtils::RESULT_VARIABLE_NAME);
+    strReturn(PrinterUtils::ACTUAL);
     closeBrackets(1);
     ss << printer::NL;
 }
@@ -492,14 +492,14 @@ void KleePrinter::genReturnDeclaration(const Tests::MethodDescription &testMetho
                        ? "int"
                        : returnType.typeName();
 //                       : returnType.baseType();
-    strDeclareVar(type, KleeUtils::RESULT_VARIABLE_NAME, std::nullopt, std::nullopt, false);
+    strDeclareVar(type, PrinterUtils::ACTUAL, std::nullopt, std::nullopt, false);
     makeBracketsForStrPredicate(predicateInfo);
 //    if (maybeArray) {
 //        size_t size = 1; //types::TypesHandler::getElementsNumberInPointerOneDim(PointerUsage::RETURN);
 //        ss << "[" << size << "]";
 //    }
     ss << SCNL;
-    strKleeMakeSymbolic(KleeUtils::RESULT_VARIABLE_NAME,
+    strKleeMakeSymbolic(PrinterUtils::ACTUAL,
                         /*!maybeArray && */ !(predicateInfo.has_value() && predicateInfo->type == testsgen::STRING));
 //    if (isPointer) {
 //        strDeclareVar("int", KleeUtils::NOT_NULL_VARIABLE_NAME);

@@ -10,13 +10,14 @@ namespace PrinterUtils {
     std::string convertToBytesFunctionName(const std::string &typeName) {
         return StringUtils::stringFormat("from_bytes<%s>", typeName);
     }
+
     std::string convertBytesToStruct(const std::string &typeName, const std::string &bytes) {
         return StringUtils::stringFormat("%s(%s)", convertToBytesFunctionName(typeName), bytes);
     }
 
     std::string wrapperName(const std::string &declName,
                             utbot::ProjectContext const &projectContext,
-                            const fs::path& sourceFilePath) {
+                            const fs::path &sourceFilePath) {
         fs::path relativePath = fs::relative(sourceFilePath, projectContext.projectPath);
         std::string mangledPath = Paths::mangle(relativePath);
         return StringUtils::stringFormat("%s_%s", declName, mangledPath);
@@ -89,13 +90,12 @@ namespace PrinterUtils {
         }
     }
 
-    std::string initializePointerToVar(const std::string &type,
-                                       const std::string &varName,
-                                       size_t additionalPointersCount,
-                                       bool pointerToConstQualifiedValue) {
+    std::string getTypeForinitializePointerToVar(const std::string &type,
+                                                 size_t additionalPointersCount,
+                                                 bool pointerToConstQualifiedValue) {
         std::string additionalPointers = StringUtils::repeat("*", additionalPointersCount);
         std::string qualifier = getConstQualifier(pointerToConstQualifiedValue);
-        return StringUtils::stringFormat("(%s%s%s) %s", qualifier, type, additionalPointers, varName);
+        return StringUtils::stringFormat("%s%s%s", qualifier, type, additionalPointers);
     }
 
     std::string generateNewVar(size_t cnt) {
@@ -107,7 +107,7 @@ namespace PrinterUtils {
     }
 
     std::string wrapUserValue(const testsgen::ValidationType &type, const std::string &value) {
-        switch(type) {
+        switch (type) {
             case testsgen::INT8_T:
             case testsgen::INT16_T:
             case testsgen::INT32_T:
@@ -132,31 +132,31 @@ namespace PrinterUtils {
         return name + "_pointer";
     }
 
-    std::string getParamMangledName(const std::string& paramName, const std::string& methodName) {
+    std::string getParamMangledName(const std::string &paramName, const std::string &methodName) {
         return methodName + "_" + paramName + "_arg";
     }
 
-    std::string getReturnMangledName(const std::string& methodName) {
+    std::string getReturnMangledName(const std::string &methodName) {
         return methodName + "_return";
     }
 
-    std::string getReturnMangledTypeName(const std::string& methodName) {
+    std::string getReturnMangledTypeName(const std::string &methodName) {
         return methodName + "_return_type";
     }
 
-    std::string getEnumReturnMangledTypeName(const std::string& methodName) {
+    std::string getEnumReturnMangledTypeName(const std::string &methodName) {
         return "enum " + getReturnMangledTypeName(methodName);
     }
 
-    std::string getEqualString(const std::string& lhs, const std::string& rhs) {
+    std::string getEqualString(const std::string &lhs, const std::string &rhs) {
         return StringUtils::stringFormat("%s == %s", lhs, rhs);
     }
 
-    std::string getDereferencePointer(const std::string& name, const size_t depth) {
+    std::string getDereferencePointer(const std::string &name, const size_t depth) {
         return StringUtils::stringFormat("(%s%s)", StringUtils::repeat("*", depth), name);
     }
 
-    std::string getExpectedVarName(const std::string& varName) {
+    std::string getExpectedVarName(const std::string &varName) {
         return "expected_" + varName;
     }
 

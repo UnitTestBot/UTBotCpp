@@ -12,26 +12,29 @@ namespace visitor {
 
     static thread_local std::string expectedVariable;
 
-    void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name) {
+    void VerboseAssertsParamVisitor::visit(const Tests::MethodParam &param, const std::string &name,
+                                           const tests::AbstractValueView *view) {
         expectedVariable = PrinterUtils::getExpectedVarName(name);
         std::string paramName = param.dataVariableName();
-        types::Type paramType = param.type; //.arrayCloneMultiDim(/*usage*/);
-        visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
+        types::Type paramType = param.type;
+        visitAny(paramType, paramName, view, PrinterUtils::DEFAULT_ACCESS, 0);
         expectedVariable = {};
     }
 
     //TODO: make normal solution
-    void VerboseAssertsParamVisitor::visitTemp(const Tests::MethodParam &param, const std::string &name) {
+    void VerboseAssertsParamVisitor::visitTemp(const Tests::MethodParam &param, const std::string &name,
+                                               const tests::AbstractValueView *view) {
         expectedVariable = name;
         std::string paramName = param.dataVariableName();
-        types::Type paramType = param.type; //.arrayCloneMultiDim(/*usage*/);
-        visitAny(paramType, paramName, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
+        types::Type paramType = param.type;
+        visitAny(paramType, paramName, view, PrinterUtils::DEFAULT_ACCESS, 0);
         expectedVariable = {};
     }
 
-    void VerboseAssertsParamVisitor::visitGlobal(const Tests::MethodParam &param, const std::string &name) {
+    void VerboseAssertsParamVisitor::visitGlobal(const Tests::MethodParam &param, const std::string &name,
+                                                 const tests::AbstractValueView *view) {
         expectedVariable = PrinterUtils::getExpectedVarName(name);
-        visitAny(param.type, name, nullptr, PrinterUtils::DEFAULT_ACCESS, 0);
+        visitAny(param.type, name, view, PrinterUtils::DEFAULT_ACCESS, 0);
         expectedVariable = {};
     }
 
@@ -49,7 +52,6 @@ namespace visitor {
                                                 const std::string &name,
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
-//                                                size_t size,
                                                 int depth) {
         if (depth == 0) {
             if (type.isObjectPointer()) {
@@ -58,7 +60,7 @@ namespace visitor {
         }
         bool assignPointersToNull = type.isTypeContainsPointer() && depth > 0;
         if (!assignPointersToNull) {
-            VerboseAssertsVisitor::visitArray(type, name, view, access/*, size*/, depth);
+            VerboseAssertsVisitor::visitArray(type, name, view, access, depth);
         }
     }
 

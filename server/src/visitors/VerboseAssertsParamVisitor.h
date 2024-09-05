@@ -10,11 +10,14 @@ namespace visitor {
     VerboseAssertsParamVisitor(const types::TypesHandler *typesHandler,
                                      printer::TestsPrinter *printer);
 
-    void visit(const Tests::MethodParam &param, const std::string &name);
+    void visit(const Tests::MethodParam &param, const std::string &name,
+               const tests::AbstractValueView *view);
 
-    void visitTemp(const Tests::MethodParam &param, const std::string &name);
+    void visitTemp(const Tests::MethodParam &param, const std::string &name,
+                   const tests::AbstractValueView *view);
 
-    void visitGlobal(const Tests::MethodParam &param, const std::string &name);
+    void visitGlobal(const Tests::MethodParam &param, const std::string &name,
+                     const tests::AbstractValueView *view);
 
   protected:
     void visitPointer(const types::Type &type,

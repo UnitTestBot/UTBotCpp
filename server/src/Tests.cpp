@@ -633,14 +633,14 @@ namespace tests {
             addToOrder(testCase.kleeObjects, methodDescription.params[paramInd].name,
                        methodDescription.params[paramInd].type, testCase.paramPostValues[paramInd], visited, order);
         }
-        addToOrder(testCase.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME, methodDescription.returnType,
+        addToOrder(testCase.kleeObjects, PrinterUtils::ACTUAL, methodDescription.returnType,
                    testCase.returnValue, visited, order);
 
         while (!order.empty()) {
             auto curType = order.front();
             order.pop();
             std::string paramName = testCase.kleeObjects[curType.jsonInd].name;
-            std::string expectedParamName = PrinterUtils::getExpectedVarName(paramName);
+            std::string expectedParamName = KleeUtils::postSymbolicVariable(paramName);
             types::Type paramType = curType.param.type;
             typeAndName[curType.jsonInd] = {paramType, paramName};
 
@@ -781,9 +781,9 @@ namespace tests {
 
                 testCase.lazyReferences.emplace_back(
                         fromPtr.varName, toPtrName,
-                        PrinterUtils::initializePointerToVar(fromPtr.type.baseType(), toPtrName,
-                                                             fromPtr.type.getDimension(),
-                                                             fromPtr.type.isConstQualifiedValue()));
+                        PrinterUtils::getTypeForinitializePointerToVar(fromPtr.type.baseType(),
+                                                                       fromPtr.type.getDimension(),
+                                                                       fromPtr.type.isConstQualifiedValue()));
             }
         }
     }
@@ -957,18 +957,18 @@ namespace tests {
 
         processStubParamValue(methodDescription, testCaseValues, methodNameToReturnTypeMap, testCaseValues.kleeObjects);
         if (!types::TypesHandler::skipTypeInReturn(methodDescription.returnType)) {
-            const auto kleeResParam = getKleeParamOrThrow(testCaseValues.kleeObjects, KleeUtils::RESULT_VARIABLE_NAME);
+            const auto kleeResParam = getKleeParamOrThrow(testCaseValues.kleeObjects, PrinterUtils::ACTUAL);
             auto paramType = methodDescription.returnType;
             const auto testReturnView = testPostValueView(
-                    kleeResParam, paramType, KleeUtils::RESULT_VARIABLE_NAME,
+                    kleeResParam, paramType, PrinterUtils::ACTUAL,
                     testCaseValues, methodDescription);
             testCaseValues.returnValue = {
-                    KleeUtils::RESULT_VARIABLE_NAME,
+                    PrinterUtils::ACTUAL,
                     types::TypesHandler::isObjectPointerType(methodDescription.returnType),
                     testReturnView
             };
         } else {
-            testCaseValues.returnValue = {KleeUtils::RESULT_VARIABLE_NAME, false,
+            testCaseValues.returnValue = {PrinterUtils::ACTUAL, false,
                                           std::make_shared<VoidValueView>()};
         }
 
@@ -1083,7 +1083,7 @@ namespace tests {
         auto kleeParam = getKleeParamOrThrow(objects, globalParam.name);
 //        auto type = typesHandler.getReturnTypeToCheck(globalParam.type);
 
-        auto expectedName = PrinterUtils::getExpectedVarName(globalParam.name);
+        auto expectedName = KleeUtils::postSymbolicVariable(globalParam.name);
         auto testParamView = testPostValueView(kleeParam, globalParam.type, expectedName, testCaseValues);
         testCaseValues.globalPostValues.emplace_back(expectedName, globalParam.alignment, testParamView);
     }
@@ -1097,7 +1097,7 @@ namespace tests {
 //        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
 //        auto type = typesHandler.getReturnTypeToCheck(paramType);
 
-        auto expectedName = PrinterUtils::getExpectedVarName(param.name);
+        auto expectedName = KleeUtils::postSymbolicVariable(param.name);
         auto testParamView = testPostValueView(kleeParam, param.type, expectedName, testCaseValues);
         testCaseValues.classPostValues = {expectedName, param.alignment, testParamView};
     }
@@ -1214,9 +1214,9 @@ namespace tests {
             std::string ptrElementName = post ? KleeUtils::postSymbolicVariable(ptrElement->name) : ptrElement->name;
             initReferences.emplace_back(
                     name, ptrElementName,
-                    PrinterUtils::initializePointerToVar(paramType.baseType(), ptrElementName,
-                                                         paramType.getDimension(),
-                                                         paramType.isConstQualifiedValue()));
+                    PrinterUtils::getTypeForinitializePointerToVar(paramType.baseType(),
+                                                                   paramType.getDimension(),
+                                                                   paramType.isConstQualifiedValue()));
         }
 //    if (lazyPointer || ptr_element != objects.end()) {
 //            res = PrinterUtils::C_NULL;
@@ -1285,7 +1285,7 @@ namespace tests {
                                           kTestObject.content.bytes + kTestObject.content.numBytes
                                   ) :
                                   std::vector<char>(0);
-        std::vector<char> finalBytes = kTestObject.content.bytes != nullptr ?
+        std::vector<char> finalBytes = kTestObject.content.finalBytes != nullptr ?
                                        std::vector<char>(
                                                kTestObject.content.finalBytes,
                                                kTestObject.content.finalBytes + kTestObject.content.numBytes

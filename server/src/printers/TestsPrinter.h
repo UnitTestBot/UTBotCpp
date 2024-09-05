@@ -161,7 +161,7 @@ namespace printer {
                                     bool verbose);
 
         void printLazyVariables(const std::vector<Tests::MethodParam> &lazyParams,
-                                const std::vector<Tests::TestCaseParamValue> &lazyValues);
+                                const std::vector<Tests::TestCaseParamValue> &lazyValues, bool isPost);
 
         void printLazyReferencesPost(const Tests::MethodDescription &methodDescription,
                                      const Tests::MethodTestCase &testCase,
