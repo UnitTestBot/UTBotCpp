@@ -164,12 +164,15 @@ namespace tests {
         return std::make_shared<FunctionPointerView>(value);
     }
 
-    std::shared_ptr<FixedArrayValueView> KTestObjectParser::fixedArrayView(const UTBotKTestObject::RawData &rawData,
-                                                                           const types::Type &type,
-                                                                           size_t arraySizeInBits,
-                                                                           size_t offsetInBits,
-                                                                           const std::vector<UTBotKTestObject> &objects,
-                                                                           std::vector<InitReference> &initReferences) {
+    std::shared_ptr<FixedArrayValueView>
+    KTestObjectParser::fixedArrayView(const UTBotKTestObject::RawData &rawData,
+                                      const types::Type &type,
+                                      const std::string &name,
+                                      size_t arraySizeInBits,
+                                      size_t offsetInBits,
+                                      const std::vector<UTBotKTestObject> &objects,
+                                      std::vector<InitReference> &initReferences,
+                                      const std::optional<const Tests::MethodDescription> &testingMethod) {
         std::vector<std::shared_ptr<AbstractValueView>> subViews;
         if (typesHandler.getTypeKind(type) != TypeKind::ARRAY) {
             //TODO change exception type
@@ -180,15 +183,18 @@ namespace tests {
         size_t elementLenInBits = typesHandler.typeSize(types::TypesHandler::isVoid(subType)
                                                         ? Type::minimalScalarType() : subType);
 
+        size_t ind = 0;
         for (size_t curPos = offsetInBits; curPos < offsetInBits + arraySizeInBits; curPos += elementLenInBits) {
+            std::string nameWithIndex = StringUtils::stringFormat("%s[%d]", name, ind);
             switch (typesHandler.getTypeKind(subType)) {
                 case TypeKind::STRUCT_LIKE:
                     subViews.push_back(
-                            structView(rawData, typesHandler.getStructInfo(subType), curPos));
+                            structView(rawData, typesHandler.getStructInfo(subType), nameWithIndex, objects,
+                                       initReferences,
+                                       testingMethod, curPos, false));
                     break;
                 case TypeKind::ENUM:
-                    subViews.push_back(
-                            enumView(rawData, typesHandler.getEnumInfo(subType), curPos, elementLenInBits));
+                    subViews.push_back(enumView(rawData, typesHandler.getEnumInfo(subType), curPos, elementLenInBits));
                     break;
                 case TypeKind::PRIMITIVE:
                     subViews.push_back(primitiveView(rawData, subType.baseTypeObj(), curPos, elementLenInBits));
@@ -196,21 +202,16 @@ namespace tests {
                 case TypeKind::OBJECT_POINTER: {
                     std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, curPos,
                                                               PointerWidthSizeInBits);
-                    //TODO change "anyname" to accessor
-
-//                    auto pointerIterator =
-//                            std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
-//                                         [&curPos](const Pointer &ptr) {
-//                                             return SizeUtils::bytesToBits(ptr.offset) == curPos;
-//                                         }) != lazyPointersArray.end();
                     subViews.push_back(
-                            getLazyPointerView("anyname", res, subType, true, objects, initReferences, rawData.isPost));
+                            getLazyPointerView(nameWithIndex, res, subType, true, objects, initReferences,
+                                               rawData.isPost));
                     break;
                 }
                 case TypeKind::ARRAY: {
                     subViews.push_back(
-                            fixedArrayView(rawData, subType, elementLenInBits, curPos, objects,
-                                           initReferences));
+                            fixedArrayView(rawData, subType, nameWithIndex, elementLenInBits, curPos, objects,
+                                           initReferences,
+                                           testingMethod));
                     break;
                 }
                 case TypeKind::UNKNOWN: {
@@ -224,15 +225,9 @@ namespace tests {
                     throw NoSuchTypeException(message);
                 }
             }
+            ++ind;
         }
         return std::make_shared<FixedArrayValueView>(subViews);
-    }
-
-    std::shared_ptr<StructValueView> KTestObjectParser::structView(const UTBotKTestObject::RawData &rawData,
-                                                                   const types::StructInfo &curStruct,
-                                                                   size_t offsetInBits) {
-        std::vector<InitReference> tmpInitReferences;
-        return structView(rawData, curStruct, "", {}, tmpInitReferences, {}, offsetInBits, false);
     }
 
     std::shared_ptr<StructValueView> KTestObjectParser::structView(const UTBotKTestObject::RawData &rawData,
@@ -294,28 +289,27 @@ namespace tests {
                 }
             }
 
+            std::string accessName = PrinterUtils::getFieldAccess(name, field);
             switch (typesHandler.getTypeKind(field.type)) {
                 case TypeKind::STRUCT_LIKE: {
-                    auto sv = structView(rawData, typesHandler.getStructInfo(field.type),
-                                         PrinterUtils::getFieldAccess(name, field), objects, initReferences,
-                                         testingMethod, fieldStartOffset, field.anonymous);
+                    auto sv = structView(rawData, typesHandler.getStructInfo(field.type), accessName, objects,
+                                         initReferences, testingMethod, fieldStartOffset, field.anonymous);
                     dirtyInitializedField |= sv->isDirtyInit();
                     isInitializedField = sv->isInitialized();
                     subViews.push_back(sv);
                 }
                     break;
                 case TypeKind::ENUM:
-                    subViews.push_back(enumView(rawData, typesHandler.getEnumInfo(field.type),
-                                                fieldStartOffset, fieldLen));
+                    subViews.push_back(
+                            enumView(rawData, typesHandler.getEnumInfo(field.type), fieldStartOffset, fieldLen));
                     break;
                 case TypeKind::PRIMITIVE:
-                    subViews.push_back(primitiveView(rawData, field.type.baseTypeObj(),
-                                                     fieldStartOffset,
+                    subViews.push_back(primitiveView(rawData, field.type.baseTypeObj(), fieldStartOffset,
                                                      std::min(field.size, fieldLen)));
                     break;
                 case TypeKind::ARRAY: {
-                    auto view = fixedArrayView(rawData, field.type, fieldLen,
-                                               fieldStartOffset/*, usage*/, objects, initReferences);
+                    auto view = fixedArrayView(rawData, field.type, accessName, fieldLen, fieldStartOffset, objects,
+                                               initReferences, testingMethod);
                     subViews.push_back(view);
                 }
                     break;
@@ -327,8 +321,7 @@ namespace tests {
                                          [&fieldStartOffset](const Pointer &ptr) {
                                              return SizeUtils::bytesToBits(ptr.offset) == fieldStartOffset;
                                          }) != lazyPointersArray.end();
-                    subViews.push_back(getLazyPointerView(PrinterUtils::getFieldAccess(name, field), res,
-                                                          field.type, pointerIterator,
+                    subViews.push_back(getLazyPointerView(accessName, res, field.type, pointerIterator,
                                                           objects, initReferences, rawData.isPost));
                 }
                     break;
@@ -369,8 +362,9 @@ namespace tests {
                     curStruct.name,
                     fixedArrayView(rawData,
                                    types::Type::createSimpleTypeFromName("utbot_byte"),
+                                   curStruct.name,
                                    curStruct.size,
-                                   offsetInBits/*, usage*/, objects, initReferences)->getEntryValue(nullptr));
+                                   offsetInBits, objects, initReferences, testingMethod)->getEntryValue(nullptr));
             isInitializedStruct = true;
             dirtyInitializedStruct = false;
         }
@@ -1165,7 +1159,7 @@ namespace tests {
                 }
                 return functionPointerView(testingMethod->getClassTypeName(), testingMethod->name, paramName);
             case TypeKind::ARRAY:
-                return fixedArrayView(rawData, paramType, sizeInBits, 0, objects, initReferences);
+                return fixedArrayView(rawData, paramType, paramName, sizeInBits, 0, objects, initReferences, testingMethod);
             case TypeKind::UNKNOWN: {
                 std::string message = "No such type";
                 LOG_S(ERROR) << message;

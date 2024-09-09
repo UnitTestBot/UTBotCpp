@@ -777,16 +777,15 @@ namespace tests {
         std::shared_ptr<FunctionPointerView> functionPointerView(const std::string &structName,
                                                                  const std::string &fieldName);
 
-        std::shared_ptr<FixedArrayValueView> fixedArrayView(const UTBotKTestObject::RawData &rawData,
-                                                            const types::Type &type,
-                                                            size_t arraySizeInBits,
-                                                            size_t offsetInBits,
-                                                            const std::vector<UTBotKTestObject> &objects,
-                                                            std::vector<InitReference> &initReferences);
-
-        std::shared_ptr<StructValueView> structView(const UTBotKTestObject::RawData &rawData,
-                                                    const types::StructInfo &curStruct,
-                                                    size_t offsetInBits);
+        std::shared_ptr<FixedArrayValueView>
+        fixedArrayView(const UTBotKTestObject::RawData &rawData,
+                       const types::Type &type,
+                       const std::string &name,
+                       size_t arraySizeInBits,
+                       size_t offsetInBits,
+                       const std::vector<UTBotKTestObject> &objects,
+                       std::vector<InitReference> &initReferences,
+                       const std::optional<const Tests::MethodDescription> &testingMethod);
 
         std::shared_ptr<StructValueView> structView(const UTBotKTestObject::RawData &rawData,
                                                     const types::StructInfo &curStruct,

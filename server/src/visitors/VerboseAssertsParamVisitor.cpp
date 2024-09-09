@@ -53,6 +53,9 @@ namespace visitor {
                                                 const tests::AbstractValueView *view,
                                                 const std::string &access,
                                                 int depth) {
+        if (type.baseTypeObj(1).isObjectPointer()) {
+            return;
+        }
         if (depth == 0) {
             if (type.isObjectPointer()) {
                 return visitPointer(type, name, view, access, depth);

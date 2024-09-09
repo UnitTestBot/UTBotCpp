@@ -53,7 +53,7 @@ namespace visitor {
                                                 const std::string &access,
                                                 int depth) {
 //        size_t size = types::TypesHandler::getElementsNumberInPointerOneDim(usage);
-        visitArray(type, name, view, access/*, size*/, depth);
+        visitArray(type, name, view, access, depth);
     }
 
     void AbstractValueViewVisitor::visitArray(const types::Type &type,
