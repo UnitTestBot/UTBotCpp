@@ -27,7 +27,8 @@ namespace visitor {
         const auto &iterators = printer->printForLoopsAndReturnLoopIterators(sizes);
         const auto indexing = printer::Printer::constrMultiIndex(iterators);
 
-        visitAny(type.baseTypeObj(), name + indexing, view, access + indexing,
+        //TODO change view->getSubViews().front().get()
+        visitAny(type.baseTypeObj(1), name + indexing, view->getSubViews().front().get(), access + indexing,
                  depth + sizes.size());
         printer->closeBrackets(sizes.size());
     }
