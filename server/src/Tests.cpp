@@ -1073,42 +1073,25 @@ namespace tests {
     void KTestObjectParser::processGlobalParamPostValue(Tests::TestCaseValues &testCaseValues,
                                                         const Tests::MethodParam &globalParam,
                                                         std::vector<UTBotKTestObject> &objects) {
-//        auto symbolicVariable = KleeUtils::postSymbolicVariable(globalParam.name);
         auto kleeParam = getKleeParamOrThrow(objects, globalParam.name);
-//        auto type = typesHandler.getReturnTypeToCheck(globalParam.type);
-
-        auto expectedName = KleeUtils::postSymbolicVariable(globalParam.name);
-        auto testParamView = testPostValueView(kleeParam, globalParam.type, expectedName, testCaseValues);
-        testCaseValues.globalPostValues.emplace_back(expectedName, globalParam.alignment, testParamView);
+        auto testParamView = testPostValueView(kleeParam, globalParam.type, globalParam.name, testCaseValues);
+        testCaseValues.globalPostValues.emplace_back(globalParam.name, globalParam.alignment, testParamView);
     }
 
     void KTestObjectParser::processClassPostValue(Tests::TestCaseValues &testCaseValues,
                                                   const Tests::MethodParam &param,
                                                   std::vector<UTBotKTestObject> &objects) {
-//    const auto usage = types::PointerUsage::PARAMETER;
-//        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
         auto kleeParam = getKleeParamOrThrow(objects, param.name);
-//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
-//        auto type = typesHandler.getReturnTypeToCheck(paramType);
-
-        auto expectedName = KleeUtils::postSymbolicVariable(param.name);
-        auto testParamView = testPostValueView(kleeParam, param.type, expectedName, testCaseValues);
-        testCaseValues.classPostValues = {expectedName, param.alignment, testParamView};
+        auto testParamView = testPostValueView(kleeParam, param.type, param.name, testCaseValues);
+        testCaseValues.classPostValues = {param.name, param.alignment, testParamView};
     }
 
     void KTestObjectParser::processParamPostValue(Tests::TestCaseValues &testCaseValues,
                                                   const Tests::MethodParam &param,
                                                   std::vector<UTBotKTestObject> &objects) {
-//    const auto usage = types::PointerUsage::PARAMETER;
-//        auto symbolicVariable = KleeUtils::postSymbolicVariable(param.name);
         auto kleeParam = getKleeParamOrThrow(objects, param.name);
-//        types::Type paramType = param.type.arrayCloneMultiDim(/*usage*/);
-//        auto type = typesHandler.getReturnTypeToCheck(paramType);
-
-
-        auto expectedName = PrinterUtils::getExpectedVarName(param.name);
-        auto testParamView = testPostValueView(kleeParam, param.type, expectedName, testCaseValues);
-        testCaseValues.paramPostValues.emplace_back(expectedName, param.alignment, testParamView);
+        auto testParamView = testPostValueView(kleeParam, param.type, param.name, testCaseValues);
+        testCaseValues.paramPostValues.emplace_back(param.name, param.alignment, testParamView);
     }
 
     void KTestObjectParser::processStubParamValue(
@@ -1159,7 +1142,8 @@ namespace tests {
                 }
                 return functionPointerView(testingMethod->getClassTypeName(), testingMethod->name, paramName);
             case TypeKind::ARRAY:
-                return fixedArrayView(rawData, paramType, paramName, sizeInBits, 0, objects, initReferences, testingMethod);
+                return fixedArrayView(rawData, paramType, paramName, sizeInBits, 0, objects, initReferences,
+                                      testingMethod);
             case TypeKind::UNKNOWN: {
                 std::string message = "No such type";
                 LOG_S(ERROR) << message;

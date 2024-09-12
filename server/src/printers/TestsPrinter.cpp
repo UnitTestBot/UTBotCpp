@@ -401,7 +401,7 @@ void TestsPrinter::printStubVariablesForParam(const Tests::MethodDescription &me
         types::Type stubType = testCase.stubParamTypes[i].type;
         std::string bufferSuffix = "_buffer";
         std::string buffer = stub.name + bufferSuffix;
-        strDeclareArrayVar(stubType, buffer/*, types::PointerUsage::PARAMETER*/, stub.view->getEntryValue(this));
+        strDeclareArrayVar(stubType, buffer, stub.view->getEntryValue(this));
         strMemcpy(stub.name, buffer, false);
     }
 }
@@ -829,11 +829,10 @@ TestsPrinter::methodParametersListParametrized(const Tests::MethodDescription &m
             std::string qualifier = Printer::getConstQualifier(param.type);
             std::string arg = StringUtils::stringFormat("(%svoid **) %s", qualifier, param.name);
             args.push_back(arg);
+        } else if (param.type.isObjectPointer() && testCase.paramValues[i].lazyValues.empty()) {
+            args.push_back(PrinterUtils::C_NULL);
         } else if (param.type.isObjectPointer() || param.type.isArray()) {
-//            std::string maybeAmpersand =
-//                param.type.maybeJustPointer() && !param.type.isFilePointer() ? "&" : "";
-            std::string maybeAmpersand = "";
-            args.push_back(maybeAmpersand + param.name);
+            args.push_back(param.name);
         } else if (param.type.isLValueReference()) {
             args.push_back(param.name);
         } else if (!testCase.paramValues[i].lazyValues.empty()) {

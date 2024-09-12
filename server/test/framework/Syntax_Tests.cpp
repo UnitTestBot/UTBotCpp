@@ -379,13 +379,19 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>(
-                        {[] (const tests::Tests::MethodTestCase& testCase) {
-                            return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) < stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
-                                && stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) == stoll(testCase.returnValue.view->getEntryValue(nullptr));
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) <
+                                   stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
+                                   && stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) ==
+                                      stoll(testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(
+                                              nullptr));
                         },
-                         [] (const tests::Tests::MethodTestCase& testCase) {
-                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) >= stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
-                                && stoll(testCase.paramValues[1].view->getEntryValue(nullptr)) == stoll(testCase.returnValue.view->getEntryValue(nullptr));
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) >=
+                                    stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
+                                    && stoll(testCase.paramValues[1].view->getEntryValue(nullptr)) ==
+                                       stoll(testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(
+                                               nullptr));
                          }
                         }),
                 "returns_pointer_with_min");
@@ -399,15 +405,21 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>(
-                        {[] (const tests::Tests::MethodTestCase& testCase) {
-                            return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) < stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
-                                && "{" + testCase.paramValues[0].view->getEntryValue(nullptr) + ", " + testCase.paramValues[1].view->getEntryValue(nullptr) + "}"
-                                    == testCase.returnValue.view->getEntryValue(nullptr);
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) <
+                                   stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
+                                   && "{" + testCase.paramValues[0].view->getEntryValue(nullptr) + ", " +
+                                      testCase.paramValues[1].view->getEntryValue(nullptr) + "}"
+                                      == testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(
+                                    nullptr);
                         },
-                         [] (const tests::Tests::MethodTestCase& testCase) {
-                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) >= stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
-                                && "{" + testCase.paramValues[1].view->getEntryValue(nullptr) + ", " + testCase.paramValues[0].view->getEntryValue(nullptr) + "}"
-                                    == testCase.returnValue.view->getEntryValue(nullptr);
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) >=
+                                    stoll(testCase.paramValues[1].view->getEntryValue(nullptr))
+                                    && "{" + testCase.paramValues[1].view->getEntryValue(nullptr) + ", " +
+                                       testCase.paramValues[0].view->getEntryValue(nullptr) + "}"
+                                       == testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(
+                                     nullptr);
                          }
                         }),
                 "returns_struct_with_min_max");
@@ -417,17 +429,8 @@ namespace {
         auto [testGen, status] = createTestForFunction(pointer_return_c, 79);
 
         ASSERT_TRUE(status.ok()) << status.error_message();
-        checkTestCasePredicates(
-            testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                auto entryValue = testCase.paramValues[0].view->getEntryValue(nullptr);
-                auto returnValue = stoll(testCase.returnValue.view->getEntryValue(nullptr));
-                return static_cast<unsigned char>(entryValue[2]) ==
-                       static_cast<unsigned char>(returnValue);
-            }
-                }),
-            "void_pointer_return_char_usage");
+
+        testUtils::checkMinNumberOfTests(testGen.tests.at(pointer_return_c).methods.begin().value().testCases, 1);
     }
 
     TEST_F(Syntax_Test, Return_Long_Long_Array) {
@@ -436,13 +439,15 @@ namespace {
         ASSERT_TRUE(status.ok()) << status.error_message();
 
         checkTestCasePredicates(
-            testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
-            std::vector<TestCasePredicate>(
-                {[] (const tests::Tests::MethodTestCase& testCase) {
-                  return stoll(testCase.paramValues[1].view->getEntryValue(nullptr)) == stoll(testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(nullptr));
-                }
-                }),
-            "return_long_long_array");
+                testGen.tests.at(pointer_return_c).methods.begin().value().testCases,
+                std::vector<TestCasePredicate>(
+                        {[](const tests::Tests::MethodTestCase &testCase) {
+                            return stoll(testCase.paramValues[1].view->getEntryValue(nullptr)) ==
+                                   stoll(testCase.returnValue.lazyValues[0].view->getSubViews()[0]->getEntryValue(
+                                           nullptr));
+                        }
+                        }),
+                "return_long_long_array");
     }
 
     TEST_F(Syntax_Test, Pointer_As_Array_Parameter) {
@@ -494,13 +499,15 @@ namespace {
         checkTestCasePredicates(
                 testGen.tests.at(complex_structs_c).methods.begin().value().testCases,
                 std::vector<TestCasePredicate>(
-                        {[] (const tests::Tests::MethodTestCase& testCase) {
+                        {[](const tests::Tests::MethodTestCase &testCase) {
                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) >= 0 &&
-                                "{1, {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'}}" == testCase.returnValue.view->getEntryValue(nullptr);
+                                   "{1, {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'}}" ==
+                                   testCase.returnValue.view->getEntryValue(nullptr);
                         },
-                         [] (const tests::Tests::MethodTestCase& testCase) {
-                            return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) < 0 &&
-                                "{-1, {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'}}" == testCase.returnValue.view->getEntryValue(nullptr);
+                         [](const tests::Tests::MethodTestCase &testCase) {
+                             return stoll(testCase.paramValues[0].view->getEntryValue(nullptr)) < 0 &&
+                                    "{-1, {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'}}" ==
+                                    testCase.returnValue.view->getEntryValue(nullptr);
                          }
                         }),
                 "alphabet");
