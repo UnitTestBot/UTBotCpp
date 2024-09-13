@@ -461,9 +461,9 @@ namespace {
                 {[] (const tests::Tests::MethodTestCase& testCase) {
                     return stoi(testCase.paramValues[2].view->getEntryValue(nullptr)) + 7
                         == stoi(testCase.returnValue.view->getEntryValue(nullptr))
-                        && stoi(testCase.paramPostValues[0].view->getSubViews()[1]->getEntryValue(nullptr))
+                        && stoi(testCase.paramPostValues[0].lazyValues[0].view->getSubViews()[1]->getEntryValue(nullptr))
                         == 3
-                        && stoi(testCase.paramPostValues[1].view->getEntryValue(nullptr))
+                        && stoi(testCase.paramPostValues[1].lazyValues[0].view->getSubViews()[0]->getEntryValue(nullptr))
                         == 4;
                 }
                 }),
