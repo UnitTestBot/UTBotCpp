@@ -638,7 +638,7 @@ size_t types::TypesHandler::typeSize(const types::Type &type) const {
 
     if (isArrayType(type)) {
         size_t elementsNum = type.kinds().front()->getSize();
-        size_t elementSize = typeSize(type.baseTypeObj());
+        size_t elementSize = typeSize(type.baseTypeObj(1));
         return elementSize * elementsNum;
     }
 

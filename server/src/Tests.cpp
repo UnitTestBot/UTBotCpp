@@ -200,11 +200,8 @@ namespace tests {
                     subViews.push_back(primitiveView(rawData, subType.baseTypeObj(), curPos, elementLenInBits));
                     break;
                 case TypeKind::OBJECT_POINTER: {
-                    std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, curPos,
-                                                              PointerWidthSizeInBits);
                     subViews.push_back(
-                            getLazyPointerView(nameWithIndex, res, subType, true, objects, initReferences,
-                                               rawData.isPost));
+                            getLazyPointerView(nameWithIndex, subType, true, objects, initReferences, rawData, curPos));
                     break;
                 }
                 case TypeKind::ARRAY: {
@@ -314,15 +311,13 @@ namespace tests {
                 }
                     break;
                 case TypeKind::OBJECT_POINTER: {
-                    std::string res = readBytesAsValueForType(byteArray, PointerWidthType,
-                                                              fieldStartOffset, PointerWidthSizeInBits);
                     auto pointerIterator =
                             std::find_if(lazyPointersArray.begin(), lazyPointersArray.end(),
                                          [&fieldStartOffset](const Pointer &ptr) {
                                              return SizeUtils::bytesToBits(ptr.offset) == fieldStartOffset;
                                          }) != lazyPointersArray.end();
-                    subViews.push_back(getLazyPointerView(accessName, res, field.type, pointerIterator,
-                                                          objects, initReferences, rawData.isPost));
+                    subViews.push_back(getLazyPointerView(accessName, field.type, pointerIterator,
+                                                          objects, initReferences, rawData, fieldStartOffset));
                 }
                     break;
                 case TypeKind::FUNCTION_POINTER:
@@ -1132,9 +1127,8 @@ namespace tests {
             case TypeKind::PRIMITIVE:
                 return primitiveView(rawData, paramType.baseTypeObj(), 0, sizeInBits);
             case TypeKind::OBJECT_POINTER: {
-                std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, 0, PointerWidthSizeInBits);
-                return getLazyPointerView(paramName, res, paramType, !rawData.pointers.empty(), objects, initReferences,
-                                          rawData.isPost);
+                return getLazyPointerView(paramName, paramType, !rawData.pointers.empty(), objects, initReferences,
+                                          rawData, 0);
             }
             case TypeKind::FUNCTION_POINTER:
                 if (!testingMethod.has_value()) {
@@ -1179,17 +1173,30 @@ namespace tests {
 
     std::shared_ptr<AbstractValueView>
     KTestObjectParser::getLazyPointerView(const std::string &name,
-                                          std::string res,
                                           const Type &paramType,
                                           bool lazyPointer,
                                           const std::vector<UTBotKTestObject> &objects,
                                           std::vector<InitReference> &initReferences,
-                                          bool post) const {
-        size_t ptr = std::stoull(res);
+                                          const UTBotKTestObject::RawData &rawData,
+                                          const size_t offset) const {
+        const std::string res = readBytesAsValueForType(rawData.bytes, PointerWidthType, offset,
+                                                        PointerWidthSizeInBits);
+        const size_t ptr = std::stoull(res);
+
+        size_t shift = 0;
+        for (const auto &i: rawData.pointers) {
+            if (i.offset == offset) {
+                shift = i.indexOffset;
+            }
+        }
+
         auto ptrElement = std::find_if(objects.begin(), objects.end(),
-                                       [ptr](const UTBotKTestObject &object) { return object.address == ptr; });
+                                       [ptr, shift](const UTBotKTestObject &object) {
+                                           return object.address + shift == ptr;
+                                       });
         if (ptrElement != objects.end()) {
-            std::string ptrElementName = post ? KleeUtils::postSymbolicVariable(ptrElement->name) : ptrElement->name;
+            std::string ptrElementName = rawData.isPost ? KleeUtils::postSymbolicVariable(ptrElement->name)
+                                                        : ptrElement->name;
             initReferences.emplace_back(
                     name, ptrElementName,
                     PrinterUtils::getTypeForinitializePointerToVar(paramType.baseType(),

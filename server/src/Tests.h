@@ -879,12 +879,12 @@ namespace tests {
 //                                 types::PointerUsage usage*/) const;
 
         std::shared_ptr<AbstractValueView> getLazyPointerView(const std::string &name,
-                                                              std::string res,
                                                               const types::Type &paramType,
                                                               bool lazyPointer,
                                                               const std::vector<UTBotKTestObject> &objects,
                                                               std::vector<InitReference> &initReferences,
-                                                              bool post) const;
+                                                              const UTBotKTestObject::RawData &rawData,
+                                                              const size_t offset) const;
 
 //        bool pointToStruct(const types::Type &pointerType, const UTBotKTestObject &goal) const;
 
