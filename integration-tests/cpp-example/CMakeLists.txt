@@ -8,7 +8,6 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 # required!
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_EXPORT_LINK_COMMANDS ON)
 
 add_subdirectory(cxx_lib)
 add_subdirectory(c_lib)
